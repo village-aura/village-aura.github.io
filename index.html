@@ -325,12 +325,16 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-detail" class="scr">
     <div class="detail-hero" id="detail-hero"></div>
     <div class="summary-row" id="summary-row"></div>
-    <div style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px">
-        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#3D7AB5;display:inline-block;border-radius:2px"></span>収縮期BP</span>
-        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#43a047;display:inline-block;border-radius:2px"></span>脈拍</span>
-        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#e53935;display:inline-block;border-radius:2px"></span>体温</span>
-        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#9c27b0;display:inline-block;border-radius:2px"></span>SpO2</span>
+    <div id="vital-time-bar" style="text-align:right;font-size:10px;color:var(--sub);padding:2px 14px 2px"></div>
+    <div id="vital-graph-card" style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:14px;height:3px;background:#3D7AB5;display:inline-block;border-radius:2px"></span>BP</span>
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:14px;height:3px;background:#43a047;display:inline-block;border-radius:2px"></span>脈拍</span>
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:14px;height:3px;background:#e53935;display:inline-block;border-radius:2px"></span>体温</span>
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:14px;height:3px;background:#9c27b0;display:inline-block;border-radius:2px"></span>SpO2</span>
+        </div>
+        <div id="graph-range-bar" style="display:flex;gap:3px"></div>
       </div>
       <div id="vital-graph"></div>
     </div>
@@ -347,7 +351,10 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="timeline-sec">
-      <h3>タイムライン</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+        <span style="font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em">タイムライン</span>
+        <div id="tl-nav" style="display:flex;align-items:center;gap:6px"></div>
+      </div>
       <div id="timeline"></div>
     </div>
   </div>
@@ -878,8 +885,24 @@ const INIT_RECORDS = [
   {id:'rc3',type:'vital',rid:'r2',staffId:'s1',ts:today('10:00'),data:{sys:148,dia:88,pulse:74,temp:36.6,spo2:96,cons:'alert',note:'血圧やや高め'}},
   {id:'rc4',type:'excretion',rid:'r4',staffId:'s2',ts:today('07:30'),data:{etype:'stool',urine:'normal',stool:'○',portable:false,incon:false,lax:false,note:''}},
   {id:'rc5',type:'chrono',rid:'r8',staffId:'s1',ts:today('11:15'),data:{tags:['医療処置'],priority:'important',content:'下肢浮腫増悪。主治医に報告済み。利尿剤の調整予定。',handover:true}},
+  // r1 過去7日分バイタル（朝・夕 各1回）
+  {id:'pv1', type:'vital',rid:'r1',staffId:'s1',ts:pastDay(1,'08:10'),data:{sys:128,dia:76,pulse:70,temp:36.3,spo2:98,cons:'alert',note:''}},
+  {id:'pv2', type:'vital',rid:'r1',staffId:'s2',ts:pastDay(1,'18:20'),data:{sys:135,dia:80,pulse:72,temp:36.4,spo2:97,cons:'alert',note:''}},
+  {id:'pv3', type:'vital',rid:'r1',staffId:'s1',ts:pastDay(2,'08:05'),data:{sys:140,dia:82,pulse:75,temp:36.5,spo2:97,cons:'alert',note:''}},
+  {id:'pv4', type:'vital',rid:'r1',staffId:'s2',ts:pastDay(2,'18:15'),data:{sys:145,dia:85,pulse:78,temp:36.6,spo2:96,cons:'alert',note:'やや高め'}},
+  {id:'pv5', type:'vital',rid:'r1',staffId:'s1',ts:pastDay(3,'08:15'),data:{sys:138,dia:80,pulse:71,temp:36.2,spo2:98,cons:'alert',note:''}},
+  {id:'pv6', type:'vital',rid:'r1',staffId:'s2',ts:pastDay(3,'18:25'),data:{sys:142,dia:82,pulse:74,temp:36.4,spo2:97,cons:'alert',note:''}},
+  {id:'pv7', type:'vital',rid:'r1',staffId:'s1',ts:pastDay(4,'08:10'),data:{sys:136,dia:78,pulse:69,temp:36.3,spo2:98,cons:'alert',note:''}},
+  {id:'pv8', type:'vital',rid:'r1',staffId:'s2',ts:pastDay(4,'18:30'),data:{sys:130,dia:76,pulse:68,temp:36.1,spo2:98,cons:'alert',note:''}},
+  {id:'pv9', type:'vital',rid:'r1',staffId:'s1',ts:pastDay(5,'08:20'),data:{sys:133,dia:79,pulse:70,temp:36.4,spo2:97,cons:'alert',note:''}},
+  {id:'pv10',type:'vital',rid:'r1',staffId:'s2',ts:pastDay(5,'18:15'),data:{sys:138,dia:81,pulse:72,temp:36.5,spo2:97,cons:'alert',note:''}},
+  {id:'pv11',type:'vital',rid:'r1',staffId:'s1',ts:pastDay(6,'08:05'),data:{sys:141,dia:83,pulse:73,temp:36.6,spo2:96,cons:'alert',note:''}},
+  {id:'pv12',type:'vital',rid:'r1',staffId:'s2',ts:pastDay(6,'18:20'),data:{sys:139,dia:80,pulse:71,temp:36.5,spo2:97,cons:'alert',note:''}},
+  {id:'pv13',type:'vital',rid:'r1',staffId:'s1',ts:pastDay(7,'08:10'),data:{sys:135,dia:77,pulse:69,temp:36.2,spo2:98,cons:'alert',note:''}},
+  {id:'pv14',type:'vital',rid:'r1',staffId:'s2',ts:pastDay(7,'18:00'),data:{sys:132,dia:75,pulse:68,temp:36.3,spo2:98,cons:'alert',note:''}},
 ];
 function today(time){const d=new Date();const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return d.toISOString();}
+function pastDay(ago,time){const d=new Date();d.setDate(d.getDate()-ago);const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return d.toISOString();}
 
 // ═══════════ STATE ═══════════
 let S = {
@@ -890,6 +913,8 @@ let S = {
   currentRes: null,
   filter: 'all',
   csvData: null,
+  graphRange: 'today',
+  tlOffset: 0,
 };
 function ls(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
@@ -1029,6 +1054,7 @@ function renderResList(){
 // ═══════════ RESIDENT DETAIL ═══════════
 function openResident(id){
   S.currentRes=id;
+  S.tlOffset=0;
   showScr('scr-detail');
   renderDetail();
 }
@@ -1055,29 +1081,35 @@ function renderDetail(){
   const bpClass=latestVital?(latestVital.data.sys>=160||latestVital.data.sys<90?'warn':'ok'):'warn';
   const tempClass=latestVital?(latestVital.data.temp>=37.5?'warn':latestVital.data.temp<36?'warn':'ok'):'warn';
   const spo2Class=latestVital?(latestVital.data.spo2<95?'warn':'ok'):'warn';
+  const vitalTime=latestVital?new Date(latestVital.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
   document.getElementById('summary-row').innerHTML=`
     <div class="sum-card">
       <div style="font-size:10px;color:#3D7AB5;font-weight:700;margin-bottom:2px">💉 血圧</div>
       <div class="sum-val ${bpClass}" style="font-size:15px">${latestVital?latestVital.data.sys+'/'+latestVital.data.dia:'──'}</div>
-      <div class="sum-lbl">mmHg</div>
+      <div class="sum-lbl">mmHg${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
     <div class="sum-card">
       <div style="font-size:10px;color:#43a047;font-weight:700;margin-bottom:2px">💓 脈拍</div>
-      <div class="sum-val ok" style="font-size:15px;color:#43a047">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
-      <div class="sum-lbl">回/分</div>
+      <div class="sum-val" style="font-size:15px;color:#43a047">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
+      <div class="sum-lbl">回/分${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
     <div class="sum-card">
       <div style="font-size:10px;color:#e53935;font-weight:700;margin-bottom:2px">🌡️ 体温</div>
       <div class="sum-val ${tempClass}" style="font-size:15px;color:#e53935">${latestVital&&latestVital.data.temp?latestVital.data.temp:'──'}</div>
-      <div class="sum-lbl">℃</div>
+      <div class="sum-lbl">℃${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
     <div class="sum-card">
       <div style="font-size:10px;color:#9c27b0;font-weight:700;margin-bottom:2px">🫁 SpO2</div>
       <div class="sum-val ${spo2Class}" style="font-size:15px;color:#9c27b0">${latestVital&&latestVital.data.spo2?latestVital.data.spo2:'──'}</div>
-      <div class="sum-lbl">%</div>
+      <div class="sum-lbl">%${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
   `;
-  renderVitalGraph(S.currentRes);
+  // グラフ範囲切替ボタン
+  const ranges=[{k:'today',l:'当日'},{k:'3days',l:'直近3日'},{k:'week',l:'1週間'}];
+  document.getElementById('graph-range-bar').innerHTML=ranges.map(rv=>
+    `<button onclick="setGraphRange('${rv.k}')" id="gr-${rv.k}" style="padding:4px 8px;font-size:10px;font-weight:700;border-radius:6px;border:1.5px solid ${S.graphRange===rv.k?'var(--p)':'var(--bdr)'};background:${S.graphRange===rv.k?'var(--ps)':'#fff'};color:${S.graphRange===rv.k?'var(--p)':'var(--sub)'}">${rv.l}</button>`
+  ).join('');
+  renderVitalGraph(S.currentRes, S.graphRange);
   // Handovers
   const hos=getHandovers()[S.currentRes]||[];
   document.getElementById('handover-area').innerHTML=hos.length?hos.map(h=>`
@@ -1090,27 +1122,44 @@ function renderDetail(){
   // Timeline
   renderTimeline();
 }
+function changeTlDate(delta){
+  S.tlOffset+=delta;
+  if(S.tlOffset>0) S.tlOffset=0;
+  renderTimeline();
+}
 function renderTimeline(){
-  const recs=getRecords().filter(rc=>rc.rid===S.currentRes).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const targetDate=new Date();
+  targetDate.setDate(targetDate.getDate()+S.tlOffset);
+  const targetStr=targetDate.toDateString();
+  const isToday=S.tlOffset===0;
+  const dateLabel=isToday?'今日':targetDate.toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});
+  // ナビ更新
+  const nav=document.getElementById('tl-nav');
+  if(nav) nav.innerHTML=`
+    <button onclick="changeTlDate(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:var(--card);font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
+    <span style="font-size:12px;font-weight:700;color:var(--p);min-width:80px;text-align:center">${dateLabel}</span>
+    <button onclick="changeTlDate(1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:var(--card);font-size:14px;display:flex;align-items:center;justify-content:center;${isToday?'opacity:.35;pointer-events:none':''}">▶</button>
+  `;
+  const allRecs=getRecords().filter(rc=>rc.rid===S.currentRes);
+  const recs=allRecs.filter(rc=>new Date(rc.ts).toDateString()===targetStr)
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣'};
   const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り'};
   if(!recs.length){
-    document.getElementById('timeline').innerHTML='<div class="tl-empty">まだ記録がありません<br>上のボタンから記録してください</div>';
+    document.getElementById('timeline').innerHTML=`<div class="tl-empty">${dateLabel}の記録はありません</div>`;
     return;
   }
-  let html='',lastDate='';
+  let html='';
   recs.forEach(r=>{
     const d=new Date(r.ts);
-    const dateStr=d.toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});
     const timeStr=d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
-    if(dateStr!==lastDate){html+=`<div class="tl-date">${dateStr}</div>`;lastDate=dateStr;}
     html+=`<div class="tl-item">
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
         <div class="tl-val">${summarizeRecord(r)}</div>
         ${r.data.note||r.data.content?`<div class="tl-note">${(r.data.note||r.data.content||'').substring(0,60)}</div>`:''}
-        <div class="tl-staff">${r.staffId? S.user||r.staffId :''}</div>
+        <div class="tl-staff">${S.user||''}</div>
       </div>
     </div>`;
   });
@@ -1464,11 +1513,23 @@ function saveDoctorOrder(){
 }
 
 // ═══════════ VITAL GRAPH ═══════════
-function renderVitalGraph(rid){
+function setGraphRange(range){
+  S.graphRange=range;
+  renderDetail();
+}
+function renderVitalGraph(rid, range='today'){
   const el=document.getElementById('vital-graph');
   if(!el)return;
-  const recs=getRecords().filter(r=>r.rid===rid&&r.type==='vital')
-    .sort((a,b)=>new Date(a.ts)-new Date(b.ts)).slice(-10);
+  const now=new Date();
+  const startOf=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x;};
+  const todayStart=startOf(now);
+  const cutoff={
+    today:todayStart,
+    '3days':new Date(todayStart.getTime()-2*86400000),
+    week:new Date(todayStart.getTime()-6*86400000),
+  }[range]||todayStart;
+  const recs=getRecords().filter(r=>r.rid===rid&&r.type==='vital'&&new Date(r.ts)>=cutoff)
+    .sort((a,b)=>new Date(a.ts)-new Date(b.ts));
   const W=430,H=150,pL=10,pR=10,pT=18,pB=22;
   const cw=W-pL-pR,ch=H-pT-pB;
   if(recs.length<1){
