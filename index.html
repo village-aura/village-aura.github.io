@@ -113,7 +113,7 @@ a{color:var(--p);text-decoration:none}
 .detail-meta{font-size:13px;opacity:.85;margin-top:4px}
 .detail-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .dtag{background:rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600}
-.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 12px 2px}
+.summary-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:10px 12px 2px}
 .sum-card{background:var(--card);border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--sh)}
 .sum-val{font-size:18px;font-weight:800;color:var(--p)}
 .sum-val.warn{color:var(--warn)}
@@ -325,6 +325,15 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-detail" class="scr">
     <div class="detail-hero" id="detail-hero"></div>
     <div class="summary-row" id="summary-row"></div>
+    <div style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px">
+        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#3D7AB5;display:inline-block;border-radius:2px"></span>収縮期BP</span>
+        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#43a047;display:inline-block;border-radius:2px"></span>脈拍</span>
+        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#e53935;display:inline-block;border-radius:2px"></span>体温</span>
+        <span style="font-size:10px;display:flex;align-items:center;gap:4px"><span style="width:16px;height:3px;background:#9c27b0;display:inline-block;border-radius:2px"></span>SpO2</span>
+      </div>
+      <div id="vital-graph"></div>
+    </div>
     <div id="handover-area"></div>
     <div class="input-section">
       <h3>記録入力</h3>
@@ -434,33 +443,57 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── HANDOVER BOARD ─── -->
   <div id="scr-handover-board" class="scr">
-    <div style="display:flex;gap:0;margin:10px 12px 0;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:var(--sh)">
-      <button id="hb-am-btn" class="hb-shift-btn on" onclick="switchShift('am')" style="flex:1;padding:11px;font-size:14px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">🌅 朝</button>
-      <button id="hb-pm-btn" class="hb-shift-btn" onclick="switchShift('pm')" style="flex:1;padding:11px;font-size:14px;font-weight:700;background:none;color:var(--sub);border:none;cursor:pointer">🌆 夕</button>
-    </div>
-    <!-- 医師指示 -->
+    <!-- サ高住（朝/夕切替） -->
     <div class="card" style="margin-top:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:700;color:#c62828">🩺 医師指示（本日）</span>
-        <button onclick="openModal('modal-doctor-order')" style="background:var(--p);color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
-      </div>
-      <div id="doctor-orders-list"></div>
-    </div>
-    <!-- サ高住 申し送り -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:700;color:var(--p)">🏠 サ高住 申し送り</span>
+        <span style="font-size:13px;font-weight:700;color:var(--p)">🏠 サ高住から</span>
         <button onclick="openBoardHandover('sak')" style="background:var(--p);color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div style="display:flex;gap:0;background:#f3f4f6;border-radius:8px;overflow:hidden;margin-bottom:10px">
+        <button id="sak-am-btn" onclick="switchSakShift('am')" style="flex:1;padding:8px;font-size:13px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">🌅 朝</button>
+        <button id="sak-pm-btn" onclick="switchSakShift('pm')" style="flex:1;padding:8px;font-size:13px;font-weight:700;background:none;color:var(--sub);border:none;cursor:pointer">🌆 夕</button>
       </div>
       <div id="hb-sak-list"></div>
     </div>
-    <!-- 小多機 申し送り -->
+    <!-- 医師から -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:700;color:#6a1b9a">🏡 小多機 申し送り</span>
+        <span style="font-size:13px;font-weight:700;color:#c62828">🩺 医師から</span>
+        <button onclick="openModal('modal-doctor-order')" style="background:#c62828;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="hb-doctor-list"></div>
+    </div>
+    <!-- 看護師から -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#00796b">👩‍⚕️ 看護師から</span>
+        <button onclick="openBoardHandover('nurse')" style="background:#00796b;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="hb-nurse-list"></div>
+    </div>
+    <!-- 小多機から -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#6a1b9a">🏡 小多機から</span>
         <button onclick="openBoardHandover('shot')" style="background:#6a1b9a;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
       </div>
       <div id="hb-shot-list"></div>
+    </div>
+    <!-- デイから -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#e65100">☀️ デイから</span>
+        <button onclick="openBoardHandover('day')" style="background:#e65100;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="hb-day-list"></div>
+    </div>
+    <!-- 訪問介護から -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#1565c0">🚗 訪問介護から</span>
+        <button onclick="openBoardHandover('visit')" style="background:#1565c0;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="hb-visit-list"></div>
     </div>
   </div>
 
@@ -1019,24 +1052,32 @@ function renderDetail(){
   const latestVital=todayRecs.filter(rc=>rc.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
   const fluidToday=todayRecs.filter(rc=>rc.type==='meal').reduce((s,rc)=>s+(rc.data.fluid||0),0);
   const latestWeight=recs.filter(rc=>rc.type==='weight').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
-  const fluidLimit=r.allergy&&r.allergy.includes('水分制限')?1000:1500;
-  const fluidPct=Math.min(100,Math.round(fluidToday/fluidLimit*100));
-  const fluidClass=fluidPct>=100?'ng':fluidPct>=80?'warn':'ok';
+  const bpClass=latestVital?(latestVital.data.sys>=160||latestVital.data.sys<90?'warn':'ok'):'warn';
+  const tempClass=latestVital?(latestVital.data.temp>=37.5?'warn':latestVital.data.temp<36?'warn':'ok'):'warn';
+  const spo2Class=latestVital?(latestVital.data.spo2<95?'warn':'ok'):'warn';
   document.getElementById('summary-row').innerHTML=`
     <div class="sum-card">
-      <div class="sum-val ${latestVital?'ok':'warn'}">${latestVital?latestVital.data.sys+'/'+latestVital.data.dia:'──'}</div>
-      <div class="sum-lbl">血圧 mmHg</div>
+      <div style="font-size:10px;color:#3D7AB5;font-weight:700;margin-bottom:2px">💉 血圧</div>
+      <div class="sum-val ${bpClass}" style="font-size:15px">${latestVital?latestVital.data.sys+'/'+latestVital.data.dia:'──'}</div>
+      <div class="sum-lbl">mmHg</div>
     </div>
     <div class="sum-card">
-      <div class="sum-val ${fluidClass}">${fluidToday}</div>
-      <div class="sum-lbl">水分 ml / ${fluidLimit}</div>
-      <div class="fluid-bar"><div class="fluid-fill ${fluidClass}" style="width:${fluidPct}%"></div></div>
+      <div style="font-size:10px;color:#43a047;font-weight:700;margin-bottom:2px">💓 脈拍</div>
+      <div class="sum-val ok" style="font-size:15px;color:#43a047">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
+      <div class="sum-lbl">回/分</div>
     </div>
     <div class="sum-card">
-      <div class="sum-val">${latestWeight?latestWeight.data.val+'kg':'──'}</div>
-      <div class="sum-lbl">体重（最新）</div>
+      <div style="font-size:10px;color:#e53935;font-weight:700;margin-bottom:2px">🌡️ 体温</div>
+      <div class="sum-val ${tempClass}" style="font-size:15px;color:#e53935">${latestVital&&latestVital.data.temp?latestVital.data.temp:'──'}</div>
+      <div class="sum-lbl">℃</div>
+    </div>
+    <div class="sum-card">
+      <div style="font-size:10px;color:#9c27b0;font-weight:700;margin-bottom:2px">🫁 SpO2</div>
+      <div class="sum-val ${spo2Class}" style="font-size:15px;color:#9c27b0">${latestVital&&latestVital.data.spo2?latestVital.data.spo2:'──'}</div>
+      <div class="sum-lbl">%</div>
     </div>
   `;
+  renderVitalGraph(S.currentRes);
   // Handovers
   const hos=getHandovers()[S.currentRes]||[];
   document.getElementById('handover-area').innerHTML=hos.length?hos.map(h=>`
@@ -1327,52 +1368,69 @@ function saveEditResident(){
 }
 
 // ═══════════ HANDOVER BOARD ═══════════
-let S_shift='am';
-function switchShift(shift){
-  S_shift=shift;
-  document.getElementById('hb-am-btn').style.background=shift==='am'?'var(--p)':'none';
-  document.getElementById('hb-am-btn').style.color=shift==='am'?'#fff':'var(--sub)';
-  document.getElementById('hb-pm-btn').style.background=shift==='pm'?'var(--p)':'none';
-  document.getElementById('hb-pm-btn').style.color=shift==='pm'?'#fff':'var(--sub)';
-  renderHandoverBoard();
+let S_sak_shift='am';
+function switchSakShift(shift){
+  S_sak_shift=shift;
+  document.getElementById('sak-am-btn').style.background=shift==='am'?'var(--p)':'none';
+  document.getElementById('sak-am-btn').style.color=shift==='am'?'#fff':'var(--sub)';
+  document.getElementById('sak-pm-btn').style.background=shift==='pm'?'var(--p)':'none';
+  document.getElementById('sak-pm-btn').style.color=shift==='pm'?'#fff':'var(--sub)';
+  renderBoardSection('hb-sak-list',getBoardData().sak[S_sak_shift]);
 }
-function getBoardData(){return ls('board_data')||{am:{sak:[],shot:[],doctor:[]},pm:{sak:[],shot:[],doctor:[]}};}
-function saveBoardData(d){lsSet('board_data',d);}
+function getBoardData(){
+  const d=ls('board_data2')||{};
+  return {
+    sak:{am:d.sak?.am||[],pm:d.sak?.pm||[]},
+    doctor:d.doctor||[],nurse:d.nurse||[],
+    shot:d.shot||[],day:d.day||[],visit:d.visit||[]
+  };
+}
+function saveBoardData(d){lsSet('board_data2',d);}
 function renderHandoverBoard(){
   const d=getBoardData();
-  const shift=d[S_shift];
-  // doctor orders
-  const doEl=document.getElementById('doctor-orders-list');
-  doEl.innerHTML=shift.doctor.length?shift.doctor.map((o,i)=>`
-    <div style="background:#fff8f8;border-left:3px solid #c62828;padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
-      <div style="font-size:13px;font-weight:700;color:#c62828">${o.doctor||'医師'} より</div>
+  renderBoardSection('hb-sak-list',d.sak[S_sak_shift]);
+  // doctor
+  const doEl=document.getElementById('hb-doctor-list');
+  doEl.innerHTML=d.doctor.length?d.doctor.map(o=>`
+    <div style="background:#fff8f8;border-left:4px solid #c62828;padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
+      <span style="display:inline-block;background:#c62828;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">🩺 ${o.doctor||'医師'} より</span>
       ${o.resident?`<div style="font-size:11px;color:var(--sub);margin-bottom:4px">対象: ${o.resident}</div>`:''}
       <div style="font-size:14px;line-height:1.6">${o.content}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px">${o.by} · ${o.time}</div>
     </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">本日の医師指示はありません</div>';
-  // sak
-  renderBoardSection('hb-sak-list',shift.sak);
-  // shot
-  renderBoardSection('hb-shot-list',shift.shot);
+  renderBoardSection('hb-nurse-list',d.nurse);
+  renderBoardSection('hb-shot-list',d.shot);
+  renderBoardSection('hb-day-list',d.day);
+  renderBoardSection('hb-visit-list',d.visit);
   // populate doctor order resident select
   const sel=document.getElementById('do-resident');
-  sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+  if(sel) sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
 }
+const PRI_STYLE={
+  urgent:'background:#fde8e8;border-left:4px solid #e53935',
+  important:'background:#fff8e1;border-left:4px solid #FB8C00',
+  normal:'background:#f8f9fa;border-left:4px solid #e0e0e0'
+};
+const PRI_BADGE={
+  urgent:'<span style="display:inline-block;background:#e53935;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">🚨 緊急</span>',
+  important:'<span style="display:inline-block;background:#FB8C00;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">⚠ 重要</span>',
+  normal:'<span style="display:inline-block;background:#9ca3af;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">📌 通常</span>'
+};
 function renderBoardSection(elId,items){
   const el=document.getElementById(elId);
-  const priStyle={urgent:'background:#fde8e8;border-left:3px solid var(--ng)',important:'background:#fff8e1;border-left:3px solid var(--warn)',normal:'background:#f8f9fa;border-left:3px solid var(--bdr)'};
-  const priLabel={urgent:'🚨 緊急',important:'⚠ 重要',normal:'📌 通常'};
-  el.innerHTML=items.length?items.map(h=>`
-    <div style="${priStyle[h.pri]||priStyle.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px">${priLabel[h.pri]||'📌'}</div>
+  if(!el)return;
+  el.innerHTML=items&&items.length?items.map(h=>`
+    <div style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
+      ${PRI_BADGE[h.pri]||PRI_BADGE.normal}
       <div style="font-size:14px;line-height:1.6">${h.content}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px">${h.by} · ${h.time}</div>
     </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">申し送りはありません</div>';
 }
 function openBoardHandover(section){
   document.getElementById('board-ho-section').value=section;
-  const labels={sak:'🏠 サ高住',shot:'🏡 小多機'};
-  document.getElementById('board-ho-title').textContent=(labels[section]||'')+(S_shift==='am'?' 朝の申し送り':' 夕の申し送り');
+  const labels={sak:'🏠 サ高住から',nurse:'👩‍⚕️ 看護師から',shot:'🏡 小多機から',day:'☀️ デイから',visit:'🚗 訪問介護から'};
+  const shiftLabel=section==='sak'?(S_sak_shift==='am'?' (朝)':' (夕)'):'';
+  document.getElementById('board-ho-title').textContent=(labels[section]||section)+shiftLabel+' 申し送り';
   document.getElementById('bho-content').value='';
   document.getElementById('modal-board-ho').classList.add('on');
 }
@@ -1381,8 +1439,10 @@ function saveBoardHandover(){
   if(!content){toast('内容を入力してください');return;}
   const section=document.getElementById('board-ho-section').value;
   const pri=document.querySelector('[name=bho-pri]:checked')?.value||'normal';
+  const entry={content,pri,by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};
   const d=getBoardData();
-  d[S_shift][section].unshift({content,pri,by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+  if(section==='sak') d.sak[S_sak_shift].unshift(entry);
+  else d[section].unshift(entry);
   saveBoardData(d);
   closeModal('modal-board-ho');
   toast('申し送りを保存しました ✓');
@@ -1392,7 +1452,7 @@ function saveDoctorOrder(){
   const content=document.getElementById('do-content').value.trim();
   if(!content){toast('指示内容を入力してください');return;}
   const d=getBoardData();
-  d[S_shift].doctor.unshift({
+  d.doctor.unshift({
     content,doctor:document.getElementById('do-doctor').value||'医師',
     resident:document.getElementById('do-resident').value,
     by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
@@ -1401,6 +1461,53 @@ function saveDoctorOrder(){
   closeModal('modal-doctor-order');
   toast('医師指示を保存しました ✓');
   renderHandoverBoard();
+}
+
+// ═══════════ VITAL GRAPH ═══════════
+function renderVitalGraph(rid){
+  const el=document.getElementById('vital-graph');
+  if(!el)return;
+  const recs=getRecords().filter(r=>r.rid===rid&&r.type==='vital')
+    .sort((a,b)=>new Date(a.ts)-new Date(b.ts)).slice(-10);
+  const W=430,H=150,pL=10,pR=10,pT=18,pB=22;
+  const cw=W-pL-pR,ch=H-pT-pB;
+  if(recs.length<1){
+    el.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--sub);font-size:12px">バイタル記録が入力されるとグラフが表示されます</div>';
+    return;
+  }
+  const n=recs.length;
+  const xp=i=>pL+(n>1?cw*i/(n-1):cw/2);
+  const series=[
+    {key:d=>d.sys,color:'#3D7AB5',min:80,max:200},
+    {key:d=>d.pulse,color:'#43a047',min:40,max:130},
+    {key:d=>d.temp,color:'#e53935',min:35,max:40},
+    {key:d=>d.spo2,color:'#9c27b0',min:85,max:100},
+  ];
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">`;
+  // grid
+  for(let i=0;i<=4;i++){const y=pT+ch*i/4;svg+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="#f0f0f0" stroke-width="1"/>`;}
+  series.forEach(s=>{
+    const pts=recs.map((r,i)=>{
+      const v=s.key(r.data);if(v==null)return null;
+      const x=xp(i);
+      const y=pT+ch*(1-Math.max(0,Math.min(1,(v-s.min)/(s.max-s.min))));
+      return{x,y,v};
+    }).filter(Boolean);
+    if(!pts.length)return;
+    if(pts.length>=2){
+      const d=pts.map((p,i)=>`${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      svg+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+    pts.forEach(p=>{svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${s.color}" stroke="#fff" stroke-width="1.5"/>`;});
+  });
+  // x labels
+  recs.forEach((r,i)=>{
+    const d=new Date(r.ts);
+    const lbl=`${d.getMonth()+1}/${d.getDate()}`;
+    svg+=`<text x="${xp(i).toFixed(1)}" y="${H-5}" text-anchor="middle" font-size="9" fill="#9ca3af">${lbl}</text>`;
+  });
+  svg+='</svg>';
+  el.innerHTML=svg;
 }
 
 // ═══════════ TOAST ═══════════
