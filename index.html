@@ -108,7 +108,7 @@ a{color:var(--p);text-decoration:none}
 .status-label{font-size:10px;color:var(--sub)}
 
 /* ── RESIDENT DETAIL ── */
-.detail-hero{background:var(--p);padding:16px;color:#fff}
+.detail-hero{background:var(--p);padding:16px;color:#fff;position:relative}
 .detail-name{font-size:22px;font-weight:800}
 .detail-meta{font-size:13px;opacity:.85;margin-top:4px}
 .detail-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
@@ -250,8 +250,6 @@ a{color:var(--p);text-decoration:none}
       <option value="s4">鈴木 健太（介護士）</option>
       <option value="s5">中村 由美（看護師）</option>
     </select>
-    <label>または名前を入力</label>
-    <input type="text" id="inp-staff-name" placeholder="氏名を入力...">
     <button class="btn-login" onclick="login()">ログイン</button>
     <div class="login-demo">📱 デモ版 — データはこの端末にのみ保存されます</div>
   </div>
@@ -292,9 +290,9 @@ a{color:var(--p);text-decoration:none}
         <span class="qi">📥</span>
         <div><div class="ql">データ登録</div><div class="qs">CSV / 手入力</div></div>
       </button>
-      <button class="quick-btn" onclick="showScr('scr-settings')">
-        <span class="qi">🔒</span>
-        <div><div class="ql">アクセス管理</div><div class="qs">セキュリティ設定</div></div>
+      <button class="quick-btn" onclick="showScr('scr-handover-board')">
+        <span class="qi">📣</span>
+        <div><div class="ql">申し送りボード</div><div class="qs">サ高住・小多機</div></div>
       </button>
       <button class="quick-btn" onclick="alert('施設日誌機能は本番版で実装予定です')">
         <span class="qi">📋</span>
@@ -434,6 +432,38 @@ a{color:var(--p);text-decoration:none}
     </div>
   </div>
 
+  <!-- ─── HANDOVER BOARD ─── -->
+  <div id="scr-handover-board" class="scr">
+    <div style="display:flex;gap:0;margin:10px 12px 0;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:var(--sh)">
+      <button id="hb-am-btn" class="hb-shift-btn on" onclick="switchShift('am')" style="flex:1;padding:11px;font-size:14px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">🌅 朝</button>
+      <button id="hb-pm-btn" class="hb-shift-btn" onclick="switchShift('pm')" style="flex:1;padding:11px;font-size:14px;font-weight:700;background:none;color:var(--sub);border:none;cursor:pointer">🌆 夕</button>
+    </div>
+    <!-- 医師指示 -->
+    <div class="card" style="margin-top:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#c62828">🩺 医師指示（本日）</span>
+        <button onclick="openModal('modal-doctor-order')" style="background:var(--p);color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="doctor-orders-list"></div>
+    </div>
+    <!-- サ高住 申し送り -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:var(--p)">🏠 サ高住 申し送り</span>
+        <button onclick="openBoardHandover('sak')" style="background:var(--p);color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="hb-sak-list"></div>
+    </div>
+    <!-- 小多機 申し送り -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#6a1b9a">🏡 小多機 申し送り</span>
+        <button onclick="openBoardHandover('shot')" style="background:#6a1b9a;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+      </div>
+      <div id="hb-shot-list"></div>
+    </div>
+  </div>
+
   <!-- ─── SETTINGS ─── -->
   <div id="scr-settings" class="scr">
     <div class="setting-group">
@@ -514,8 +544,8 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-residents')" id="bn-res">
       <div class="bn-ico">👥</div><div class="bn-lbl">利用者</div>
     </button>
-    <button class="bn" onclick="showScr('scr-import')" id="bn-imp">
-      <div class="bn-ico">📥</div><div class="bn-lbl">登録</div>
+    <button class="bn" onclick="showScr('scr-handover-board')" id="bn-hb">
+      <div class="bn-ico">📣</div><div class="bn-lbl">申し送り</div>
     </button>
     <button class="bn" onclick="showScr('scr-settings')" id="bn-set">
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
@@ -704,6 +734,90 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- EDIT RESIDENT -->
+<div class="overlay" id="modal-edit-res" onclick="closeModal('modal-edit-res',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">✏️ 利用者情報の編集</div>
+    <div class="field"><label>氏名</label><input type="text" id="er-name" placeholder="山田 花子"></div>
+    <div class="field"><label>フリガナ</label><input type="text" id="er-kana" placeholder="ヤマダ ハナコ"></div>
+    <div class="field-row">
+      <div class="field"><label>性別</label>
+        <select id="er-gender"><option value="female">女性</option><option value="male">男性</option></select>
+      </div>
+      <div class="field"><label>生年月日</label><input type="date" id="er-birth"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>要介護度</label>
+        <select id="er-care">
+          <option value="none">自立</option><option value="support1">要支援1</option><option value="support2">要支援2</option>
+          <option value="care1">要介護1</option><option value="care2">要介護2</option><option value="care3">要介護3</option>
+          <option value="care4">要介護4</option><option value="care5">要介護5</option>
+        </select>
+      </div>
+      <div class="field"><label>居室番号</label><input type="text" id="er-room" placeholder="101"></div>
+    </div>
+    <div class="field"><label>サービス種別</label>
+      <div class="checkbox-list">
+        <label><input type="checkbox" id="er-sv-res" value="resident"> 居住（サ高住入居）</label>
+        <label><input type="checkbox" id="er-sv-com" value="commute"> 通い</label>
+        <label><input type="checkbox" id="er-sv-sta" value="stay"> 泊まり</label>
+        <label><input type="checkbox" id="er-sv-vis" value="visit"> 訪問</label>
+      </div>
+    </div>
+    <div class="field"><label>施設</label>
+      <select id="er-facility">
+        <option value="かしわじま">メディケアビレッジかしわじま</option>
+        <option value="こはる日和">こはる日和</option>
+      </select>
+    </div>
+    <div class="field"><label>アレルギー・注意事項</label><textarea id="er-allergy"></textarea></div>
+    <button class="btn-primary" onclick="saveEditResident()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-edit-res')">キャンセル</button>
+  </div>
+</div>
+
+<!-- BOARD HANDOVER -->
+<div class="overlay" id="modal-board-ho" onclick="closeModal('modal-board-ho',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="board-ho-title">📣 申し送り追加</div>
+    <input type="hidden" id="board-ho-section">
+    <div class="field"><label>重要度</label>
+      <div class="radio-group">
+        <label><input type="radio" name="bho-pri" value="normal" checked> 通常</label>
+        <label><input type="radio" name="bho-pri" value="important"> 重要</label>
+        <label><input type="radio" name="bho-pri" value="urgent"> 緊急</label>
+      </div>
+    </div>
+    <div class="field"><label>内容</label>
+      <textarea id="bho-content" rows="4" placeholder="申し送り内容..."></textarea>
+      <button class="btn-voice" onclick="startVoice('bho-content',this)">🎤 音声入力</button>
+    </div>
+    <button class="btn-primary" onclick="saveBoardHandover()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-board-ho')">キャンセル</button>
+  </div>
+</div>
+
+<!-- DOCTOR ORDER -->
+<div class="overlay" id="modal-doctor-order" onclick="closeModal('modal-doctor-order',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🩺 医師指示の追加</div>
+    <div class="field"><label>対象利用者（任意）</label>
+      <select id="do-resident"><option value="">全体指示</option></select>
+    </div>
+    <div class="field"><label>指示内容</label>
+      <textarea id="do-content" rows="4" placeholder="医師からの指示内容..."></textarea>
+      <button class="btn-voice" onclick="startVoice('do-content',this)">🎤 音声入力</button>
+    </div>
+    <div class="field"><label>指示医師名</label>
+      <input type="text" id="do-doctor" placeholder="○○先生"></div>
+    <button class="btn-primary" onclick="saveDoctorOrder()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-doctor-order')">キャンセル</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -756,10 +870,9 @@ function saveHandovers(h){lsSet('handovers',h)}
 // ═══════════ AUTH ═══════════
 function login(){
   const sel=document.getElementById('sel-staff').value;
-  const inp=document.getElementById('inp-staff-name').value.trim();
   const names={s1:'田中 花子',s2:'山本 次郎',s3:'前原 明子',s4:'鈴木 健太',s5:'中村 由美'};
-  S.user = inp||(sel?names[sel]:'');
-  if(!S.user){toast('職員を選択または入力してください');return;}
+  S.user = sel?names[sel]:'';
+  if(!S.user){toast('職員を選択してください');return;}
   S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('scr-login').style.display='none';
   document.getElementById('app').style.display='block';
@@ -772,7 +885,6 @@ function logout(){
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
   document.getElementById('sel-staff').value='';
-  document.getElementById('inp-staff-name').value='';
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -783,16 +895,18 @@ function showScr(id){
   document.getElementById(id).classList.add('on');
   const titles={
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
-    'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理'
+    'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理',
+    'scr-handover-board':'申し送りボード'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
   back.style.display=(id==='scr-detail')?'block':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
-  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-import':'bn-imp','scr-settings':'bn-set'};
+  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
   if(id==='scr-dashboard') renderDashboard();
   if(id==='scr-residents') renderResList();
+  if(id==='scr-handover-board') renderHandoverBoard();
   if(id==='scr-settings'){
     document.getElementById('setting-user').textContent=S.user||'──';
     document.getElementById('setting-login-time').textContent=S.loginTime||'──';
@@ -893,6 +1007,7 @@ function renderDetail(){
   document.getElementById('hd-title').textContent=r.name+' 様';
   // Hero
   document.getElementById('detail-hero').innerHTML=`
+    <button onclick="openEditResident()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;z-index:5">✏️ 編集</button>
     <div class="detail-name">${r.name} 様</div>
     <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
     <div class="detail-tags">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
@@ -1164,6 +1279,128 @@ function switchManualTab(btn){
   btn.classList.add('on');
   const panels=['mt-res','mt-staff'];
   panels.forEach(id=>{document.getElementById(id).style.display=id===btn.dataset.mt?'block':'none';});
+}
+
+// ═══════════ EDIT RESIDENT ═══════════
+function openEditResident(){
+  const r=getResidents().find(x=>x.id===S.currentRes);
+  if(!r)return;
+  document.getElementById('er-name').value=r.name||'';
+  document.getElementById('er-kana').value=r.kana||'';
+  document.getElementById('er-gender').value=r.gender||'female';
+  document.getElementById('er-room').value=r.room||'';
+  document.getElementById('er-care').value=r.care||'care1';
+  document.getElementById('er-facility').value=r.facility||'かしわじま';
+  document.getElementById('er-allergy').value=r.allergy||'';
+  if(r.age&&r.age>0){
+    const approxYear=new Date().getFullYear()-r.age;
+    document.getElementById('er-birth').value=approxYear+'-01-01';
+  }
+  ['er-sv-res','er-sv-com','er-sv-sta','er-sv-vis'].forEach(id=>{
+    document.getElementById(id).checked=r.services.includes(document.getElementById(id).value);
+  });
+  document.getElementById('modal-edit-res').classList.add('on');
+}
+function saveEditResident(){
+  const res=getResidents();
+  const idx=res.findIndex(x=>x.id===S.currentRes);
+  if(idx<0)return;
+  const name=document.getElementById('er-name').value.trim();
+  if(!name){toast('氏名を入力してください');return;}
+  const services=[];
+  ['er-sv-res','er-sv-com','er-sv-sta','er-sv-vis'].forEach(id=>{
+    if(document.getElementById(id).checked)services.push(document.getElementById(id).value);
+  });
+  if(!services.length)services.push('resident');
+  const birth=document.getElementById('er-birth').value;
+  const age=birth?Math.floor((new Date()-new Date(birth))/(365.25*24*60*60*1000)):res[idx].age;
+  res[idx]={...res[idx],name,kana:document.getElementById('er-kana').value,
+    gender:document.getElementById('er-gender').value,age,
+    care:document.getElementById('er-care').value,
+    room:document.getElementById('er-room').value,
+    services,facility:document.getElementById('er-facility').value,
+    allergy:document.getElementById('er-allergy').value};
+  saveResidents(res);
+  closeModal('modal-edit-res');
+  toast('利用者情報を更新しました ✓');
+  renderDetail();
+}
+
+// ═══════════ HANDOVER BOARD ═══════════
+let S_shift='am';
+function switchShift(shift){
+  S_shift=shift;
+  document.getElementById('hb-am-btn').style.background=shift==='am'?'var(--p)':'none';
+  document.getElementById('hb-am-btn').style.color=shift==='am'?'#fff':'var(--sub)';
+  document.getElementById('hb-pm-btn').style.background=shift==='pm'?'var(--p)':'none';
+  document.getElementById('hb-pm-btn').style.color=shift==='pm'?'#fff':'var(--sub)';
+  renderHandoverBoard();
+}
+function getBoardData(){return ls('board_data')||{am:{sak:[],shot:[],doctor:[]},pm:{sak:[],shot:[],doctor:[]}};}
+function saveBoardData(d){lsSet('board_data',d);}
+function renderHandoverBoard(){
+  const d=getBoardData();
+  const shift=d[S_shift];
+  // doctor orders
+  const doEl=document.getElementById('doctor-orders-list');
+  doEl.innerHTML=shift.doctor.length?shift.doctor.map((o,i)=>`
+    <div style="background:#fff8f8;border-left:3px solid #c62828;padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:700;color:#c62828">${o.doctor||'医師'} より</div>
+      ${o.resident?`<div style="font-size:11px;color:var(--sub);margin-bottom:4px">対象: ${o.resident}</div>`:''}
+      <div style="font-size:14px;line-height:1.6">${o.content}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">${o.by} · ${o.time}</div>
+    </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">本日の医師指示はありません</div>';
+  // sak
+  renderBoardSection('hb-sak-list',shift.sak);
+  // shot
+  renderBoardSection('hb-shot-list',shift.shot);
+  // populate doctor order resident select
+  const sel=document.getElementById('do-resident');
+  sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+}
+function renderBoardSection(elId,items){
+  const el=document.getElementById(elId);
+  const priStyle={urgent:'background:#fde8e8;border-left:3px solid var(--ng)',important:'background:#fff8e1;border-left:3px solid var(--warn)',normal:'background:#f8f9fa;border-left:3px solid var(--bdr)'};
+  const priLabel={urgent:'🚨 緊急',important:'⚠ 重要',normal:'📌 通常'};
+  el.innerHTML=items.length?items.map(h=>`
+    <div style="${priStyle[h.pri]||priStyle.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px">${priLabel[h.pri]||'📌'}</div>
+      <div style="font-size:14px;line-height:1.6">${h.content}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">${h.by} · ${h.time}</div>
+    </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">申し送りはありません</div>';
+}
+function openBoardHandover(section){
+  document.getElementById('board-ho-section').value=section;
+  const labels={sak:'🏠 サ高住',shot:'🏡 小多機'};
+  document.getElementById('board-ho-title').textContent=(labels[section]||'')+(S_shift==='am'?' 朝の申し送り':' 夕の申し送り');
+  document.getElementById('bho-content').value='';
+  document.getElementById('modal-board-ho').classList.add('on');
+}
+function saveBoardHandover(){
+  const content=document.getElementById('bho-content').value.trim();
+  if(!content){toast('内容を入力してください');return;}
+  const section=document.getElementById('board-ho-section').value;
+  const pri=document.querySelector('[name=bho-pri]:checked')?.value||'normal';
+  const d=getBoardData();
+  d[S_shift][section].unshift({content,pri,by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+  saveBoardData(d);
+  closeModal('modal-board-ho');
+  toast('申し送りを保存しました ✓');
+  renderHandoverBoard();
+}
+function saveDoctorOrder(){
+  const content=document.getElementById('do-content').value.trim();
+  if(!content){toast('指示内容を入力してください');return;}
+  const d=getBoardData();
+  d[S_shift].doctor.unshift({
+    content,doctor:document.getElementById('do-doctor').value||'医師',
+    resident:document.getElementById('do-resident').value,
+    by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
+  });
+  saveBoardData(d);
+  closeModal('modal-doctor-order');
+  toast('医師指示を保存しました ✓');
+  renderHandoverBoard();
 }
 
 // ═══════════ TOAST ═══════════
