@@ -992,12 +992,15 @@ a{color:var(--p);text-decoration:none}
       <span style="font-size:11px;color:var(--sub)">各フィールドの 🎤 で個別入力も可</span>
     </div>
     <div id="fs-dictation-panel" class="dictation-panel" style="display:none">
-      <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">🎤 話してください（録音中に入力されます）</div>
-      <textarea id="fs-dictation-text" rows="4" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;resize:none;margin-bottom:8px" placeholder="例：住所は倉敷市〇〇町1-1。電話は086-000-0000。認知症は軽度。食事は一部介助で全粥。トロミあり。主治医は山田先生..."></textarea>
-      <div style="display:flex;gap:8px">
-        <button onclick="applyFsDictation()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✨ 解析・フォームに入力</button>
-        <button onclick="stopFsDictation()" style="padding:10px 14px;background:#f3f4f6;color:var(--sub);border-radius:8px;font-size:13px;font-weight:600">閉じる</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div id="fs-rec-status" style="font-size:12px;font-weight:700;color:var(--ng);display:flex;align-items:center;gap:6px">
+          <span id="fs-rec-dot" style="width:8px;height:8px;border-radius:50%;background:var(--ng);animation:pulse 1s infinite;display:inline-block"></span>
+          <span id="fs-rec-label">録音中…</span>
+        </div>
+        <button onclick="closeFsDictationPanel()" style="background:none;color:var(--sub);font-size:18px;line-height:1;padding:2px 6px;border-radius:6px" title="閉じる">✕</button>
       </div>
+      <textarea id="fs-dictation-text" rows="4" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;resize:none;margin-bottom:8px" placeholder="例：住所は倉敷市〇〇町1-1。電話は086-000-0000。認知症は軽度。食事は一部介助で全粥。トロミあり。主治医は山田先生..."></textarea>
+      <button onclick="applyFsDictation()" style="width:100%;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✨ 解析・フォームに入力</button>
       <div id="fs-dictation-result" style="margin-top:8px;font-size:12px;color:var(--ok);min-height:18px"></div>
     </div>
 
@@ -2529,22 +2532,63 @@ function addFsVoiceButtons(){
 // ── dictation / AI fill ──
 function toggleFsDictation(btn){
   const panel=document.getElementById('fs-dictation-panel');
-  const dtBtn=document.getElementById('fs-voice-main-btn');
-  if(panel.style.display==='none'){
-    panel.style.display='block';
+  const isRecording=!!recognition;
+  if(isRecording){
+    // 録音停止のみ — パネルは閉じない
+    stopVoice();
+    setFsRecStatus(false);
+    btn.textContent='🎤 まとめて音声入力';
+    btn.style.background='';btn.style.borderColor='';btn.style.color='';
+  } else {
+    // 録音開始（パネルが閉じていれば開く）
+    if(panel.style.display==='none') panel.style.display='block';
+    document.getElementById('fs-dictation-result').textContent='';
+    setFsRecStatus(true);
     btn.textContent='🔴 録音停止';
     btn.style.background='#fde8e8';btn.style.borderColor='var(--ng)';btn.style.color='var(--ng)';
-    startVoice('fs-dictation-text',{classList:{add:()=>{},remove:()=>{}},textContent:''});
-  } else {
-    stopFsDictation();
+    startVoiceContinuous('fs-dictation-text', ()=>{
+      // 音声認識が自動終了した場合もUIをリセット
+      setFsRecStatus(false);
+      btn.textContent='🎤 まとめて音声入力';
+      btn.style.background='';btn.style.borderColor='';btn.style.color='';
+    });
   }
 }
-function stopFsDictation(){
+function setFsRecStatus(recording){
+  const dot=document.getElementById('fs-rec-dot');
+  const label=document.getElementById('fs-rec-label');
+  if(!dot||!label)return;
+  if(recording){
+    dot.style.animation='pulse 1s infinite';dot.style.background='var(--ng)';
+    label.textContent='録音中…';
+  } else {
+    dot.style.animation='none';dot.style.background='var(--sub)';
+    label.textContent='録音停止中';
+    label.parentElement.style.color='var(--sub)';
+  }
+}
+function closeFsDictationPanel(){
   stopVoice();
   const panel=document.getElementById('fs-dictation-panel');
   const btn=document.getElementById('fs-voice-main-btn');
   if(panel) panel.style.display='none';
   if(btn){btn.textContent='🎤 まとめて音声入力';btn.style.background='';btn.style.borderColor='';btn.style.color='';}
+}
+function startVoiceContinuous(targetId, onEnd){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    toast('このブラウザは音声入力に対応していません');return;
+  }
+  if(recognition) stopVoice();
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+  recognition.onresult=e=>{
+    const t=[...e.results].map(r=>r[0].transcript).join('');
+    document.getElementById(targetId).value=t;
+  };
+  recognition.onerror=()=>{recognition=null;if(onEnd)onEnd();};
+  recognition.onend=()=>{recognition=null;if(onEnd)onEnd();};
+  recognition.start();
 }
 function applyFsDictation(){
   const text=document.getElementById('fs-dictation-text').value.trim();
