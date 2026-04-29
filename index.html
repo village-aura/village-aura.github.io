@@ -1569,13 +1569,23 @@ function renderAdminStaffList(){
   list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>a[1].name.localeCompare(b[1].name,'ja')).map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
-    return `<div class="setting-item" style="padding:12px 0;border-bottom:1px solid var(--bdr)">
-      <span class="si-ico">${disabled?'🔒':'👤'}</span>
-      <div class="si-body">
-        <div class="si-name">${info.name}${isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':''}</div>
-        <div class="si-desc">ID: ${info.loginId}　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
+    const curPass=getStaffPass(key);
+    return `<div style="border-bottom:1px solid var(--bdr);padding:12px 0">
+      <div class="setting-item" style="padding:0;border:none">
+        <span class="si-ico" style="font-size:18px">${disabled?'🔒':'👤'}</span>
+        <div class="si-body">
+          <div class="si-name" style="font-size:14px">${info.name}${isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':''}</div>
+          <div class="si-desc">ID: <b>${info.loginId}</b>　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
+        </div>
+        ${isMe?'<span style="font-size:11px;color:var(--sub)">──</span>':`<label class="toggle"><input type="checkbox" ${disabled?'':'checked'} onchange="toggleStaffDisabled('${key}',!this.checked)"><span class="toggle-slider"></span></label>`}
       </div>
-      ${isMe?'<span style="font-size:11px;color:var(--sub)">変更不可</span>':`<label class="toggle"><input type="checkbox" ${disabled?'':'checked'} onchange="toggleStaffDisabled('${key}',!this.checked)"><span class="toggle-slider"></span></label>`}
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <div style="font-size:11px;color:var(--sub);white-space:nowrap">PW:</div>
+        <input type="text" id="adm-pw-${key}" value="${curPass}" placeholder="新しいパスワード"
+          style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb">
+        <button onclick="adminSetPassword('${key}')"
+          style="padding:7px 12px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">変更</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1586,6 +1596,15 @@ function toggleStaffDisabled(key,disable){
   saveStaffSettings(settings);
   renderAdminStaffList();
   toast(STAFF_INFO[key].name+(disable?' を利用停止しました':' を有効化しました'));
+}
+function adminSetPassword(key){
+  const val=document.getElementById('adm-pw-'+key).value.trim();
+  if(val.length<4){toast('4文字以上で入力してください');return;}
+  const settings=getStaffSettings();
+  if(!settings[key]) settings[key]={};
+  settings[key].pass=val;
+  saveStaffSettings(settings);
+  toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓');
 }
 
 // ═══════════ NAVIGATION ═══════════
