@@ -923,7 +923,7 @@ a{color:var(--p);text-decoration:none}
           <div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>
         </div>
         <div class="ai-input-row">
-          <input class="ai-input" id="ai-input" type="text" placeholder="質問を入力…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}">
+          <input class="ai-input" id="ai-input" type="text" placeholder="質問を入力…" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendAIMessage();}">
           <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">➤</button>
         </div>
       </div>
