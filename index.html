@@ -732,6 +732,19 @@ a{color:var(--p);text-decoration:none}
         </div>
         <button onclick="logout()" style="background:var(--ng);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">ログアウト</button>
       </div>
+      <!-- パスワード変更 -->
+      <div style="padding:12px 0 4px">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔑 パスワード変更</div>
+        <input type="password" id="pw-cur" placeholder="現在のパスワード" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
+        <input type="password" id="pw-new" placeholder="新しいパスワード（4文字以上）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
+        <input type="password" id="pw-new2" placeholder="新しいパスワード（確認）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
+        <div id="pw-err" style="display:none;color:var(--ng);font-size:12px;margin-bottom:8px"></div>
+        <button onclick="changePassword()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">パスワードを変更する</button>
+      </div>
+    </div>
+    <div class="setting-group" id="admin-staff-group" style="display:none">
+      <h3>🛡 職員アカウント管理 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
+      <div id="admin-staff-list"></div>
     </div>
     <div class="setting-group">
       <h3>📥 データ登録</h3>
@@ -1436,8 +1449,13 @@ const STAFF_INFO = {
   s3:{name:'前原 明子',role:'counselor',loginId:'maehara',  pass:'1234'},
   s4:{name:'鈴木 健太',role:'care',     loginId:'suzuki',   pass:'1234'},
   s5:{name:'中村 由美',role:'nurse',    loginId:'nakamura', pass:'1234'},
-  s6:{name:'山田 一郎',role:'doctor',   loginId:'yamada',   pass:'1234'},
+  s6:{name:'山田 一郎',role:'doctor',   loginId:'yamada',   pass:'1234',admin:true},
 };
+function getStaffSettings(){return ls('staff_settings')||{};}
+function saveStaffSettings(d){lsSet('staff_settings',d);}
+function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
+function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
+function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
 const ROLE_COLORS = {
   doctor:{bg:'#c62828',label:'医師'},
   nurse:{bg:'#00796b',label:'看護師'},
@@ -1481,10 +1499,15 @@ function login(){
     return;
   }
   const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].loginId===inputId);
-  if(!staffKey||STAFF_INFO[staffKey].pass!==inputPass){
+  if(!staffKey||getStaffPass(staffKey)!==inputPass){
     errEl.textContent='IDまたはパスワードが正しくありません';
     errEl.style.display='block';
     document.getElementById('login-pass').value='';
+    return;
+  }
+  if(isStaffDisabled(staffKey)){
+    errEl.textContent='このアカウントは利用停止中です。管理者にお問い合わせください。';
+    errEl.style.display='block';
     return;
   }
   const info=STAFF_INFO[staffKey];
@@ -1506,6 +1529,63 @@ function logout(){
   document.getElementById('login-id').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').style.display='none';
+}
+
+// ═══════════ SETTINGS ═══════════
+function renderSettings(){
+  document.getElementById('setting-user').textContent=S.user||'──';
+  document.getElementById('setting-login-time').textContent=S.loginTime||'──';
+  ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pw-err').style.display='none';
+  const adminGrp=document.getElementById('admin-staff-group');
+  if(isAdmin()){
+    adminGrp.style.display='block';
+    renderAdminStaffList();
+  } else {
+    adminGrp.style.display='none';
+  }
+}
+function changePassword(){
+  const cur=document.getElementById('pw-cur').value;
+  const nw=document.getElementById('pw-new').value;
+  const nw2=document.getElementById('pw-new2').value;
+  const errEl=document.getElementById('pw-err');
+  errEl.style.display='none';
+  const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].name===S.user);
+  if(!staffKey){errEl.textContent='ユーザー情報が見つかりません';errEl.style.display='block';return;}
+  if(getStaffPass(staffKey)!==cur){errEl.textContent='現在のパスワードが正しくありません';errEl.style.display='block';return;}
+  if(nw.length<4){errEl.textContent='新しいパスワードは4文字以上にしてください';errEl.style.display='block';return;}
+  if(nw!==nw2){errEl.textContent='新しいパスワードが一致しません';errEl.style.display='block';return;}
+  const settings=getStaffSettings();
+  if(!settings[staffKey]) settings[staffKey]={};
+  settings[staffKey].pass=nw;
+  saveStaffSettings(settings);
+  ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
+  toast('パスワードを変更しました ✓');
+}
+function renderAdminStaffList(){
+  const list=document.getElementById('admin-staff-list');
+  const settings=getStaffSettings();
+  list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>a[1].name.localeCompare(b[1].name,'ja')).map(([key,info])=>{
+    const disabled=!!(settings[key]?.disabled);
+    const isMe=info.name===S.user;
+    return `<div class="setting-item" style="padding:12px 0;border-bottom:1px solid var(--bdr)">
+      <span class="si-ico">${disabled?'🔒':'👤'}</span>
+      <div class="si-body">
+        <div class="si-name">${info.name}${isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':''}</div>
+        <div class="si-desc">ID: ${info.loginId}　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
+      </div>
+      ${isMe?'<span style="font-size:11px;color:var(--sub)">変更不可</span>':`<label class="toggle"><input type="checkbox" ${disabled?'':'checked'} onchange="toggleStaffDisabled('${key}',!this.checked)"><span class="toggle-slider"></span></label>`}
+    </div>`;
+  }).join('');
+}
+function toggleStaffDisabled(key,disable){
+  const settings=getStaffSettings();
+  if(!settings[key]) settings[key]={};
+  settings[key].disabled=disable;
+  saveStaffSettings(settings);
+  renderAdminStaffList();
+  toast(STAFF_INFO[key].name+(disable?' を利用停止しました':' を有効化しました'));
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -1532,10 +1612,7 @@ function showScr(id){
   if(id==='scr-residents') renderResList();
   if(id==='scr-handover-board') renderHandoverBoard();
   if(id==='scr-schedule') renderSchedule();
-  if(id==='scr-settings'){
-    document.getElementById('setting-user').textContent=S.user||'──';
-    document.getElementById('setting-login-time').textContent=S.loginTime||'──';
-  }
+  if(id==='scr-settings') renderSettings();
   window.scrollTo(0,0);
 }
 function goBack(){showScr(S.prevScreen||'scr-residents');}
