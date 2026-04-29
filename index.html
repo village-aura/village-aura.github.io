@@ -1965,13 +1965,14 @@ function renderSchedule(){
   const scopeBtn=(k,l,rnd)=>`<button class="sch-toggle ${S.schedScope===k?'on':''}" onclick="setSchedScope('${k}')" style="border-radius:${rnd}">${l}</button>`;
   const viewBtn=(k,l,rnd)=>`<button class="sch-toggle ${S.schedView===k?'on':''}" onclick="setSchedView('${k}')" style="border-radius:${rnd}">${l}</button>`;
 
+  const isVisit=S.schedScope==='visit';
   let resSelect='';
   if(S.schedScope==='individual'){
     resSelect=`<select onchange="S.schedRid=this.value;renderSchedule()" style="padding:7px 10px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);border-radius:8px;max-width:140px;background:#fff">${res.map(r=>`<option value="${r.id}"${S.schedRid===r.id?' selected':''}>${r.name}</option>`).join('')}</select>`;
   }
 
   let navHtml='';
-  if(S.schedView==='month'){
+  if(!isVisit&&S.schedView==='month'){
     navHtml=`<div style="display:flex;align-items:center;gap:6px">
       <button onclick="navigateSchMonth(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:var(--card);font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
       <span style="font-size:13px;font-weight:700;color:var(--p);min-width:68px;text-align:center">${S.schedYear}/${String(S.schedMonth+1).padStart(2,'0')}</span>
@@ -1987,20 +1988,26 @@ function renderSchedule(){
     </div>`;
   }
 
+  const csvBtn=isVisit?`<label style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">📥 CSV読込<input type="file" accept=".csv" style="display:none" onchange="importVisitCSV(this)"></label>`:'';
+
   bar.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
-        ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0 8px 8px 0')}
+        ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0 0 0 0')}${scopeBtn('visit','訪問介護','0 8px 8px 0')}
       </div>
-      <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
+      ${!isVisit?`<div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
         ${viewBtn('month','月','8px 0 0 8px')}${viewBtn('day','日','0 8px 8px 0')}
-      </div>
-      ${resSelect}
+      </div>`:''}
+      ${resSelect}${csvBtn}
     </div>
     ${navHtml}
   `;
 
-  content.innerHTML=S.schedView==='month'?renderMonthCal():renderDayView();
+  if(isVisit){
+    content.innerHTML=renderVisitSchedule();
+  } else {
+    content.innerHTML=S.schedView==='month'?renderMonthCal():renderDayView();
+  }
 }
 
 function renderMonthCal(){
@@ -2070,6 +2077,106 @@ function renderDayView(){
       ${ev.note?`<span style="color:var(--sub)">${ev.note}</span>`:''}
     </div>`;
   }).join('')}</div>`;
+}
+
+// ── 訪問介護予定 ──
+function getVisitSched(dateStr){return ls('visit_sched_'+dateStr)||[];}
+function renderVisitSchedule(){
+  const dateStr=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
+  const visits=getVisitSched(dateStr);
+  if(!visits.length) return `<div style="padding:48px 20px;text-align:center;color:var(--sub)">
+    <div style="font-size:32px;margin-bottom:10px">📋</div>
+    <div style="font-weight:700;margin-bottom:6px">この日の訪問介護予定はありません</div>
+    <div style="font-size:12px">「📥 CSV読込」からアップロードしてください</div>
+    <div style="font-size:11px;margin-top:12px;color:#aaa">CSVフォーマット: 日付,職員,利用者,開始,終了,備考</div>
+  </div>`;
+
+  const SH=7,EH=19,TOTAL=(EH-SH)*60;
+  const toMin=t=>{const s=t.replace('：',':');const [h,m]=s.split(':').map(Number);return h*60+(m||0);};
+  const COLORS=['#1565c0','#00796b','#c62828','#6a1b9a','#e65100','#2e7d32','#ad1457','#37474f','#00838f','#558b2f'];
+  const colorMap={};let ci=0;
+
+  const staffMap={};
+  visits.forEach(v=>{
+    if(!staffMap[v.staff]) staffMap[v.staff]=[];
+    staffMap[v.staff].push(v);
+    if(!colorMap[v.resident]) colorMap[v.resident]=COLORS[ci++%COLORS.length];
+  });
+
+  const hourTicks=[...Array(EH-SH+1)].map((_,i)=>{
+    const pct=(i/(EH-SH)*100).toFixed(2);
+    return `<div style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:10px;color:var(--sub);white-space:nowrap;pointer-events:none">${SH+i}:00</div>`;
+  }).join('');
+  const gridLines=[...Array(EH-SH-1)].map((_,i)=>{
+    const pct=((i+1)/(EH-SH)*100).toFixed(2);
+    return `<div style="position:absolute;left:${pct}%;top:0;bottom:0;border-left:1px dashed #eee;pointer-events:none"></div>`;
+  }).join('');
+
+  const rows=Object.entries(staffMap).map(([staff,svs])=>{
+    const blocks=svs.map(v=>{
+      const sMin=toMin(v.start)-SH*60;
+      const eMin=toMin(v.end)-SH*60;
+      const l=Math.max(0,sMin/TOTAL*100).toFixed(2);
+      const w=Math.max(0.8,(eMin-sMin)/TOTAL*100).toFixed(2);
+      const c=colorMap[v.resident]||'#607d8b';
+      const tip=`${v.resident}様 ${v.start}〜${v.end}${v.note?' '+v.note:''}`;
+      return `<div style="position:absolute;left:${l}%;width:${w}%;top:4px;bottom:4px;background:${c};border-radius:4px;overflow:hidden" title="${tip}">
+        <div style="padding:2px 5px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.resident}</div>
+        <div style="padding:0 5px;font-size:9px;color:rgba(255,255,255,.85);white-space:nowrap">${v.start}〜${v.end}</div>
+      </div>`;
+    }).join('');
+    return `<div style="display:flex;border-bottom:1px solid var(--bdr);min-height:44px">
+      <div style="width:58px;flex-shrink:0;font-size:11px;font-weight:700;padding:4px 5px;border-right:1px solid var(--bdr);background:var(--bg);display:flex;align-items:center;word-break:break-all">${staff}</div>
+      <div style="flex:1;position:relative;min-width:0">${gridLines}${blocks}</div>
+    </div>`;
+  }).join('');
+
+  const legend=Object.entries(colorMap).map(([name,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;margin:2px 8px 2px 0"><span style="width:9px;height:9px;border-radius:3px;background:${c};flex-shrink:0"></span>${name}様</span>`).join('');
+
+  return `<div style="padding-bottom:16px">
+    <div style="overflow-x:auto">
+      <div style="min-width:540px">
+        <div style="display:flex;border-bottom:2px solid var(--bdr);background:var(--bg)">
+          <div style="width:58px;flex-shrink:0;border-right:1px solid var(--bdr)"></div>
+          <div style="flex:1;position:relative;height:22px">${hourTicks}</div>
+        </div>
+        ${rows}
+      </div>
+    </div>
+    ${legend?`<div style="padding:8px 12px;border-top:1px solid var(--bdr);line-height:2;background:var(--card)">${legend}</div>`:''}
+  </div>`;
+}
+function importVisitCSV(inp){
+  const f=inp.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{parseVisitCSV(e.target.result);inp.value='';};
+  reader.readAsText(f,'UTF-8');
+}
+function parseVisitCSV(text){
+  const lines=text.trim().split(/\r?\n/).map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+  if(lines.length<2){toast('データが見つかりません');return;}
+  const hdrs=lines[0].map(h=>h.toLowerCase());
+  const rows=lines.slice(1).filter(r=>r.some(c=>c));
+  const alias={date:['date','日付'],staff:['staff','職員','担当'],resident:['resident','利用者','氏名'],start:['start','開始','開始時間'],end:['end','終了','終了時間'],note:['note','備考','メモ']};
+  const gi=k=>hdrs.findIndex(h=>alias[k].includes(h));
+  const idx={date:gi('date'),staff:gi('staff'),resident:gi('resident'),start:gi('start'),end:gi('end'),note:gi('note')};
+  const currentDate=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
+  const byDate={};
+  rows.forEach(r=>{
+    const date=idx.date>=0?r[idx.date]:currentDate;
+    const staff=idx.staff>=0?r[idx.staff]:r[0];
+    const resident=idx.resident>=0?r[idx.resident]:r[1];
+    const start=(idx.start>=0?r[idx.start]:r[2])||'';
+    const end=(idx.end>=0?r[idx.end]:r[3])||start;
+    const note=idx.note>=0?r[idx.note]:(r[4]||'');
+    if(!staff||!resident||!start)return;
+    if(!byDate[date]) byDate[date]=[];
+    byDate[date].push({staff,resident,start,end,note});
+  });
+  let total=0;
+  Object.entries(byDate).forEach(([d,vs])=>{lsSet('visit_sched_'+d,vs);total+=vs.length;});
+  toast(`訪問介護予定 ${total}件（${Object.keys(byDate).length}日分）を読み込みました ✓`);
+  renderSchedule();
 }
 
 function setSchedView(v){S.schedView=v;renderSchedule();}
