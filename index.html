@@ -231,6 +231,59 @@ a{color:var(--p);text-decoration:none}
 .fluid-fill{height:100%;border-radius:4px;background:var(--ok);transition:width .5s}
 .fluid-fill.warn{background:var(--warn)}
 .fluid-fill.ng{background:var(--ng)}
+
+/* ── SIDEBAR ── */
+#sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15)}
+.sbn{display:block;width:100%;padding:13px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:14px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
+.sbn:hover{background:rgba(255,255,255,.1);color:#fff}
+.sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
+
+/* ── TABLET 768px ── */
+@media(min-width:768px){
+  body{max-width:none}
+  .quick-grid{grid-template-columns:repeat(4,1fr)}
+  .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
+  .res-list .res-card{margin-bottom:0}
+  .inp-grid{grid-template-columns:repeat(6,1fr)}
+  #scr-handover-board{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start}
+  #scr-handover-board .card{margin-bottom:0}
+}
+
+/* ── DESKTOP 1024px ── */
+@media(min-width:1024px){
+  body{background:#dde2ea}
+  #sidebar{display:flex}
+  #main-content-wrap{margin-left:240px}
+  .hd{display:none}
+  .bnav{display:none!important}
+  .scr{padding-bottom:32px;min-height:100vh}
+  /* login */
+  #scr-login{flex-direction:row;gap:80px;padding:0 60px}
+  .login-card{min-width:340px}
+  /* dashboard */
+  #scr-dashboard{max-width:1200px;margin:0 auto;padding:24px 24px 0}
+  .dash-date{padding-left:0;padding-top:0}
+  .alert-banner{margin-left:0;margin-right:0}
+  .quick-grid{padding:0;max-width:none}
+  .recent-list{padding:0}
+  /* resident list */
+  #scr-residents{padding:0}
+  .search-bar{top:0;padding:16px 16px 8px}
+  .res-list{grid-template-columns:repeat(3,1fr);padding:0 16px 16px}
+  /* detail 2-col */
+  .detail-content-grid{display:grid;grid-template-columns:400px 1fr;align-items:start}
+  .detail-col-left{border-right:1px solid var(--bdr)}
+  .detail-col-right{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--card)}
+  .detail-col-right .timeline-sec{padding:12px 16px}
+  .detail-col-right .timeline-sec h3{display:none}
+  .summary-row{grid-template-columns:repeat(4,1fr)}
+  /* handover board */
+  #scr-handover-board{max-width:1200px;margin:0 auto;padding:16px;gap:12px}
+  #scr-handover-board .card{margin:0}
+  /* settings / import */
+  #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
+  #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
+}
 </style>
 </head>
 <body>
@@ -257,6 +310,29 @@ a{color:var(--p);text-decoration:none}
 
 <!-- ═══════════ APP ═══════════ -->
 <div id="app" style="display:none">
+
+  <!-- SIDEBAR (desktop) -->
+  <aside id="sidebar">
+    <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15)">
+      <div style="font-size:26px">🏥</div>
+      <div style="font-size:16px;font-weight:800;margin-top:6px;letter-spacing:.02em">ケアカルテ</div>
+      <div style="font-size:10px;opacity:.65;margin-top:3px;line-height:1.4">メディケアビレッジかしわじま<br>こはる日和</div>
+    </div>
+    <nav style="flex:1;padding:8px 0;overflow-y:auto">
+      <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
+      <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
+      <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
+      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
+      <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
+    </nav>
+    <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
+      <div id="sb-user" style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.9">──</div>
+      <div id="sb-time" style="font-size:10px;opacity:.6;margin-bottom:10px"></div>
+      <button onclick="logout()" style="width:100%;padding:9px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2)">ログアウト</button>
+    </div>
+  </aside>
+
+  <div id="main-content-wrap">
 
   <!-- HEADER -->
   <header class="hd" id="hd">
@@ -324,6 +400,8 @@ a{color:var(--p);text-decoration:none}
   <!-- ─── RESIDENT DETAIL ─── -->
   <div id="scr-detail" class="scr">
     <div class="detail-hero" id="detail-hero"></div>
+    <div class="detail-content-grid">
+    <div class="detail-col-left">
     <div class="summary-row" id="summary-row"></div>
     <div id="vital-time-bar" style="text-align:right;font-size:10px;color:var(--sub);padding:2px 14px 2px"></div>
     <div id="vital-graph-card" style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
@@ -350,6 +428,8 @@ a{color:var(--p);text-decoration:none}
         <button class="inp-btn" onclick="openModal('modal-handover')"><span class="ib-ico">📣</span><span class="ib-lbl">申し送り</span></button>
       </div>
     </div>
+    </div><!-- /detail-col-left -->
+    <div class="detail-col-right">
     <div class="timeline-sec">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
         <span style="font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em">タイムライン</span>
@@ -357,6 +437,8 @@ a{color:var(--p);text-decoration:none}
       </div>
       <div id="timeline"></div>
     </div>
+    </div><!-- /detail-col-right -->
+    </div><!-- /detail-content-grid -->
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -591,6 +673,8 @@ a{color:var(--p);text-decoration:none}
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
     </button>
   </nav>
+
+  </div><!-- /main-content-wrap -->
 </div>
 
 <!-- ═══════════ MODALS ═══════════ -->
@@ -934,6 +1018,8 @@ function login(){
   S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('scr-login').style.display='none';
   document.getElementById('app').style.display='block';
+  const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
+  const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
   showScr('scr-dashboard');
   renderDashboard();
 }
@@ -962,6 +1048,9 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res'};
+  document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
+  if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
   if(id==='scr-residents') renderResList();
   if(id==='scr-handover-board') renderHandoverBoard();
