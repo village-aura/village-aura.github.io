@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ケアカルテ">
+<meta name="apple-mobile-web-app-title" content="Village Aura">
 <meta name="theme-color" content="#3D7AB5">
-<title>ケアカルテ — デモ</title>
+<title>Village Aura</title>
 <style>
 :root{
   --p:#3D7AB5;--pd:#2d5e8e;--ps:#e8f0fb;
@@ -42,9 +42,11 @@ a{color:var(--p);text-decoration:none}
 
 /* ── LOGIN ── */
 #scr-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#2d5e8e,#3D7AB5 60%,#5b9bd5);padding-bottom:0}
-.login-logo{font-size:48px;margin-bottom:12px}
-.login-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:.03em}
-.login-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:4px;margin-bottom:32px}
+.login-logo{margin-bottom:16px;display:flex;flex-direction:column;align-items:center}
+.login-logo img{max-height:90px;max-width:240px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.25))}
+.login-logo .logo-fallback{font-size:44px}
+.login-title{font-size:30px;font-weight:800;color:#fff;letter-spacing:.06em;font-family:'Helvetica Neue',sans-serif}
+.login-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:6px;margin-bottom:32px;letter-spacing:.04em}
 .login-card{background:#fff;border-radius:20px;padding:28px 24px;width:calc(100% - 40px);max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
 .login-card label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
 .login-card select,.login-card input{width:100%;padding:13px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;margin-bottom:16px;background:#fff;color:var(--txt)}
@@ -341,8 +343,11 @@ a{color:var(--p);text-decoration:none}
 
 <!-- ═══════════ LOGIN ═══════════ -->
 <div id="scr-login" class="scr on">
-  <div class="login-logo">🏥</div>
-  <div class="login-title">ケアカルテ</div>
+  <div class="login-logo">
+    <img src="facility-logo.png" alt="Village Aura" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <div class="logo-fallback" style="display:none">🏥</div>
+  </div>
+  <div class="login-title">Village Aura</div>
   <div class="login-sub">メディケアビレッジかしわじま / こはる日和</div>
   <div class="login-card">
     <label>職員を選択</label>
@@ -366,8 +371,8 @@ a{color:var(--p);text-decoration:none}
   <!-- SIDEBAR (desktop) -->
   <aside id="sidebar">
     <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15)">
-      <div style="font-size:26px">🏥</div>
-      <div style="font-size:16px;font-weight:800;margin-top:6px;letter-spacing:.02em">ケアカルテ</div>
+      <img src="facility-logo.png" alt="Village Aura" style="max-height:44px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1)" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;font-size:22px">🏥</div>
+      <div style="font-size:15px;font-weight:800;margin-top:6px;letter-spacing:.05em;font-family:'Helvetica Neue',sans-serif">Village Aura</div>
       <div style="font-size:10px;opacity:.65;margin-top:3px;line-height:1.4">メディケアビレッジかしわじま<br>こはる日和</div>
     </div>
     <nav style="flex:1;padding:8px 0;overflow-y:auto">
@@ -1236,6 +1241,19 @@ a{color:var(--p);text-decoration:none}
 <div class="sheet-modal-auto" id="modal-sch-add" onclick="closeModal('modal-sch-add',event)">
   <div class="modal-inner" onclick="event.stopPropagation()">
     <div class="sheet-title">📅 スケジュール追加</div>
+    <!-- 音声入力バー -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <button id="sch-voice-btn" onclick="toggleSchedVoice(this)" style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;flex-shrink:0">🎤 口頭で入力</button>
+      <span style="font-size:11px;color:var(--sub)">例：「山田さんの通院、明日10時から」</span>
+    </div>
+    <div id="sch-voice-panel" style="display:none;background:#f8f9fa;border:1.5px solid var(--bdr);border-radius:10px;padding:10px;margin-bottom:10px">
+      <textarea id="sch-voice-text" rows="2" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;resize:none;margin-bottom:8px" placeholder="話すか直接入力してください…"></textarea>
+      <div style="display:flex;gap:8px">
+        <button onclick="applySchedVoice()" style="flex:1;padding:9px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700">✨ AIで振り分け・入力</button>
+        <button onclick="closeSchedVoice()" style="padding:9px 12px;background:#f3f4f6;color:var(--sub);border-radius:8px;font-size:13px">閉じる</button>
+      </div>
+      <div id="sch-voice-result" style="margin-top:6px;font-size:12px;color:var(--ok);min-height:16px"></div>
+    </div>
     <div class="field"><label>利用者</label>
       <select id="sch-rid" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:#fff"></select>
     </div>
@@ -1256,8 +1274,8 @@ a{color:var(--p);text-decoration:none}
       <input type="date" id="sch-date">
     </div>
     <div class="field-row">
-      <div class="field"><label>開始時刻</label><input type="time" id="sch-start"></div>
-      <div class="field"><label>終了時刻</label><input type="time" id="sch-end"></div>
+      <div class="field"><label>開始時刻</label><input type="time" id="sch-start" step="300"></div>
+      <div class="field"><label>終了時刻</label><input type="time" id="sch-end" step="300"></div>
     </div>
     <div class="field"><label>メモ</label>
       <textarea id="sch-note" placeholder="備考..."></textarea>
@@ -1515,6 +1533,7 @@ function renderDetail(){
   // Hero
   document.getElementById('detail-hero').innerHTML=`
     <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5">
+      <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📅 予定</button>
       <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📋 書類</button>
       <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">✏️ 編集</button>
     </div>
@@ -2100,9 +2119,9 @@ function renderDayView(){
     const res=allRes[ridx];
     const color=S.schedScope==='individual'?(EVENT_COLORS[ev.type]||EVENT_COLORS.other):(RES_PALETTE[ridx%RES_PALETTE.length]||'#607d8b');
     const typeLabel={medical:'通院・医療',commute:'デイサービス',care:'ケア・入浴',family:'家族面談',rehab:'リハビリ',other:'その他'}[ev.type]||ev.type;
-    return `<div class="day-event" style="background:${color}18;border-left:4px solid ${color};color:var(--txt);margin-bottom:8px">
+    return `<div class="day-event" style="background:${color}18;border-left:4px solid ${color};color:var(--txt);margin-bottom:8px;cursor:pointer" onclick="openResFromSched('${ev.rid}')">
       <b>${ev.start?ev.start:''}${ev.end?' – '+ev.end:''} ${ev.title}</b>
-      <span style="display:block;margin-top:3px">${typeLabel}${S.schedScope==='all'&&res?' · '+res.name:''}</span>
+      <span style="display:block;margin-top:3px">${typeLabel}${res?' · <span style="color:var(--p);text-decoration:underline">'+res.name+'</span>':''}</span>
       ${ev.note?`<span style="color:var(--sub)">${ev.note}</span>`:''}
     </div>`;
   }).join('')}</div>`;
@@ -2351,6 +2370,117 @@ function saveScheduleEvent(){
   closeModal('modal-sch-add');
   toast('予定を追加しました ✓');
   renderSchedule();
+}
+
+// ── schedule cross-navigation ──
+function goToResidentSchedule(){
+  S.schedScope='individual';
+  S.schedRid=S.currentRes;
+  S.schedView='month';
+  showScr('scr-schedule');
+  renderSchedule();
+}
+function openResFromSched(rid){
+  if(!rid)return;
+  S.currentRes=rid;
+  showScr('scr-detail');
+  renderDetail();
+}
+
+// ── schedule voice input ──
+let schedVoiceRec=null;
+function toggleSchedVoice(btn){
+  const panel=document.getElementById('sch-voice-panel');
+  if(panel.style.display==='none'){
+    panel.style.display='block';
+    btn.textContent='🔴 録音停止';
+    btn.style.background='#fde8e8';btn.style.color='var(--ng)';btn.style.borderColor='var(--ng)';
+    startVoiceContinuous('sch-voice-text',()=>{
+      btn.textContent='🎤 口頭で入力';btn.style.background='';btn.style.color='';btn.style.borderColor='';
+    });
+  } else {
+    stopVoice();
+    btn.textContent='🎤 口頭で入力';btn.style.background='';btn.style.color='';btn.style.borderColor='';
+  }
+}
+function closeSchedVoice(){
+  stopVoice();
+  const panel=document.getElementById('sch-voice-panel');
+  const btn=document.getElementById('sch-voice-btn');
+  if(panel) panel.style.display='none';
+  if(btn){btn.textContent='🎤 口頭で入力';btn.style.background='';btn.style.color='';btn.style.borderColor='';}
+}
+function applySchedVoice(){
+  const text=document.getElementById('sch-voice-text').value.trim();
+  if(!text){toast('テキストがありません');return;}
+  stopVoice();
+  const d=parseSchedVoice(text);
+  const keys=Object.keys(d).filter(k=>k!=='resName');
+  if(!keys.length){document.getElementById('sch-voice-result').textContent='検出できた情報がありませんでした';return;}
+  if(d.rid) document.getElementById('sch-rid').value=d.rid;
+  if(d.title) document.getElementById('sch-title').value=d.title;
+  if(d.type) document.getElementById('sch-type').value=d.type;
+  if(d.date) document.getElementById('sch-date').value=d.date;
+  if(d.start) document.getElementById('sch-start').value=d.start;
+  if(d.end) document.getElementById('sch-end').value=d.end;
+  if(d.note) document.getElementById('sch-note').value=d.note;
+  const labels={rid:'利用者',title:'タイトル',type:'種別',date:'日付',start:'開始',end:'終了',note:'メモ'};
+  document.getElementById('sch-voice-result').textContent='✓ '+keys.map(k=>labels[k]||k).join('・')+' を入力しました';
+}
+function parseSchedVoice(text){
+  const res=getResidents();const now=new Date();
+  const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const d={};
+  // resident
+  for(const r of res){
+    const parts=r.name.replace(/　/g,' ').split(' ');
+    if(parts.some(p=>p.length>=2&&text.includes(p))){d.rid=r.id;d.resName=r.name;break;}
+  }
+  // date
+  if(text.includes('今日')||text.includes('本日')) d.date=fmt(now);
+  else if(text.match(/明日|あした/)) {const t=new Date(now);t.setDate(t.getDate()+1);d.date=fmt(t);}
+  else if(text.includes('明後日')) {const t=new Date(now);t.setDate(t.getDate()+2);d.date=fmt(t);}
+  else {
+    const DOW=['日','月','火','水','木','金','土'];
+    let found=false;
+    for(const [i,dw] of DOW.entries()){
+      const isNext=text.includes(`来週${dw}`);
+      const isThis=text.match(new RegExp(`今週${dw}|${dw}曜`));
+      if(isNext||isThis){
+        const t=new Date(now);
+        let diff=(i-t.getDay()+7)%7||7;
+        if(isNext) diff+=7;
+        t.setDate(t.getDate()+diff);
+        d.date=fmt(t);found=true;break;
+      }
+    }
+    if(!found){
+      const mMatch=text.match(/(\d{1,2})月(\d{1,2})日/);
+      if(mMatch) d.date=`${now.getFullYear()}-${String(mMatch[1]).padStart(2,'0')}-${String(mMatch[2]).padStart(2,'0')}`;
+    }
+  }
+  // time
+  const parseT=(s)=>{const m=s.match(/(\d{1,2})[時:](\d{0,2})/);if(!m)return null;let h=parseInt(m[1]);const mn=parseInt(m[2]||'0');if(text.includes('午後')&&h<12)h+=12;return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;};
+  const times=[...text.matchAll(/(\d{1,2})[時:](\d{0,2})/g)];
+  if(times[0]) d.start=parseT(times[0][0]);
+  if(times[1]) d.end=parseT(times[1][0]);
+  else if(d.start){const[h,m]=d.start.split(':').map(Number);d.end=`${String(h+1).padStart(2,'0')}:${String(m).padStart(2,'0')}`;}
+  // type & title
+  const types=[
+    {kw:/通院|病院|診察|診療|往診|受診/,type:'medical',title:'通院'},
+    {kw:/デイ|通所介護|デイサービス/,type:'commute',title:'デイサービス'},
+    {kw:/入浴|ケア|清拭|整容/,type:'care',title:'ケア・入浴'},
+    {kw:/家族|面会|面談|ご家族/,type:'family',title:'家族面談'},
+    {kw:/リハビリ|PT|OT|ST|機能訓練/,type:'rehab',title:'リハビリ'},
+    {kw:/訪問看護|訪問/,type:'medical',title:'訪問看護'},
+  ];
+  for(const {kw,type,title} of types){
+    if(text.match(kw)){d.type=type;d.title=title;break;}
+  }
+  // extract quoted or specific title
+  const qMatch=text.match(/「(.+?)」/);
+  if(qMatch) d.title=qMatch[1];
+  return d;
 }
 
 // ═══════════ VITAL GRAPH ═══════════
@@ -3013,7 +3143,7 @@ document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
 
 // ═══════════ PWA MANIFEST ═══════════
-const manifest={name:'ケアカルテ',short_name:'ケアカルテ',start_url:'.',display:'standalone',
+const manifest={name:'Village Aura',short_name:'Village Aura',start_url:'.',display:'standalone',
   background_color:'#3D7AB5',theme_color:'#3D7AB5',
   icons:[{src:'https://via.placeholder.com/192/3D7AB5/ffffff?text=C',sizes:'192x192',type:'image/png'},
          {src:'https://via.placeholder.com/512/3D7AB5/ffffff?text=C',sizes:'512x512',type:'image/png'}]};
