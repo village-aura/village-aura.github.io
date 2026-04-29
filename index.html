@@ -982,7 +982,8 @@ a{color:var(--p);text-decoration:none}
       <button class="tab on" data-fstab="fst-contact" onclick="switchFsTab(this)">連絡先</button>
       <button class="tab" data-fstab="fst-adl" onclick="switchFsTab(this)">ADL</button>
       <button class="tab" data-fstab="fst-medical" onclick="switchFsTab(this)">医療</button>
-      <button class="tab" data-fstab="fst-file" onclick="switchFsTab(this)">ファイル</button>
+      <button class="tab" data-fstab="fst-economy" onclick="switchFsTab(this)">経済</button>
+      <button class="tab" data-fstab="fst-file" onclick="switchFsTab(this)">書類</button>
     </div>
 
     <!-- まとめて音声入力 -->
@@ -1081,32 +1082,63 @@ a{color:var(--p);text-decoration:none}
         <div class="field"><label>薬物アレルギー</label><input type="text" id="fs-drug-allergy" placeholder="ペニシリン系..."></div>
         <div class="field"><label>抗血栓薬</label><input type="text" id="fs-blood-thinner" placeholder="ワーファリン等..."></div>
       </div>
-      <div class="fs-sec"><h4>主治医・担当医</h4>
+      <div class="fs-sec"><h4>かかりつけ医</h4>
         <div class="field-row">
-          <div class="field"><label>主治医</label><input type="text" id="fs-main-doctor" placeholder="○○先生"></div>
+          <div class="field"><label>医院名</label><input type="text" id="fs-family-hospital" placeholder="○○クリニック"></div>
+          <div class="field"><label>診療科</label><input type="text" id="fs-family-specialty" placeholder="内科"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>担当医師</label><input type="text" id="fs-main-doctor" placeholder="山田先生"></div>
           <div class="field"><label>TEL</label><input type="tel" id="fs-doctor-tel" placeholder="086-..."></div>
         </div>
-        <div id="fs-doctors-wrap">
-          <div class="field-row" style="margin-bottom:6px">
-            <div class="field"><label>診療科①</label><input type="text" class="fs-dept" placeholder="内科"></div>
-            <div class="field"><label>担当Dr</label><input type="text" class="fs-dr" placeholder="山田Dr"></div>
-          </div>
-          <div class="field-row" style="margin-bottom:6px">
-            <div class="field"><label>診療科②</label><input type="text" class="fs-dept" placeholder="整形外科"></div>
-            <div class="field"><label>担当Dr</label><input type="text" class="fs-dr" placeholder=""></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>診療科③</label><input type="text" class="fs-dept" placeholder=""></div>
-            <div class="field"><label>担当Dr</label><input type="text" class="fs-dr" placeholder=""></div>
-          </div>
-        </div>
+        <div class="field"><label>住所</label><input type="text" id="fs-family-doctor-address" placeholder="倉敷市..."></div>
+      </div>
+      <div class="fs-sec"><h4>現病歴・既往歴</h4>
+        <div id="fs-diseases-list"></div>
+        <button type="button" onclick="addFsDisease()" style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;margin-top:6px">＋ 疾患を追加</button>
       </div>
       <div class="field"><label>身体障害者手帳</label><input type="text" id="fs-disability" placeholder="種別・等級など..."></div>
       <div class="field"><label>注意事項</label><textarea id="fs-notes" rows="3" placeholder="特別な注意が必要な事項..."></textarea></div>
       <button class="btn-primary" onclick="saveFacesheetData()">保存</button>
     </div>
 
-    <!-- ファイルタブ -->
+    <!-- 経済タブ -->
+    <div id="fst-economy" class="tab-panel" style="padding-top:14px">
+      <div class="fs-sec"><h4>費用負担</h4>
+        <div class="field-row">
+          <div class="field"><label>負担限度額段階</label>
+            <select id="fs-burden-level">
+              <option value="">未設定</option>
+              <option value="1">第1段階</option>
+              <option value="2">第2段階</option>
+              <option value="3">第3段階</option>
+              <option value="4">第4段階</option>
+            </select>
+          </div>
+          <div class="field"><label>負担割合</label>
+            <select id="fs-burden-ratio">
+              <option value="">未設定</option>
+              <option value="1">1割</option>
+              <option value="2">2割</option>
+              <option value="3">3割</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>支払方法</label>
+          <div class="radio-group">
+            <label><input type="radio" name="fs-payment" value="transfer"> 振込</label>
+            <label><input type="radio" name="fs-payment" value="carry"> 持参</label>
+            <label><input type="radio" name="fs-payment" value="debit"> 引き落とし</label>
+          </div>
+        </div>
+      </div>
+      <div class="fs-sec"><h4>サービス利用状況</h4>
+        <div id="fs-services-wrap"></div>
+      </div>
+      <button class="btn-primary" onclick="saveFacesheetData()">保存</button>
+    </div>
+
+    <!-- 書類タブ -->
     <div id="fst-file" class="tab-panel" style="padding-top:14px">
       <div class="fs-sec"><h4>ファイル添付</h4>
         <div class="fs-file-card">
@@ -2224,9 +2256,13 @@ function getFacesheet(rid){
     height:d.height||null,weight:d.weight||null,
     vision:d.vision||'none',hearing:d.hearing||'none',language:d.language||'none',
     infection:d.infection||'',drug_allergy:d.drug_allergy||'',blood_thinner:d.blood_thinner||'',
+    family_hospital:d.family_hospital||'',family_specialty:d.family_specialty||'',
+    family_doctor_address:d.family_doctor_address||'',
     main_doctor:d.main_doctor||'',doctor_tel:d.doctor_tel||'',
-    doctors:d.doctors||[{dept:'',dr:''},{dept:'',dr:''},{dept:'',dr:''}],
+    diseases:d.diseases||[],
     disability:d.disability||'',notes:d.notes||'',
+    burden_level:d.burden_level||'',burden_ratio:d.burden_ratio||'',payment_method:d.payment_method||'',
+    service_usage:d.service_usage||{},
     pdf_name:d.pdf_name||'',pdf_date:d.pdf_date||'',
   };
 }
@@ -2290,16 +2326,19 @@ function openFacesheet(){
   document.getElementById('fs-infection').value=fs.infection;
   document.getElementById('fs-drug-allergy').value=fs.drug_allergy;
   document.getElementById('fs-blood-thinner').value=fs.blood_thinner;
+  document.getElementById('fs-family-hospital').value=fs.family_hospital;
+  document.getElementById('fs-family-specialty').value=fs.family_specialty;
+  document.getElementById('fs-family-doctor-address').value=fs.family_doctor_address;
   document.getElementById('fs-main-doctor').value=fs.main_doctor;
   document.getElementById('fs-doctor-tel').value=fs.doctor_tel;
   document.getElementById('fs-disability').value=fs.disability;
   document.getElementById('fs-notes').value=fs.notes;
-  const depts=document.querySelectorAll('.fs-dept');
-  const drs=document.querySelectorAll('.fs-dr');
-  fs.doctors.forEach((d,i)=>{
-    if(depts[i]) depts[i].value=d.dept||'';
-    if(drs[i]) drs[i].value=d.dr||'';
-  });
+  renderFsDiseases(fs.diseases);
+  // 経済タブ
+  document.getElementById('fs-burden-level').value=fs.burden_level;
+  document.getElementById('fs-burden-ratio').value=fs.burden_ratio;
+  document.querySelectorAll('input[name="fs-payment"]').forEach(r=>r.checked=(r.value===fs.payment_method));
+  renderFsServices(fs.service_usage);
   // ファイルタブ
   document.getElementById('fs-pdf-status').textContent=
     fs.pdf_name?`📄 ${fs.pdf_name}（${fs.pdf_date}）`:'アップロードされていません';
@@ -2325,9 +2364,15 @@ function saveFacesheetData(){
     rel:document.querySelectorAll('.fs-c-rel')[i]?.value||'',
     tel:document.querySelectorAll('.fs-c-tel')[i]?.value||'',
   }));
-  const depts=document.querySelectorAll('.fs-dept');
-  const drs=document.querySelectorAll('.fs-dr');
-  const doctors=[...Array(3)].map((_,i)=>({dept:depts[i]?.value||'',dr:drs[i]?.value||''}));
+  const paymentEl=document.querySelector('input[name="fs-payment"]:checked');
+  const service_usage={};
+  document.querySelectorAll('.fs-svc-item').forEach(el=>{
+    const key=el.dataset.key;
+    const enabled=el.querySelector('.fs-svc-toggle').classList.contains('on');
+    const office=el.querySelector('.fs-svc-office')?.value||'';
+    const freq=el.querySelector('.fs-svc-freq')?.value||'';
+    service_usage[key]={enabled,office,freq};
+  });
   const prev=getFacesheet(S.currentRes);
   lsFsSet(S.currentRes,{
     ...prev,
@@ -2354,12 +2399,115 @@ function saveFacesheetData(){
     infection:document.getElementById('fs-infection').value,
     drug_allergy:document.getElementById('fs-drug-allergy').value,
     blood_thinner:document.getElementById('fs-blood-thinner').value,
+    family_hospital:document.getElementById('fs-family-hospital').value,
+    family_specialty:document.getElementById('fs-family-specialty').value,
+    family_doctor_address:document.getElementById('fs-family-doctor-address').value,
     main_doctor:document.getElementById('fs-main-doctor').value,
     doctor_tel:document.getElementById('fs-doctor-tel').value,
-    doctors,disability:document.getElementById('fs-disability').value,
+    diseases:getDiseases(),
+    disability:document.getElementById('fs-disability').value,
     notes:document.getElementById('fs-notes').value,
+    burden_level:document.getElementById('fs-burden-level').value,
+    burden_ratio:document.getElementById('fs-burden-ratio').value,
+    payment_method:paymentEl?paymentEl.value:'',
+    service_usage,
   });
   toast('フェイスシートを保存しました ✓');
+}
+// ── face sheet: diseases ──
+const SERVICE_TYPES=[
+  {key:'home_care',label:'訪問介護'},{key:'home_nurse',label:'訪問看護'},
+  {key:'day_care',label:'通所介護'},{key:'day_rehab',label:'通所リハビリ'},
+  {key:'short_stay',label:'短期入所'},{key:'visit_rehab',label:'訪問リハビリ'},
+  {key:'care_manager',label:'ケアマネ'},{key:'welfare_equip',label:'福祉用具'},
+];
+function renderFsDiseases(diseases){
+  const wrap=document.getElementById('fs-diseases-list');if(!wrap)return;
+  if(!diseases||diseases.length===0){wrap.innerHTML='<div style="font-size:12px;color:var(--sub);padding:6px 0">疾患が登録されていません</div>';return;}
+  wrap.innerHTML=diseases.map((d,i)=>`
+    <div class="fs-disease-card" data-idx="${i}" style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:10px;background:#fafafa">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="display:flex;gap:6px">
+          <button type="button" class="adl-opt ${d.type!=='past'?'on':''}" onclick="toggleDiseaseType(this,'current')" data-type="current">現病</button>
+          <button type="button" class="adl-opt ${d.type==='past'?'on':''}" onclick="toggleDiseaseType(this,'past')" data-type="past">既往</button>
+        </div>
+        <button type="button" onclick="removeFsDisease(${i})" style="background:none;color:var(--ng);font-size:13px;font-weight:700;padding:2px 6px">✕ 削除</button>
+      </div>
+      <div class="field-row" style="margin-bottom:6px">
+        <div class="field"><label>疾患名</label><input type="text" class="fsd-name" value="${d.name||''}" placeholder="高血圧症"></div>
+        <div class="field"><label>発症年齢</label><input type="number" class="fsd-age" value="${d.onset_age||''}" placeholder="65" style="max-width:80px"></div>
+      </div>
+      <div class="field-row" style="margin-bottom:6px">
+        <div class="field"><label>病院名</label><input type="text" class="fsd-hospital" value="${d.hospital||''}" placeholder="○○病院"></div>
+        <div class="field"><label>担当医</label><input type="text" class="fsd-doctor" value="${d.doctor||''}" placeholder="山田Dr"></div>
+      </div>
+      <div class="field"><label>備考</label><input type="text" class="fsd-memo" value="${d.memo||''}" placeholder="治療中・経過観察など..."></div>
+    </div>`).join('');
+}
+function toggleDiseaseType(btn,type){
+  const card=btn.closest('.fs-disease-card');
+  card.querySelectorAll('.adl-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function addFsDisease(){
+  const diseases=getDiseases();
+  diseases.push({name:'',type:'current',hospital:'',doctor:'',onset_age:'',memo:''});
+  renderFsDiseases(diseases);
+  setTimeout(addFsVoiceButtons,50);
+}
+function removeFsDisease(idx){
+  const diseases=getDiseases();
+  diseases.splice(idx,1);
+  renderFsDiseases(diseases);
+}
+function getDiseases(){
+  return [...document.querySelectorAll('.fs-disease-card')].map(card=>{
+    const activeType=card.querySelector('.adl-opt.on');
+    return {
+      name:card.querySelector('.fsd-name')?.value||'',
+      type:activeType?activeType.dataset.type:'current',
+      hospital:card.querySelector('.fsd-hospital')?.value||'',
+      doctor:card.querySelector('.fsd-doctor')?.value||'',
+      onset_age:card.querySelector('.fsd-age')?.value||'',
+      memo:card.querySelector('.fsd-memo')?.value||'',
+    };
+  });
+}
+function renderFsServices(usage){
+  const wrap=document.getElementById('fs-services-wrap');if(!wrap)return;
+  wrap.innerHTML=SERVICE_TYPES.map(svc=>{
+    const u=usage[svc.key]||{};
+    const on=u.enabled?'on':'';
+    return `<div class="fs-svc-item" data-key="${svc.key}" style="border:1.5px solid var(--bdr);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${on?'8px':'0'}">
+        <button type="button" class="adl-opt fs-svc-toggle ${on}" onclick="toggleFsService(this)" style="min-width:90px">${svc.label}</button>
+        ${on?`<span style="font-size:11px;color:var(--sub)">利用中</span>`:''}
+      </div>
+      <div class="fs-svc-detail" style="display:${on?'block':'none'}">
+        <div class="field-row" style="margin-bottom:0">
+          <div class="field"><label>事業所名</label><input type="text" class="fs-svc-office" value="${u.office||''}" placeholder="○○事業所"></div>
+          <div class="field"><label>頻度</label><input type="text" class="fs-svc-freq" value="${u.freq||''}" placeholder="週3回"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleFsService(btn){
+  btn.classList.toggle('on');
+  const item=btn.closest('.fs-svc-item');
+  const detail=item.querySelector('.fs-svc-detail');
+  const indicator=btn.nextElementSibling;
+  const on=btn.classList.contains('on');
+  detail.style.display=on?'block':'none';
+  if(on){
+    if(!indicator||!indicator.classList.contains('svc-ind')){
+      const sp=document.createElement('span');sp.className='svc-ind';
+      sp.style.cssText='font-size:11px;color:var(--sub)';sp.textContent='利用中';
+      btn.insertAdjacentElement('afterend',sp);
+    }
+  } else {
+    const ind=item.querySelector('.svc-ind');if(ind)ind.remove();
+  }
 }
 // ── face sheet: per-field voice injection ──
 function addFsVoiceButtons(){
