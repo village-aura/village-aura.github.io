@@ -184,6 +184,8 @@ a{color:var(--p);text-decoration:none}
 .slider-wrap input[type=range]{flex:1;accent-color:var(--p)}
 .slider-val{min-width:30px;text-align:right;font-weight:700;font-size:16px;color:var(--p)}
 .btn-voice{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--ps);color:var(--p);border-radius:10px;font-size:14px;font-weight:600;width:100%;justify-content:center;margin-top:6px;transition:all .2s}
+.btn-voice-smart{width:100%;padding:12px;background:linear-gradient(135deg,#1565c0,var(--p));color:#fff;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-voice-smart.recording{background:linear-gradient(135deg,#b71c1c,#e53935);animation:pulse 1s infinite}
 .btn-voice.recording{background:#fde8e8;color:var(--ng);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 .checkbox-list{display:flex;flex-direction:column;gap:6px}
@@ -808,6 +810,7 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div class="sheet-title">🌡️ バイタル入力</div>
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
+    <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力（例：血圧130の80 脈72 体温36.5 SpO2 98）</button>
     <div class="field-row">
       <div class="field"><label>収縮期血圧 mmHg</label><input type="number" id="v-sys" placeholder="130"></div>
       <div class="field"><label>拡張期血圧 mmHg</label><input type="number" id="v-dia" placeholder="80"></div>
@@ -838,6 +841,7 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div class="sheet-title">🍚 食事・飲水</div>
     <div class="sheet-sub" id="meal-sub">利用者名 様</div>
+    <button id="vs-btn-meal" class="btn-voice-smart" onclick="startVoiceSmart('meal')">🎤 音声で一括入力（例：昼食 主食8割 副食7割 水分200）</button>
     <div class="field"><label>食事区分</label>
       <div class="radio-group">
         <label><input type="radio" name="meal-type" value="breakfast" checked> 朝食</label>
@@ -876,6 +880,7 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">💧 排泄記録</div>
+    <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力（例：排尿あり普通量 軟便あり）</button>
     <div class="field"><label>種別</label>
       <div class="radio-group">
         <label><input type="radio" name="ex-type" value="urine" checked> 排尿</label>
@@ -1925,10 +1930,9 @@ function openModal(id){
         'modal-meal':'実施日時','modal-excretion':'実施日時','modal-chrono':'実施日時'
       }[id]||'実施日時';
       el.innerHTML=`<span class="ts-label">🕐 ${tsLabel}</span><div class="ts-tabs"><button class="ts-tab on" onclick="setTsMode(this,'now')">現在時刻</button><button class="ts-tab" onclick="setTsMode(this,'custom')">時刻を指定</button></div><input type="datetime-local" class="ts-custom-input" value="${localIso}" style="display:none">`;
-      const sub=sheet.querySelector('.sheet-sub');
-      const title=sheet.querySelector('.sheet-title');
-      const anchor=sub||title;
-      if(anchor)anchor.after(el);else sheet.prepend(el);
+      const vsBtn=sheet.querySelector('.btn-voice-smart');
+      if(vsBtn)vsBtn.before(el);
+      else{const sub=sheet.querySelector('.sheet-sub'),title=sheet.querySelector('.sheet-title');(sub||title||sheet).after?.(el)||sheet.prepend(el);}
     }
   }
 }
@@ -1951,6 +1955,8 @@ function closeModal(id,e){
   if(e&&e.target!==document.getElementById(id))return;
   document.getElementById(id).classList.remove('on');
   stopVoice();
+  const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
+  if(vsBtn){vsBtn.classList.remove('recording');vsBtn.textContent='🎤 音声で一括入力';}
 }
 function saveRecord(type){
   let data={};
@@ -2021,6 +2027,97 @@ function addHandover(rid,content,cat='other',pri='normal'){
 }
 
 // ═══════════ VOICE INPUT ═══════════
+// ── VOICE SMART PARSER ──
+function startVoiceSmart(type){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){toast('このブラウザは音声入力に対応していません');return;}
+  const btn=document.getElementById('vs-btn-'+type);
+  if(recognition){stopVoice();if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='ja-JP';recognition.continuous=false;recognition.interimResults=true;
+  if(btn){btn.classList.add('recording');btn.textContent='🔴 認識中… もう一度タップで停止';}
+  let finalText='';
+  recognition.onresult=e=>{
+    finalText=[...e.results].map(r=>r[0].transcript).join('');
+    if(btn)btn.textContent='🔴「'+finalText+'」';
+  };
+  recognition.onerror=()=>{stopVoice();if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}toast('音声認識エラー');};
+  recognition.onend=()=>{
+    recognition=null;
+    if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
+    if(finalText)applyVoiceParsed(type,finalText);
+  };
+  recognition.start();
+}
+function parseVitalFromText(t){
+  const r={};
+  const bp=t.match(/(?:血圧|BP)\s*(\d+)\s*[\/のと]\s*(\d+)/)||t.match(/上\s*(?:が|は)?\s*(\d+)[^\d]{0,6}下\s*(?:が|は)?\s*(\d+)/);
+  if(bp){r.sys=bp[1];r.dia=bp[2];}
+  else{
+    const s=t.match(/(?:収縮|上)\s*(?:が|は)?\s*(\d+)/);const d=t.match(/(?:拡張|下)\s*(?:が|は)?\s*(\d+)/);
+    if(s)r.sys=s[1];if(d)r.dia=d[1];
+  }
+  const pm=t.match(/(?:脈拍|脈|HR)\s*(?:が|は)?\s*(\d+)/);if(pm)r.pulse=pm[1];
+  const tm=t.match(/(?:体温|BT)\s*(?:が|は)?\s*(\d+\.?\d*)/);if(tm)r.temp=tm[1];
+  const sm=t.match(/(?:SpO2|spo2|酸素|サチ)\s*(?:が|は)?\s*(\d+)/i);if(sm)r.spo2=sm[1];
+  if(t.includes('清明'))r.cons='alert';else if(t.includes('傾眠'))r.cons='drowsy';else if(t.includes('昏迷'))r.cons='stupor';
+  return r;
+}
+function parseMealFromText(t){
+  const r={};
+  if(t.match(/朝食|朝/))r.mtype='breakfast';
+  else if(t.match(/昼食|昼/))r.mtype='lunch';
+  else if(t.match(/夕食|夕/))r.mtype='dinner';
+  else if(t.match(/おやつ|間食/))r.mtype='snack';
+  else if(t.match(/10時|十時/))r.mtype='morning_snack';
+  if(t.match(/完食|全量|全部/)){r.staple=10;r.side=10;}
+  else if(t.match(/半分/)){r.staple=5;r.side=5;}
+  else{
+    const sm=t.match(/主食\s*(\d+)\s*割/)||t.match(/ご飯\s*(\d+)\s*割/);if(sm)r.staple=+sm[1];
+    const sd=t.match(/副食\s*(\d+)\s*割/)||t.match(/おかず\s*(\d+)\s*割/);if(sd)r.side=+sd[1];
+  }
+  const fm=t.match(/水分\s*(\d+)/)||t.match(/(\d+)\s*(?:ml|ミリ)/);if(fm)r.fluid=+fm[1];
+  return r;
+}
+function parseExcretionFromText(t){
+  const r={};
+  const hasU=t.match(/排尿|尿|小便|おしっこ/),hasS=t.match(/排便|便|大便/);
+  if(hasU&&hasS)r.etype='both';else if(hasS)r.etype='stool';else if(hasU)r.etype='urine';
+  if(t.match(/多量|多い/))r.urine='large';else if(t.match(/少量|少ない/))r.urine='small';else if(t.match(/なし/))r.urine='none';else if(hasU)r.urine='normal';
+  if(t.match(/水様|下痢/))r.stool='liquid';else if(t.match(/硬便|硬い/))r.stool='hard';else if(t.match(/軟便|柔らかい|やわらかい/))r.stool='△';else if(t.match(/普通便|普通/)&&hasS)r.stool='○';
+  if(t.match(/ポータブル/))r.portable=true;
+  if(t.match(/失禁/))r.incon=true;
+  if(t.match(/下剤/))r.lax=true;
+  return r;
+}
+function applyVoiceParsed(type,text){
+  const labels=[];
+  if(type==='vital'){
+    const p=parseVitalFromText(text);
+    if(p.sys){document.getElementById('v-sys').value=p.sys;labels.push('収縮期血圧');}
+    if(p.dia){document.getElementById('v-dia').value=p.dia;labels.push('拡張期血圧');}
+    if(p.pulse){document.getElementById('v-pulse').value=p.pulse;labels.push('脈拍');}
+    if(p.temp){document.getElementById('v-temp').value=p.temp;labels.push('体温');}
+    if(p.spo2){document.getElementById('v-spo2').value=p.spo2;labels.push('SpO2');}
+    if(p.cons){document.querySelectorAll('[name=consciousness]').forEach(r=>r.checked=(r.value===p.cons));labels.push('意識');}
+  }else if(type==='meal'){
+    const p=parseMealFromText(text);
+    if(p.mtype){document.querySelectorAll('[name=meal-type]').forEach(r=>r.checked=(r.value===p.mtype));labels.push('食事区分');}
+    if(p.staple!=null){document.getElementById('staple-sl').value=p.staple;document.getElementById('staple-lbl').textContent=p.staple+'割';labels.push('主食');}
+    if(p.side!=null){document.getElementById('side-sl').value=p.side;document.getElementById('side-lbl').textContent=p.side+'割';labels.push('副食');}
+    if(p.fluid){document.getElementById('m-fluid').value=p.fluid;labels.push('水分');}
+  }else if(type==='excretion'){
+    const p=parseExcretionFromText(text);
+    if(p.etype){document.querySelectorAll('[name=ex-type]').forEach(r=>r.checked=(r.value===p.etype));labels.push('種別');}
+    if(p.urine){document.getElementById('ex-urine').value=p.urine;labels.push('排尿');}
+    if(p.stool){document.getElementById('ex-stool').value=p.stool;labels.push('排便');}
+    if(p.portable){document.getElementById('ex-portable').checked=true;labels.push('ポータブル');}
+    if(p.incon){document.getElementById('ex-incontinent').checked=true;labels.push('失禁');}
+    if(p.lax){document.getElementById('ex-laxative').checked=true;labels.push('下剤');}
+  }
+  toast(labels.length?labels.join('・')+' を自動入力 ✓':'数値を認識できませんでした。もう一度お試しください');
+}
+
 let recognition=null;
 function startVoice(targetId,btn){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
