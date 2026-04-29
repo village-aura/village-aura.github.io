@@ -1383,6 +1383,57 @@ const INIT_SCHEDULES = [
   {id:'ev11',rid:'r1',title:'訪問診療',type:'medical',date:'2026-05-06',start:'10:00',end:'11:00',note:''},
   {id:'ev12',rid:'r10',title:'デイサービス',type:'commute',date:'2026-04-29',start:'09:00',end:'17:00',note:''},
 ];
+const INIT_VISIT_SCHED=(()=>{
+  const ds=delta=>{const d=new Date();d.setDate(d.getDate()+delta);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+  const base=[
+    {staff:'山本 次郎',resident:'伊藤 次郎',  start:'08:30',end:'09:30',note:'身体介護・起床介助'},
+    {staff:'鈴木 健太',resident:'中村 美子',  start:'09:00',end:'10:00',note:'身体介護・入浴介助'},
+    {staff:'中村 由美',resident:'伊藤 次郎',  start:'10:30',end:'11:00',note:'訪問看護・バイタル確認'},
+    {staff:'山本 次郎',resident:'佐藤 幸子',  start:'11:00',end:'12:00',note:'生活援助・掃除・調理'},
+    {staff:'鈴木 健太',resident:'鈴木 一郎',  start:'13:30',end:'14:30',note:'身体介護・リハビリ補助'},
+    {staff:'中村 由美',resident:'中村 美子',  start:'15:30',end:'16:00',note:'訪問看護・服薬・血圧確認'},
+    {staff:'山本 次郎',resident:'伊藤 次郎',  start:'17:00',end:'17:30',note:'身体介護・就寝準備'},
+  ];
+  return {
+    [ds(-2)]:base,
+    [ds(-1)]:[
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'08:30',end:'09:30',note:'身体介護・起床介助'},
+      {staff:'鈴木 健太',resident:'中村 美子',  start:'09:30',end:'10:30',note:'身体介護・入浴介助'},
+      {staff:'山本 次郎',resident:'佐藤 幸子',  start:'10:30',end:'11:30',note:'生活援助・掃除・洗濯'},
+      {staff:'中村 由美',resident:'伊藤 次郎',  start:'11:00',end:'11:30',note:'訪問看護・褥瘡処置'},
+      {staff:'鈴木 健太',resident:'鈴木 一郎',  start:'14:00',end:'15:00',note:'身体介護・歩行訓練補助'},
+      {staff:'中村 由美',resident:'中村 美子',  start:'15:30',end:'16:00',note:'訪問看護・服薬確認'},
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'17:30',end:'18:00',note:'身体介護・就寝準備'},
+    ],
+    [ds(0)]:base,
+    [ds(1)]:[
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'08:30',end:'09:30',note:'身体介護・起床介助'},
+      {staff:'鈴木 健太',resident:'中村 美子',  start:'09:00',end:'10:00',note:'身体介護・入浴介助'},
+      {staff:'中村 由美',resident:'伊藤 次郎',  start:'10:30',end:'11:00',note:'訪問看護・バイタル確認'},
+      {staff:'山本 次郎',resident:'佐藤 幸子',  start:'11:30',end:'12:30',note:'生活援助・掃除・調理'},
+      {staff:'鈴木 健太',resident:'鈴木 一郎',  start:'13:30',end:'14:30',note:'身体介護・リハビリ補助'},
+      {staff:'中村 由美',resident:'中村 美子',  start:'15:30',end:'16:00',note:'訪問看護・服薬・血圧確認'},
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'17:00',end:'17:30',note:'身体介護・就寝準備'},
+    ],
+    [ds(2)]:[
+      {staff:'鈴木 健太',resident:'伊藤 次郎',  start:'08:30',end:'09:30',note:'身体介護・起床介助'},
+      {staff:'山本 次郎',resident:'中村 美子',  start:'10:00',end:'11:00',note:'身体介護・入浴介助'},
+      {staff:'中村 由美',resident:'伊藤 次郎',  start:'11:00',end:'11:30',note:'訪問看護・バイタル確認'},
+      {staff:'鈴木 健太',resident:'鈴木 一郎',  start:'13:30',end:'14:30',note:'身体介護・リハビリ補助'},
+      {staff:'中村 由美',resident:'中村 美子',  start:'15:30',end:'16:00',note:'訪問看護・服薬確認'},
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'17:00',end:'17:30',note:'身体介護・就寝準備'},
+    ],
+    [ds(3)]:[
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'08:30',end:'09:30',note:'身体介護・起床介助'},
+      {staff:'鈴木 健太',resident:'中村 美子',  start:'09:00',end:'10:00',note:'身体介護・入浴介助'},
+      {staff:'山本 次郎',resident:'佐藤 幸子',  start:'10:00',end:'11:00',note:'生活援助・掃除'},
+      {staff:'中村 由美',resident:'伊藤 次郎',  start:'11:00',end:'11:30',note:'訪問看護・褥瘡処置'},
+      {staff:'鈴木 健太',resident:'鈴木 一郎',  start:'13:30',end:'14:30',note:'身体介護・リハビリ補助'},
+      {staff:'中村 由美',resident:'中村 美子',  start:'15:30',end:'16:00',note:'訪問看護・服薬確認'},
+      {staff:'山本 次郎',resident:'伊藤 次郎',  start:'17:00',end:'17:30',note:'身体介護・就寝準備'},
+    ],
+  };
+})();
 const STAFF_INFO = {
   s1:{name:'田中 花子',role:'nurse'},
   s2:{name:'山本 次郎',role:'care'},
@@ -2219,7 +2270,7 @@ function renderDayView(){
 }
 
 // ── 訪問介護予定 ──
-function getVisitSched(dateStr){return ls('visit_sched_'+dateStr)||[];}
+function getVisitSched(dateStr){return ls('visit_sched_'+dateStr)||INIT_VISIT_SCHED[dateStr]||[];}
 
 function renderVisitMonthCal(){
   const year=S.schedYear,month=S.schedMonth;
@@ -3213,6 +3264,7 @@ function resetDemo(){
   if(!confirm('デモデータをリセットしますか？'))return;
   localStorage.removeItem('residents');localStorage.removeItem('records');localStorage.removeItem('handovers');
   localStorage.removeItem('schedules');localStorage.removeItem('board_data2');
+  Object.keys(localStorage).filter(k=>k.startsWith('visit_sched_')).forEach(k=>localStorage.removeItem(k));
   toast('リセットしました');renderDashboard();
 }
 
