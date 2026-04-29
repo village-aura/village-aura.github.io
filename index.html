@@ -350,6 +350,7 @@ a{color:var(--p);text-decoration:none}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
+  .sch-bar{top:0}
   .sch-fab{bottom:20px}
 }
 </style>
@@ -2198,6 +2199,23 @@ function renderSchedule(){
   } else {
     content.innerHTML=S.schedView==='month'?renderMonthCal():renderDayView();
   }
+  // ガントチャート（訪問介護・日次）はバーとの重なりを防ぐため独立スクロールに固定
+  requestAnimationFrame(()=>{
+    const hdEl=document.getElementById('hd');
+    const bnavEl=document.querySelector('.bnav');
+    const hdH=(hdEl&&hdEl.offsetHeight)||0;
+    const barH=bar.offsetHeight;
+    const bnavH=(bnavEl&&bnavEl.offsetHeight)||0;
+    if(isVisit&&S.schedView==='day'){
+      content.style.height=(window.innerHeight-hdH-barH-bnavH)+'px';
+      content.style.overflowY='auto';
+      content.style.overscrollBehavior='contain';
+    } else {
+      content.style.height='';
+      content.style.overflowY='';
+      content.style.overscrollBehavior='';
+    }
+  });
 }
 
 function renderMonthCal(){
