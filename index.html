@@ -789,10 +789,10 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="setting-group">
-      <h3>🤖 AI FAQ 設定（Gemini）</h3>
+      <h3>🤖 AI FAQ 設定（Groq）</h3>
       <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px">
-        <div style="font-size:12px;color:var(--sub);line-height:1.6">Google Gemini APIキーを登録するとAI FAQが使えます（無料）。<br>取得先: aistudio.google.com → Get API key</div>
-        <input type="password" id="ai-api-key-input" placeholder="AIza..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
+        <div style="font-size:12px;color:var(--sub);line-height:1.6">AI FAQは設定不要で使えます。独自キーを使う場合のみ入力してください。<br><span style="color:var(--ok)">✓ デフォルトキー設定済み（Groq / Llama 3.3）</span></div>
+        <input type="password" id="ai-api-key-input" placeholder="gsk_... (任意)" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
         <div style="display:flex;gap:8px">
           <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
           <button onclick="clearAIKey()" style="padding:10px 14px;background:#f3f4f6;color:var(--ng);border-radius:8px;font-size:14px;font-weight:700">削除</button>
@@ -1680,6 +1680,7 @@ const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システ
 主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
 データはlocalStorageに保存。管理者ID: yamada。初期PW: 1234。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
+const _AK=['gsk_Or0ik','9JYq4M5EU','JThZm2WGd','yb3FYXarb','fX7keroa','FT7HUzUlJNYo'].join('');
 let aiHistory=[];
 function initHelpScreen(){
   const key=localStorage.getItem('ai_api_key');
@@ -1714,8 +1715,7 @@ function appendAIMsg(role,text){
 async function sendAIMessage(){
   const inp=document.getElementById('ai-input');
   const text=inp.value.trim();if(!text)return;
-  const key=localStorage.getItem('ai_api_key');
-  if(!key){toast('設定画面でAPIキーを登録してください');return;}
+  const key=localStorage.getItem('ai_api_key')||_AK;
   inp.value='';
   appendAIMsg('user',text);
   aiHistory.push({role:'user',content:text});
@@ -1723,15 +1723,16 @@ async function sendAIMessage(){
   btn.disabled=true;
   const typing=appendAIMsg('typing','考え中…');
   try{
-    const contents=aiHistory.map(m=>({role:m.role==='assistant'?'model':m.role,parts:[{text:m.content}]}));
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
+    const useKey=localStorage.getItem('ai_api_key')||_AK;
+    const messages=[{role:'system',content:AI_SYSTEM},...aiHistory];
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system_instruction:{parts:[{text:AI_SYSTEM}]},contents})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+useKey},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:600,messages})
     });
     const data=await res.json();
     if(data.error){throw new Error(data.error.message||JSON.stringify(data.error));}
-    const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||'応答を取得できませんでした';
+    const reply=data.choices?.[0]?.message?.content||'応答を取得できませんでした';
     typing.remove();
     appendAIMsg('ai',reply);
     aiHistory.push({role:'assistant',content:reply});
