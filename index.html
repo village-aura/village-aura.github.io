@@ -375,12 +375,12 @@ a{color:var(--p);text-decoration:none}
       <label>職員を選択</label>
       <select id="sel-staff">
         <option value="">── 選択してください ──</option>
-        <option value="s1">田中 花子（看護師）</option>
-        <option value="s2">山本 次郎（介護士）</option>
-        <option value="s3">前原 明子（相談員）</option>
         <option value="s4">鈴木 健太（介護士）</option>
+        <option value="s1">田中 花子（看護師）</option>
         <option value="s5">中村 由美（看護師）</option>
+        <option value="s3">前原 明子（相談員）</option>
         <option value="s6">山田 一郎（医師）</option>
+        <option value="s2">山本 次郎（介護士）</option>
       </select>
       <button class="btn-login" onclick="login()">ログイン</button>
       <div class="login-demo">📱 デモ版 — データはこの端末にのみ保存されます</div>
@@ -443,9 +443,9 @@ a{color:var(--p);text-decoration:none}
         <span class="qi">👤</span>
         <div><div class="ql">利用者一覧</div><div class="qs" id="q-count">-- 名</div></div>
       </button>
-      <button class="quick-btn" onclick="showScr('scr-import')">
-        <span class="qi">📥</span>
-        <div><div class="ql">データ登録</div><div class="qs">CSV / 手入力</div></div>
+      <button class="quick-btn" onclick="showScr('scr-schedule')">
+        <span class="qi">📅</span>
+        <div><div class="ql">スケジュール</div><div class="qs" id="q-sched-today">本日の予定</div></div>
       </button>
       <button class="quick-btn" onclick="showScr('scr-handover-board')">
         <span class="qi">📣</span>
@@ -455,6 +455,10 @@ a{color:var(--p);text-decoration:none}
         <span class="qi">📋</span>
         <div><div class="ql">業務日誌</div><div class="qs">施設単位記録</div></div>
       </button>
+    </div>
+    <div id="dash-urgent-sec" style="display:none">
+      <div class="sec-head">🚨 要注目</div>
+      <div class="recent-list" id="dash-urgent"></div>
     </div>
     <div class="sec-head">直近の記録</div>
     <div class="recent-list" id="recent-list"></div>
@@ -731,6 +735,17 @@ a{color:var(--p);text-decoration:none}
           <div class="si-desc">ログイン日時: <span id="setting-login-time"></span></div>
         </div>
         <button onclick="logout()" style="background:var(--ng);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">ログアウト</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <h3>📥 データ登録</h3>
+      <div class="setting-item" onclick="showScr('scr-import')" style="cursor:pointer">
+        <span class="si-ico">📥</span>
+        <div class="si-body">
+          <div class="si-name">利用者・職員 登録</div>
+          <div class="si-desc">CSVインポート・手動入力でデータを登録・管理</div>
+        </div>
+        <span style="font-size:18px;color:var(--sub)">›</span>
       </div>
     </div>
     <div class="setting-group">
@@ -1475,6 +1490,41 @@ function renderDashboard(){
   const noVital=res.filter(r=>!vitalToday.has(r.id));
   document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
   document.getElementById('alert-names').textContent=noVital.slice(0,3).map(r=>r.name).join('・')+(noVital.length>3?'…':'');
+  // 要注目：準緊急以上の申し送り・経時記録（直近7日）
+  const sevenAgo=new Date(now.getTime()-7*24*3600*1000);
+  const urgentRecs=recs.filter(r=>{
+    const pri=r.data.priority;
+    return (r.type==='handover'||r.type==='chrono')&&(pri==='urgent'||pri==='important')&&new Date(r.ts)>=sevenAgo;
+  }).sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,6);
+  const priColor={urgent:'var(--ng)',important:'var(--warn)'};
+  const priLabel={urgent:'緊急',important:'重要'};
+  const urgentSec=document.getElementById('dash-urgent-sec');
+  if(urgentRecs.length){
+    urgentSec.style.display='block';
+    document.getElementById('dash-urgent').innerHTML=urgentRecs.map(r=>{
+      const res2=getResidents().find(x=>x.id===r.rid)||{name:'不明'};
+      const t=new Date(r.ts);
+      const dateStr=t.toDateString()===todayStr?'今日':t.toLocaleDateString('ja-JP',{month:'short',day:'numeric'});
+      const timeStr=t.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+      const pc=priColor[r.data.priority]||'var(--sub)';
+      const pl=priLabel[r.data.priority]||'';
+      const ico=r.type==='handover'?'📣':'📝';
+      return `<div class="recent-item" style="border-left:3px solid ${pc}" onclick="openResident('${r.rid}')">
+        <span class="recent-ico">${ico}</span>
+        <div class="recent-body">
+          <b>${res2.name}様</b>
+          <span style="display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:wrap">
+            <span style="background:${pc};color:#fff;font-size:9px;font-weight:700;padding:1px 7px;border-radius:20px;flex-shrink:0">${pl}</span>
+            <span>${(r.data.content||'').substring(0,36)}${(r.data.content||'').length>36?'…':''}</span>
+          </span>
+        </div>
+        <span class="recent-time">${dateStr} ${timeStr}</span>
+      </div>`;
+    }).join('');
+  } else {
+    urgentSec.style.display='none';
+  }
+  // 直近の記録（全種類・最新5件）
   const recent=recs.slice().sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,5);
   const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣'};
   const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り'};
@@ -1490,8 +1540,25 @@ function renderDashboard(){
     </div>`;
   }).join('')||'<div class="empty"><div class="e-ico">📋</div><p>今日の記録はまだありません</p></div>';
 }
+function vAbnormal(key,val){
+  if(val===undefined||val===null||val==='') return false;
+  const v=parseFloat(val);
+  if(key==='sys') return v<90||v>140;
+  if(key==='dia') return v<40||v>85;
+  if(key==='pulse') return v<50||v>100;
+  if(key==='temp') return v<35.5||v>37.2;
+  if(key==='spo2') return v<=94;
+  return false;
+}
+function vSpan(key,val){
+  const ng=vAbnormal(key,val);
+  return ng?`<span style="color:var(--ng);font-weight:700">${val}</span>`:(val||'?');
+}
 function summarizeRecord(r){
-  if(r.type==='vital')return `BP:${r.data.sys||'?'}/${r.data.dia||'?'} P:${r.data.pulse||'?'} T:${r.data.temp||'?'}`;
+  if(r.type==='vital'){
+    const d=r.data;
+    return `BP:${vSpan('sys',d.sys)}/${vSpan('dia',d.dia)} P:${vSpan('pulse',d.pulse)} T:${vSpan('temp',d.temp)}℃ SpO2:${vSpan('spo2',d.spo2)}%`;
+  }
   if(r.type==='meal')return `${mealLabel(r.data.mtype)} 主:${r.data.staple}割 水:${r.data.fluid||0}ml`;
   if(r.type==='excretion')return `${r.data.etype==='urine'?'排尿':r.data.etype==='stool'?'排便':'排尿+排便'}`;
   if(r.type==='chrono')return (r.data.content||'').substring(0,30)+'...';
@@ -1515,7 +1582,7 @@ function renderResList(){
     const matchQ=!q||r.name.toLowerCase().includes(q)||r.kana.toLowerCase().includes(q);
     const matchF=S.filter==='all'||r.services.includes(S.filter);
     return matchQ&&matchF;
-  });
+  }).sort((a,b)=>a.kana.localeCompare(b.kana,'ja'));
   const recs=getRecords();
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
@@ -1571,9 +1638,10 @@ function renderDetail(){
   const latestVital=todayRecs.filter(rc=>rc.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
   const fluidToday=todayRecs.filter(rc=>rc.type==='meal').reduce((s,rc)=>s+(rc.data.fluid||0),0);
   const latestWeight=recs.filter(rc=>rc.type==='weight').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
-  const bpClass=latestVital?(latestVital.data.sys>=160||latestVital.data.sys<90?'warn':'ok'):'warn';
-  const tempClass=latestVital?(latestVital.data.temp>=37.5?'warn':latestVital.data.temp<36?'warn':'ok'):'warn';
-  const spo2Class=latestVital?(latestVital.data.spo2<95?'warn':'ok'):'warn';
+  const bpClass=latestVital?(vAbnormal('sys',latestVital.data.sys)||vAbnormal('dia',latestVital.data.dia)?'warn':'ok'):'warn';
+  const pulseClass=latestVital?(vAbnormal('pulse',latestVital.data.pulse)?'warn':'ok'):'warn';
+  const tempClass=latestVital?(vAbnormal('temp',latestVital.data.temp)?'warn':'ok'):'warn';
+  const spo2Class=latestVital?(vAbnormal('spo2',latestVital.data.spo2)?'warn':'ok'):'warn';
   const vitalTime=latestVital?new Date(latestVital.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
   document.getElementById('summary-row').innerHTML=`
     <div class="sum-card">
@@ -1583,17 +1651,17 @@ function renderDetail(){
     </div>
     <div class="sum-card">
       <div style="font-size:10px;color:#43a047;font-weight:700;margin-bottom:2px">💓 脈拍</div>
-      <div class="sum-val" style="font-size:15px;color:#43a047">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
+      <div class="sum-val ${pulseClass}" style="font-size:15px">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
       <div class="sum-lbl">回/分${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
     <div class="sum-card">
       <div style="font-size:10px;color:#e53935;font-weight:700;margin-bottom:2px">🌡️ 体温</div>
-      <div class="sum-val ${tempClass}" style="font-size:15px;color:#e53935">${latestVital&&latestVital.data.temp?latestVital.data.temp:'──'}</div>
+      <div class="sum-val ${tempClass}" style="font-size:15px">${latestVital&&latestVital.data.temp?latestVital.data.temp:'──'}</div>
       <div class="sum-lbl">℃${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
     <div class="sum-card">
       <div style="font-size:10px;color:#9c27b0;font-weight:700;margin-bottom:2px">🫁 SpO2</div>
-      <div class="sum-val ${spo2Class}" style="font-size:15px;color:#9c27b0">${latestVital&&latestVital.data.spo2?latestVital.data.spo2:'──'}</div>
+      <div class="sum-val ${spo2Class}" style="font-size:15px">${latestVital&&latestVital.data.spo2?latestVital.data.spo2:'──'}</div>
       <div class="sum-lbl">%${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
   `;
