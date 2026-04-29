@@ -55,7 +55,7 @@ a{color:var(--p);text-decoration:none}
 @keyframes orbF3{0%{transform:translate(-50%,-50%) scale(1)}100%{transform:translate(-50%,-50%) scale(1.4)}}
 .login-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;padding:60px 20px 44px;gap:38px}
 .login-brand{display:flex;flex-direction:column;align-items:center}
-.login-logo-img{max-height:86px;max-width:220px;object-fit:contain;filter:brightness(0) invert(1) drop-shadow(0 0 18px rgba(255,255,255,.22));margin-bottom:24px}
+.login-logo-img{max-height:80px;max-width:210px;object-fit:contain;background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:12px 22px;box-shadow:0 4px 22px rgba(0,0,0,.22);margin-bottom:24px}
 .logo-fallback-lg{font-size:52px;margin-bottom:24px}
 .login-title{font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:800;color:#fff;letter-spacing:.22em;text-transform:uppercase;text-shadow:0 2px 28px rgba(61,122,181,.55)}
 .login-sub-fac{font-size:12px;color:rgba(255,255,255,.6);letter-spacing:.06em;margin-top:11px;font-weight:400;text-align:center;line-height:1.6}
@@ -323,7 +323,7 @@ a{color:var(--p);text-decoration:none}
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
   /* login */
-  #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;padding:0 60px}
+  #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
   .login-card{min-width:340px}
   /* dashboard */
   #scr-dashboard{max-width:1200px;margin:0 auto;padding:24px 24px 0}
@@ -394,7 +394,7 @@ a{color:var(--p);text-decoration:none}
   <!-- SIDEBAR (desktop) -->
   <aside id="sidebar">
     <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15)">
-      <img src="facility-logo.png" alt="Village Aura" style="max-height:48px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);opacity:.88" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;font-size:22px">🏥</div>
+      <img src="facility-logo.png" alt="Village Aura" style="max-height:44px;max-width:155px;object-fit:contain;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:5px 10px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;font-size:22px">🏥</div>
       <div style="font-size:13px;font-weight:800;margin-top:9px;letter-spacing:.14em;font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;opacity:.92;text-transform:uppercase;color:#fff">Village Aura</div>
       <div style="font-size:9px;opacity:.55;margin-top:2px;line-height:1.5">メディケアビレッジかしわじま<br>こはる日和</div>
     </div>
