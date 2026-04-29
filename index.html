@@ -373,18 +373,13 @@ a{color:var(--p);text-decoration:none}
       <div class="login-sub-desc">複合介護施設記録ツール</div>
     </div>
     <div class="login-card">
-      <label>職員を選択</label>
-      <select id="sel-staff">
-        <option value="">── 選択してください ──</option>
-        <option value="s4">鈴木 健太（介護士）</option>
-        <option value="s1">田中 花子（看護師）</option>
-        <option value="s5">中村 由美（看護師）</option>
-        <option value="s3">前原 明子（相談員）</option>
-        <option value="s6">山田 一郎（医師）</option>
-        <option value="s2">山本 次郎（介護士）</option>
-      </select>
+      <label for="login-id">職員ID</label>
+      <input id="login-id" type="text" placeholder="例: tanaka" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label for="login-pass">パスワード</label>
+      <input id="login-pass" type="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+      <div id="login-err" style="display:none;color:#ff8a80;font-size:12px;margin:-10px 0 12px;text-align:center;letter-spacing:.03em"></div>
       <button class="btn-login" onclick="login()">ログイン</button>
-      <div class="login-demo">📱 デモ版 — データはこの端末にのみ保存されます</div>
+      <div class="login-demo" style="margin-top:18px">デモID: tanaka〜yamada など／PW: 1234</div>
     </div>
   </div>
 </div>
@@ -1436,12 +1431,12 @@ const INIT_VISIT_SCHED=(()=>{
   };
 })();
 const STAFF_INFO = {
-  s1:{name:'田中 花子',role:'nurse'},
-  s2:{name:'山本 次郎',role:'care'},
-  s3:{name:'前原 明子',role:'counselor'},
-  s4:{name:'鈴木 健太',role:'care'},
-  s5:{name:'中村 由美',role:'nurse'},
-  s6:{name:'山田 一郎',role:'doctor'},
+  s1:{name:'田中 花子',role:'nurse',    loginId:'tanaka',   pass:'1234'},
+  s2:{name:'山本 次郎',role:'care',     loginId:'yamamoto', pass:'1234'},
+  s3:{name:'前原 明子',role:'counselor',loginId:'maehara',  pass:'1234'},
+  s4:{name:'鈴木 健太',role:'care',     loginId:'suzuki',   pass:'1234'},
+  s5:{name:'中村 由美',role:'nurse',    loginId:'nakamura', pass:'1234'},
+  s6:{name:'山田 一郎',role:'doctor',   loginId:'yamada',   pass:'1234'},
 };
 const ROLE_COLORS = {
   doctor:{bg:'#c62828',label:'医師'},
@@ -1476,11 +1471,25 @@ function saveHandovers(h){lsSet('handovers',h)}
 
 // ═══════════ AUTH ═══════════
 function login(){
-  const sel=document.getElementById('sel-staff').value;
-  const names={s1:'田中 花子',s2:'山本 次郎',s3:'前原 明子',s4:'鈴木 健太',s5:'中村 由美',s6:'山田 一郎'};
-  S.user = sel?names[sel]:'';
-  if(!S.user){toast('職員を選択してください');return;}
-  S.userRole = STAFF_INFO[sel]?.role||'care';
+  const inputId=document.getElementById('login-id').value.trim();
+  const inputPass=document.getElementById('login-pass').value;
+  const errEl=document.getElementById('login-err');
+  errEl.style.display='none';
+  if(!inputId||!inputPass){
+    errEl.textContent='IDとパスワードを入力してください';
+    errEl.style.display='block';
+    return;
+  }
+  const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].loginId===inputId);
+  if(!staffKey||STAFF_INFO[staffKey].pass!==inputPass){
+    errEl.textContent='IDまたはパスワードが正しくありません';
+    errEl.style.display='block';
+    document.getElementById('login-pass').value='';
+    return;
+  }
+  const info=STAFF_INFO[staffKey];
+  S.user=info.name;
+  S.userRole=info.role;
   S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('scr-login').style.display='none';
   document.getElementById('app').style.display='block';
@@ -1494,7 +1503,9 @@ function logout(){
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
-  document.getElementById('sel-staff').value='';
+  document.getElementById('login-id').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-err').style.display='none';
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -1972,10 +1983,6 @@ function addManualResident(){
 function addManualStaff(){
   const name=document.getElementById('ms-name').value.trim();
   if(!name){toast('氏名を入力してください');return;}
-  const sel=document.getElementById('sel-staff');
-  const opt=document.createElement('option');
-  opt.value='s_'+Date.now();opt.textContent=name+'（'+document.getElementById('ms-job').value+'）';
-  sel.appendChild(opt);
   toast(name+'を職員リストに追加しました ✓');
   ['ms-name','ms-kana','ms-job'].forEach(id=>document.getElementById(id).value='');
 }
