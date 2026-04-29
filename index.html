@@ -1165,6 +1165,32 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- VISIT ENTRY -->
+<div class="overlay" id="modal-visit-entry" onclick="closeModal('modal-visit-entry',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="visit-modal-title">訪問予定を追加</div>
+    <input type="hidden" id="ve-idx">
+    <input type="hidden" id="ve-date">
+    <div class="field"><label>職員</label>
+      <input type="text" id="ve-staff" list="ve-staff-list" placeholder="長谷川">
+      <datalist id="ve-staff-list"></datalist>
+    </div>
+    <div class="field"><label>利用者</label>
+      <input type="text" id="ve-resident" list="ve-res-list" placeholder="山田 花子">
+      <datalist id="ve-res-list"></datalist>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>開始</label><input type="time" id="ve-start" step="300"></div>
+      <div class="field"><label>終了</label><input type="time" id="ve-end" step="300"></div>
+    </div>
+    <div class="field"><label>備考</label><input type="text" id="ve-note" placeholder="内容・注意事項..."></div>
+    <button class="btn-primary" onclick="saveVisitEntry()">保存</button>
+    <button id="ve-delete-btn" onclick="deleteVisitEntry()" style="display:none;width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:700;color:var(--ng);background:#fff5f5;border:1.5px solid var(--ng);margin-bottom:8px">🗑 削除</button>
+    <button class="btn-cancel" onclick="closeModal('modal-visit-entry')">キャンセル</button>
+  </div>
+</div>
+
 <!-- BOARD HANDOVER -->
 <div class="overlay" id="modal-board-ho" onclick="closeModal('modal-board-ho',event)">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -1972,7 +1998,7 @@ function renderSchedule(){
   }
 
   let navHtml='';
-  if(!isVisit&&S.schedView==='month'){
+  if(S.schedView==='month'){
     navHtml=`<div style="display:flex;align-items:center;gap:6px">
       <button onclick="navigateSchMonth(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:var(--card);font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
       <span style="font-size:13px;font-weight:700;color:var(--p);min-width:68px;text-align:center">${S.schedYear}/${String(S.schedMonth+1).padStart(2,'0')}</span>
@@ -1988,23 +2014,26 @@ function renderSchedule(){
     </div>`;
   }
 
-  const csvBtn=isVisit?`<label style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">📥 CSV読込<input type="file" accept=".csv" style="display:none" onchange="importVisitCSV(this)"></label>`:'';
+  const visitBtns=isVisit?(S.schedView==='day'?`
+    <button onclick="openVisitEntryNew()" style="background:var(--p);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700">＋ 追加</button>
+    <label style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:3px">📥 CSV<input type="file" accept=".csv" style="display:none" onchange="importVisitCSV(this)"></label>`
+    :`<label style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px">📥 CSV読込<input type="file" accept=".csv" style="display:none" onchange="importVisitCSV(this)"></label>`):'';
 
   bar.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
         ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0 0 0 0')}${scopeBtn('visit','訪問介護','0 8px 8px 0')}
       </div>
-      ${!isVisit?`<div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
+      <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
         ${viewBtn('month','月','8px 0 0 8px')}${viewBtn('day','日','0 8px 8px 0')}
-      </div>`:''}
-      ${resSelect}${csvBtn}
+      </div>
+      ${resSelect}${visitBtns}
     </div>
     ${navHtml}
   `;
 
   if(isVisit){
-    content.innerHTML=renderVisitSchedule();
+    content.innerHTML=S.schedView==='month'?renderVisitMonthCal():renderVisitSchedule();
   } else {
     content.innerHTML=S.schedView==='month'?renderMonthCal():renderDayView();
   }
@@ -2081,36 +2110,63 @@ function renderDayView(){
 
 // ── 訪問介護予定 ──
 function getVisitSched(dateStr){return ls('visit_sched_'+dateStr)||[];}
+
+function renderVisitMonthCal(){
+  const year=S.schedYear,month=S.schedMonth;
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const now=new Date();
+  const todayStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const DOW=['日','月','火','水','木','金','土'];
+  let html=`<div class="cal-wrap"><div class="cal-grid">`;
+  DOW.forEach((d,i)=>html+=`<div class="cal-hdr" style="${i===0?'color:var(--ng)':i===6?'color:var(--p)':''}">${d}</div>`);
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell empty"></div>`;
+  for(let day=1;day<=daysInMonth;day++){
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dow=new Date(year,month,day).getDay();
+    const isToday=dateStr===todayStr;
+    const visits=getVisitSched(dateStr);
+    const staffNames=[...new Set(visits.map(v=>v.staff))];
+    const cls=['cal-cell',isToday?'today':'',dow===0?'csun':dow===6?'csat':''].filter(Boolean).join(' ');
+    const evHtml=staffNames.slice(0,2).map(s=>`<div class="cal-event" style="background:#1565c0;color:#fff">${s.split(/[\s　]/)[0]}</div>`).join('');
+    const more=staffNames.length>2?`<div class="cal-more">+${staffNames.length-2}</div>`:'';
+    html+=`<div class="${cls}" onclick="selectVisitDay(${day})">
+      <div class="cal-num${isToday?' today':''}">${day}</div>
+      ${evHtml}${more}
+      ${visits.length?`<div style="font-size:9px;color:var(--sub)">${visits.length}件</div>`:''}
+    </div>`;
+  }
+  const total=firstDay+daysInMonth;const rem=7-total%7;
+  if(rem<7) for(let i=0;i<rem;i++) html+=`<div class="cal-cell empty"></div>`;
+  html+=`</div></div>`;
+  return html;
+}
+function selectVisitDay(day){S.schedDay=day;S.schedView='day';renderSchedule();}
+
 function renderVisitSchedule(){
   const dateStr=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
   const visits=getVisitSched(dateStr);
   if(!visits.length) return `<div style="padding:48px 20px;text-align:center;color:var(--sub)">
-    <div style="font-size:32px;margin-bottom:10px">📋</div>
+    <div style="font-size:32px;margin-bottom:10px">🚗</div>
     <div style="font-weight:700;margin-bottom:6px">この日の訪問介護予定はありません</div>
-    <div style="font-size:12px">「📥 CSV読込」からアップロードしてください</div>
-    <div style="font-size:11px;margin-top:12px;color:#aaa">CSVフォーマット: 日付,職員,利用者,開始,終了,備考</div>
+    <div style="font-size:12px;margin-bottom:16px">「＋ 追加」で手入力、または「📥 CSV」で一括読込</div>
+    <div style="font-size:11px;color:#aaa">CSVフォーマット: 日付,職員,利用者,開始,終了,備考</div>
   </div>`;
 
   const SH=7,EH=19,TOTAL=(EH-SH)*60;
-  const toMin=t=>{const s=t.replace('：',':');const [h,m]=s.split(':').map(Number);return h*60+(m||0);};
+  const toMin=t=>{const s=(t||'').replace('：',':');const[h,m]=s.split(':').map(Number);return(h||0)*60+(m||0);};
   const COLORS=['#1565c0','#00796b','#c62828','#6a1b9a','#e65100','#2e7d32','#ad1457','#37474f','#00838f','#558b2f'];
   const colorMap={};let ci=0;
 
   const staffMap={};
-  visits.forEach(v=>{
+  visits.forEach((v,idx)=>{
     if(!staffMap[v.staff]) staffMap[v.staff]=[];
-    staffMap[v.staff].push(v);
+    staffMap[v.staff].push({...v,_idx:idx});
     if(!colorMap[v.resident]) colorMap[v.resident]=COLORS[ci++%COLORS.length];
   });
 
-  const hourTicks=[...Array(EH-SH+1)].map((_,i)=>{
-    const pct=(i/(EH-SH)*100).toFixed(2);
-    return `<div style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:10px;color:var(--sub);white-space:nowrap;pointer-events:none">${SH+i}:00</div>`;
-  }).join('');
-  const gridLines=[...Array(EH-SH-1)].map((_,i)=>{
-    const pct=((i+1)/(EH-SH)*100).toFixed(2);
-    return `<div style="position:absolute;left:${pct}%;top:0;bottom:0;border-left:1px dashed #eee;pointer-events:none"></div>`;
-  }).join('');
+  const hourTicks=[...Array(EH-SH+1)].map((_,i)=>`<div style="position:absolute;left:${(i/(EH-SH)*100).toFixed(2)}%;transform:translateX(-50%);font-size:10px;color:var(--sub);white-space:nowrap;pointer-events:none">${SH+i}:00</div>`).join('');
+  const gridLines=[...Array(EH-SH-1)].map((_,i)=>`<div style="position:absolute;left:${((i+1)/(EH-SH)*100).toFixed(2)}%;top:0;bottom:0;border-left:1px dashed #eee;pointer-events:none"></div>`).join('');
 
   const rows=Object.entries(staffMap).map(([staff,svs])=>{
     const blocks=svs.map(v=>{
@@ -2120,7 +2176,7 @@ function renderVisitSchedule(){
       const w=Math.max(0.8,(eMin-sMin)/TOTAL*100).toFixed(2);
       const c=colorMap[v.resident]||'#607d8b';
       const tip=`${v.resident}様 ${v.start}〜${v.end}${v.note?' '+v.note:''}`;
-      return `<div style="position:absolute;left:${l}%;width:${w}%;top:4px;bottom:4px;background:${c};border-radius:4px;overflow:hidden" title="${tip}">
+      return `<div style="position:absolute;left:${l}%;width:${w}%;top:4px;bottom:4px;background:${c};border-radius:4px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)" title="${tip}" onclick="openVisitEntryEdit('${dateStr}',${v._idx})">
         <div style="padding:2px 5px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.resident}</div>
         <div style="padding:0 5px;font-size:9px;color:rgba(255,255,255,.85);white-space:nowrap">${v.start}〜${v.end}</div>
       </div>`;
@@ -2146,6 +2202,78 @@ function renderVisitSchedule(){
     ${legend?`<div style="padding:8px 12px;border-top:1px solid var(--bdr);line-height:2;background:var(--card)">${legend}</div>`:''}
   </div>`;
 }
+
+function openVisitEntryNew(){
+  const dateStr=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
+  document.getElementById('visit-modal-title').textContent='訪問予定を追加';
+  document.getElementById('ve-idx').value='';
+  document.getElementById('ve-date').value=dateStr;
+  document.getElementById('ve-staff').value='';
+  document.getElementById('ve-resident').value='';
+  document.getElementById('ve-start').value='09:00';
+  document.getElementById('ve-end').value='09:30';
+  document.getElementById('ve-note').value='';
+  document.getElementById('ve-delete-btn').style.display='none';
+  populateVisitDataLists();
+  document.getElementById('modal-visit-entry').classList.add('on');
+}
+function openVisitEntryEdit(dateStr,idx){
+  const v=getVisitSched(dateStr)[idx];if(!v)return;
+  document.getElementById('visit-modal-title').textContent='訪問予定を編集';
+  document.getElementById('ve-idx').value=idx;
+  document.getElementById('ve-date').value=dateStr;
+  document.getElementById('ve-staff').value=v.staff;
+  document.getElementById('ve-resident').value=v.resident;
+  document.getElementById('ve-start').value=v.start;
+  document.getElementById('ve-end').value=v.end;
+  document.getElementById('ve-note').value=v.note||'';
+  document.getElementById('ve-delete-btn').style.display='';
+  populateVisitDataLists();
+  document.getElementById('modal-visit-entry').classList.add('on');
+}
+function populateVisitDataLists(){
+  const staffSet=new Set(Object.values(STAFF_INFO).map(s=>s.name));
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('visit_sched_')){
+      const vs=ls(k);if(Array.isArray(vs)) vs.forEach(v=>{if(v.staff) staffSet.add(v.staff);});
+    }
+  }
+  document.getElementById('ve-staff-list').innerHTML=[...staffSet].map(s=>`<option value="${s}">`).join('');
+  document.getElementById('ve-res-list').innerHTML=getResidents().map(r=>`<option value="${r.name}">`).join('');
+}
+function saveVisitEntry(){
+  const dateStr=document.getElementById('ve-date').value;
+  const idxStr=document.getElementById('ve-idx').value;
+  const entry={
+    staff:document.getElementById('ve-staff').value.trim(),
+    resident:document.getElementById('ve-resident').value.trim(),
+    start:document.getElementById('ve-start').value,
+    end:document.getElementById('ve-end').value,
+    note:document.getElementById('ve-note').value.trim(),
+  };
+  if(!entry.staff||!entry.resident||!entry.start){toast('職員・利用者・開始時間は必須です');return;}
+  const visits=getVisitSched(dateStr);
+  if(idxStr==='') visits.push(entry);
+  else visits[parseInt(idxStr)]=entry;
+  visits.sort((a,b)=>a.staff<b.staff?-1:a.staff>b.staff?1:a.start<b.start?-1:1);
+  lsSet('visit_sched_'+dateStr,visits);
+  closeModal('modal-visit-entry');
+  toast('保存しました ✓');
+  renderSchedule();
+}
+function deleteVisitEntry(){
+  if(!confirm('この予定を削除しますか？'))return;
+  const dateStr=document.getElementById('ve-date').value;
+  const idx=parseInt(document.getElementById('ve-idx').value);
+  const visits=getVisitSched(dateStr);
+  visits.splice(idx,1);
+  lsSet('visit_sched_'+dateStr,visits);
+  closeModal('modal-visit-entry');
+  toast('削除しました');
+  renderSchedule();
+}
+
 function importVisitCSV(inp){
   const f=inp.files[0];if(!f)return;
   const reader=new FileReader();
