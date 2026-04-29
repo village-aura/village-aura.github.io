@@ -793,7 +793,10 @@ a{color:var(--p);text-decoration:none}
       <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px">
         <div style="font-size:12px;color:var(--sub);line-height:1.6">Google Gemini APIキーを登録するとAI FAQが使えます（無料）。<br>取得先: aistudio.google.com → Get API key</div>
         <input type="password" id="ai-api-key-input" placeholder="AIza..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
-        <button onclick="saveAIKey()" style="width:100%;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">APIキーを保存</button>
+        <div style="display:flex;gap:8px">
+          <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
+          <button onclick="clearAIKey()" style="padding:10px 14px;background:#f3f4f6;color:var(--ng);border-radius:8px;font-size:14px;font-weight:700">削除</button>
+        </div>
         <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
       </div>
     </div>
@@ -1685,11 +1688,19 @@ function initHelpScreen(){
 }
 function saveAIKey(){
   const val=document.getElementById('ai-api-key-input').value.trim();
-  if(!val||val.startsWith('••')){toast('APIキーを入力してください');return;}
+  if(!val||val.startsWith('••')){toast('新しいAPIキーを入力してください');return;}
   localStorage.setItem('ai_api_key',val);
   document.getElementById('ai-key-status').textContent='✓ APIキー登録済み';
   document.getElementById('ai-api-key-input').value='••••••••••••'+val.slice(-4);
-  toast('AIのAPIキーを保存しました ✓');
+  toast('APIキーを保存しました ✓');
+}
+function clearAIKey(){
+  if(!confirm('APIキーを削除しますか？'))return;
+  localStorage.removeItem('ai_api_key');
+  document.getElementById('ai-api-key-input').value='';
+  document.getElementById('ai-key-status').textContent='未登録';
+  const notice=document.getElementById('ai-key-notice');if(notice)notice.style.display='block';
+  toast('APIキーを削除しました');
 }
 function appendAIMsg(role,text){
   const el=document.getElementById('ai-messages');if(!el)return;
