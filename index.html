@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Village Aura">
@@ -27,7 +27,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 a{color:var(--p);text-decoration:none}
 
 /* ── SCREENS ── */
-.scr{display:none;min-height:100vh;padding-bottom:80px;animation:fadeIn .2s}
+.scr{display:none;min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));animation:fadeIn .2s}
 .scr.on{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -39,7 +39,7 @@ a{color:var(--p);text-decoration:none}
 .hd-badge{background:rgba(255,255,255,.25);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
 
 /* ── BOTTOM NAV ── */
-.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--bdr);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--bdr);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom)}
 .bn{flex:1;padding:8px 0 6px;text-align:center;color:var(--sub);transition:color .15s}
 .bn.on{color:var(--p)}
 .bn-ico{font-size:22px;line-height:1}
