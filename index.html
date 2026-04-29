@@ -232,6 +232,14 @@ a{color:var(--p);text-decoration:none}
 .fluid-fill.warn{background:var(--warn)}
 .fluid-fill.ng{background:var(--ng)}
 
+/* ── VOICE / TRIAGE ── */
+.btn-voice-sm{width:34px;height:34px;border-radius:8px;background:var(--ps);color:var(--p);font-size:16px;border:1.5px solid var(--p);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.btn-voice-sm.recording{background:#fde8e8;color:var(--ng);border-color:var(--ng);animation:pulse 1s infinite}
+.voice-row{display:flex;gap:6px;align-items:flex-start;width:100%}
+.voice-row input,.voice-row textarea,.voice-row select{flex:1;min-width:0}
+.dictation-panel{background:#f8f9fa;border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:12px}
+.triage-preview{padding:10px 12px;background:#f0f7ff;border:1.5px solid #c7d9f5;border-radius:8px;margin-top:8px}
+.triage-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;color:#fff;display:inline-flex;align-items:center;gap:3px;margin:2px 3px 2px 0}
 /* ── FACE SHEET ── */
 .fs-sec{margin-bottom:16px}
 .fs-sec h4{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bdr)}
@@ -865,8 +873,14 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="field"><label>記録内容</label>
-      <textarea id="c-content" placeholder="自由記述..." rows="4"></textarea>
+      <textarea id="c-content" placeholder="自由記述..." rows="4" oninput="updateTriagePreview()"></textarea>
       <button class="btn-voice" id="voice-btn" onclick="startVoice('c-content',this)">🎤 タップして音声入力</button>
+      <div id="c-triage-preview" class="triage-preview" style="display:none">
+        <div style="font-size:11px;font-weight:700;color:var(--p);margin-bottom:6px">💡 AIが報告先を提案：</div>
+        <div id="c-triage-badges" style="display:flex;flex-wrap:wrap;gap:2px"></div>
+        <div style="font-size:10px;color:var(--sub);margin-top:5px">✏️ 変更が必要な場合は以下で選択してください</div>
+        <div id="c-triage-manual" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px"></div>
+      </div>
     </div>
     <div class="field" style="display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="c-handover" style="width:18px;height:18px;accent-color:var(--p)">
@@ -969,6 +983,21 @@ a{color:var(--p);text-decoration:none}
       <button class="tab" data-fstab="fst-adl" onclick="switchFsTab(this)">ADL</button>
       <button class="tab" data-fstab="fst-medical" onclick="switchFsTab(this)">医療</button>
       <button class="tab" data-fstab="fst-file" onclick="switchFsTab(this)">ファイル</button>
+    </div>
+
+    <!-- まとめて音声入力 -->
+    <div style="padding:10px 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button id="fs-voice-main-btn" onclick="toggleFsDictation(this)" style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px">🎤 まとめて音声入力</button>
+      <span style="font-size:11px;color:var(--sub)">各フィールドの 🎤 で個別入力も可</span>
+    </div>
+    <div id="fs-dictation-panel" class="dictation-panel" style="display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">🎤 話してください（録音中に入力されます）</div>
+      <textarea id="fs-dictation-text" rows="4" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;resize:none;margin-bottom:8px" placeholder="例：住所は倉敷市〇〇町1-1。電話は086-000-0000。認知症は軽度。食事は一部介助で全粥。トロミあり。主治医は山田先生..."></textarea>
+      <div style="display:flex;gap:8px">
+        <button onclick="applyFsDictation()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✨ 解析・フォームに入力</button>
+        <button onclick="stopFsDictation()" style="padding:10px 14px;background:#f3f4f6;color:var(--sub);border-radius:8px;font-size:13px;font-weight:600">閉じる</button>
+      </div>
+      <div id="fs-dictation-result" style="margin-top:8px;font-size:12px;color:var(--ok);min-height:18px"></div>
     </div>
 
     <!-- 連絡先タブ -->
@@ -1525,6 +1554,7 @@ function renderTimeline(){
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
         <div class="tl-val">${summarizeRecord(r)}</div>
         ${r.data.note||r.data.content?`<div class="tl-note">${(r.data.note||r.data.content||'').substring(0,60)}</div>`:''}
+        ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
         <div class="tl-staff">${badge}${staffName}</div>
       </div>
     </div>`;
@@ -1577,8 +1607,13 @@ function saveRecord(type){
     const content=document.getElementById('c-content').value.trim();
     if(!content){toast('記録内容を入力してください');return;}
     const tags=[...document.querySelectorAll('#chrono-tags .ttag.on')].map(t=>t.textContent);
+    const manualTriage=[...document.querySelectorAll('#c-triage-manual .adl-opt.on')].map(b=>{
+      return Object.keys(TRIAGE_INFO).find(k=>b.textContent.includes(TRIAGE_INFO[k].label.split('へ')[0]));
+    }).filter(Boolean);
+    const autoTriage=triageRecord(content);
+    const triage=manualTriage.length?manualTriage:autoTriage;
     data={tags,priority:document.querySelector('[name=priority]:checked')?.value||'normal',
-      content,handover:document.getElementById('c-handover').checked};
+      content,handover:document.getElementById('c-handover').checked,triage};
     if(data.handover) addHandover(S.currentRes,content);
     closeModal('modal-chrono');
   }else if(type==='weight'){
@@ -2107,6 +2142,64 @@ function renderVitalGraph(rid, range='today'){
   el.innerHTML=svg;
 }
 
+// ═══════════ AI TRIAGE ═══════════
+const TRIAGE_KW = {
+  doctor:['発熱','高熱','低体温','意識','呼吸困難','SpO2','嘔吐','嘔吐','痙攣','けいれん','骨折','転落','出血','急変','胸痛','腹痛','浮腫','褥瘡','壊死','感染症','炎症','血糖','低血糖','血圧高','血圧低','不整脈','誤嚥','窒息'],
+  nurse:['バイタル','皮膚トラブル','処置','与薬','投薬','注射','点滴','カテーテル','吸引','酸素','発赤','浸出液','採血','検査','内服','SpO2','皮膚','発疹','浮腫','創部'],
+  care:['食事量','食欲','水分摂取','飲水','入浴','更衣','移乗','歩行','トイレ','体位','転倒','ふらつき','排尿','排便','便秘','失禁','睡眠','活動'],
+  counselor:['家族','息子','娘','面会','苦情','クレーム','退所','転院','費用','サービス変更','希望','相談'],
+};
+const TRIAGE_INFO = {
+  doctor:   {label:'医師へ報告',   color:'#c62828',icon:'🩺'},
+  nurse:    {label:'看護師へ報告', color:'#00796b',icon:'👩‍⚕️'},
+  care:     {label:'介護士へ共有', color:'#1565c0',icon:'🤝'},
+  counselor:{label:'相談員へ報告', color:'#6a1b9a',icon:'💼'},
+};
+function triageRecord(content){
+  if(!content) return [];
+  const targets=new Set();
+  for(const [role,kws] of Object.entries(TRIAGE_KW)){
+    if(kws.some(k=>content.includes(k))) targets.add(role);
+  }
+  if(targets.has('doctor')) targets.add('nurse');
+  return [...targets];
+}
+function renderTriageBadges(targets){
+  if(!targets||!targets.length) return '';
+  return targets.map(t=>{
+    const i=TRIAGE_INFO[t];if(!i)return '';
+    return `<span class="triage-badge" style="background:${i.color}">${i.icon} ${i.label}</span>`;
+  }).join('');
+}
+function updateTriagePreview(){
+  const content=document.getElementById('c-content')?.value||'';
+  const preview=document.getElementById('c-triage-preview');
+  const badgesEl=document.getElementById('c-triage-badges');
+  const manualEl=document.getElementById('c-triage-manual');
+  if(!preview||!badgesEl) return;
+  const targets=triageRecord(content);
+  if(targets.length){
+    badgesEl.innerHTML=renderTriageBadges(targets);
+    // Manual override toggles
+    if(manualEl) manualEl.innerHTML=Object.keys(TRIAGE_INFO).map(r=>{
+      const i=TRIAGE_INFO[r];const on=targets.includes(r);
+      return `<button class="adl-opt${on?' on':''}" style="${on?'border-color:'+i.color+';background:'+i.color+'22;color:'+i.color:''}" onclick="toggleTriageTarget(this,'${r}')">${i.icon} ${i.label}</button>`;
+    }).join('');
+    preview.style.display='block';
+  } else {
+    preview.style.display='none';
+  }
+}
+function toggleTriageTarget(btn,role){
+  btn.classList.toggle('on');
+  const i=TRIAGE_INFO[role];if(!i)return;
+  if(btn.classList.contains('on')){
+    btn.style.borderColor=i.color;btn.style.background=i.color+'22';btn.style.color=i.color;
+  } else {
+    btn.style.borderColor='';btn.style.background='';btn.style.color='';
+  }
+}
+
 // ═══════════ FACE SHEET ═══════════
 const ADL_OPTS=['自立','見守り','声かけ','一部介助','全介助'];
 const BATH_OPTS=['個浴','リフト浴','重浴','チェアイン'];
@@ -2217,6 +2310,8 @@ function openFacesheet(){
   document.querySelector('#modal-facesheet .tab').classList.add('on');
   document.getElementById('fst-contact').classList.add('on');
   document.getElementById('modal-facesheet').classList.add('on');
+  // inject mic buttons on first open
+  setTimeout(addFsVoiceButtons, 50);
 }
 function switchFsTab(btn){
   document.querySelectorAll('#modal-facesheet .tab').forEach(t=>t.classList.remove('on'));
@@ -2265,6 +2360,155 @@ function saveFacesheetData(){
     notes:document.getElementById('fs-notes').value,
   });
   toast('フェイスシートを保存しました ✓');
+}
+// ── face sheet: per-field voice injection ──
+function addFsVoiceButtons(){
+  let idx=0;
+  document.querySelectorAll('#modal-facesheet input[type=text],#modal-facesheet input[type=tel],#modal-facesheet input[type=number],#modal-facesheet textarea').forEach(el=>{
+    if(el.dataset.vb) return;
+    el.dataset.vb='1';
+    if(!el.id){el.id='fs-vf-'+(idx++)}
+    const btn=document.createElement('button');
+    btn.type='button';btn.className='btn-voice-sm';btn.title='音声入力';btn.textContent='🎤';
+    btn.onclick=function(){startVoice(el.id,btn);};
+    const wrap=document.createElement('div');
+    wrap.className='voice-row';
+    el.parentNode.insertBefore(wrap,el);
+    wrap.appendChild(el);wrap.appendChild(btn);
+  });
+}
+
+// ── dictation / AI fill ──
+function toggleFsDictation(btn){
+  const panel=document.getElementById('fs-dictation-panel');
+  const dtBtn=document.getElementById('fs-voice-main-btn');
+  if(panel.style.display==='none'){
+    panel.style.display='block';
+    btn.textContent='🔴 録音停止';
+    btn.style.background='#fde8e8';btn.style.borderColor='var(--ng)';btn.style.color='var(--ng)';
+    startVoice('fs-dictation-text',{classList:{add:()=>{},remove:()=>{}},textContent:''});
+  } else {
+    stopFsDictation();
+  }
+}
+function stopFsDictation(){
+  stopVoice();
+  const panel=document.getElementById('fs-dictation-panel');
+  const btn=document.getElementById('fs-voice-main-btn');
+  if(panel) panel.style.display='none';
+  if(btn){btn.textContent='🎤 まとめて音声入力';btn.style.background='';btn.style.borderColor='';btn.style.color='';}
+}
+function applyFsDictation(){
+  const text=document.getElementById('fs-dictation-text').value.trim();
+  if(!text){toast('テキストがありません');return;}
+  stopVoice();
+  const detected=parseFacesheetText(text);
+  const keys=Object.keys(detected);
+  if(!keys.length){toast('入力可能な情報が検出されませんでした');return;}
+  applyFsFields(detected);
+  document.getElementById('fs-dictation-result').textContent=
+    '✓ '+keys.length+'項目を更新: '+keys.map(k=>FS_FIELD_LABELS[k]||k).join('・');
+}
+const FS_FIELD_LABELS={address:'住所',tel:'電話番号',cog:'認知症',family_situation:'家族状況',
+  adl_shokuji:'食事',adl_haisetsu:'排泄',adl_nyuyoku:'入浴',adl_chakudatsu:'着脱',adl_ido:'移動',
+  adl_shushoku:'主食',adl_fukushoku:'副食',adl_toromi:'トロミ',adl_seigen:'制限食',
+  food_allergy:'食品アレルギー',drug_allergy:'薬物アレルギー',blood_thinner:'抗血栓薬',
+  infection:'感染症',main_doctor:'主治医',height:'身長',weight:'体重',
+  vision:'視覚',hearing:'聴覚',language:'言語',disability:'身体障害者手帳',notes:'注意事項'};
+function applyFsFields(d){
+  const setText=(id,v)=>{const e=document.getElementById(id);if(e&&v!=null)e.value=v;};
+  const setSel=(id,v)=>{const e=document.getElementById(id);if(e&&v!=null)e.value=v;};
+  const setAdl=(elId,opts,v,multi=false)=>{
+    if(v==null) return;
+    document.querySelectorAll('#'+elId+' .adl-opt').forEach(b=>{
+      if(multi) b.classList.toggle('on',Array.isArray(v)&&v.includes(b.textContent));
+      else b.classList.toggle('on',b.textContent===v);
+    });
+  };
+  setText('fs-address',d.address);setText('fs-tel',d.tel);
+  setSel('fs-cog',d.cog);
+  setText('fs-family-situation',d.family_situation);
+  setAdl('adl-shokuji',ADL_OPTS,d.adl_shokuji);
+  setAdl('adl-haisetsu',ADL_OPTS,d.adl_haisetsu);
+  setAdl('adl-nyuyoku',BATH_OPTS,d.adl_nyuyoku);
+  setAdl('adl-chakudatsu',ADL_OPTS,d.adl_chakudatsu);
+  setAdl('adl-ido',ADL_OPTS,d.adl_ido);
+  setAdl('adl-shushoku',MAIN_OPTS,d.adl_shushoku);
+  setAdl('adl-fukushoku',SIDE_OPTS,d.adl_fukushoku);
+  setAdl('adl-toromi',TOROMI_OPTS,d.adl_toromi);
+  setAdl('adl-seigen',DIET_OPTS,d.adl_seigen);
+  setText('fs-food-allergy',d.food_allergy);
+  setAdl('adl-ido-tool',IDO_TOOL_OPTS,d.ido_tool,true);
+  if(d.height!=null) document.getElementById('fs-height').value=d.height;
+  if(d.weight!=null) document.getElementById('fs-weight').value=d.weight;
+  setSel('fs-vision',d.vision);setSel('fs-hearing',d.hearing);setSel('fs-language',d.language);
+  setText('fs-infection',d.infection);setText('fs-drug-allergy',d.drug_allergy);
+  setText('fs-blood-thinner',d.blood_thinner);
+  setText('fs-main-doctor',d.main_doctor);setText('fs-doctor-tel',d.doctor_tel);
+  setText('fs-disability',d.disability);setText('fs-notes',d.notes);
+}
+function parseFacesheetText(text){
+  const t=text;const result={};
+  const ext=(pats,ends=['。','、','\n'])=>{
+    for(const p of pats){
+      const i=t.indexOf(p);if(i<0)continue;
+      let r=t.slice(i+p.length).replace(/^[はがのをに\s]+/,'');
+      for(const e of ends){const ei=r.indexOf(e);if(ei>0)r=r.slice(0,ei);}
+      return r.trim();
+    }return null;
+  };
+  const addr=ext(['住所は','住所が','住所']);if(addr)result.address=addr;
+  const tel=ext(['電話番号は','電話は','TELは','テルは']);
+  if(tel)result.tel=tel.replace(/[^0-9\-]/g,'');
+  // 認知
+  if(t.match(/認知症?(重度|重い)/)) result.cog='severe';
+  else if(t.match(/認知症?(中度|中程度)/)) result.cog='moderate';
+  else if(t.match(/認知症?(軽度|軽い|少し)/)) result.cog='mild';
+  else if(t.match(/認知症?(なし|ない|年相応)/)) result.cog='normal';
+  // ADL（パターン: "食事は一部介助"）
+  const adlOpts=['全介助','一部介助','声かけ','見守り','自立'];
+  [['食事',adlOpts,'adl_shokuji'],['排泄',adlOpts,'adl_haisetsu'],
+   ['着脱',adlOpts,'adl_chakudatsu'],['移動',adlOpts,'adl_ido']].forEach(([kw,opts,key])=>{
+    const idx=t.indexOf(kw);if(idx<0)return;
+    const sub=t.slice(idx,idx+20);
+    for(const o of opts){if(sub.includes(o)){result[key]=o;break;}}
+  });
+  // 入浴
+  if(t.includes('リフト浴'))result.adl_nyuyoku='リフト浴';
+  else if(t.includes('重浴'))result.adl_nyuyoku='重浴';
+  else if(t.includes('チェアイン'))result.adl_nyuyoku='チェアイン';
+  else if(t.includes('個浴'))result.adl_nyuyoku='個浴';
+  // 食事形態
+  if(t.includes('ペースト粥')||t.includes('ペースト食')){result.adl_shushoku='ペースト';result.adl_fukushoku='ペースト食';}
+  else{
+    if(t.includes('全粥'))result.adl_shushoku='全粥';
+    else if(t.includes('軟飯'))result.adl_shushoku='軟飯';
+    else if(t.includes('おにぎり'))result.adl_shushoku='おにぎり';
+    if(t.includes('キザミ'))result.adl_fukushoku='キザミ';
+    else if(t.includes('一口大'))result.adl_fukushoku='一口大';
+  }
+  if(t.includes('トロミあり')||t.includes('とろみあり')||t.includes('トロミ付'))result.adl_toromi='あり';
+  if(t.includes('糖尿病食')||t.includes('糖尿'))result.adl_seigen='糖尿病食';
+  else if(t.includes('高血圧食')||t.includes('塩分制限'))result.adl_seigen='高血圧食';
+  else if(t.includes('肝臓病食'))result.adl_seigen='肝臓食';
+  // 医療
+  const da=ext(['薬物アレルギーは','薬のアレルギーは','薬アレルギーは']);if(da)result.drug_allergy=da;
+  const fa=ext(['食品アレルギーは','食べ物アレルギーは']);if(fa)result.food_allergy=fa;
+  const inf=ext(['感染症は','感染は']);if(inf)result.infection=inf;
+  const bt=ext(['抗血栓薬は','血液サラサラは']);if(bt)result.blood_thinner=bt;
+  const drm=t.match(/主治医は?(.{1,10}?)(先生|Dr|ドクター)?[。、\s]/);
+  if(drm)result.main_doctor=(drm[1]+(drm[2]||'先生')).trim();
+  const hm=t.match(/身長[はが ]?(\d{2,3}(?:[.．]\d)?)[センチcm]/);if(hm)result.height=parseFloat(hm[1]);
+  const wm=t.match(/体重[はが ]?(\d{2,3}(?:[.．]\d)?)[キロkgKG]/);if(wm)result.weight=parseFloat(wm[1]);
+  const fs=ext(['家族状況は','ご家族は','同居は']);if(fs)result.family_situation=fs;
+  const nt=ext(['注意事項は','特記事項は','注意は']);if(nt)result.notes=nt;
+  if(t.includes('視覚障害あり'))result.vision='yes';
+  else if(t.includes('眼鏡'))result.vision='glasses';
+  if(t.includes('聴覚障害あり'))result.hearing='yes';
+  else if(t.includes('補聴器'))result.hearing='aid';
+  if(t.includes('言語障害あり'))result.language='yes';
+  const dis=ext(['身体障害者手帳は','障害手帳は']);if(dis)result.disability=dis;
+  return result;
 }
 function handleFsFile(inp,mode){
   const f=inp.files[0];if(!f)return;
