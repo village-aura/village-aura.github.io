@@ -40,10 +40,30 @@ a{color:var(--p);text-decoration:none}
 
 /* ── BOTTOM NAV ── */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--bdr);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom)}
-.bn{flex:1;padding:8px 0 6px;text-align:center;color:var(--sub);transition:color .15s}
+.bn{flex:1;padding:7px 0 5px;text-align:center;color:var(--sub);transition:color .15s}
 .bn.on{color:var(--p)}
-.bn-ico{font-size:22px;line-height:1}
-.bn-lbl{font-size:10px;margin-top:2px;font-weight:600}
+.bn-ico{font-size:20px;line-height:1}
+.bn-lbl{font-size:9px;margin-top:2px;font-weight:600}
+
+/* ── HELP / MANUAL ── */
+#scr-help{padding-bottom:0}
+.man-section{margin:0 12px 12px;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.man-section-hd{background:var(--p);color:#fff;padding:10px 14px;font-size:13px;font-weight:700;letter-spacing:.04em}
+.man-item{padding:11px 14px;border-bottom:1px solid var(--bdr);font-size:13px;line-height:1.7}
+.man-item:last-child{border-bottom:none}
+.man-item b{color:var(--p)}
+.man-item code{background:#f0f4ff;color:var(--p);border-radius:4px;padding:1px 5px;font-size:12px}
+.ai-wrap{display:flex;flex-direction:column;height:calc(100vh - 170px)}
+.ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.ai-msg{max-width:86%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.65;word-break:break-word}
+.ai-msg.user{background:var(--p);color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.ai-msg.ai{background:var(--card);color:var(--txt);align-self:flex-start;border-radius:16px 16px 16px 4px;box-shadow:var(--sh)}
+.ai-msg.typing{background:var(--card);color:var(--sub);align-self:flex-start;font-style:italic;box-shadow:var(--sh);border-radius:16px}
+.ai-input-row{display:flex;gap:8px;padding:10px 12px;background:var(--bg);border-top:1px solid var(--bdr);padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+.ai-input{flex:1;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:24px;font-size:15px;background:#fff;resize:none;height:44px;overflow:hidden}
+.ai-send{background:var(--p);color:#fff;border-radius:50%;width:44px;height:44px;font-size:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.ai-send:disabled{background:var(--bdr)}
+.ai-key-notice{margin:12px;padding:12px 14px;background:#fff3e0;border:1.5px solid #FB8C00;border-radius:var(--r);font-size:13px;line-height:1.6}
 
 /* ── LOGIN ── */
 #scr-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:0;background:#091929;position:relative;overflow:hidden}
@@ -411,6 +431,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
+      <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
     </nav>
     <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
       <div id="sb-user" style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.9">──</div>
@@ -768,6 +789,15 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="setting-group">
+      <h3>🤖 AI FAQ 設定</h3>
+      <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px">
+        <div style="font-size:12px;color:var(--sub);line-height:1.6">Anthropic APIキーを登録すると、ヘルプ画面のAI FAQが使えます。キーはこの端末にのみ保存されます。</div>
+        <input type="password" id="ai-api-key-input" placeholder="sk-ant-..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
+        <button onclick="saveAIKey()" style="width:100%;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">APIキーを保存</button>
+        <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
+      </div>
+    </div>
+    <div class="setting-group">
       <h3>🗑 データ管理</h3>
       <div class="setting-item">
         <span class="si-ico">🔄</span>
@@ -797,7 +827,105 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-settings')" id="bn-set">
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
     </button>
+    <button class="bn" onclick="showScr('scr-help')" id="bn-help">
+      <div class="bn-ico">📖</div><div class="bn-lbl">ヘルプ</div>
+    </button>
   </nav>
+
+  <!-- HELP SCREEN -->
+  <div id="scr-help" class="scr">
+    <div style="padding:12px 12px 0">
+      <div class="tab-bar">
+        <button class="tab on" data-tab="tab-help-manual" onclick="switchTab(this)">📖 マニュアル</button>
+        <button class="tab" data-tab="tab-help-ai" onclick="switchTab(this)">🤖 AI FAQ</button>
+      </div>
+    </div>
+
+    <!-- マニュアル -->
+    <div id="tab-help-manual" class="tab-panel on" style="padding:12px 0 120px">
+      <div class="man-section">
+        <div class="man-section-hd">🔑 ログイン・ログアウト</div>
+        <div class="man-item">職員<b>ID</b>（例: <code>tanaka</code>）と<b>パスワード</b>を入力してログインします。初期パスワードは <code>1234</code>。</div>
+        <div class="man-item">ログアウトは<b>設定</b>画面 → 「ログアウト」ボタン。30分無操作で自動ロックされます。</div>
+        <div class="man-item">パスワードは<b>設定</b>画面 →「パスワード変更」から個人で変更できます。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">🏠 ホーム画面</div>
+        <div class="man-item"><b>バイタル未記録アラート</b>：本日バイタル未記録の利用者数を表示。タップで一覧へ。</div>
+        <div class="man-item"><b>準緊急以上の申し送り</b>：直近7日間の重要・緊急申し送り／経時記録を表示。</div>
+        <div class="man-item"><b>直近の記録</b>：スタッフが入力した最新5件の記録を確認できます。</div>
+        <div class="man-item"><b>クイックリンク</b>：スケジュール・申し送りへのショートカット。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">👥 利用者一覧・詳細</div>
+        <div class="man-item">利用者一覧はあいうえお順。上部の検索バーで名前・かなを絞り込めます。</div>
+        <div class="man-item">利用者カードをタップすると<b>詳細画面</b>へ。バイタル・食事・排泄・経時記録・体重の入力ボタンが並びます。</div>
+        <div class="man-item">詳細画面上部の<b>バイタルサマリー</b>：異常値は<span style="color:var(--ng);font-weight:700">赤字</span>で表示。血圧90〜140/40〜85、脈拍50〜100、体温35.5〜37.2、SpO2 95%以上が正常範囲。</div>
+        <div class="man-item">「フェイスシート」ボタンで利用者の詳細情報・既往歴・緊急連絡先を確認できます。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">📝 記録入力（共通）</div>
+        <div class="man-item"><b>実施日時／測定日時</b>：モーダル上部のセレクターで「現在時刻」か「時刻を指定」を選べます。紙記録の後入力に活用してください。</div>
+        <div class="man-item"><b>音声で一括入力</b>（青いボタン）：話すだけで各フィールドに自動振り分けされます。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">🌡️ バイタル入力</div>
+        <div class="man-item">収縮期・拡張期血圧／脈拍／体温／SpO2／意識レベルを入力。</div>
+        <div class="man-item"><b>音声例</b>：「血圧130の80 脈拍72 体温36.5 SpO2 98 清明」</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">🍚 食事・飲水</div>
+        <div class="man-item">朝食／10時／昼食／おやつ／夕食の区分を選択。主食・副食の摂取量をスライダーで入力。</div>
+        <div class="man-item"><b>音声例</b>：「昼食 主食8割 副食7割 水分200」「完食」「半分」</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">💧 排泄記録</div>
+        <div class="man-item">種別（排尿・排便・両方）、尿量、便性状（○普通便・△軟便・硬便・水様便）を入力。</div>
+        <div class="man-item"><b>音声例</b>：「排尿あり普通量 軟便あり」「失禁あり ポータブル使用」</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">📋 経時記録</div>
+        <div class="man-item">カテゴリ（複数可）・重要度・内容を入力。「申し送りにも転記」で申し送りボードにも反映。</div>
+        <div class="man-item">AIが内容を解析して<b>報告先を自動提案</b>します（医師・看護師・介護士・相談員）。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">📣 申し送りボード</div>
+        <div class="man-item">部署横断で申し送りを管理。重要度別（通常・重要・緊急）に色分けされます。</div>
+        <div class="man-item">利用者詳細の「申し送り」タブからも個別に確認・追加できます。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">📅 スケジュール</div>
+        <div class="man-item"><b>全体</b>：週間カレンダーで施設全体の予定を確認。</div>
+        <div class="man-item"><b>個別</b>：利用者ごとのスケジュール表示。</div>
+        <div class="man-item"><b>訪問介護</b>：日別ガントチャートで訪問予定を時系列で確認。</div>
+      </div>
+      <div class="man-section">
+        <div class="man-section-hd">⚙️ 設定・管理</div>
+        <div class="man-item"><b>パスワード変更</b>：現在のPW確認後、新しいPWに変更。4文字以上。</div>
+        <div class="man-item"><b>職員アカウント管理</b>（管理者のみ）：各職員のPW変更・利用停止が可能。管理者ID: <code>yamada</code>。</div>
+        <div class="man-item"><b>自動ロック</b>：30分無操作で自動ログアウト（トグルでON/OFF）。</div>
+        <div class="man-item"><b>AI FAQ APIキー</b>：Anthropic APIキーを登録するとAI FAQが使えます。</div>
+      </div>
+    </div>
+
+    <!-- AI FAQ -->
+    <div id="tab-help-ai" class="tab-panel" style="padding:0">
+      <div id="ai-key-notice" class="ai-key-notice" style="display:none">
+        🔑 AI FAQを使うにはAnthropicのAPIキーが必要です。<br>
+        <b>設定</b>画面 →「AI FAQ APIキー」に入力してください。<br>
+        <span style="font-size:11px;color:var(--sub)">APIキーは端末内にのみ保存されます。</span>
+      </div>
+      <div class="ai-wrap">
+        <div class="ai-messages" id="ai-messages">
+          <div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>
+        </div>
+        <div class="ai-input-row">
+          <input class="ai-input" id="ai-input" type="text" placeholder="質問を入力…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}">
+          <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   </div><!-- /main-content-wrap -->
 </div>
@@ -1544,12 +1672,76 @@ function logout(){
   document.getElementById('login-err').style.display='none';
 }
 
+// ═══════════ HELP / AI FAQ ═══════════
+const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
+主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
+データはlocalStorageに保存。管理者ID: yamada。初期PW: 1234。
+介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
+let aiHistory=[];
+function initHelpScreen(){
+  const key=localStorage.getItem('ai_api_key');
+  const notice=document.getElementById('ai-key-notice');
+  if(notice)notice.style.display=key?'none':'block';
+}
+function saveAIKey(){
+  const val=document.getElementById('ai-api-key-input').value.trim();
+  if(!val||val.startsWith('••')){toast('APIキーを入力してください');return;}
+  localStorage.setItem('ai_api_key',val);
+  document.getElementById('ai-key-status').textContent='✓ APIキー登録済み';
+  document.getElementById('ai-api-key-input').value='••••••••••••'+val.slice(-4);
+  toast('AIのAPIキーを保存しました ✓');
+}
+function appendAIMsg(role,text){
+  const el=document.getElementById('ai-messages');if(!el)return;
+  const div=document.createElement('div');
+  div.className='ai-msg '+role;
+  div.textContent=text;
+  el.appendChild(div);
+  el.scrollTop=el.scrollHeight;
+  return div;
+}
+async function sendAIMessage(){
+  const inp=document.getElementById('ai-input');
+  const text=inp.value.trim();if(!text)return;
+  const key=localStorage.getItem('ai_api_key');
+  if(!key){toast('設定画面でAPIキーを登録してください');return;}
+  inp.value='';
+  appendAIMsg('user',text);
+  aiHistory.push({role:'user',content:text});
+  const btn=document.getElementById('ai-send-btn');
+  btn.disabled=true;
+  const typing=appendAIMsg('typing','考え中…');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,system:AI_SYSTEM,messages:aiHistory})
+    });
+    const data=await res.json();
+    if(data.error){throw new Error(data.error.message);}
+    const reply=data.content?.[0]?.text||'応答を取得できませんでした';
+    typing.remove();
+    appendAIMsg('ai',reply);
+    aiHistory.push({role:'assistant',content:reply});
+    if(aiHistory.length>20)aiHistory=aiHistory.slice(-20);
+  }catch(e){
+    typing.remove();
+    appendAIMsg('ai','エラーが発生しました：'+e.message);
+  }
+  btn.disabled=false;
+}
+
 // ═══════════ SETTINGS ═══════════
 function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pw-err').style.display='none';
+  const key=localStorage.getItem('ai_api_key')||'';
+  const inp=document.getElementById('ai-api-key-input');
+  const sts=document.getElementById('ai-key-status');
+  if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
+  if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminGrp=document.getElementById('admin-staff-group');
   if(isAdmin()){
     adminGrp.style.display='block';
@@ -1629,15 +1821,15 @@ function showScr(id){
   const titles={
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
     'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理',
-    'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール'
+    'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
   back.style.display=(id==='scr-detail')?'block':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
-  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set'};
+  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -1645,6 +1837,7 @@ function showScr(id){
   if(id==='scr-handover-board') renderHandoverBoard();
   if(id==='scr-schedule') renderSchedule();
   if(id==='scr-settings') renderSettings();
+  if(id==='scr-help') initHelpScreen();
   window.scrollTo(0,0);
 }
 function goBack(){showScr(S.prevScreen||'scr-residents');}
