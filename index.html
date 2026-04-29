@@ -232,6 +232,17 @@ a{color:var(--p);text-decoration:none}
 .fluid-fill.warn{background:var(--warn)}
 .fluid-fill.ng{background:var(--ng)}
 
+/* ── FACE SHEET ── */
+.fs-sec{margin-bottom:16px}
+.fs-sec h4{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bdr)}
+.adl-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.adl-lbl{font-size:12px;font-weight:700;min-width:44px;color:var(--txt)}
+.adl-opts{display:flex;gap:4px;flex-wrap:wrap}
+.adl-opt{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);cursor:pointer;transition:all .12s}
+.adl-opt.on{background:var(--ps);border-color:var(--p);color:var(--p)}
+.fs-file-card{background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px;border:1.5px dashed var(--bdr)}
+.fs-view-tag{display:inline-block;background:var(--ps);color:var(--p);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px}
+
 /* ── SIDEBAR ── */
 #sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15)}
 .sbn{display:block;width:100%;padding:13px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:14px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
@@ -245,7 +256,7 @@ a{color:var(--p);text-decoration:none}
   .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
   .res-list .res-card{margin-bottom:0}
   .inp-grid{grid-template-columns:repeat(6,1fr)}
-  #scr-handover-board{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start}
+  #scr-handover-board.on{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start}
   #scr-handover-board .card{margin-bottom:0}
 }
 
@@ -307,7 +318,7 @@ a{color:var(--p);text-decoration:none}
   .detail-col-right .timeline-sec h3{display:none}
   .summary-row{grid-template-columns:repeat(4,1fr)}
   /* handover board */
-  #scr-handover-board{max-width:1200px;margin:0 auto;padding:16px;gap:12px}
+  #scr-handover-board.on{max-width:1200px;margin:0 auto;padding:16px;gap:12px}
   #scr-handover-board .card{margin:0}
   /* settings / import */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
@@ -661,10 +672,10 @@ a{color:var(--p);text-decoration:none}
       <div class="setting-item">
         <span class="si-ico">🔐</span>
         <div class="si-body">
-          <div class="si-name">自動ロック</div>
-          <div class="si-desc">30分間操作がない場合、自動でログアウトします。</div>
+          <div class="si-name">自動ロック（30分）</div>
+          <div class="si-desc">30分間操作がない場合、自動でログアウトします。<br>タップ・クリックのたびにタイマーはリセットされます。</div>
         </div>
-        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        <label class="toggle"><input type="checkbox" id="toggle-autolock" checked onchange="toggleAutoLock(this.checked)"><span class="toggle-slider"></span></label>
       </div>
       <div class="setting-item">
         <span class="si-ico">🚪</span>
@@ -942,6 +953,151 @@ a{color:var(--p);text-decoration:none}
     <div class="field"><label>アレルギー・注意事項</label><textarea id="er-allergy"></textarea></div>
     <button class="btn-primary" onclick="saveEditResident()">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-edit-res')">キャンセル</button>
+  </div>
+</div>
+
+<!-- FACE SHEET -->
+<div class="overlay" id="modal-facesheet" onclick="closeModal('modal-facesheet',event)">
+  <div class="sheet" style="max-height:96vh" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="sheet-title" style="margin-bottom:0">📋 フェイスシート</div>
+      <div id="fs-res-name" style="font-size:12px;color:var(--sub)"></div>
+    </div>
+    <div class="tab-bar" style="margin:0 -20px 0">
+      <button class="tab on" data-fstab="fst-contact" onclick="switchFsTab(this)">連絡先</button>
+      <button class="tab" data-fstab="fst-adl" onclick="switchFsTab(this)">ADL</button>
+      <button class="tab" data-fstab="fst-medical" onclick="switchFsTab(this)">医療</button>
+      <button class="tab" data-fstab="fst-file" onclick="switchFsTab(this)">ファイル</button>
+    </div>
+
+    <!-- 連絡先タブ -->
+    <div id="fst-contact" class="tab-panel on" style="padding-top:14px">
+      <div class="field"><label>住所</label><input type="text" id="fs-address" placeholder="倉敷市..."></div>
+      <div class="field-row">
+        <div class="field"><label>電話番号</label><input type="tel" id="fs-tel" placeholder="086-..."></div>
+        <div class="field"><label>認知症</label>
+          <select id="fs-cog">
+            <option value="normal">年相応</option><option value="mild">軽度</option>
+            <option value="moderate">中度</option><option value="severe">重度</option>
+          </select>
+        </div>
+      </div>
+      <div class="fs-sec"><h4>緊急連絡先</h4>
+        <div id="fs-contacts-wrap">
+          <div class="field-row" style="margin-bottom:4px">
+            <div class="field"><label>① 氏名</label><input type="text" class="fs-c-name" placeholder="山田 太郎"></div>
+            <div class="field"><label>続柄</label><input type="text" class="fs-c-rel" placeholder="長男"></div>
+          </div>
+          <div class="field" style="margin-bottom:12px"><label>TEL</label><input type="tel" class="fs-c-tel" placeholder="090-0000-0001"></div>
+          <div class="field-row" style="margin-bottom:4px">
+            <div class="field"><label>② 氏名</label><input type="text" class="fs-c-name" placeholder=""></div>
+            <div class="field"><label>続柄</label><input type="text" class="fs-c-rel" placeholder=""></div>
+          </div>
+          <div class="field" style="margin-bottom:12px"><label>TEL</label><input type="tel" class="fs-c-tel" placeholder=""></div>
+          <div class="field-row" style="margin-bottom:4px">
+            <div class="field"><label>③ 氏名</label><input type="text" class="fs-c-name" placeholder=""></div>
+            <div class="field"><label>続柄</label><input type="text" class="fs-c-rel" placeholder=""></div>
+          </div>
+          <div class="field"><label>TEL</label><input type="tel" class="fs-c-tel" placeholder=""></div>
+        </div>
+      </div>
+      <div class="field"><label>家族・本人の状況</label><textarea id="fs-family-situation" placeholder="同居者の有無、家族との関係など..." rows="3"></textarea></div>
+      <button class="btn-primary" onclick="saveFacesheetData()">保存</button>
+    </div>
+
+    <!-- ADLタブ -->
+    <div id="fst-adl" class="tab-panel" style="padding-top:14px">
+      <div class="fs-sec"><h4>ADL状態</h4>
+        <div class="adl-row"><span class="adl-lbl">食事</span><div class="adl-opts" id="adl-shokuji"></div></div>
+        <div class="adl-row"><span class="adl-lbl">排泄</span><div class="adl-opts" id="adl-haisetsu"></div></div>
+        <div class="adl-row"><span class="adl-lbl">入浴</span><div class="adl-opts" id="adl-nyuyoku" data-mode="bath"></div></div>
+        <div class="adl-row"><span class="adl-lbl">着脱</span><div class="adl-opts" id="adl-chakudatsu"></div></div>
+        <div class="adl-row"><span class="adl-lbl">移動</span><div class="adl-opts" id="adl-ido"></div></div>
+      </div>
+      <div class="fs-sec"><h4>食事形態</h4>
+        <div class="adl-row"><span class="adl-lbl">主食</span><div class="adl-opts" id="adl-shushoku" data-mode="main"></div></div>
+        <div class="adl-row"><span class="adl-lbl">副食</span><div class="adl-opts" id="adl-fukushoku" data-mode="side"></div></div>
+        <div class="adl-row"><span class="adl-lbl">トロミ</span><div class="adl-opts" id="adl-toromi" data-mode="toromi"></div></div>
+        <div class="adl-row"><span class="adl-lbl">制限</span><div class="adl-opts" id="adl-seigen" data-mode="diet"></div></div>
+        <div class="field" style="margin-top:6px"><label>食品アレルギー</label><input type="text" id="fs-food-allergy" placeholder="卵、小麦..."></div>
+      </div>
+      <div class="fs-sec"><h4>移動手段</h4>
+        <div class="adl-opts" id="adl-ido-tool"></div>
+      </div>
+      <button class="btn-primary" onclick="saveFacesheetData()">保存</button>
+    </div>
+
+    <!-- 医療タブ -->
+    <div id="fst-medical" class="tab-panel" style="padding-top:14px">
+      <div class="fs-sec"><h4>身体状況</h4>
+        <div class="field-row">
+          <div class="field"><label>身長 (cm)</label><input type="number" step="0.1" id="fs-height" placeholder="160"></div>
+          <div class="field"><label>体重 (kg)</label><input type="number" step="0.1" id="fs-weight" placeholder="55"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>視覚障害</label>
+            <select id="fs-vision"><option value="none">なし</option><option value="glasses">あり（眼鏡）</option><option value="yes">あり</option></select>
+          </div>
+          <div class="field"><label>聴覚障害</label>
+            <select id="fs-hearing"><option value="none">なし</option><option value="aid">あり（補聴器）</option><option value="yes">あり</option></select>
+          </div>
+        </div>
+        <div class="field"><label>言語障害</label>
+          <select id="fs-language"><option value="none">なし</option><option value="yes">あり</option></select>
+        </div>
+      </div>
+      <div class="fs-sec"><h4>感染症・アレルギー</h4>
+        <div class="field"><label>感染症</label><input type="text" id="fs-infection" placeholder="MRSA、疥癬など..."></div>
+        <div class="field"><label>薬物アレルギー</label><input type="text" id="fs-drug-allergy" placeholder="ペニシリン系..."></div>
+        <div class="field"><label>抗血栓薬</label><input type="text" id="fs-blood-thinner" placeholder="ワーファリン等..."></div>
+      </div>
+      <div class="fs-sec"><h4>主治医・担当医</h4>
+        <div class="field-row">
+          <div class="field"><label>主治医</label><input type="text" id="fs-main-doctor" placeholder="○○先生"></div>
+          <div class="field"><label>TEL</label><input type="tel" id="fs-doctor-tel" placeholder="086-..."></div>
+        </div>
+        <div id="fs-doctors-wrap">
+          <div class="field-row" style="margin-bottom:6px">
+            <div class="field"><label>診療科①</label><input type="text" class="fs-dept" placeholder="内科"></div>
+            <div class="field"><label>担当Dr</label><input type="text" class="fs-dr" placeholder="山田Dr"></div>
+          </div>
+          <div class="field-row" style="margin-bottom:6px">
+            <div class="field"><label>診療科②</label><input type="text" class="fs-dept" placeholder="整形外科"></div>
+            <div class="field"><label>担当Dr</label><input type="text" class="fs-dr" placeholder=""></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>診療科③</label><input type="text" class="fs-dept" placeholder=""></div>
+            <div class="field"><label>担当Dr</label><input type="text" class="fs-dr" placeholder=""></div>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>身体障害者手帳</label><input type="text" id="fs-disability" placeholder="種別・等級など..."></div>
+      <div class="field"><label>注意事項</label><textarea id="fs-notes" rows="3" placeholder="特別な注意が必要な事項..."></textarea></div>
+      <button class="btn-primary" onclick="saveFacesheetData()">保存</button>
+    </div>
+
+    <!-- ファイルタブ -->
+    <div id="fst-file" class="tab-panel" style="padding-top:14px">
+      <div class="fs-sec"><h4>ファイル添付</h4>
+        <div class="fs-file-card">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px">📄 フェイスシート（PDF）</div>
+          <div id="fs-pdf-status" style="font-size:12px;color:var(--sub);margin-bottom:10px">アップロードされていません</div>
+          <button onclick="document.getElementById('fs-pdf-inp').click()" style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700">📤 PDFをアップロード</button>
+          <input type="file" id="fs-pdf-inp" accept=".pdf" style="display:none" onchange="handleFsFile(this,'pdf')">
+        </div>
+        <div class="fs-file-card">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 CSV / Excelで更新</div>
+          <div style="font-size:12px;color:var(--sub);margin-bottom:10px">CSVの1列目:項目名、2列目:値</div>
+          <button onclick="document.getElementById('fs-csv-inp').click()" style="background:#f3f4f6;color:var(--txt);border:1.5px solid var(--bdr);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700">📥 ファイルを選択</button>
+          <input type="file" id="fs-csv-inp" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFsFile(this,'csv')">
+        </div>
+      </div>
+      <div id="fs-pdf-viewer" style="display:none">
+        <div class="fs-view-tag">プレビュー（このセッションのみ）</div>
+        <iframe id="fs-pdf-iframe" style="width:100%;height:400px;border:1px solid var(--bdr);border-radius:8px;margin-top:6px"></iframe>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1268,7 +1424,10 @@ function renderDetail(){
   document.getElementById('hd-title').textContent=r.name+' 様';
   // Hero
   document.getElementById('detail-hero').innerHTML=`
-    <button onclick="openEditResident()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;z-index:5">✏️ 編集</button>
+    <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5">
+      <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📋 書類</button>
+      <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">✏️ 編集</button>
+    </div>
     <div class="detail-name">${r.name} 様</div>
     <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
     <div class="detail-tags">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
@@ -1948,6 +2107,206 @@ function renderVitalGraph(rid, range='today'){
   el.innerHTML=svg;
 }
 
+// ═══════════ FACE SHEET ═══════════
+const ADL_OPTS=['自立','見守り','声かけ','一部介助','全介助'];
+const BATH_OPTS=['個浴','リフト浴','重浴','チェアイン'];
+const MAIN_OPTS=['米飯','軟飯','全粥','ペースト','おにぎり'];
+const SIDE_OPTS=['普通','キザミ','一口大','ペースト食'];
+const DIET_OPTS=['一般食','糖尿病食','高血圧食','肝臓食'];
+const TOROMI_OPTS=['なし','あり'];
+const IDO_TOOL_OPTS=['車椅子','リクライニング','T字杖','センサーマット'];
+
+function getFacesheet(rid){
+  const d=ls('fs_'+rid)||{};
+  const r=getResidents().find(x=>x.id===rid)||{};
+  return {
+    address:d.address||'',tel:d.tel||'',cog:d.cog||'normal',
+    contacts:d.contacts||[{name:'',rel:'',tel:''},{name:'',rel:'',tel:''},{name:'',rel:'',tel:''}],
+    family_situation:d.family_situation||'',
+    adl_shokuji:d.adl_shokuji||'自立',adl_haisetsu:d.adl_haisetsu||'自立',
+    adl_nyuyoku:d.adl_nyuyoku||'個浴',adl_chakudatsu:d.adl_chakudatsu||'自立',adl_ido:d.adl_ido||'自立',
+    adl_shushoku:d.adl_shushoku||'米飯',adl_fukushoku:d.adl_fukushoku||'普通',
+    adl_toromi:d.adl_toromi||'なし',adl_seigen:d.adl_seigen||'一般食',
+    food_allergy:d.food_allergy||(r.allergy||''),ido_tool:d.ido_tool||[],
+    height:d.height||null,weight:d.weight||null,
+    vision:d.vision||'none',hearing:d.hearing||'none',language:d.language||'none',
+    infection:d.infection||'',drug_allergy:d.drug_allergy||'',blood_thinner:d.blood_thinner||'',
+    main_doctor:d.main_doctor||'',doctor_tel:d.doctor_tel||'',
+    doctors:d.doctors||[{dept:'',dr:''},{dept:'',dr:''},{dept:'',dr:''}],
+    disability:d.disability||'',notes:d.notes||'',
+    pdf_name:d.pdf_name||'',pdf_date:d.pdf_date||'',
+  };
+}
+function lsFsSet(rid,data){lsSet('fs_'+rid,data);}
+
+function renderAdlOpts(elId,options,current,multi=false){
+  const el=document.getElementById(elId);if(!el)return;
+  el.innerHTML=options.map(o=>{
+    const on=multi?(Array.isArray(current)&&current.includes(o)):(current===o);
+    return `<button class="adl-opt ${on?'on':''}" onclick="selectAdlOpt('${elId}','${o}',${multi})">${o}</button>`;
+  }).join('');
+}
+function selectAdlOpt(elId,val,multi){
+  const el=document.getElementById(elId);if(!el)return;
+  el.querySelectorAll('.adl-opt').forEach(b=>{
+    if(multi){if(b.textContent===val) b.classList.toggle('on');}
+    else{b.classList.toggle('on',b.textContent===val);}
+  });
+}
+function getAdlVal(elId,multi=false){
+  const el=document.getElementById(elId);if(!el)return multi?[]:'';
+  const on=[...el.querySelectorAll('.adl-opt.on')].map(b=>b.textContent);
+  return multi?on:(on[0]||'');
+}
+
+function openFacesheet(){
+  const r=getResidents().find(x=>x.id===S.currentRes);if(!r)return;
+  const fs=getFacesheet(S.currentRes);
+  document.getElementById('fs-res-name').textContent=r.name+' 様';
+  // 連絡先タブ
+  document.getElementById('fs-address').value=fs.address;
+  document.getElementById('fs-tel').value=fs.tel;
+  document.getElementById('fs-cog').value=fs.cog;
+  document.getElementById('fs-family-situation').value=fs.family_situation;
+  const names=document.querySelectorAll('.fs-c-name');
+  const rels=document.querySelectorAll('.fs-c-rel');
+  const tels=document.querySelectorAll('.fs-c-tel');
+  fs.contacts.forEach((c,i)=>{
+    if(names[i]) names[i].value=c.name||'';
+    if(rels[i]) rels[i].value=c.rel||'';
+    if(tels[i]) tels[i].value=c.tel||'';
+  });
+  // ADLタブ
+  renderAdlOpts('adl-shokuji',ADL_OPTS,fs.adl_shokuji);
+  renderAdlOpts('adl-haisetsu',ADL_OPTS,fs.adl_haisetsu);
+  renderAdlOpts('adl-nyuyoku',BATH_OPTS,fs.adl_nyuyoku);
+  renderAdlOpts('adl-chakudatsu',ADL_OPTS,fs.adl_chakudatsu);
+  renderAdlOpts('adl-ido',ADL_OPTS,fs.adl_ido);
+  renderAdlOpts('adl-shushoku',MAIN_OPTS,fs.adl_shushoku);
+  renderAdlOpts('adl-fukushoku',SIDE_OPTS,fs.adl_fukushoku);
+  renderAdlOpts('adl-toromi',TOROMI_OPTS,fs.adl_toromi);
+  renderAdlOpts('adl-seigen',DIET_OPTS,fs.adl_seigen);
+  document.getElementById('fs-food-allergy').value=fs.food_allergy;
+  renderAdlOpts('adl-ido-tool',IDO_TOOL_OPTS,fs.ido_tool,true);
+  // 医療タブ
+  document.getElementById('fs-height').value=fs.height||'';
+  document.getElementById('fs-weight').value=fs.weight||'';
+  document.getElementById('fs-vision').value=fs.vision;
+  document.getElementById('fs-hearing').value=fs.hearing;
+  document.getElementById('fs-language').value=fs.language;
+  document.getElementById('fs-infection').value=fs.infection;
+  document.getElementById('fs-drug-allergy').value=fs.drug_allergy;
+  document.getElementById('fs-blood-thinner').value=fs.blood_thinner;
+  document.getElementById('fs-main-doctor').value=fs.main_doctor;
+  document.getElementById('fs-doctor-tel').value=fs.doctor_tel;
+  document.getElementById('fs-disability').value=fs.disability;
+  document.getElementById('fs-notes').value=fs.notes;
+  const depts=document.querySelectorAll('.fs-dept');
+  const drs=document.querySelectorAll('.fs-dr');
+  fs.doctors.forEach((d,i)=>{
+    if(depts[i]) depts[i].value=d.dept||'';
+    if(drs[i]) drs[i].value=d.dr||'';
+  });
+  // ファイルタブ
+  document.getElementById('fs-pdf-status').textContent=
+    fs.pdf_name?`📄 ${fs.pdf_name}（${fs.pdf_date}）`:'アップロードされていません';
+  document.getElementById('fs-pdf-viewer').style.display='none';
+  // open on first tab
+  document.querySelectorAll('#modal-facesheet .tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('#modal-facesheet .tab-panel').forEach(p=>p.classList.remove('on'));
+  document.querySelector('#modal-facesheet .tab').classList.add('on');
+  document.getElementById('fst-contact').classList.add('on');
+  document.getElementById('modal-facesheet').classList.add('on');
+}
+function switchFsTab(btn){
+  document.querySelectorAll('#modal-facesheet .tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('#modal-facesheet .tab-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById(btn.dataset.fstab).classList.add('on');
+}
+function saveFacesheetData(){
+  const contacts=[...Array(3)].map((_,i)=>({
+    name:document.querySelectorAll('.fs-c-name')[i]?.value||'',
+    rel:document.querySelectorAll('.fs-c-rel')[i]?.value||'',
+    tel:document.querySelectorAll('.fs-c-tel')[i]?.value||'',
+  }));
+  const depts=document.querySelectorAll('.fs-dept');
+  const drs=document.querySelectorAll('.fs-dr');
+  const doctors=[...Array(3)].map((_,i)=>({dept:depts[i]?.value||'',dr:drs[i]?.value||''}));
+  const prev=getFacesheet(S.currentRes);
+  lsFsSet(S.currentRes,{
+    ...prev,
+    address:document.getElementById('fs-address').value,
+    tel:document.getElementById('fs-tel').value,
+    cog:document.getElementById('fs-cog').value,
+    contacts,family_situation:document.getElementById('fs-family-situation').value,
+    adl_shokuji:getAdlVal('adl-shokuji')||'自立',
+    adl_haisetsu:getAdlVal('adl-haisetsu')||'自立',
+    adl_nyuyoku:getAdlVal('adl-nyuyoku')||'個浴',
+    adl_chakudatsu:getAdlVal('adl-chakudatsu')||'自立',
+    adl_ido:getAdlVal('adl-ido')||'自立',
+    adl_shushoku:getAdlVal('adl-shushoku')||'米飯',
+    adl_fukushoku:getAdlVal('adl-fukushoku')||'普通',
+    adl_toromi:getAdlVal('adl-toromi')||'なし',
+    adl_seigen:getAdlVal('adl-seigen')||'一般食',
+    food_allergy:document.getElementById('fs-food-allergy').value,
+    ido_tool:getAdlVal('adl-ido-tool',true),
+    height:parseFloat(document.getElementById('fs-height').value)||null,
+    weight:parseFloat(document.getElementById('fs-weight').value)||null,
+    vision:document.getElementById('fs-vision').value,
+    hearing:document.getElementById('fs-hearing').value,
+    language:document.getElementById('fs-language').value,
+    infection:document.getElementById('fs-infection').value,
+    drug_allergy:document.getElementById('fs-drug-allergy').value,
+    blood_thinner:document.getElementById('fs-blood-thinner').value,
+    main_doctor:document.getElementById('fs-main-doctor').value,
+    doctor_tel:document.getElementById('fs-doctor-tel').value,
+    doctors,disability:document.getElementById('fs-disability').value,
+    notes:document.getElementById('fs-notes').value,
+  });
+  toast('フェイスシートを保存しました ✓');
+}
+function handleFsFile(inp,mode){
+  const f=inp.files[0];if(!f)return;
+  if(mode==='pdf'){
+    const url=URL.createObjectURL(f);
+    document.getElementById('fs-pdf-iframe').src=url;
+    document.getElementById('fs-pdf-viewer').style.display='block';
+    const dateStr=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+    document.getElementById('fs-pdf-status').textContent=`📄 ${f.name}（${dateStr} アップロード）`;
+    const prev=getFacesheet(S.currentRes);
+    lsFsSet(S.currentRes,{...prev,pdf_name:f.name,pdf_date:dateStr});
+    toast('PDFを読み込みました（表示はこのセッションのみ）');
+  } else {
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const text=e.target.result;
+        const lines=text.trim().split('\n');
+        const prev=getFacesheet(S.currentRes);
+        const map={};
+        lines.forEach(l=>{
+          const cols=l.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+          if(cols[0]&&cols[1]) map[cols[0]]=cols[1];
+        });
+        const fmap={
+          '住所':'address','電話番号':'tel','認知症':'cog',
+          '感染症':'infection','薬物アレルギー':'drug_allergy','抗血栓薬':'blood_thinner',
+          '主治医':'main_doctor','身長':'height','体重':'weight',
+          '食品アレルギー':'food_allergy','身体障害者手帳':'disability','注意事項':'notes',
+        };
+        const updates={};
+        Object.entries(fmap).forEach(([ja,key])=>{if(map[ja]!==undefined) updates[key]=map[ja];});
+        lsFsSet(S.currentRes,{...prev,...updates});
+        openFacesheet();
+        toast(`CSVから${Object.keys(updates).length}項目を更新しました ✓`);
+      } catch(err){toast('CSV読み込みエラー');}
+    };
+    reader.readAsText(f,'UTF-8');
+  }
+  inp.value='';
+}
+
 // ═══════════ TOAST ═══════════
 let toastTimer;
 function toast(msg){
@@ -1966,16 +2325,21 @@ function resetDemo(){
 }
 
 // ═══════════ AUTO LOCK ═══════════
-let lockTimer;
+let lockTimer, autoLockEnabled=true;
+function toggleAutoLock(on){
+  autoLockEnabled=on;
+  clearTimeout(lockTimer);
+  if(on) resetLockTimer();
+}
 function resetLockTimer(){
   clearTimeout(lockTimer);
+  if(!autoLockEnabled||!S.user) return;
   lockTimer=setTimeout(()=>{
-    if(S.user){toast('30分間操作がなかったため自動ロックしました');logout();}
+    toast('30分間操作がなかったため自動ロックしました');logout();
   },30*60*1000);
 }
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
-resetLockTimer();
 
 // ═══════════ PWA MANIFEST ═══════════
 const manifest={name:'ケアカルテ',short_name:'ケアカルテ',start_url:'.',display:'standalone',
