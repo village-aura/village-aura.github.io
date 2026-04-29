@@ -191,6 +191,12 @@ a{color:var(--p);text-decoration:none}
 .tag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .ttag{padding:6px 12px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;font-weight:600;background:var(--card);color:var(--sub);cursor:pointer;transition:all .15s}
 .ttag.on{background:var(--ps);border-color:var(--p);color:var(--p)}
+.ts-row{display:flex;align-items:center;gap:8px;padding:10px 0 4px;border-top:1px solid var(--bdr);margin-top:10px;flex-wrap:wrap}
+.ts-label{font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap}
+.ts-tabs{display:flex;background:#f0f2f5;border-radius:8px;padding:2px;gap:1px}
+.ts-tab{padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;color:var(--sub);transition:all .15s;background:none;border:none;cursor:pointer}
+.ts-tab.on{background:#fff;color:var(--p);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.ts-custom-input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;background:#fff;color:var(--txt);margin-top:4px;width:100%}
 .btn-primary{width:100%;padding:15px;background:var(--p);color:#fff;border-radius:12px;font-size:16px;font-weight:700;margin-top:8px;transition:background .15s}
 .btn-primary:hover{background:var(--pd)}
 .btn-cancel{width:100%;padding:13px;background:#f3f4f6;color:var(--sub);border-radius:12px;font-size:15px;font-weight:600;margin-top:8px}
@@ -1901,6 +1907,36 @@ function openModal(id){
     if(el)el.textContent=name;
   });
   document.getElementById(id).classList.add('on');
+  // 記録日時セレクターを注入（対象モーダルのみ）
+  const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight'];
+  if(recModals.includes(id)){
+    const sheet=document.querySelector('#'+id+' .sheet');
+    if(sheet){
+      const old=sheet.querySelector('.ts-row');if(old)old.remove();
+      const now=new Date();
+      const localIso=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+      const el=document.createElement('div');
+      el.className='ts-row';
+      el.innerHTML=`<span class="ts-label">記録日時</span><div class="ts-tabs"><button class="ts-tab on" onclick="setTsMode(this,'now')">現在時刻</button><button class="ts-tab" onclick="setTsMode(this,'custom')">時刻を指定</button></div><input type="datetime-local" class="ts-custom-input" value="${localIso}" style="display:none">`;
+      const saveBtn=sheet.querySelector('.btn-primary');
+      if(saveBtn)sheet.insertBefore(el,saveBtn);
+    }
+  }
+}
+function setTsMode(btn,mode){
+  const row=btn.closest('.ts-row');
+  row.querySelectorAll('.ts-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  row.querySelector('.ts-custom-input').style.display=mode==='custom'?'block':'none';
+}
+function getRecordTs(){
+  const row=document.querySelector('.overlay.on .ts-row');
+  if(row){
+    const isCustom=row.querySelector('.ts-tab:last-child.on');
+    const inp=row.querySelector('.ts-custom-input');
+    if(isCustom&&inp&&inp.value)return new Date(inp.value).toISOString();
+  }
+  return new Date().toISOString();
 }
 function closeModal(id,e){
   if(e&&e.target!==document.getElementById(id))return;
@@ -1963,7 +1999,7 @@ function saveRecord(type){
     return;
   }
   const recs=getRecords();
-  recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:new Date().toISOString(),data});
+  recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:getRecordTs(),data});
   saveRecords(recs);
   toast('保存しました ✓');
   renderDetail();
