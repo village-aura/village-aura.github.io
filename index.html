@@ -1918,7 +1918,11 @@ function openModal(id){
       const el=document.createElement('div');
       el.className='ts-row';
       el.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0f4ff;border-radius:10px;margin-bottom:14px;flex-wrap:wrap';
-      el.innerHTML=`<span class="ts-label">🕐 記録日時</span><div class="ts-tabs"><button class="ts-tab on" onclick="setTsMode(this,'now')">現在時刻</button><button class="ts-tab" onclick="setTsMode(this,'custom')">時刻を指定</button></div><input type="datetime-local" class="ts-custom-input" value="${localIso}" style="display:none">`;
+      const tsLabel={
+        'modal-vital':'測定日時','modal-weight':'測定日時',
+        'modal-meal':'実施日時','modal-excretion':'実施日時','modal-chrono':'実施日時'
+      }[id]||'実施日時';
+      el.innerHTML=`<span class="ts-label">🕐 ${tsLabel}</span><div class="ts-tabs"><button class="ts-tab on" onclick="setTsMode(this,'now')">現在時刻</button><button class="ts-tab" onclick="setTsMode(this,'custom')">時刻を指定</button></div><input type="datetime-local" class="ts-custom-input" value="${localIso}" style="display:none">`;
       const sub=sheet.querySelector('.sheet-sub');
       const title=sheet.querySelector('.sheet-title');
       const anchor=sub||title;
