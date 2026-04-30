@@ -804,6 +804,20 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="setting-group">
+      <h3>💡 アプリ改善提案</h3>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:10px;line-height:1.6">気づいたこと・使いにくいと感じたことを気軽に送ってください。管理者が確認・審査します。</div>
+      <button onclick="openProposalForm()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を送る</button>
+    </div>
+    <div class="setting-group" id="proposal-admin-group" style="display:none">
+      <h3>📋 改善提案 管理 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button id="ptab-pending" onclick="switchProposalTab('pending')" style="flex:1;padding:8px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700">未審査 <span id="ptab-pending-cnt"></span></button>
+        <button id="ptab-approved" onclick="switchProposalTab('approved')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:12px;font-weight:700">承認済</button>
+        <button id="ptab-rejected" onclick="switchProposalTab('rejected')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--sub);border-radius:8px;font-size:12px;font-weight:700">却下</button>
+      </div>
+      <div id="proposal-list"></div>
+    </div>
+    <div class="setting-group">
       <h3>📥 データ登録</h3>
       <div class="setting-item" onclick="showScr('scr-import')" style="cursor:pointer">
         <span class="si-ico">📥</span>
@@ -1464,6 +1478,54 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- PROPOSAL FORM -->
+<div class="overlay" id="modal-proposal" onclick="closeModal('modal-proposal',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">💡 改善提案</div>
+    <div class="field"><label>カテゴリ</label>
+      <select id="prop-cat">
+        <option value="ui">画面・操作性</option>
+        <option value="feature">新機能</option>
+        <option value="bug">不具合・バグ</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div class="field"><label>優先度</label>
+      <div class="radio-group">
+        <label><input type="radio" name="prop-pri" value="low" checked> 低</label>
+        <label><input type="radio" name="prop-pri" value="medium"> 中</label>
+        <label><input type="radio" name="prop-pri" value="high"> 高</label>
+      </div>
+    </div>
+    <div class="field"><label>タイトル</label>
+      <input type="text" id="prop-title" placeholder="一言で要約" style="width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px">
+    </div>
+    <div class="field"><label>詳細・理由</label>
+      <textarea id="prop-detail" rows="4" placeholder="どんな場面で困ったか、どう改善されると嬉しいかを書いてください…"></textarea>
+      <button class="btn-voice" onclick="startVoice('prop-detail',this)">🎤 音声入力</button>
+    </div>
+    <button class="btn-primary" onclick="submitProposal()">送信する</button>
+    <button class="btn-cancel" onclick="closeModal('modal-proposal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- PROPOSAL DETAIL (admin) -->
+<div class="overlay" id="modal-proposal-detail" onclick="closeModal('modal-proposal-detail',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="pdetail-title">提案詳細</div>
+    <div id="pdetail-body" style="font-size:14px;line-height:1.8;margin-bottom:16px"></div>
+    <div id="pdetail-prompt-wrap" style="display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">Claude Code 向けプロンプト</div>
+      <textarea id="pdetail-prompt" rows="8" readonly style="width:100%;padding:10px;border:1.5px solid var(--p);border-radius:8px;font-size:12px;background:#f8f9ff;font-family:monospace;resize:none"></textarea>
+      <button onclick="copyProposalPrompt()" style="width:100%;margin-top:8px;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">📋 プロンプトをコピー</button>
+    </div>
+    <div id="pdetail-actions"></div>
+    <button class="btn-cancel" onclick="closeModal('modal-proposal-detail')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
 <!-- SCHEDULE ADD -->
 <div class="sheet-modal-auto" id="modal-sch-add" onclick="closeModal('modal-sch-add',event)">
   <div class="modal-inner" onclick="event.stopPropagation()">
@@ -1666,7 +1728,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals'];
 let db=null, fbReady=false, fbListeners=[];
 
 (async function initFirebase(){
@@ -1908,6 +1970,153 @@ async function sendAIMessage(){
 }
 
 // ═══════════ SETTINGS ═══════════
+// ═══════════ PROPOSALS ═══════════
+const PROP_CAT_LABEL={ui:'画面・操作性',feature:'新機能',bug:'不具合・バグ',other:'その他'};
+const PROP_PRI_LABEL={high:'🔴 高',medium:'🟡 中',low:'🟢 低'};
+let currentProposalTab='pending';
+
+function openProposalForm(){
+  document.getElementById('prop-title').value='';
+  document.getElementById('prop-detail').value='';
+  document.querySelector('input[name="prop-pri"][value="low"]').checked=true;
+  document.getElementById('prop-cat').value='ui';
+  document.getElementById('modal-proposal').classList.add('on');
+}
+function submitProposal(){
+  const title=document.getElementById('prop-title').value.trim();
+  const detail=document.getElementById('prop-detail').value.trim();
+  if(!title){toast('タイトルを入力してください');return;}
+  const proposals=getProposals();
+  proposals.unshift({
+    id:'prop_'+Date.now(),
+    title,detail,
+    category:document.getElementById('prop-cat').value,
+    priority:document.querySelector('input[name="prop-pri"]:checked').value,
+    by:S.user||'──',
+    submittedAt:new Date().toISOString(),
+    status:'pending',
+    adminComment:'',reviewedBy:'',reviewedAt:''
+  });
+  saveProposals(proposals);
+  closeModal('modal-proposal');
+  addAuditLog('改善提案送信',title);
+  toast('提案を送信しました ✓');
+}
+function switchProposalTab(tab){
+  currentProposalTab=tab;
+  ['pending','approved','rejected'].forEach(t=>{
+    const btn=document.getElementById('ptab-'+t);
+    btn.style.background=t===tab?'var(--p)':'#f0f4ff';
+    btn.style.color=t===tab?'#fff':(t==='rejected'?'var(--sub)':'var(--p)');
+  });
+  renderProposalList();
+}
+function renderProposalList(){
+  const proposals=getProposals();
+  const pending=proposals.filter(p=>p.status==='pending');
+  const el=document.getElementById('ptab-pending-cnt');
+  if(el)el.textContent=pending.length?`(${pending.length})`:'';
+  const filtered=proposals.filter(p=>p.status===currentProposalTab);
+  const list=document.getElementById('proposal-list');
+  if(!list)return;
+  if(!filtered.length){list.innerHTML=`<div style="color:var(--sub);font-size:13px;padding:8px 0">提案はありません</div>`;return;}
+  list.innerHTML=filtered.map(p=>{
+    const date=new Date(p.submittedAt).toLocaleDateString('ja-JP');
+    const catBg={ui:'#e8f0fb',feature:'#e8f8f0',bug:'#fde8e8',other:'#f5f5f5'};
+    return `<div onclick="openProposalDetail('${p.id}')" style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;background:#fff">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <span style="background:${catBg[p.category]||'#f5f5f5'};font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${PROP_CAT_LABEL[p.category]||p.category}</span>
+        <span style="font-size:11px;font-weight:700">${PROP_PRI_LABEL[p.priority]||p.priority}</span>
+        <span style="font-size:11px;color:var(--sub);margin-left:auto">${p.by} · ${date}</span>
+      </div>
+      <div style="font-size:14px;font-weight:700">${p.title}</div>
+      ${p.detail?`<div style="font-size:12px;color:var(--sub);margin-top:4px;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${p.detail}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function openProposalDetail(id){
+  const proposals=getProposals();
+  const p=proposals.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('pdetail-title').textContent=p.title;
+  const date=new Date(p.submittedAt).toLocaleDateString('ja-JP');
+  document.getElementById('pdetail-body').innerHTML=`
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <span style="background:#e8f0fb;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${PROP_CAT_LABEL[p.category]||p.category}</span>
+      <span style="font-size:12px;font-weight:700">${PROP_PRI_LABEL[p.priority]||p.priority}</span>
+    </div>
+    <div style="font-size:13px;color:var(--sub);margin-bottom:8px">提案者: ${p.by}　提出: ${date}</div>
+    ${p.detail?`<div style="background:#f8f9fa;border-radius:8px;padding:10px;font-size:13px;white-space:pre-wrap">${p.detail}</div>`:''}
+    ${p.adminComment?`<div style="margin-top:10px;padding:8px 12px;background:#fff8e1;border-radius:8px;font-size:13px"><b>管理者コメント:</b> ${p.adminComment}</div>`:''}
+  `;
+  const promptWrap=document.getElementById('pdetail-prompt-wrap');
+  const actionsEl=document.getElementById('pdetail-actions');
+  if(p.status==='approved'){
+    promptWrap.style.display='block';
+    document.getElementById('pdetail-prompt').value=generateClaudePrompt(p);
+    actionsEl.innerHTML='';
+  } else if(p.status==='pending'){
+    promptWrap.style.display='none';
+    actionsEl.innerHTML=`
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">管理者コメント（任意）</div>
+        <textarea id="padmin-comment" rows="2" placeholder="却下理由や補足など…" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px"></textarea>
+        <div style="display:flex;gap:8px">
+          <button onclick="reviewProposal('${id}','approved')" style="flex:1;padding:10px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✓ 承認</button>
+          <button onclick="reviewProposal('${id}','rejected')" style="flex:1;padding:10px;background:var(--ng);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✗ 却下</button>
+        </div>
+      </div>`;
+  } else {
+    promptWrap.style.display='none';
+    actionsEl.innerHTML='';
+  }
+  document.getElementById('modal-proposal-detail').classList.add('on');
+}
+function reviewProposal(id,status){
+  const proposals=getProposals();
+  const p=proposals.find(x=>x.id===id);
+  if(!p)return;
+  const commentEl=document.getElementById('padmin-comment');
+  p.status=status;
+  p.adminComment=commentEl?commentEl.value.trim():'';
+  p.reviewedBy=S.user||'──';
+  p.reviewedAt=new Date().toISOString();
+  saveProposals(proposals);
+  closeModal('modal-proposal-detail');
+  addAuditLog('提案'+(status==='approved'?'承認':'却下'),p.title);
+  toast(status==='approved'?'承認しました ✓':'却下しました');
+  renderProposalList();
+  if(status==='approved'){
+    setTimeout(()=>openProposalDetail(id),300);
+  }
+}
+function generateClaudePrompt(p){
+  const date=new Date(p.reviewedAt||p.submittedAt).toLocaleDateString('ja-JP');
+  return `【改善提案】${p.title}
+提案者: ${p.by}
+カテゴリ: ${PROP_CAT_LABEL[p.category]||p.category}
+優先度: ${p.priority==='high'?'高':p.priority==='medium'?'中':'低'}
+承認日: ${date}
+承認者: ${p.reviewedBy}
+
+--- 提案内容 ---
+${p.detail||'（詳細なし）'}
+${p.adminComment?`\n--- 管理者コメント ---\n${p.adminComment}`:''}
+
+--- 対象ファイル ---
+/Users/inadatakashi/Library/CloudStorage/Dropbox/040_Claude/009_施設カルテシステム/008_demo.html
+
+上記の改善提案をアプリに実装してください。`;
+}
+function copyProposalPrompt(){
+  const txt=document.getElementById('pdetail-prompt').value;
+  navigator.clipboard.writeText(txt).then(()=>toast('コピーしました ✓')).catch(()=>{
+    document.getElementById('pdetail-prompt').select();
+    document.execCommand('copy');
+    toast('コピーしました ✓');
+  });
+}
+
 function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
@@ -1922,11 +2131,13 @@ function renderSettings(){
   const accessGrp=document.getElementById('access-control-group');
   const aiKeyGrp=document.getElementById('ai-key-group');
   const dataMgmtGrp=document.getElementById('data-mgmt-group');
+  const proposalAdminGrp=document.getElementById('proposal-admin-group');
   if(isAdmin()){
     adminGrp.style.display='block';
     if(accessGrp) accessGrp.style.display='block';
     if(aiKeyGrp) aiKeyGrp.style.display='block';
     if(dataMgmtGrp) dataMgmtGrp.style.display='block';
+    if(proposalAdminGrp){proposalAdminGrp.style.display='block';renderProposalList();}
     renderAdminStaffList();
     renderAccessSettings();
   } else {
@@ -1934,6 +2145,7 @@ function renderSettings(){
     if(accessGrp) accessGrp.style.display='none';
     if(aiKeyGrp) aiKeyGrp.style.display='none';
     if(dataMgmtGrp) dataMgmtGrp.style.display='none';
+    if(proposalAdminGrp) proposalAdminGrp.style.display='none';
   }
 }
 function changePassword(){
@@ -3041,6 +3253,8 @@ function saveDoctorOrder(){
 // ═══════════ SCHEDULE ═══════════
 function getSchedules(){return ls('schedules')||INIT_SCHEDULES;}
 function saveSchedules(s){lsSet('schedules',s);fsSet('schedules',s);}
+function getProposals(){return ls('proposals')||[];}
+function saveProposals(p){lsSet('proposals',p);fsSet('proposals',p);}
 
 function renderSchedule(){
   const bar=document.getElementById('sch-control-bar');
