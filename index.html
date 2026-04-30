@@ -1447,6 +1447,13 @@ a{color:var(--p);text-decoration:none}
       <textarea id="do-content" rows="4" placeholder="医師からの指示内容..."></textarea>
       <button class="btn-voice" onclick="startVoice('do-content',this)">🎤 音声入力</button>
     </div>
+    <div class="field"><label>緊急度</label>
+      <div class="radio-group">
+        <label><input type="radio" name="do-pri" value="normal" checked> 通常</label>
+        <label><input type="radio" name="do-pri" value="important"> 重要</label>
+        <label><input type="radio" name="do-pri" value="urgent"> 緊急</label>
+      </div>
+    </div>
     <div class="field"><label>医師</label>
       <select id="do-doctor">
         <option value="稲田俊雄">稲田俊雄</option>
@@ -2946,8 +2953,9 @@ function renderHandoverBoard(){
   // doctor
   const doEl=document.getElementById('hb-doctor-list');
   doEl.innerHTML=d.doctor.length?d.doctor.map(o=>`
-    <div style="background:#fff8f8;border-left:4px solid #c62828;padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
-      <span style="display:inline-block;background:#c62828;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">🩺 ${o.doctor||'医師'}</span>
+    <div style="${PRI_STYLE[o.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
+      ${PRI_BADGE[o.pri]||PRI_BADGE.normal}
+      <span style="display:inline-block;background:#c62828;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px;margin-left:4px">🩺 ${o.doctor||'医師'}</span>
       ${o.resident?`<div style="font-size:11px;color:var(--sub);margin-bottom:4px">対象: ${o.resident}</div>`:''}
       <div style="font-size:14px;line-height:1.6">${o.content}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px"><span class="staff-badge" style="background:#c62828">医師</span>${o.by} · ${o.time}</div>
@@ -3009,9 +3017,11 @@ function saveDoctorOrder(){
   const content=document.getElementById('do-content').value.trim();
   if(!content){toast('指示内容を入力してください');return;}
   const d=getBoardData();
+  const doPri=document.querySelector('input[name="do-pri"]:checked')?.value||'normal';
   d.doctor.unshift({
     content,doctor:document.getElementById('do-doctor').value||'医師',
     resident:document.getElementById('do-resident').value,
+    pri:doPri,
     staffRole:'doctor',by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
   });
   saveBoardData(d);
