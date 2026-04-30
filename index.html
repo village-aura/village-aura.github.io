@@ -413,7 +413,6 @@ a{color:var(--p);text-decoration:none}
       <input id="login-pass" type="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
       <div id="login-err" style="display:none;color:#ff8a80;font-size:12px;margin:-10px 0 12px;text-align:center;letter-spacing:.03em"></div>
       <button class="btn-login" onclick="login()">ログイン</button>
-      <div class="login-demo" style="margin-top:18px">デモID: 1001〜1006／PW: 1234</div>
     </div>
   </div>
 </div>
@@ -1696,13 +1695,16 @@ const STAFF_INFO = {
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
-// ポリシー未満のパスワードを localStorage から削除して新デフォルト aura01 へ移行
+// パスワードを STAFF_INFO の値で一度だけ強制リセット（v3）
 (function migratePasswords(){
+  if(localStorage.getItem('_pw_migv3')) return;
   const s=getStaffSettings();
-  let changed=false;
-  const valid=p=>p&&p.length>=6&&/[a-zA-Z]/.test(p)&&/[0-9]/.test(p);
-  Object.keys(s).forEach(k=>{if(s[k]?.pass!==undefined&&!valid(s[k].pass)){delete s[k].pass;changed=true;}});
-  if(changed)saveStaffSettings(s);
+  Object.keys(STAFF_INFO).forEach(k=>{
+    if(!s[k]) s[k]={};
+    s[k].pass=STAFF_INFO[k].pass;
+  });
+  saveStaffSettings(s);
+  localStorage.setItem('_pw_migv3','1');
 })();
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
@@ -1858,7 +1860,7 @@ async function login(){
     if(ip&&!ws.allowedIPs.some(prefix=>ip.startsWith(prefix))){
       errEl.textContent='施設のネットワーク外からはアクセスできません（IP: '+ip+'）';
       errEl.style.display='block';
-      addAuditLog('ログイン拒否（IP制限）',inputEmail+' / IP: '+ip);
+      addAuditLog('ログイン拒否（IP制限）',inputId+' / IP: '+ip);
       return;
     }
   }
@@ -1871,7 +1873,7 @@ async function login(){
     if(!dev||!dev.approved){
       errEl.innerHTML='この端末は未承認です。管理者に承認を依頼してください。<br><span style="font-size:10px;opacity:.7">端末ID: '+devId+'</span>';
       errEl.style.display='block';
-      addAuditLog('ログイン拒否（端末未承認）',inputEmail+' / '+devId);
+      addAuditLog('ログイン拒否（端末未承認）',inputId+' / '+devId);
       return;
     }
   }
