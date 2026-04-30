@@ -810,7 +810,7 @@ a{color:var(--p);text-decoration:none}
         <span style="font-size:18px;color:var(--sub)">›</span>
       </div>
     </div>
-    <div class="setting-group">
+    <div class="setting-group" id="ai-key-group" style="display:none">
       <h3>🤖 AI FAQ 設定（Groq）</h3>
       <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px">
         <div style="font-size:12px;color:var(--sub);line-height:1.6">AI FAQは設定不要で使えます。独自キーを使う場合のみ入力してください。<br><span style="color:var(--ok)">✓ デフォルトキー設定済み（Groq / Llama 3.3）</span></div>
@@ -822,7 +822,7 @@ a{color:var(--p);text-decoration:none}
         <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
       </div>
     </div>
-    <div class="setting-group">
+    <div class="setting-group" id="data-mgmt-group" style="display:none">
       <h3>🗑 データ管理</h3>
       <div class="setting-item">
         <span class="si-ico">🔄</span>
@@ -1835,14 +1835,20 @@ function renderSettings(){
   if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminGrp=document.getElementById('admin-staff-group');
   const accessGrp=document.getElementById('access-control-group');
+  const aiKeyGrp=document.getElementById('ai-key-group');
+  const dataMgmtGrp=document.getElementById('data-mgmt-group');
   if(isAdmin()){
     adminGrp.style.display='block';
-    renderAdminStaffList();
     if(accessGrp) accessGrp.style.display='block';
+    if(aiKeyGrp) aiKeyGrp.style.display='block';
+    if(dataMgmtGrp) dataMgmtGrp.style.display='block';
+    renderAdminStaffList();
     renderAccessSettings();
   } else {
     adminGrp.style.display='none';
     if(accessGrp) accessGrp.style.display='none';
+    if(aiKeyGrp) aiKeyGrp.style.display='none';
+    if(dataMgmtGrp) dataMgmtGrp.style.display='none';
   }
 }
 function changePassword(){
