@@ -1634,6 +1634,13 @@ const STAFF_INFO = {
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
+// 旧パスワード '1234' を localStorage から削除して新デフォルト aura01 へ移行
+(function migratePasswords(){
+  const s=getStaffSettings();
+  let changed=false;
+  Object.keys(s).forEach(k=>{if(s[k]?.pass==='1234'){delete s[k].pass;changed=true;}});
+  if(changed)saveStaffSettings(s);
+})();
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
@@ -1834,7 +1841,7 @@ function _doLogout(){
 // ═══════════ HELP / AI FAQ ═══════════
 const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
 主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
-データはlocalStorageに保存。管理者ID: 1006。初期PW: 1234。
+データはlocalStorageに保存。管理者ID: 1006。初期PW: aura01。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
 const _AK=['gsk_Or0ik','9JYq4M5EU','JThZm2WGd','yb3FYXarb','fX7keroa','FT7HUzUlJNYo'].join('');
 let aiHistory=[];
