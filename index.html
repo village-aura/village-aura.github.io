@@ -628,7 +628,7 @@ a{color:var(--p);text-decoration:none}
       <div id="mt-staff" style="display:none">
         <div class="field"><label>氏名</label><input type="text" id="ms-name" placeholder="田中 花子"></div>
         <div class="field"><label>フリガナ</label><input type="text" id="ms-kana" placeholder="タナカ ハナコ"></div>
-        <div class="field"><label>職種</label><input type="text" id="ms-job" placeholder="看護師・介護士・相談員等"></div>
+        <div class="field"><label>職種</label><input type="text" id="ms-job" placeholder="看護師・介護職員・医療事務・居宅職員等"></div>
         <div class="field"><label>権限</label>
           <select id="ms-role">
             <option value="staff">スタッフ</option>
@@ -929,7 +929,7 @@ a{color:var(--p);text-decoration:none}
       <div class="man-section">
         <div class="man-section-hd">📋 経時記録</div>
         <div class="man-item">カテゴリ（複数可）・重要度・内容を入力。「申し送りにも転記」で申し送りボードにも反映。</div>
-        <div class="man-item">AIが内容を解析して<b>報告先を自動提案</b>します（医師・看護師・介護士・相談員）。</div>
+        <div class="man-item">AIが内容を解析して<b>報告先を自動提案</b>します（医師・看護師・介護職員・医療事務・居宅職員）。</div>
       </div>
       <div class="man-section">
         <div class="man-section-hd">📣 申し送りボード</div>
@@ -1686,12 +1686,12 @@ const INIT_VISIT_SCHED=(()=>{
   };
 })();
 const STAFF_INFO = {
-  s1:{name:'田中 花子',role:'nurse',    loginId:'1001', pass:'aura01'},
-  s2:{name:'山本 次郎',role:'care',     loginId:'1002', pass:'aura01'},
-  s3:{name:'前原 明子',role:'counselor',loginId:'1003', pass:'aura01'},
-  s4:{name:'鈴木 健太',role:'care',     loginId:'1004', pass:'aura01'},
-  s5:{name:'中村 由美',role:'nurse',    loginId:'1005', pass:'aura01'},
-  s6:{name:'山田 一郎',role:'doctor',   loginId:'1006', pass:'aura01',admin:true},
+  s1:{name:'田中 花子',role:'nurse',            loginId:'1001', pass:'aura01'},
+  s2:{name:'山本 次郎',role:'care',             loginId:'1002', pass:'aura01'},
+  s3:{name:'前原 明子',role:'medical_office',   loginId:'1003', pass:'aura01'},
+  s4:{name:'鈴木 健太',role:'care',             loginId:'1004', pass:'aura01'},
+  s5:{name:'中村 由美',role:'nurse',            loginId:'1005', pass:'aura01'},
+  s6:{name:'山田 一郎',role:'super_admin',      loginId:'1006', pass:'aura01',admin:true},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
@@ -1707,10 +1707,13 @@ function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId|
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
 const ROLE_COLORS = {
-  doctor:{bg:'#c62828',label:'医師'},
-  nurse:{bg:'#00796b',label:'看護師'},
-  care:{bg:'#1565c0',label:'介護職員'},
-  counselor:{bg:'#6a1b9a',label:'相談員'},
+  super_admin:     {bg:'#b71c1c',label:'全権管理者'},
+  facility_manager:{bg:'#e65100',label:'事業所管理者'},
+  nurse:           {bg:'#00796b',label:'看護師'},
+  care:            {bg:'#1565c0',label:'介護職員'},
+  medical_office:  {bg:'#6a1b9a',label:'医療事務'},
+  home_care:       {bg:'#2e7d32',label:'居宅職員'},
+  doctor:          {bg:'#c62828',label:'医師'},
 };
 const EVENT_COLORS = {
   medical:'#c62828',commute:'#1565c0',care:'#00796b',
@@ -1903,7 +1906,7 @@ function _doLogout(){
 // ═══════════ HELP / AI FAQ ═══════════
 const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
 主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
-データはlocalStorageに保存。管理者ID: 1006。初期PW: aura01。
+データはlocalStorageに保存。管理者ID: 1006。初期PW: aura01。職員ロール：全権管理者・事業所管理者・看護師・介護職員・医療事務・居宅職員。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
 const _AK=['gsk_Or0ik','9JYq4M5EU','JThZm2WGd','yb3FYXarb','fX7keroa','FT7HUzUlJNYo'].join('');
 let aiHistory=[];
@@ -2185,7 +2188,7 @@ function renderAdminStaffList(){
         <span class="si-ico" style="font-size:18px">${disabled?'🔒':'👤'}</span>
         <div class="si-body">
           <div class="si-name" style="font-size:14px">${info.name}${isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':''}</div>
-          <div class="si-desc">ID: <b>${curLoginId}</b>　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
+          <div class="si-desc">ID: <b>${curLoginId}</b>　<span class="staff-badge" style="background:${(ROLE_COLORS[info.role]||{bg:'#9ca3af'}).bg}">${(ROLE_COLORS[info.role]||{label:info.role}).label}</span>　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
         </div>
         ${isMe?'<span style="font-size:11px;color:var(--sub)">──</span>':`<label class="toggle"><input type="checkbox" ${disabled?'':'checked'} onchange="toggleStaffDisabled('${key}',!this.checked)"><span class="toggle-slider"></span></label>`}
       </div>
@@ -3820,13 +3823,15 @@ const TRIAGE_KW = {
   doctor:['発熱','高熱','低体温','意識','呼吸困難','SpO2','嘔吐','嘔吐','痙攣','けいれん','骨折','転落','出血','急変','胸痛','腹痛','浮腫','褥瘡','壊死','感染症','炎症','血糖','低血糖','血圧高','血圧低','不整脈','誤嚥','窒息'],
   nurse:['バイタル','皮膚トラブル','処置','与薬','投薬','注射','点滴','カテーテル','吸引','酸素','発赤','浸出液','採血','検査','内服','SpO2','皮膚','発疹','浮腫','創部'],
   care:['食事量','食欲','水分摂取','飲水','入浴','更衣','移乗','歩行','トイレ','体位','転倒','ふらつき','排尿','排便','便秘','失禁','睡眠','活動'],
-  counselor:['家族','息子','娘','面会','苦情','クレーム','退所','転院','費用','サービス変更','希望','相談'],
+  medical_office:['家族','息子','娘','面会','苦情','クレーム','退所','転院','費用','サービス変更','希望','相談'],
+  home_care:['訪問','ヘルパー','在宅','外出支援','居宅','買い物支援','通院支援'],
 };
 const TRIAGE_INFO = {
-  doctor:   {label:'医師へ報告',   color:'#c62828',icon:'🩺'},
-  nurse:    {label:'看護師へ報告', color:'#00796b',icon:'👩‍⚕️'},
-  care:     {label:'介護士へ共有', color:'#1565c0',icon:'🤝'},
-  counselor:{label:'相談員へ報告', color:'#6a1b9a',icon:'💼'},
+  doctor:        {label:'医師へ報告',       color:'#c62828',icon:'🩺'},
+  nurse:         {label:'看護師へ報告',     color:'#00796b',icon:'👩‍⚕️'},
+  care:          {label:'介護職員へ共有',   color:'#1565c0',icon:'🤝'},
+  medical_office:{label:'医療事務へ報告',   color:'#6a1b9a',icon:'💼'},
+  home_care:     {label:'居宅職員へ共有',   color:'#2e7d32',icon:'🏠'},
 };
 function triageRecord(content){
   if(!content) return [];
