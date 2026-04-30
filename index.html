@@ -1696,11 +1696,12 @@ const STAFF_INFO = {
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
-// 旧パスワード '1234' を localStorage から削除して新デフォルト aura01 へ移行
+// ポリシー未満のパスワードを localStorage から削除して新デフォルト aura01 へ移行
 (function migratePasswords(){
   const s=getStaffSettings();
   let changed=false;
-  Object.keys(s).forEach(k=>{if(s[k]?.pass==='1234'){delete s[k].pass;changed=true;}});
+  const valid=p=>p&&p.length>=6&&/[a-zA-Z]/.test(p)&&/[0-9]/.test(p);
+  Object.keys(s).forEach(k=>{if(s[k]?.pass!==undefined&&!valid(s[k].pass)){delete s[k].pass;changed=true;}});
   if(changed)saveStaffSettings(s);
 })();
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
