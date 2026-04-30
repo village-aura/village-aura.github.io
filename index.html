@@ -1695,17 +1695,6 @@ const STAFF_INFO = {
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
-// パスワードを STAFF_INFO の値で一度だけ強制リセット（v3）
-(function migratePasswords(){
-  if(localStorage.getItem('_pw_migv3')) return;
-  const s=getStaffSettings();
-  Object.keys(STAFF_INFO).forEach(k=>{
-    if(!s[k]) s[k]={};
-    s[k].pass=STAFF_INFO[k].pass;
-  });
-  saveStaffSettings(s);
-  localStorage.setItem('_pw_migv3','1');
-})();
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
@@ -1826,6 +1815,18 @@ function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
 function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
 function saveRecords(r){lsSet('records',r);fsSet('records',r);}
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
+
+// パスワードを STAFF_INFO の値で一度だけ強制リセット（v3）
+(function migratePasswords(){
+  if(localStorage.getItem('_pw_migv3')) return;
+  const s=getStaffSettings();
+  Object.keys(STAFF_INFO).forEach(k=>{
+    if(!s[k]) s[k]={};
+    s[k].pass=STAFF_INFO[k].pass;
+  });
+  saveStaffSettings(s);
+  localStorage.setItem('_pw_migv3','1');
+})();
 
 // ═══════════ AUTH ═══════════
 async function login(){
