@@ -456,6 +456,7 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── DASHBOARD ─── -->
   <div id="scr-dashboard" class="scr on">
+    <div id="backup-banner" style="display:none;margin:10px 12px 0;padding:10px 12px;border:1.5px solid;border-radius:10px;display:none;align-items:center;gap:10px;font-size:13px"></div>
     <div class="dash-date" id="dash-date"></div>
     <div class="alert-banner" onclick="showScr('scr-residents');setFilter('all')">
       <span class="ico">⚠️</span>
@@ -2154,8 +2155,34 @@ function exportData(){
   a.download='village-aura-backup-'+new Date().toISOString().slice(0,10)+'.json';
   a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem('last_backup', new Date().toISOString());
   addAuditLog('データエクスポート','管理者によるバックアップ');
-  toast('バックアップをダウンロードしました ✓');
+  renderBackupBanner();
+  toast('バックアップをダウンロードしました ✓\nDropboxの「040_Claude/009_施設カルテシステム/backup」フォルダに移動してください');
+}
+function getBackupStatus(){
+  const last=localStorage.getItem('last_backup');
+  if(!last) return {days:null, urgent:true};
+  const days=Math.floor((Date.now()-new Date(last).getTime())/(1000*60*60*24));
+  return {days, urgent:days>=7, warn:days>=5, lastDate:new Date(last).toLocaleDateString('ja-JP')};
+}
+function renderBackupBanner(){
+  const el=document.getElementById('backup-banner');
+  if(!el||!isAdmin()) return;
+  const s=getBackupStatus();
+  if(s.urgent){
+    el.style.display='block';
+    el.style.background='#fff3e0';
+    el.style.borderColor='#FB8C00';
+    el.innerHTML=`<span style="font-size:16px">⚠️</span><div style="flex:1"><b>${s.days===null?'バックアップ未実施':'最終バックアップから'+s.days+'日経過'}</b><br><span style="font-size:11px;color:var(--sub)">週1回のバックアップを推奨します</span></div><button onclick="exportData()" style="background:#FB8C00;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap">今すぐ実行</button>`;
+  } else if(s.warn){
+    el.style.display='block';
+    el.style.background='#fffde7';
+    el.style.borderColor='#fbc02d';
+    el.innerHTML=`<span style="font-size:16px">📦</span><div style="flex:1"><b>最終バックアップ: ${s.lastDate}（${s.days}日前）</b><br><span style="font-size:11px;color:var(--sub)">もうすぐ1週間です</span></div><button onclick="exportData()" style="background:#fbc02d;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap">バックアップ</button>`;
+  } else {
+    el.style.display='none';
+  }
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -2190,6 +2217,7 @@ function goBack(){showScr(S.prevScreen||'scr-residents');}
 
 // ═══════════ DASHBOARD ═══════════
 function renderDashboard(){
+  renderBackupBanner();
   const now=new Date();
   document.getElementById('dash-date').textContent=
     now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
