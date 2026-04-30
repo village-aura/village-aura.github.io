@@ -708,31 +708,42 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── SETTINGS ─── -->
   <div id="scr-settings" class="scr">
-    <div class="setting-group">
-      <h3>🔒 アクセス制限</h3>
-      <div class="setting-item">
-        <span class="si-ico">☁️</span>
-        <div class="si-body">
-          <div class="si-name">Cloudflare Access</div>
-          <div class="si-desc">登録メールアドレスまたはデバイス証明書を持つ端末のみアクセスを許可。<br>無料プランで最大50ユーザー対応。</div>
+    <div class="setting-group" id="access-control-group">
+      <h3>🔒 アクセス制限 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
+      <!-- 端末管理 -->
+      <div style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:20px">📱</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">端末制限</div>
+            <div style="font-size:12px;color:var(--sub)">登録した端末からのみログインを許可</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-device" onchange="toggleDeviceRestriction(this.checked)"><span class="toggle-slider"></span></label>
         </div>
-        <span class="si-badge badge-info">推奨</span>
+        <div id="device-list-wrap" style="background:#f8f9fb;border-radius:10px;padding:10px;display:none">
+          <div style="font-size:11px;color:var(--sub);margin-bottom:8px">※ この端末は自動登録されます。他の端末はログイン試行後に一覧に表示されます。</div>
+          <div id="device-list"></div>
+        </div>
       </div>
-      <div class="setting-item">
-        <span class="si-ico">📶</span>
-        <div class="si-body">
-          <div class="si-name">施設Wi-Fi（IP）制限</div>
-          <div class="si-desc">施設の固定IPからのみアクセスを許可。訪問介護スタッフは除外設定が必要。</div>
+      <!-- Wi-Fi制限 -->
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:20px">📶</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">Wi-Fi制限（IP制限）</div>
+            <div style="font-size:12px;color:var(--sub)">登録したネットワーク（IPアドレス）からのみログインを許可</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-wifi" onchange="toggleWifiRestriction(this.checked)"><span class="toggle-slider"></span></label>
         </div>
-        <span class="si-badge badge-ok">設定可</span>
-      </div>
-      <div class="setting-item">
-        <span class="si-ico">📱</span>
-        <div class="si-body">
-          <div class="si-name">デバイス証明書（mTLS）</div>
-          <div class="si-desc">管理者が発行した証明書をインストールした端末のみ許可。最もセキュア。</div>
+        <div id="wifi-setting-wrap" style="background:#f8f9fb;border-radius:10px;padding:10px;display:none">
+          <div style="font-size:12px;color:var(--sub);margin-bottom:8px">現在のIPアドレス: <span id="current-ip-display" style="font-weight:700;color:var(--p)">確認中…</span></div>
+          <div id="allowed-ip-list" style="margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="new-ip-input" placeholder="例: 192.168.1." style="flex:1;padding:8px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#fff">
+            <button onclick="addAllowedIP()" style="padding:8px 12px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">追加</button>
+          </div>
+          <button onclick="addCurrentIP()" style="margin-top:8px;width:100%;padding:8px;background:#e8f0fb;color:var(--p);border-radius:7px;font-size:13px;font-weight:700">現在のIPを追加</button>
         </div>
-        <span class="si-badge badge-warn">上級</span>
       </div>
     </div>
     <div class="setting-group">
@@ -1665,10 +1676,11 @@ function saveRecords(r){lsSet('records',r)}
 function saveHandovers(h){lsSet('handovers',h)}
 
 // ═══════════ AUTH ═══════════
-function login(){
+async function login(){
   const inputEmail=document.getElementById('login-email').value.trim().toLowerCase();
   const inputPass=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-err');
+  const btnEl=document.querySelector('.btn-login');
   errEl.style.display='none';
   if(!inputEmail||!inputPass){
     errEl.textContent='メールアドレスとパスワードを入力してください';
@@ -1686,6 +1698,32 @@ function login(){
     errEl.textContent='このアカウントは利用停止中です。管理者にお問い合わせください。';
     errEl.style.display='block';
     return;
+  }
+  // ── Wi-Fi制限チェック ──
+  const ws=getWifiSettings();
+  if(ws.enabled&&ws.allowedIPs.length>0){
+    if(btnEl)btnEl.textContent='確認中…';
+    const ip=await fetchCurrentIP();
+    if(btnEl)btnEl.textContent='ログイン';
+    if(ip&&!ws.allowedIPs.some(prefix=>ip.startsWith(prefix))){
+      errEl.textContent='施設のネットワーク外からはアクセスできません（IP: '+ip+'）';
+      errEl.style.display='block';
+      addAuditLog('ログイン拒否（IP制限）',inputEmail+' / IP: '+ip);
+      return;
+    }
+  }
+  // ── 端末制限チェック ──
+  const devId=getDeviceId();
+  registerDeviceIfNew();
+  const ds=getDeviceSettings();
+  if(ds.enabled){
+    const dev=ds.devices.find(d=>d.id===devId);
+    if(!dev||!dev.approved){
+      errEl.innerHTML='この端末は未承認です。管理者に承認を依頼してください。<br><span style="font-size:10px;opacity:.7">端末ID: '+devId+'</span>';
+      errEl.style.display='block';
+      addAuditLog('ログイン拒否（端末未承認）',inputEmail+' / '+devId);
+      return;
+    }
   }
   const info=STAFF_INFO[staffKey];
   S.user=info.name;
@@ -1796,11 +1834,15 @@ function renderSettings(){
   if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
   if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminGrp=document.getElementById('admin-staff-group');
+  const accessGrp=document.getElementById('access-control-group');
   if(isAdmin()){
     adminGrp.style.display='block';
     renderAdminStaffList();
+    if(accessGrp) accessGrp.style.display='block';
+    renderAccessSettings();
   } else {
     adminGrp.style.display='none';
+    if(accessGrp) accessGrp.style.display='none';
   }
 }
 function changePassword(){
@@ -1887,6 +1929,168 @@ function adminSetPassword(key){
   saveStaffSettings(settings);
   addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' ('+getStaffEmail(key)+')');
   toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓');
+}
+// ── 端末管理・Wi-Fi制限 ──
+function getDeviceId(){
+  let id=localStorage.getItem('va_device_id');
+  if(!id){id='dev_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem('va_device_id',id);}
+  return id;
+}
+function getDeviceSettings(){return ls('device_settings')||{enabled:false,devices:[]};}
+function saveDeviceSettings(d){lsSet('device_settings',d);}
+function getWifiSettings(){return ls('wifi_settings')||{enabled:false,allowedIPs:[]};}
+function saveWifiSettings(d){lsSet('wifi_settings',d);}
+
+async function fetchCurrentIP(){
+  try{const r=await fetch('https://api.ipify.org?format=json');const d=await r.json();return d.ip;}
+  catch{return null;}
+}
+function registerDeviceIfNew(label=''){
+  const devId=getDeviceId();
+  const s=getDeviceSettings();
+  if(!s.devices.find(d=>d.id===devId)){
+    s.devices.push({id:devId,label:label||'未設定',approved:false,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
+    saveDeviceSettings(s);
+  } else {
+    s.devices.find(d=>d.id===devId).lastSeen=new Date().toISOString();
+    saveDeviceSettings(s);
+  }
+}
+function approveDevice(devId){
+  const s=getDeviceSettings();
+  const d=s.devices.find(d=>d.id===devId);
+  if(d){d.approved=true;}
+  saveDeviceSettings(s);
+  renderAccessSettings();
+  addAuditLog('端末承認',devId);
+  toast('端末を承認しました ✓');
+}
+function removeDevice(devId){
+  const s=getDeviceSettings();
+  s.devices=s.devices.filter(d=>d.id!==devId);
+  saveDeviceSettings(s);
+  renderAccessSettings();
+  addAuditLog('端末削除',devId);
+  toast('端末を削除しました');
+}
+function setDeviceLabel(devId){
+  const inp=document.getElementById('dev-label-'+devId);
+  if(!inp)return;
+  const s=getDeviceSettings();
+  const d=s.devices.find(d=>d.id===devId);
+  if(d){d.label=inp.value.trim()||'未設定';}
+  saveDeviceSettings(s);
+  renderAccessSettings();
+  toast('端末名を更新しました ✓');
+}
+function toggleDeviceRestriction(on){
+  const s=getDeviceSettings();
+  s.enabled=on;
+  if(on){
+    // 管理者の端末を自動承認
+    const devId=getDeviceId();
+    if(!s.devices.find(d=>d.id===devId)){
+      s.devices.push({id:devId,label:'管理者端末',approved:true,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
+    } else {
+      s.devices.find(d=>d.id===devId).approved=true;
+    }
+  }
+  saveDeviceSettings(s);
+  document.getElementById('device-list-wrap').style.display=on?'block':'none';
+  renderAccessSettings();
+  addAuditLog('端末制限'+(on?'有効化':'無効化'),'');
+  toast('端末制限を'+(on?'有効':'無効')+'にしました');
+}
+function toggleWifiRestriction(on){
+  const s=getWifiSettings();
+  s.enabled=on;
+  saveWifiSettings(s);
+  document.getElementById('wifi-setting-wrap').style.display=on?'block':'none';
+  if(on) fetchCurrentIP().then(ip=>{
+    const el=document.getElementById('current-ip-display');
+    if(el&&ip)el.textContent=ip;
+  });
+  addAuditLog('Wi-Fi制限'+(on?'有効化':'無効化'),'');
+  toast('Wi-Fi制限を'+(on?'有効':'無効')+'にしました');
+}
+function addAllowedIP(){
+  const val=document.getElementById('new-ip-input').value.trim();
+  if(!val){toast('IPアドレスを入力してください');return;}
+  const s=getWifiSettings();
+  if(s.allowedIPs.includes(val)){toast('すでに登録されています');return;}
+  s.allowedIPs.push(val);
+  saveWifiSettings(s);
+  document.getElementById('new-ip-input').value='';
+  renderAccessSettings();
+  addAuditLog('許可IP追加',val);
+  toast('IPを追加しました ✓');
+}
+async function addCurrentIP(){
+  const ip=await fetchCurrentIP();
+  if(!ip){toast('IPアドレスを取得できませんでした');return;}
+  const prefix=ip.split('.').slice(0,3).join('.')+'.';
+  document.getElementById('new-ip-input').value=prefix;
+  toast('現在のIP: '+ip+'\n先頭3ブロックを入力しました');
+}
+function removeAllowedIP(ip){
+  const s=getWifiSettings();
+  s.allowedIPs=s.allowedIPs.filter(x=>x!==ip);
+  saveWifiSettings(s);
+  renderAccessSettings();
+  addAuditLog('許可IP削除',ip);
+  toast('IPを削除しました');
+}
+async function renderAccessSettings(){
+  const ds=getDeviceSettings();
+  const ws=getWifiSettings();
+  // toggle states
+  const td=document.getElementById('toggle-device');
+  const tw=document.getElementById('toggle-wifi');
+  if(td)td.checked=ds.enabled;
+  if(tw)tw.checked=ws.enabled;
+  document.getElementById('device-list-wrap').style.display=ds.enabled?'block':'none';
+  document.getElementById('wifi-setting-wrap').style.display=ws.enabled?'block':'none';
+  // device list
+  const dl=document.getElementById('device-list');
+  if(dl){
+    if(!ds.devices.length){dl.innerHTML='<div style="font-size:12px;color:var(--sub);text-align:center;padding:8px">登録端末なし</div>';}
+    else{
+      const myId=getDeviceId();
+      dl.innerHTML=ds.devices.map(d=>`
+        <div style="border-bottom:1px solid var(--bdr);padding:8px 0;last-child:border-none">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="font-size:16px">${d.approved?'✅':'⏳'}</span>
+            <input type="text" id="dev-label-${d.id}" value="${d.label}" placeholder="端末名"
+              style="flex:1;padding:5px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px;background:#fff">
+            <button onclick="setDeviceLabel('${d.id}')" style="padding:5px 8px;background:#f0f4ff;color:var(--p);border-radius:6px;font-size:12px;font-weight:700">保存</button>
+          </div>
+          <div style="font-size:10px;color:var(--sub);margin-bottom:6px">ID: ${d.id}${d.id===myId?' （この端末）':''}<br>初回: ${new Date(d.firstSeen).toLocaleDateString('ja-JP')}</div>
+          <div style="display:flex;gap:6px">
+            ${!d.approved?`<button onclick="approveDevice('${d.id}')" style="flex:1;padding:6px;background:var(--ok);color:#fff;border-radius:6px;font-size:12px;font-weight:700">承認</button>`:'<span style="flex:1;text-align:center;font-size:12px;color:var(--ok);font-weight:700">承認済み</span>'}
+            <button onclick="removeDevice('${d.id}')" style="padding:6px 10px;background:#fee;color:var(--ng);border-radius:6px;font-size:12px;font-weight:700">削除</button>
+          </div>
+        </div>`).join('');
+    }
+  }
+  // IP list
+  const il=document.getElementById('allowed-ip-list');
+  if(il){
+    if(!ws.allowedIPs.length){il.innerHTML='<div style="font-size:12px;color:var(--sub)">許可IPなし（追加してください）</div>';}
+    else{
+      il.innerHTML=ws.allowedIPs.map(ip=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr)">
+          <span style="font-size:13px;flex:1;font-weight:600">${ip}<span style="font-size:11px;color:var(--sub);font-weight:400">*</span></span>
+          <button onclick="removeAllowedIP('${ip}')" style="padding:4px 8px;background:#fee;color:var(--ng);border-radius:5px;font-size:12px">削除</button>
+        </div>`).join('');
+    }
+  }
+  // current IP
+  if(ws.enabled){
+    const ipEl=document.getElementById('current-ip-display');
+    if(ipEl&&ipEl.textContent==='確認中…'){
+      fetchCurrentIP().then(ip=>{if(ipEl&&ip)ipEl.textContent=ip;});
+    }
+  }
 }
 // ── 操作ログ ──
 function addAuditLog(action,detail=''){
