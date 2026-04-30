@@ -2178,8 +2178,9 @@ function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
   list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>{
-    if(a[1].admin&&!b[1].admin)return -1;
-    if(!a[1].admin&&b[1].admin)return 1;
+    const roleOrder={super_admin:0,facility_manager:1,nurse:2,care:3,medical_office:4,home_care:5};
+    const ra=roleOrder[a[1].role]??9, rb=roleOrder[b[1].role]??9;
+    if(ra!==rb) return ra-rb;
     return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
   }).map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
