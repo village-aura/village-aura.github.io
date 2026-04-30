@@ -404,13 +404,13 @@ a{color:var(--p);text-decoration:none}
       <div class="login-sub-desc" style="margin-top:8px;opacity:.5">v1.0.0</div>
     </div>
     <div class="login-card">
-      <label for="login-id">職員ID</label>
-      <input id="login-id" type="text" placeholder="例: tanaka" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label for="login-email">メールアドレス</label>
+      <input id="login-email" type="email" placeholder="例: tanaka@village-aura.jp" autocomplete="email" autocapitalize="none" spellcheck="false">
       <label for="login-pass">パスワード</label>
       <input id="login-pass" type="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
       <div id="login-err" style="display:none;color:#ff8a80;font-size:12px;margin:-10px 0 12px;text-align:center;letter-spacing:.03em"></div>
       <button class="btn-login" onclick="login()">ログイン</button>
-      <div class="login-demo" style="margin-top:18px">デモID: tanaka〜yamada など／PW: 1234</div>
+      <div class="login-demo" style="margin-top:18px">デモ: tanaka@village-aura.jp など／PW: 1234</div>
     </div>
   </div>
 </div>
@@ -1599,16 +1599,17 @@ const INIT_VISIT_SCHED=(()=>{
   };
 })();
 const STAFF_INFO = {
-  s1:{name:'田中 花子',role:'nurse',    loginId:'tanaka',   pass:'1234'},
-  s2:{name:'山本 次郎',role:'care',     loginId:'yamamoto', pass:'1234'},
-  s3:{name:'前原 明子',role:'counselor',loginId:'maehara',  pass:'1234'},
-  s4:{name:'鈴木 健太',role:'care',     loginId:'suzuki',   pass:'1234'},
-  s5:{name:'中村 由美',role:'nurse',    loginId:'nakamura', pass:'1234'},
-  s6:{name:'山田 一郎',role:'doctor',   loginId:'yamada',   pass:'1234',admin:true},
+  s1:{name:'田中 花子',role:'nurse',    email:'tanaka@village-aura.jp',   pass:'1234'},
+  s2:{name:'山本 次郎',role:'care',     email:'yamamoto@village-aura.jp', pass:'1234'},
+  s3:{name:'前原 明子',role:'counselor',email:'maehara@village-aura.jp',  pass:'1234'},
+  s4:{name:'鈴木 健太',role:'care',     email:'suzuki@village-aura.jp',   pass:'1234'},
+  s5:{name:'中村 由美',role:'nurse',    email:'nakamura@village-aura.jp', pass:'1234'},
+  s6:{name:'山田 一郎',role:'doctor',   email:'yamada@village-aura.jp',   pass:'1234',admin:true},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
+function getStaffEmail(key){const s=getStaffSettings();return s[key]?.email||STAFF_INFO[key].email;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
 const ROLE_COLORS = {
@@ -1665,18 +1666,18 @@ function saveHandovers(h){lsSet('handovers',h)}
 
 // ═══════════ AUTH ═══════════
 function login(){
-  const inputId=document.getElementById('login-id').value.trim();
+  const inputEmail=document.getElementById('login-email').value.trim().toLowerCase();
   const inputPass=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-err');
   errEl.style.display='none';
-  if(!inputId||!inputPass){
-    errEl.textContent='IDとパスワードを入力してください';
+  if(!inputEmail||!inputPass){
+    errEl.textContent='メールアドレスとパスワードを入力してください';
     errEl.style.display='block';
     return;
   }
-  const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].loginId===inputId);
+  const staffKey=Object.keys(STAFF_INFO).find(k=>getStaffEmail(k).toLowerCase()===inputEmail);
   if(!staffKey||getStaffPass(staffKey)!==inputPass){
-    errEl.textContent='IDまたはパスワードが正しくありません';
+    errEl.textContent='メールアドレスまたはパスワードが正しくありません';
     errEl.style.display='block';
     document.getElementById('login-pass').value='';
     return;
@@ -1694,7 +1695,7 @@ function login(){
   document.getElementById('app').style.display='block';
   const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
   const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
-  addAuditLog('ログイン','ID: '+inputId);
+  addAuditLog('ログイン',inputEmail);
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
@@ -1709,7 +1710,7 @@ function _doLogout(){
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
-  document.getElementById('login-id').value='';
+  document.getElementById('login-email').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').style.display='none';
 }
@@ -1717,7 +1718,7 @@ function _doLogout(){
 // ═══════════ HELP / AI FAQ ═══════════
 const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
 主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
-データはlocalStorageに保存。管理者ID: yamada。初期PW: 1234。
+データはlocalStorageに保存。管理者メール: yamada@village-aura.jp。初期PW: 1234。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
 const _AK=['gsk_Or0ik','9JYq4M5EU','JThZm2WGd','yb3FYXarb','fX7keroa','FT7HUzUlJNYo'].join('');
 let aiHistory=[];
@@ -1828,21 +1829,29 @@ function renderAdminStaffList(){
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
     const curPass=getStaffPass(key);
+    const curEmail=getStaffEmail(key);
     return `<div style="border-bottom:1px solid var(--bdr);padding:12px 0">
       <div class="setting-item" style="padding:0;border:none">
         <span class="si-ico" style="font-size:18px">${disabled?'🔒':'👤'}</span>
         <div class="si-body">
           <div class="si-name" style="font-size:14px">${info.name}${isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':''}</div>
-          <div class="si-desc">ID: <b>${info.loginId}</b>　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
+          <div class="si-desc">${curEmail}　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
         </div>
         ${isMe?'<span style="font-size:11px;color:var(--sub)">──</span>':`<label class="toggle"><input type="checkbox" ${disabled?'':'checked'} onchange="toggleStaffDisabled('${key}',!this.checked)"><span class="toggle-slider"></span></label>`}
       </div>
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <div style="font-size:11px;color:var(--sub);white-space:nowrap">メール:</div>
+        <input type="email" id="adm-email-${key}" value="${curEmail}" placeholder="メールアドレス"
+          style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
+        <button onclick="adminSetEmail('${key}')"
+          style="padding:7px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap">変更</button>
+      </div>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
         <div style="font-size:11px;color:var(--sub);white-space:nowrap">PW:</div>
         <input type="text" id="adm-pw-${key}" value="${curPass}" placeholder="新しいパスワード"
           style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb">
         <button onclick="adminSetPassword('${key}')"
-          style="padding:7px 12px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">変更</button>
+          style="padding:7px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">変更</button>
       </div>
     </div>`;
   }).join('');
@@ -1853,8 +1862,21 @@ function toggleStaffDisabled(key,disable){
   settings[key].disabled=disable;
   saveStaffSettings(settings);
   renderAdminStaffList();
-  addAuditLog(disable?'アカウント停止':'アカウント有効化',STAFF_INFO[key].name+' ('+STAFF_INFO[key].loginId+')');
+  addAuditLog(disable?'アカウント停止':'アカウント有効化',STAFF_INFO[key].name+' ('+getStaffEmail(key)+')');
   toast(STAFF_INFO[key].name+(disable?' を利用停止しました':' を有効化しました'));
+}
+function adminSetEmail(key){
+  const val=document.getElementById('adm-email-'+key).value.trim().toLowerCase();
+  if(!val||!val.includes('@')){toast('正しいメールアドレスを入力してください');return;}
+  const dup=Object.keys(STAFF_INFO).find(k=>k!==key&&getStaffEmail(k).toLowerCase()===val);
+  if(dup){toast('このメールアドレスは既に使用されています');return;}
+  const settings=getStaffSettings();
+  if(!settings[key]) settings[key]={};
+  settings[key].email=val;
+  saveStaffSettings(settings);
+  renderAdminStaffList();
+  addAuditLog('メールアドレス変更',STAFF_INFO[key].name+' → '+val);
+  toast(STAFF_INFO[key].name+' のメールアドレスを変更しました ✓');
 }
 function adminSetPassword(key){
   const val=document.getElementById('adm-pw-'+key).value.trim();
@@ -1863,7 +1885,7 @@ function adminSetPassword(key){
   if(!settings[key]) settings[key]={};
   settings[key].pass=val;
   saveStaffSettings(settings);
-  addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' ('+STAFF_INFO[key].loginId+')');
+  addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' ('+getStaffEmail(key)+')');
   toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓');
 }
 // ── 操作ログ ──
