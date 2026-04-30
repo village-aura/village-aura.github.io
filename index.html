@@ -13,6 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
 :root{
   --p:#3D7AB5;--pd:#2d5e8e;--ps:#e8f0fb;
@@ -1640,6 +1643,69 @@ const EVENT_COLORS = {
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
 const APP_VERSION='1.0.0';
+// ═══════════ FIREBASE ═══════════
+const FB_CONFIG={
+  apiKey:'AIzaSyBOU4Z48gIhbndtRSKiTH8fcQAjlKgncD8',
+  authDomain:'village-aura.firebaseapp.com',
+  projectId:'village-aura',
+  storageBucket:'village-aura.firebasestorage.app',
+  messagingSenderId:'559931440710',
+  appId:'1:559931440710:web:c8f37e31163ba229501447'
+};
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2'];
+let db=null, fbReady=false, fbListeners=[];
+
+(async function initFirebase(){
+  try{
+    firebase.initializeApp(FB_CONFIG);
+    db=firebase.firestore();
+    await firebase.auth().signInAnonymously();
+    fbReady=true;
+  }catch(e){console.warn('Firebase unavailable:',e);}
+})();
+
+function fsSet(key,value){
+  if(!fbReady)return;
+  db.collection('va_data').doc(key).set({
+    data:value,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(e=>console.warn('fsSet:',e));
+}
+
+async function loadFromFirebase(){
+  if(!fbReady)return;
+  for(const key of FB_SYNC_KEYS){
+    try{
+      const doc=await db.collection('va_data').doc(key).get();
+      if(doc.exists&&doc.data()?.data!==undefined) lsSet(key,doc.data().data);
+    }catch(e){console.warn('fbLoad:',key,e);}
+  }
+}
+
+function setupRealtimeSync(){
+  if(!fbReady)return;
+  fbListeners.forEach(u=>u());
+  fbListeners=[];
+  FB_SYNC_KEYS.forEach(key=>{
+    const unsub=db.collection('va_data').doc(key).onSnapshot(doc=>{
+      if(!doc.exists||!doc.data()?.data)return;
+      if(doc.metadata.hasPendingWrites)return; // 自分の書き込みは無視
+      lsSet(key,doc.data().data);
+      if(key==='records'||key==='residents'){
+        if(S.screen==='scr-dashboard')renderDashboard();
+        if(S.screen==='scr-detail')renderDetail();
+      }
+      if(key==='residents'&&S.screen==='scr-residents')renderResList();
+      if(key==='handovers'){
+        if(S.screen==='scr-handover-board')renderHandoverBoard();
+        if(S.screen==='scr-detail')renderDetail();
+      }
+      if(key==='schedules'&&S.screen==='scr-schedule')renderSchedule();
+    },e=>console.warn('fbSync:',key,e));
+    fbListeners.push(unsub);
+  });
+}
+
 // ═══════════ STATE ═══════════
 const _now=new Date();
 let S = {
@@ -1675,9 +1741,9 @@ function lsSet(k,v){
 function getResidents(){return ls('residents')||INIT_RESIDENTS}
 function getRecords(){return ls('records')||INIT_RECORDS}
 function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
-function saveResidents(r){lsSet('residents',r)}
-function saveRecords(r){lsSet('records',r)}
-function saveHandovers(h){lsSet('handovers',h)}
+function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
+function saveRecords(r){lsSet('records',r);fsSet('records',r);}
+function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
 // ═══════════ AUTH ═══════════
 async function login(){
@@ -1741,6 +1807,7 @@ async function login(){
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
+  loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
 }
 function logout(){
   if(!confirm('ログアウトしますか？'))return;
@@ -2872,7 +2939,7 @@ function getBoardData(){
     shot:d.shot||[],day:d.day||[],visit:d.visit||[]
   };
 }
-function saveBoardData(d){lsSet('board_data2',d);}
+function saveBoardData(d){lsSet('board_data2',d);fsSet('board_data2',d);}
 function renderHandoverBoard(){
   const d=getBoardData();
   renderBoardSection('hb-sak-list',d.sak[S_sak_shift]);
@@ -2955,7 +3022,7 @@ function saveDoctorOrder(){
 
 // ═══════════ SCHEDULE ═══════════
 function getSchedules(){return ls('schedules')||INIT_SCHEDULES;}
-function saveSchedules(s){lsSet('schedules',s);}
+function saveSchedules(s){lsSet('schedules',s);fsSet('schedules',s);}
 
 function renderSchedule(){
   const bar=document.getElementById('sch-control-bar');
