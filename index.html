@@ -1867,7 +1867,11 @@ function changePassword(){
 function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
-  list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>a[1].name.localeCompare(b[1].name,'ja')).map(([key,info])=>{
+  list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>{
+    if(a[1].admin&&!b[1].admin)return -1;
+    if(!a[1].admin&&b[1].admin)return 1;
+    return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
+  }).map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
     const curPass=getStaffPass(key);
