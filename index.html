@@ -740,8 +740,8 @@ a{color:var(--p);text-decoration:none}
       <div class="setting-item">
         <span class="si-ico">🔐</span>
         <div class="si-body">
-          <div class="si-name">自動ロック（30分）</div>
-          <div class="si-desc">30分間操作がない場合、自動でログアウトします。<br>タップ・クリックのたびにタイマーはリセットされます。</div>
+          <div class="si-name">自動ロック（10分）</div>
+          <div class="si-desc">10分間操作がない場合、自動でログアウトします。<br>8分経過時に警告を表示します。</div>
         </div>
         <label class="toggle"><input type="checkbox" id="toggle-autolock" checked onchange="toggleAutoLock(this.checked)"><span class="toggle-slider"></span></label>
       </div>
@@ -777,6 +777,16 @@ a{color:var(--p);text-decoration:none}
     <div class="setting-group" id="admin-staff-group" style="display:none">
       <h3>🛡 職員アカウント管理 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
       <div id="admin-staff-list"></div>
+      <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📋 操作ログ</div>
+        <button id="audit-log-btn" onclick="toggleAuditLog()" style="width:100%;padding:10px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--p)">▼ ログを表示</button>
+        <div id="audit-log-list" style="display:none;max-height:300px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;margin-top:8px;background:#fff"></div>
+      </div>
+      <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 データバックアップ</div>
+        <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">バックアップをダウンロード</button>
+        <div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6">利用者・記録・操作ログをJSONファイルで保存します。定期的な実施を推奨します。</div>
+      </div>
     </div>
     <div class="setting-group">
       <h3>📥 データ登録</h3>
@@ -1624,8 +1634,28 @@ let S = {
   schedView: 'month', schedScope: 'all', schedRid: null,
   schedYear: _now.getFullYear(), schedMonth: _now.getMonth(), schedDay: _now.getDate(),
 };
-function ls(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
-function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
+const _EK=['Va9k','Lp3x','Qm7j','Rw5t'].join('')+'_VillageAura';
+function _enc(str){
+  const b=new TextEncoder().encode(str),k=_EK,o=new Uint8Array(b.length);
+  for(let i=0;i<b.length;i++)o[i]=b[i]^k.charCodeAt(i%k.length);
+  let s='';for(let i=0;i<o.length;i++)s+=String.fromCharCode(o[i]);return btoa(s);
+}
+function _dec(b64){
+  try{const b=Uint8Array.from(atob(b64),c=>c.charCodeAt(0)),k=_EK,o=new Uint8Array(b.length);
+    for(let i=0;i<b.length;i++)o[i]=b[i]^k.charCodeAt(i%k.length);
+    return new TextDecoder().decode(o);}catch{return null;}
+}
+const _NOENC=new Set(['enc_ver','ai_api_key']);
+function ls(k){
+  if(_NOENC.has(k)){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+  const ev=localStorage.getItem('e_'+k);
+  if(ev){const d=_dec(ev);if(d!=null){try{return JSON.parse(d)}catch{return null}}}
+  try{return JSON.parse(localStorage.getItem(k))}catch{return null}
+}
+function lsSet(k,v){
+  if(_NOENC.has(k)){localStorage.setItem(k,JSON.stringify(v));return;}
+  localStorage.setItem('e_'+k,_enc(JSON.stringify(v)));
+}
 function getResidents(){return ls('residents')||INIT_RESIDENTS}
 function getRecords(){return ls('records')||INIT_RECORDS}
 function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
@@ -1664,11 +1694,18 @@ function login(){
   document.getElementById('app').style.display='block';
   const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
   const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
+  addAuditLog('ログイン','ID: '+inputId);
+  resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
 }
 function logout(){
   if(!confirm('ログアウトしますか？'))return;
+  addAuditLog('ログアウト','手動');
+  _doLogout();
+}
+function _doLogout(){
+  clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
@@ -1781,6 +1818,7 @@ function changePassword(){
   settings[staffKey].pass=nw;
   saveStaffSettings(settings);
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
+  addAuditLog('パスワード変更',S.user+' が自身のパスワードを変更');
   toast('パスワードを変更しました ✓');
 }
 function renderAdminStaffList(){
@@ -1815,6 +1853,7 @@ function toggleStaffDisabled(key,disable){
   settings[key].disabled=disable;
   saveStaffSettings(settings);
   renderAdminStaffList();
+  addAuditLog(disable?'アカウント停止':'アカウント有効化',STAFF_INFO[key].name+' ('+STAFF_INFO[key].loginId+')');
   toast(STAFF_INFO[key].name+(disable?' を利用停止しました':' を有効化しました'));
 }
 function adminSetPassword(key){
@@ -1824,7 +1863,60 @@ function adminSetPassword(key){
   if(!settings[key]) settings[key]={};
   settings[key].pass=val;
   saveStaffSettings(settings);
+  addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' ('+STAFF_INFO[key].loginId+')');
   toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓');
+}
+// ── 操作ログ ──
+function addAuditLog(action,detail=''){
+  const logs=ls('audit_log')||[];
+  logs.unshift({ts:new Date().toISOString(),user:S.user||'未ログイン',action,detail});
+  if(logs.length>500)logs.splice(500);
+  lsSet('audit_log',logs);
+}
+function renderAuditLog(){
+  const el=document.getElementById('audit-log-list');if(!el)return;
+  const logs=ls('audit_log')||[];
+  if(!logs.length){el.innerHTML='<div style="padding:12px;font-size:13px;color:var(--sub);text-align:center">ログはありません</div>';return;}
+  el.innerHTML=logs.slice(0,100).map(l=>{
+    const d=new Date(l.ts);
+    const dt=d.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'})+' '+d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    return `<div style="padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:12px;line-height:1.6">
+      <span style="color:var(--sub)">${dt}</span>
+      <span style="font-weight:700;margin:0 6px">${l.user}</span>
+      <span style="color:var(--p)">${l.action}</span>
+      ${l.detail?`<span style="color:var(--sub);margin-left:4px">${l.detail}</span>`:''}
+    </div>`;
+  }).join('');
+}
+function toggleAuditLog(){
+  const el=document.getElementById('audit-log-list');if(!el)return;
+  const hidden=el.style.display==='none';
+  el.style.display=hidden?'block':'none';
+  document.getElementById('audit-log-btn').textContent=hidden?'▲ 閉じる':'▼ ログを表示';
+  if(hidden)renderAuditLog();
+}
+// ── データエクスポート ──
+function exportData(){
+  if(!isAdmin()){toast('管理者のみ実行できます');return;}
+  const data={
+    exportedAt:new Date().toISOString(),
+    exportedBy:S.user,
+    appVersion:APP_VERSION,
+    residents:getResidents(),
+    records:getRecords(),
+    handovers:getHandovers(),
+    auditLog:ls('audit_log')||[]
+  };
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='village-aura-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  addAuditLog('データエクスポート','管理者によるバックアップ');
+  toast('バックアップをダウンロードしました ✓');
 }
 
 // ═══════════ NAVIGATION ═══════════
@@ -2224,6 +2316,8 @@ function saveRecord(type){
   const recs=getRecords();
   recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:getRecordTs(),data});
   saveRecords(recs);
+  const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重'}[type]||type;
+  addAuditLog('記録保存',typeLabel+' / 利用者ID: '+S.currentRes);
   toast('保存しました ✓');
   renderDetail();
 }
@@ -3733,25 +3827,30 @@ function toast(msg){
 // ═══════════ RESET ═══════════
 function resetDemo(){
   if(!confirm('デモデータをリセットしますか？'))return;
-  localStorage.removeItem('residents');localStorage.removeItem('records');localStorage.removeItem('handovers');
-  localStorage.removeItem('schedules');localStorage.removeItem('board_data2');
-  Object.keys(localStorage).filter(k=>k.startsWith('visit_sched_')).forEach(k=>localStorage.removeItem(k));
+  ['residents','records','handovers','schedules','board_data2'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
+  Object.keys(localStorage).filter(k=>k.startsWith('visit_sched_')||k.startsWith('e_visit_sched_')||k.startsWith('e_fs_')||k.startsWith('fs_')).forEach(k=>localStorage.removeItem(k));
   toast('リセットしました');renderDashboard();
 }
 
 // ═══════════ AUTO LOCK ═══════════
-let lockTimer, autoLockEnabled=true;
+let lockTimer, lockWarnTimer, autoLockEnabled=true;
+const LOCK_MIN=10;
 function toggleAutoLock(on){
   autoLockEnabled=on;
-  clearTimeout(lockTimer);
+  clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
   if(on) resetLockTimer();
 }
 function resetLockTimer(){
-  clearTimeout(lockTimer);
+  clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
   if(!autoLockEnabled||!S.user) return;
+  lockWarnTimer=setTimeout(()=>{
+    toast('⚠️ 2分後に自動ログアウトします');
+  },(LOCK_MIN-2)*60*1000);
   lockTimer=setTimeout(()=>{
-    toast('30分間操作がなかったため自動ロックしました');logout();
-  },30*60*1000);
+    addAuditLog('自動ログアウト',LOCK_MIN+'分間操作なし');
+    toast('操作がなかったため自動ログアウトしました');
+    setTimeout(_doLogout,1800);
+  },LOCK_MIN*60*1000);
 }
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
