@@ -589,8 +589,14 @@ a{color:var(--p);text-decoration:none}
         <button class="tab" data-mt="mt-staff" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">職員</button>
       </div>
       <div id="mt-res">
-        <div class="field"><label>氏名</label><input type="text" id="m-name" placeholder="山田 花子"></div>
-        <div class="field"><label>フリガナ</label><input type="text" id="m-kana" placeholder="ヤマダ ハナコ"></div>
+        <div class="field-row">
+          <div class="field"><label>姓</label><input type="text" id="m-sei" placeholder="山田"></div>
+          <div class="field"><label>名</label><input type="text" id="m-mei" placeholder="花子"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>姓（フリガナ）</label><input type="text" id="m-kana-sei" placeholder="ヤマダ"></div>
+          <div class="field"><label>名（フリガナ）</label><input type="text" id="m-kana-mei" placeholder="ハナコ"></div>
+        </div>
         <div class="field-row">
           <div class="field"><label>性別</label>
             <select id="m-gender"><option value="female">女性</option><option value="male">男性</option></select>
@@ -615,31 +621,46 @@ a{color:var(--p);text-decoration:none}
             <label><input type="checkbox" id="m-sv-vis" value="visit"> 訪問</label>
           </div>
         </div>
-        <div class="field"><label>施設</label>
+        <div class="field"><label>所属事業所</label>
           <select id="m-facility">
-            <option value="かしわじま">メディケアビレッジかしわじま</option>
-            <option value="こはる日和">こはる日和</option>
+            <option value="サ高住">サ高住</option>
+            <option value="小多機">小多機</option>
+            <option value="デイサービス">デイサービス</option>
+            <option value="訪問介護">訪問介護</option>
+            <option value="居宅">居宅</option>
           </select>
         </div>
         <div class="field"><label>アレルギー・注意事項</label><textarea id="m-allergy" placeholder="卵アレルギー、○○禁忌..."></textarea></div>
         <button class="btn-primary" onclick="addManualResident()">利用者を登録</button>
       </div>
       <div id="mt-staff" style="display:none">
-        <div class="field"><label>氏名</label><input type="text" id="ms-name" placeholder="田中 花子"></div>
-        <div class="field"><label>フリガナ</label><input type="text" id="ms-kana" placeholder="タナカ ハナコ"></div>
-        <div class="field"><label>職種</label><input type="text" id="ms-job" placeholder="看護師・介護職員・医療事務・居宅職員等"></div>
-        <div class="field"><label>権限</label>
-          <select id="ms-role">
-            <option value="staff">スタッフ</option>
-            <option value="leader">リーダー</option>
-            <option value="admin">管理者</option>
+        <div class="field-row">
+          <div class="field"><label>姓</label><input type="text" id="ms-sei" placeholder="田中"></div>
+          <div class="field"><label>名</label><input type="text" id="ms-mei" placeholder="花子"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>姓（フリガナ）</label><input type="text" id="ms-kana-sei" placeholder="タナカ"></div>
+          <div class="field"><label>名（フリガナ）</label><input type="text" id="ms-kana-mei" placeholder="ハナコ"></div>
+        </div>
+        <div class="field"><label>職種・権限</label>
+          <select id="ms-role"></select>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">付与できる権限は自身の役職以下に限られます</div>
+        </div>
+        <div class="field"><label>所属事業所</label>
+          <select id="ms-jigyousho">
+            <option value="サ高住">サ高住</option>
+            <option value="小多機">小多機</option>
+            <option value="デイサービス">デイサービス</option>
+            <option value="訪問介護">訪問介護</option>
+            <option value="居宅">居宅</option>
           </select>
         </div>
-        <div class="field"><label>所属施設</label>
-          <select id="ms-facility">
-            <option value="かしわじま">メディケアビレッジかしわじま</option>
-            <option value="こはる日和">こはる日和</option>
-          </select>
+        <div class="field"><label>ログインID（自動採番）</label>
+          <input type="text" id="ms-loginid" readonly style="background:#f3f4f6;color:var(--sub)">
+        </div>
+        <div class="field"><label>初期パスワード</label>
+          <input type="text" id="ms-pass" value="aura01" placeholder="英数字6文字以上">
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">初回ログイン後に本人が変更してください</div>
         </div>
         <button class="btn-primary" onclick="addManualStaff()">職員を登録</button>
       </div>
@@ -1697,6 +1718,7 @@ function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
+function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
 const ROLE_COLORS = {
   super_admin:     {bg:'#b71c1c',label:'全権管理者'},
@@ -1840,7 +1862,11 @@ async function login(){
     errEl.style.display='block';
     return;
   }
-  const staffKey=Object.keys(STAFF_INFO).find(k=>getStaffLoginId(k)===inputId);
+  const csEntries=getCustomStaff();
+  const staffKey=
+    Object.keys(STAFF_INFO).find(k=>getStaffLoginId(k)===inputId)||
+    Object.keys(csEntries).find(k=>(getStaffSettings()[k]?.loginId||csEntries[k].loginId)===inputId);
+  const staffInfo=STAFF_INFO[staffKey]||csEntries[staffKey];
   if(!staffKey||getStaffPass(staffKey)!==inputPass){
     errEl.textContent='職員IDまたはパスワードが正しくありません';
     errEl.style.display='block';
@@ -1878,7 +1904,7 @@ async function login(){
       return;
     }
   }
-  const info=STAFF_INFO[staffKey];
+  const info=staffInfo;
   S.user=info.name;
   S.userRole=info.role;
   S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
@@ -3067,8 +3093,13 @@ function importCSV(){
   S.csvData=null;
 }
 function addManualResident(){
-  const name=document.getElementById('m-name').value.trim();
-  if(!name){toast('氏名を入力してください');return;}
+  const sei=document.getElementById('m-sei').value.trim();
+  const mei=document.getElementById('m-mei').value.trim();
+  if(!sei||!mei){toast('姓と名を入力してください');return;}
+  const name=sei+' '+mei;
+  const kanaSei=document.getElementById('m-kana-sei').value.trim();
+  const kanaMei=document.getElementById('m-kana-mei').value.trim();
+  const kana=kanaSei&&kanaMei?kanaSei+' '+kanaMei:'';
   const services=[];
   ['m-sv-res','m-sv-com','m-sv-sta','m-sv-vis'].forEach(id=>{
     if(document.getElementById(id).checked)services.push(document.getElementById(id).value);
@@ -3078,7 +3109,7 @@ function addManualResident(){
   const birth=document.getElementById('m-birth').value;
   const age=birth?Math.floor((new Date()-new Date(birth))/(365.25*24*60*60*1000)):0;
   res.push({
-    id:'r'+Date.now(),name,kana:document.getElementById('m-kana').value,
+    id:'r'+Date.now(),name,sei,mei,kana,
     gender:document.getElementById('m-gender').value,age,
     care:document.getElementById('m-care').value,
     room:document.getElementById('m-room').value,
@@ -3087,13 +3118,59 @@ function addManualResident(){
   });
   saveResidents(res);
   toast(name+'様を登録しました ✓');
-  ['m-name','m-kana','m-room','m-allergy'].forEach(id=>document.getElementById(id).value='');
+  ['m-sei','m-mei','m-kana-sei','m-kana-mei','m-room','m-allergy'].forEach(id=>document.getElementById(id).value='');
+}
+function getCustomStaff(){return ls('custom_staff')||{};}
+function saveCustomStaff(s){lsSet('custom_staff',s);}
+function getNextStaffLoginId(){
+  const allIds=[
+    ...Object.keys(STAFF_INFO).map(k=>parseInt(getStaffLoginId(k))||0),
+    ...Object.values(getCustomStaff()).map(s=>parseInt(s.loginId)||0)
+  ];
+  return String(Math.max(...allIds,1000)+1);
+}
+const ROLE_ORDER=['super_admin','facility_manager','nurse','care','medical_office','home_care'];
+function renderStaffRoleDropdown(){
+  const myLevel=ROLE_ORDER.indexOf(S.userRole??'home_care');
+  const sel=document.getElementById('ms-role');
+  if(!sel)return;
+  sel.innerHTML=ROLE_ORDER
+    .filter((_,i)=>i>=myLevel)
+    .map(r=>`<option value="${r}">${ROLE_COLORS[r]?.label||r}</option>`)
+    .join('');
+  const loginIdEl=document.getElementById('ms-loginid');
+  if(loginIdEl)loginIdEl.value=getNextStaffLoginId();
 }
 function addManualStaff(){
-  const name=document.getElementById('ms-name').value.trim();
-  if(!name){toast('氏名を入力してください');return;}
-  toast(name+'を職員リストに追加しました ✓');
-  ['ms-name','ms-kana','ms-job'].forEach(id=>document.getElementById(id).value='');
+  const sei=document.getElementById('ms-sei').value.trim();
+  const mei=document.getElementById('ms-mei').value.trim();
+  if(!sei||!mei){toast('姓と名を入力してください');return;}
+  const name=sei+' '+mei;
+  const pass=document.getElementById('ms-pass').value.trim();
+  if(pass.length<6||!/[a-zA-Z]/.test(pass)||!/[0-9]/.test(pass)){
+    toast('パスワードは英数字を含む6文字以上で入力してください');return;
+  }
+  const role=document.getElementById('ms-role').value;
+  const loginId=document.getElementById('ms-loginid').value||getNextStaffLoginId();
+  const kanaSei=document.getElementById('ms-kana-sei').value.trim();
+  const kanaMei=document.getElementById('ms-kana-mei').value.trim();
+  const cs=getCustomStaff();
+  const key='cs'+Date.now();
+  cs[key]={name,sei,mei,kana:kanaSei&&kanaMei?kanaSei+' '+kanaMei:'',
+    role,loginId,pass,
+    jigyousho:document.getElementById('ms-jigyousho').value,
+    addedBy:S.user,addedAt:new Date().toISOString()};
+  saveCustomStaff(cs);
+  // staff_settings に pass を書いておく
+  const ss=getStaffSettings();
+  if(!ss[key])ss[key]={};
+  ss[key].pass=pass;ss[key].loginId=loginId;
+  saveStaffSettings(ss);
+  addAuditLog('職員追加',name+' (ID:'+loginId+')');
+  toast(name+'を登録しました ✓');
+  ['ms-sei','ms-mei','ms-kana-sei','ms-kana-mei'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ms-pass').value='aura01';
+  renderStaffRoleDropdown();
 }
 
 // ═══════════ TAB SWITCHERS ═══════════
@@ -3109,6 +3186,7 @@ function switchManualTab(btn){
   btn.classList.add('on');
   const panels=['mt-res','mt-staff'];
   panels.forEach(id=>{document.getElementById(id).style.display=id===btn.dataset.mt?'block':'none';});
+  if(btn.dataset.mt==='mt-staff')renderStaffRoleDropdown();
 }
 
 // ═══════════ EDIT RESIDENT ═══════════
