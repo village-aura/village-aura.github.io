@@ -783,7 +783,7 @@ a{color:var(--p);text-decoration:none}
       <div style="padding:12px 0 4px">
         <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔑 パスワード変更</div>
         <input type="password" id="pw-cur" placeholder="現在のパスワード" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
-        <input type="password" id="pw-new" placeholder="新しいパスワード（4文字以上）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
+        <input type="password" id="pw-new" placeholder="新しいパスワード（英数字6文字以上）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
         <input type="password" id="pw-new2" placeholder="新しいパスワード（確認）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
         <div id="pw-err" style="display:none;color:var(--ng);font-size:12px;margin-bottom:8px"></div>
         <button onclick="changePassword()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">パスワードを変更する</button>
@@ -930,7 +930,7 @@ a{color:var(--p);text-decoration:none}
       </div>
       <div class="man-section">
         <div class="man-section-hd">⚙️ 設定・管理</div>
-        <div class="man-item"><b>パスワード変更</b>：現在のPW確認後、新しいPWに変更。4文字以上。</div>
+        <div class="man-item"><b>パスワード変更</b>：現在のPW確認後、新しいPWに変更。英字と数字を含む6文字以上。</div>
         <div class="man-item"><b>職員アカウント管理</b>（管理者のみ）：各職員のPW変更・利用停止が可能。管理者ID: <code>yamada</code>。</div>
         <div class="man-item"><b>自動ロック</b>：30分無操作で自動ログアウト（トグルでON/OFF）。</div>
         <div class="man-item"><b>AI FAQ APIキー</b>：Anthropic APIキーを登録するとAI FAQが使えます。</div>
@@ -1938,7 +1938,8 @@ function changePassword(){
   const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].name===S.user);
   if(!staffKey){errEl.textContent='ユーザー情報が見つかりません';errEl.style.display='block';return;}
   if(getStaffPass(staffKey)!==cur){errEl.textContent='現在のパスワードが正しくありません';errEl.style.display='block';return;}
-  if(nw.length<4){errEl.textContent='新しいパスワードは4文字以上にしてください';errEl.style.display='block';return;}
+  if(nw.length<6){errEl.textContent='新しいパスワードは6文字以上にしてください';errEl.style.display='block';return;}
+  if(!/[a-zA-Z]/.test(nw)||!/[0-9]/.test(nw)){errEl.textContent='英字と数字を両方含めてください';errEl.style.display='block';return;}
   if(nw!==nw2){errEl.textContent='新しいパスワードが一致しません';errEl.style.display='block';return;}
   const settings=getStaffSettings();
   if(!settings[staffKey]) settings[staffKey]={};
@@ -2010,7 +2011,7 @@ function adminSetLoginId(key){
 }
 function adminSetPassword(key){
   const val=document.getElementById('adm-pw-'+key).value.trim();
-  if(val.length<4){toast('4文字以上で入力してください');return;}
+  if(val.length<6||!/[a-zA-Z]/.test(val)||!/[0-9]/.test(val)){toast('英字と数字を両方含む6文字以上で入力してください');return;}
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].pass=val;
