@@ -442,6 +442,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
+      <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
     </nav>
     <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
@@ -912,90 +913,324 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-settings')" id="bn-set">
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
     </button>
+    <button class="bn" onclick="showScr('scr-proposal')" id="bn-prop">
+      <div class="bn-ico">💡</div><div class="bn-lbl">提案</div>
+    </button>
     <button class="bn" onclick="showScr('scr-help')" id="bn-help">
       <div class="bn-ico">📖</div><div class="bn-lbl">ヘルプ</div>
     </button>
   </nav>
 
+  <!-- PROPOSAL SCREEN -->
+  <div id="scr-proposal" class="scr">
+    <div style="padding:12px 12px 0;border-bottom:1px solid var(--bdr);margin-bottom:4px">
+      <div style="font-size:18px;font-weight:800;margin-bottom:4px">💡 改善提案</div>
+      <div style="font-size:12px;color:var(--sub)">気づいたこと・使いにくい点をスタッフから気軽に送れます</div>
+    </div>
+    <div style="padding:12px">
+      <button onclick="openProposalForm()" style="width:100%;padding:13px;background:var(--p);color:#fff;border-radius:10px;font-size:15px;font-weight:700;margin-bottom:16px">＋ 新しい提案を送る</button>
+      <div id="proposal-admin-scr" style="display:none">
+        <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📋 提案管理 <span style="font-size:11px;font-weight:400">（管理者）</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button id="ptab2-pending" onclick="switchProposalTab2('pending')" style="flex:1;padding:8px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700">未審査 <span id="ptab2-pending-cnt"></span></button>
+          <button id="ptab2-approved" onclick="switchProposalTab2('approved')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:12px;font-weight:700">承認済</button>
+          <button id="ptab2-rejected" onclick="switchProposalTab2('rejected')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--sub);border-radius:8px;font-size:12px;font-weight:700">却下</button>
+        </div>
+        <div id="proposal-list2"></div>
+      </div>
+      <div id="proposal-mylist-wrap">
+        <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📌 自分の提案</div>
+        <div id="proposal-mylist"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- HELP SCREEN -->
-  <div id="scr-help" class="scr">
-    <div style="padding:12px 12px 0">
-      <div class="tab-bar">
-        <button class="tab on" data-tab="tab-help-manual" onclick="switchTab(this)">📖 マニュアル</button>
-        <button class="tab" data-tab="tab-help-ai" onclick="switchTab(this)">🤖 AI FAQ</button>
+  <div id="scr-help" class="scr" style="padding:0">
+    <div style="display:flex;height:calc(100vh - 56px);overflow:hidden">
+      <!-- 左タブ -->
+      <div style="width:72px;flex-shrink:0;background:#1a2744;overflow-y:auto;display:flex;flex-direction:column;padding:8px 0">
+        <button id="htab-login" onclick="showHelpTab('login')" class="help-ltab on" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:#fff;background:rgba(255,255,255,.18);border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🔑<br>ログイン</button>
+        <button id="htab-home" onclick="showHelpTab('home')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🏠<br>ホーム</button>
+        <button id="htab-resident" onclick="showHelpTab('resident')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">👥<br>利用者</button>
+        <button id="htab-vital" onclick="showHelpTab('vital')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🌡️<br>バイタル</button>
+        <button id="htab-meal" onclick="showHelpTab('meal')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🍚<br>食事</button>
+        <button id="htab-excretion" onclick="showHelpTab('excretion')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">💧<br>排泄</button>
+        <button id="htab-chrono" onclick="showHelpTab('chrono')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📋<br>経時記録</button>
+        <button id="htab-handover" onclick="showHelpTab('handover')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📣<br>申し送り</button>
+        <button id="htab-schedule" onclick="showHelpTab('schedule')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📅<br>予定</button>
+        <button id="htab-settings" onclick="showHelpTab('settings')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">⚙️<br>設定</button>
+        <button id="htab-faq" onclick="showHelpTab('faq')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">❓<br>Q&amp;A</button>
+        <button id="htab-ai" onclick="showHelpTab('ai')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🤖<br>AI FAQ</button>
       </div>
-    </div>
+      <!-- 右コンテンツ -->
+      <div style="flex:1;overflow-y:auto;padding-bottom:80px" id="help-right">
 
-    <!-- マニュアル -->
-    <div id="tab-help-manual" class="tab-panel on" style="padding:12px 0 120px">
-      <div class="man-section">
-        <div class="man-section-hd">🔑 ログイン・ログアウト</div>
-        <div class="man-item">職員<b>ID</b>（例: <code>tanaka</code>）と<b>パスワード</b>を入力してログインします。初期パスワードは <code>1234</code>。</div>
-        <div class="man-item">ログアウトは<b>設定</b>画面 → 「ログアウト」ボタン。30分無操作で自動ロックされます。</div>
-        <div class="man-item">パスワードは<b>設定</b>画面 →「パスワード変更」から個人で変更できます。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">🏠 ホーム画面</div>
-        <div class="man-item"><b>バイタル未記録アラート</b>：本日バイタル未記録の利用者数を表示。タップで一覧へ。</div>
-        <div class="man-item"><b>準緊急以上の申し送り</b>：直近7日間の重要・緊急申し送り／経時記録を表示。</div>
-        <div class="man-item"><b>直近の記録</b>：スタッフが入力した最新5件の記録を確認できます。</div>
-        <div class="man-item"><b>クイックリンク</b>：スケジュール・申し送りへのショートカット。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">👥 利用者一覧・詳細</div>
-        <div class="man-item">利用者一覧はあいうえお順。上部の検索バーで名前・かなを絞り込めます。</div>
-        <div class="man-item">利用者カードをタップすると<b>詳細画面</b>へ。バイタル・食事・排泄・経時記録・体重の入力ボタンが並びます。</div>
-        <div class="man-item">詳細画面上部の<b>バイタルサマリー</b>：異常値は<span style="color:var(--ng);font-weight:700">赤字</span>で表示。血圧90〜140/40〜85、脈拍50〜100、体温35.5〜37.2、SpO2 95%以上が正常範囲。</div>
-        <div class="man-item">「フェイスシート」ボタンで利用者の詳細情報・既往歴・緊急連絡先を確認できます。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">📝 記録入力（共通）</div>
-        <div class="man-item"><b>実施日時／測定日時</b>：モーダル上部のセレクターで「現在時刻」か「時刻を指定」を選べます。紙記録の後入力に活用してください。</div>
-        <div class="man-item"><b>音声で一括入力</b>（青いボタン）：話すだけで各フィールドに自動振り分けされます。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">🌡️ バイタル入力</div>
-        <div class="man-item">収縮期・拡張期血圧／脈拍／体温／SpO2／意識レベルを入力。</div>
-        <div class="man-item"><b>音声例</b>：「血圧130の80 脈拍72 体温36.5 SpO2 98 清明」</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">🍚 食事・飲水</div>
-        <div class="man-item">朝食／10時／昼食／おやつ／夕食の区分を選択。主食・副食の摂取量をスライダーで入力。</div>
-        <div class="man-item"><b>音声例</b>：「昼食 主食8割 副食7割 水分200」「完食」「半分」</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">💧 排泄記録</div>
-        <div class="man-item">種別（排尿・排便・両方）、尿量、便性状（○普通便・△軟便・硬便・水様便）を入力。</div>
-        <div class="man-item"><b>音声例</b>：「排尿あり普通量 軟便あり」「失禁あり ポータブル使用」</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">📋 経時記録</div>
-        <div class="man-item">カテゴリ（複数可）・重要度・内容を入力。「申し送りにも転記」で申し送りボードにも反映。</div>
-        <div class="man-item">AIが内容を解析して<b>報告先を自動提案</b>します（医師・看護師・介護職員・医療事務・居宅職員）。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">📣 申し送りボード</div>
-        <div class="man-item">部署横断で申し送りを管理。重要度別（通常・重要・緊急）に色分けされます。</div>
-        <div class="man-item">利用者詳細の「申し送り」タブからも個別に確認・追加できます。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">📅 スケジュール</div>
-        <div class="man-item"><b>全体</b>：週間カレンダーで施設全体の予定を確認。</div>
-        <div class="man-item"><b>個別</b>：利用者ごとのスケジュール表示。</div>
-        <div class="man-item"><b>訪問介護</b>：日別ガントチャートで訪問予定を時系列で確認。</div>
-      </div>
-      <div class="man-section">
-        <div class="man-section-hd">⚙️ 設定・管理</div>
-        <div class="man-item"><b>パスワード変更</b>：現在のPW確認後、新しいPWに変更。英字と数字を含む6文字以上。</div>
-        <div class="man-item"><b>職員アカウント管理</b>（管理者のみ）：各職員のPW変更・利用停止が可能。管理者ID: <code>yamada</code>。</div>
-        <div class="man-item"><b>自動ロック</b>：30分無操作で自動ログアウト（トグルでON/OFF）。</div>
-        <div class="man-item"><b>AI FAQ APIキー</b>：Anthropic APIキーを登録するとAI FAQが使えます。</div>
-      </div>
-    </div>
+        <!-- login -->
+        <div id="hsec-login" class="help-sec">
+          <div style="background:linear-gradient(135deg,#1a2744,#2d4a8a);color:#fff;padding:18px 16px 14px;margin-bottom:0">
+            <div style="font-size:20px;margin-bottom:4px">🔑 ログイン・ログアウト</div>
+            <div style="font-size:12px;opacity:.7">アプリの使い始めと終わり方</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">ログイン手順</div>
+            <div class="man-item"><b>①</b> 職員ID（4桁の数字）を入力</div>
+            <div class="man-item"><b>②</b> パスワードを入力 → 「ログイン」をタップ</div>
+            <div class="man-item"><b>③</b> 初期パスワードは <code>aura01</code>（管理者は <code>aura170</code>）。初回ログイン後は設定から変更してください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">ログアウト・自動ロック</div>
+            <div class="man-item">ログアウトは <b>設定</b> → 「ログアウト」ボタン</div>
+            <div class="man-item">10分間操作がないと <b>自動ロック</b> されます（8分で警告表示）</div>
+            <div class="man-item">端末を離れる際は必ずログアウトしてください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">パスワード変更</div>
+            <div class="man-item"><b>設定</b> → 「パスワード変更」から個人で変更できます</div>
+            <div class="man-item">新しいパスワードは <b>英字と数字を含む6文字以上</b> が必要です</div>
+          </div>
+          <div style="padding:12px 16px"><button onclick="showHelpTab('faq')" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;text-decoration:underline">❓ よくある質問を見る →</button></div>
+        </div>
 
-    <!-- AI FAQ -->
-    <div id="tab-help-ai" class="tab-panel" style="padding:0">
-      <div id="ai-key-notice" class="ai-key-notice" style="display:none">
+        <!-- home -->
+        <div id="hsec-home" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1a2744,#2d4a8a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">🏠 ホーム画面</div>
+            <div style="font-size:12px;opacity:.7">最初に表示されるダッシュボード</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">バイタル未記録アラート</div>
+            <div class="man-item">本日バイタルが未記録の利用者数を赤い数字で表示</div>
+            <div class="man-item">タップすると対象の利用者一覧にジャンプします</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">重要・緊急の申し送り</div>
+            <div class="man-item">直近7日間の「重要」「緊急」申し送りを自動表示</div>
+            <div class="man-item">🚨 赤 = 緊急　⚠️ オレンジ = 重要</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">クイックリンク</div>
+            <div class="man-item">スケジュール・申し送りへのショートカットボタンがあります</div>
+          </div>
+        </div>
+
+        <!-- resident -->
+        <div id="hsec-resident" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1a2744,#2d4a8a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">👥 利用者一覧・詳細</div>
+            <div style="font-size:12px;opacity:.7">利用者情報の確認と記録入力</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">一覧の使い方</div>
+            <div class="man-item">利用者はあいうえお順で表示。上部の検索バーで名前・かなで絞り込めます</div>
+            <div class="man-item">カードをタップ → <b>詳細画面</b>へ移動</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">詳細画面の記録ボタン</div>
+            <div class="man-item">🌡️ バイタル　🍚 食事・飲水　💧 排泄　📋 経時記録　⚖️ 体重</div>
+            <div class="man-item">各ボタンをタップすると入力モーダルが開きます</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">バイタルサマリー</div>
+            <div class="man-item">異常値は <span style="color:var(--ng);font-weight:700">赤字</span> で表示されます</div>
+            <div class="man-item">正常範囲：血圧 90〜140 / 40〜85　脈拍 50〜100　体温 35.5〜37.2℃　SpO2 95%以上</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">フェイスシート</div>
+            <div class="man-item">「フェイスシート」ボタンで既往歴・緊急連絡先・担当医などを確認できます</div>
+          </div>
+          <div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="showHelpTab('vital')" style="font-size:12px;color:var(--p);background:#f0f4ff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer">🌡️ バイタル入力の詳細 →</button>
+            <button onclick="showHelpTab('meal')" style="font-size:12px;color:var(--p);background:#f0f4ff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer">🍚 食事入力の詳細 →</button>
+          </div>
+        </div>
+
+        <!-- vital -->
+        <div id="hsec-vital" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#00695c,#00897b);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">🌡️ バイタル入力</div>
+            <div style="font-size:12px;opacity:.7">血圧・脈拍・体温・SpO2の記録</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">入力項目</div>
+            <div class="man-item">収縮期血圧 / 拡張期血圧 / 脈拍 / 体温 / SpO2 / 意識レベル</div>
+            <div class="man-item">空欄でも保存できます（測定できなかった項目はそのままで）</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">🎤 音声入力の使い方</div>
+            <div class="man-item">「音声で一括入力」ボタン → マイクに向かって話すだけで自動入力</div>
+            <div class="man-item" style="background:#f0f9f6;border-radius:6px;padding:8px 10px;margin:4px 0"><b>例：</b>「血圧130の80 脈拍72 体温36.5 SpO2 98 清明」</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">実施日時の指定</div>
+            <div class="man-item">モーダル上部で「現在時刻」か「時刻を指定」を選べます</div>
+            <div class="man-item">紙記録の後入力など、遡って入力する際に活用してください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">正常範囲（参考）</div>
+            <div class="man-item">血圧：90〜140 / 40〜85　　脈拍：50〜100回/分</div>
+            <div class="man-item">体温：35.5〜37.2℃　　SpO2：95%以上</div>
+            <div class="man-item" style="color:var(--ng)">⚠️ 範囲外の値は記録時に赤表示されます</div>
+          </div>
+          <div style="padding:12px 16px"><button onclick="showHelpTab('faq')" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;text-decoration:underline">❓ Q&amp;Aを見る →</button></div>
+        </div>
+
+        <!-- meal -->
+        <div id="hsec-meal" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#e65100,#f57c00);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">🍚 食事・飲水</div>
+            <div style="font-size:12px;opacity:.7">食事摂取量と水分摂取の記録</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">食事区分の選択</div>
+            <div class="man-item">朝食 / 10時（おやつ）/ 昼食 / おやつ / 夕食　から選択</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">摂取量の入力</div>
+            <div class="man-item">主食・副食はスライダーで 0〜10割 を選択</div>
+            <div class="man-item">水分摂取量は mL で入力</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">🎤 音声入力例</div>
+            <div class="man-item" style="background:#fff8f0;border-radius:6px;padding:8px 10px;margin:4px 0">「昼食 主食8割 副食7割 水分200」<br>「完食」「半分」「食欲なし 水分100」</div>
+          </div>
+        </div>
+
+        <!-- excretion -->
+        <div id="hsec-excretion" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">💧 排泄記録</div>
+            <div style="font-size:12px;opacity:.7">排尿・排便の状態を記録</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">種別と尿量</div>
+            <div class="man-item">排尿 / 排便 / 両方　から選択</div>
+            <div class="man-item">尿量：少量・普通量・多量　から選択</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">便性状</div>
+            <div class="man-item">○ 普通便　△ 軟便　◇ 硬便　✕ 水様便</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">🎤 音声入力例</div>
+            <div class="man-item" style="background:#f0f4ff;border-radius:6px;padding:8px 10px;margin:4px 0">「排尿あり普通量」<br>「軟便あり 少量」<br>「失禁あり ポータブル使用」</div>
+          </div>
+        </div>
+
+        <!-- chrono -->
+        <div id="hsec-chrono" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#4a148c,#6a1b9a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">📋 経時記録</div>
+            <div style="font-size:12px;opacity:.7">出来事・ケア内容の記録</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">カテゴリと重要度</div>
+            <div class="man-item">カテゴリは複数選択可（医療・転倒・行動・ケア など）</div>
+            <div class="man-item">重要度：通常 / 重要 / 緊急　を選択</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">AI 報告先提案</div>
+            <div class="man-item">内容を入力すると、AIがキーワードを解析して報告先（医師・看護師など）を自動提案します</div>
+            <div class="man-item">提案はあくまで参考です。必要に応じて手動で変更してください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">申し送りへの転記</div>
+            <div class="man-item">「申し送りにも転記する」にチェックを入れると申し送りボードにも同時反映されます</div>
+          </div>
+          <div style="padding:12px 16px"><button onclick="showHelpTab('handover')" style="font-size:12px;color:var(--p);background:#f0f4ff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer">📣 申し送りの詳細 →</button></div>
+        </div>
+
+        <!-- handover -->
+        <div id="hsec-handover" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#b71c1c,#c62828);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">📣 申し送りボード</div>
+            <div style="font-size:12px;opacity:.7">部署間の引き継ぎ情報を管理</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">ボードの構成</div>
+            <div class="man-item">🩺 医師から　👩‍⚕️ 看護師から　🏠 サ高住から　🏡 小多機から　☀️ デイから　🚗 訪問介護から</div>
+            <div class="man-item">各セクションの「＋ 追加」ボタンから申し送りを投稿できます</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">緊急度の色分け</div>
+            <div class="man-item"><span style="background:#e53935;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">🚨 緊急</span>　<span style="background:#FB8C00;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">⚠ 重要</span>　<span style="background:#9ca3af;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">📌 通常</span></div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">利用者個別の申し送り</div>
+            <div class="man-item">利用者詳細 → 「申し送り」タブから個別に確認・追加できます</div>
+          </div>
+        </div>
+
+        <!-- schedule -->
+        <div id="hsec-schedule" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">📅 スケジュール</div>
+            <div style="font-size:12px;opacity:.7">施設・個別・訪問介護の予定管理</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">3つのビュー</div>
+            <div class="man-item"><b>全体</b>：週間カレンダーで施設全体の予定を一覧表示</div>
+            <div class="man-item"><b>個別</b>：利用者ごとのスケジュール（通院・入浴・リハビリなど）</div>
+            <div class="man-item"><b>訪問介護</b>：日別ガントチャートで訪問予定を時系列確認</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">予定の追加</div>
+            <div class="man-item">右下の <b>＋ ボタン</b> をタップ → 利用者・日時・種別を入力して保存</div>
+            <div class="man-item">🎤 口頭入力も可能：「山田さんの通院、明日10時から」のように話しかける</div>
+          </div>
+        </div>
+
+        <!-- settings -->
+        <div id="hsec-settings" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#37474f,#546e7a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">⚙️ 設定・管理</div>
+            <div style="font-size:12px;opacity:.7">アカウント・セキュリティ設定</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">パスワード変更（全職員）</div>
+            <div class="man-item">設定 → 「パスワード変更」：現在のPW確認後に新しいPWへ変更</div>
+            <div class="man-item">英字と数字を含む6文字以上が必要</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">管理者専用機能</div>
+            <div class="man-item"><b>職員アカウント管理</b>：有効化・停止・ID/PW変更</div>
+            <div class="man-item"><b>アクセス制限</b>：端末制限（登録端末のみ許可）・Wi-Fi制限（施設内のみ許可）</div>
+            <div class="man-item"><b>アカウント別履歴</b>：職員ごとのログイン・操作履歴を閲覧</div>
+            <div class="man-item"><b>データバックアップ</b>：全データをJSONでダウンロード。週1回の実施を推奨</div>
+          </div>
+        </div>
+
+        <!-- faq -->
+        <div id="hsec-faq" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1a2744,#2d4a8a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">❓ よくある質問</div>
+            <div style="font-size:12px;opacity:.7">Q&amp;A</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">ログイン</div>
+            <div class="man-item"><b>Q: パスワードを忘れた</b><br>A: 管理者（山田）に連絡してください。設定 → 職員アカウント管理からリセットできます</div>
+            <div class="man-item"><b>Q: 「端末未承認」と表示される</b><br>A: 端末制限が有効です。管理者に端末承認を依頼してください</div>
+            <div class="man-item"><b>Q: 「ネットワーク外」と表示される</b><br>A: Wi-Fi制限が有効です。施設のWi-Fiに接続してからログインしてください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">記録入力</div>
+            <div class="man-item"><b>Q: 過去の日時で入力したい</b><br>A: 入力モーダル上部の「時刻を指定」を選択して、実施日時を手動入力してください</div>
+            <div class="man-item"><b>Q: 音声入力が反応しない</b><br>A: ブラウザへのマイク使用許可を確認してください。設定 → サイト設定 → マイク</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">データ・同期</div>
+            <div class="man-item"><b>Q: 別の端末でデータが反映されない</b><br>A: Firebaseでリアルタイム同期しています。ページを再読み込みしてください</div>
+            <div class="man-item"><b>Q: データが消えた</b><br>A: バックアップJSONから復元できます。管理者に連絡してください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">その他</div>
+            <div class="man-item"><b>Q: アプリを改善してほしい</b><br>A: 左メニューの「💡 改善提案」から提案を送れます。管理者が確認して対応します</div>
+          </div>
+        </div>
+
+        <!-- ai -->
+        <div id="hsec-ai" class="help-sec" style="display:none;padding:0">
+          <div id="ai-key-notice" class="ai-key-notice" style="display:none">
         🔑 AI FAQを使うにはAnthropicのAPIキーが必要です。<br>
         <b>設定</b>画面 →「AI FAQ APIキー」に入力してください。<br>
         <span style="font-size:11px;color:var(--sub)">APIキーは端末内にのみ保存されます。</span>
@@ -1007,6 +1242,7 @@ a{color:var(--p);text-decoration:none}
         <div class="ai-input-row">
           <input class="ai-input" id="ai-input" type="text" placeholder="質問を入力…" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendAIMessage();}">
           <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">➤</button>
+        </div>
         </div>
       </div>
     </div>
@@ -1022,6 +1258,7 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🌡️ バイタル入力</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-vital');showHelpTab('vital')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
     <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力（例：血圧130の80 脈72 体温36.5 SpO2 98）</button>
     <div class="field-row">
@@ -1053,6 +1290,7 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🍚 食事・飲水</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-meal');showHelpTab('meal')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="meal-sub">利用者名 様</div>
     <button id="vs-btn-meal" class="btn-voice-smart" onclick="startVoiceSmart('meal')">🎤 音声で一括入力（例：昼食 主食8割 副食7割 水分200）</button>
     <div class="field"><label>食事区分</label>
@@ -1093,6 +1331,7 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">💧 排泄記録</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-excretion');showHelpTab('excretion')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力（例：排尿あり普通量 軟便あり）</button>
     <div class="field"><label>種別</label>
       <div class="radio-group">
@@ -1127,6 +1366,7 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">📝 経時記録</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-chrono');showHelpTab('chrono')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="chrono-sub">利用者名 様</div>
     <div class="field"><label>カテゴリ（複数可）</label>
       <div class="tag-grid" id="chrono-tags">
@@ -2557,6 +2797,75 @@ function renderAuditLog(){
     </div>`;
   }).join('');
 }
+// ── ヘルプ左タブ ──
+function showHelpTab(id){
+  showScr('scr-help');
+  document.querySelectorAll('.help-sec').forEach(el=>el.style.display='none');
+  const target=document.getElementById('hsec-'+id);
+  if(target)target.style.display='block';
+  document.querySelectorAll('.help-ltab').forEach(btn=>{
+    const on=btn.id==='htab-'+id;
+    btn.classList.toggle('on',on);
+    btn.style.background=on?'rgba(255,255,255,.18)':'none';
+    btn.style.color=on?'#fff':'rgba(255,255,255,.6)';
+  });
+}
+// ── 提案スクリーン ──
+let currentProposalTab2='pending';
+function renderProposalScr(){
+  const adminWrap=document.getElementById('proposal-admin-scr');
+  if(adminWrap) adminWrap.style.display=isAdmin()?'block':'none';
+  renderMyProposalList();
+  if(isAdmin()) renderProposalList2();
+}
+function renderMyProposalList(){
+  const el=document.getElementById('proposal-mylist');
+  if(!el)return;
+  const mine=getProposals().filter(p=>p.by===S.user);
+  if(!mine.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:8px 0">まだ提案はありません</div>';return;}
+  const statusLabel={pending:'審査中',approved:'承認済',rejected:'却下'};
+  const statusColor={pending:'#9ca3af',approved:'var(--ok)',rejected:'var(--ng)'};
+  el.innerHTML=mine.map(p=>`<div style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;background:#fff">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:14px;font-weight:700">${p.title}</span>
+      <span style="font-size:11px;font-weight:700;color:${statusColor[p.status]||'#9ca3af'}">${statusLabel[p.status]||p.status}</span>
+    </div>
+    <div style="font-size:11px;color:var(--sub)">${new Date(p.submittedAt).toLocaleDateString('ja-JP')} · ${PROP_CAT_LABEL[p.category]||p.category}</div>
+    ${p.adminComment?`<div style="margin-top:6px;font-size:12px;color:var(--sub);background:#f8f9fa;border-radius:6px;padding:6px 8px">管理者コメント: ${p.adminComment}</div>`:''}
+  </div>`).join('');
+}
+function switchProposalTab2(tab){
+  currentProposalTab2=tab;
+  ['pending','approved','rejected'].forEach(t=>{
+    const btn=document.getElementById('ptab2-'+t);
+    if(!btn)return;
+    btn.style.background=t===tab?'var(--p)':'#f0f4ff';
+    btn.style.color=t===tab?'#fff':(t==='rejected'?'var(--sub)':'var(--p)');
+  });
+  renderProposalList2();
+}
+function renderProposalList2(){
+  const proposals=getProposals();
+  const pending=proposals.filter(p=>p.status==='pending');
+  const cntEl=document.getElementById('ptab2-pending-cnt');
+  if(cntEl)cntEl.textContent=pending.length?`(${pending.length})`:'';
+  const filtered=proposals.filter(p=>p.status===currentProposalTab2);
+  const list=document.getElementById('proposal-list2');
+  if(!list)return;
+  if(!filtered.length){list.innerHTML='<div style="color:var(--sub);font-size:13px;padding:8px 0">提案はありません</div>';return;}
+  list.innerHTML=filtered.map(p=>{
+    const date=new Date(p.submittedAt).toLocaleDateString('ja-JP');
+    const catBg={ui:'#e8f0fb',feature:'#e8f8f0',bug:'#fde8e8',other:'#f5f5f5'};
+    return `<div onclick="openProposalDetail('${p.id}')" style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;background:#fff">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+        <span style="background:${catBg[p.category]||'#f5f5f5'};font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px">${PROP_CAT_LABEL[p.category]||p.category}</span>
+        <span style="font-size:11px;font-weight:700">${PROP_PRI_LABEL[p.priority]||p.priority}</span>
+        <span style="font-size:11px;color:var(--sub);margin-left:auto">${p.by} · ${date}</span>
+      </div>
+      <div style="font-size:14px;font-weight:700">${p.title}</div>
+    </div>`;
+  }).join('');
+}
 function toggleAuditLog(){
   const el=document.getElementById('audit-log-list');if(!el)return;
   const hidden=el.style.display==='none';
@@ -2622,16 +2931,16 @@ function showScr(id){
   document.getElementById(id).classList.add('on');
   const titles={
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
-    'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理',
+    'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
   back.style.display=(id==='scr-detail')?'block':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
-  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help'};
+  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help','scr-proposal':'bn-prop'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -2640,6 +2949,7 @@ function showScr(id){
   if(id==='scr-schedule') renderSchedule();
   if(id==='scr-settings') renderSettings();
   if(id==='scr-help') initHelpScreen();
+  if(id==='scr-proposal') renderProposalScr();
   window.scrollTo(0,0);
 }
 function goBack(){showScr(S.prevScreen||'scr-residents');}
