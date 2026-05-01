@@ -1477,7 +1477,8 @@ a{color:var(--p);text-decoration:none}
 <div class="overlay" id="modal-handover" onclick="closeModal('modal-handover',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">📣 申し送り</div>
+    <input type="hidden" id="ho-edit-id" value="">
+    <div class="sheet-title" id="ho-modal-title">📣 申し送り</div>
     <div class="field"><label>カテゴリ</label>
       <div class="cat-btn-group" id="ho-cat-btns">
         <button class="cat-btn on" data-val="medical" onclick="selectCatBtn(this,'ho-cat')">🩺 医療</button>
@@ -3266,13 +3267,19 @@ function renderDetail(){
   renderVitalGraph(S.currentRes, S.graphRange);
   // Handovers
   const hos=getHandovers()[S.currentRes]||[];
-  document.getElementById('handover-area').innerHTML=hos.length?hos.map(h=>`
-    <div class="handover-card">
+  document.getElementById('handover-area').innerHTML=hos.length?hos.map(h=>{
+    const canDel=h.by===S.user||isAdmin();
+    const editedNote=h.editedBy?`<span style="color:#9ca3af;font-size:10px">（${h.editedBy}が${h.editedDate}に修正）</span>`:'';
+    return `<div class="handover-card">
       <span class="handover-tag">${h.pri==='urgent'?'🚨 緊急':h.pri==='important'?'⚠ 重要':'📌 申し送り'}</span>
       <div class="handover-text">${h.content}</div>
-      <div class="handover-by">${h.by} · ${h.date}</div>
-    </div>
-  `).join(''):'';
+      <div class="handover-by">${h.by} · ${h.date} ${editedNote}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+        <button onclick="openEditHandover('${h.id}')" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️ 編集</button>
+        ${canDel?`<button onclick="deleteHandover('${h.id}')" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑 削除</button>`:''}
+      </div>
+    </div>`;
+  }).join(''):'';
   // ボード申し送り（今シフト）
   const bd=getBoardData();
   const _secDefs=[
@@ -3356,6 +3363,13 @@ function openModal(id){
     const el=document.getElementById(sid);
     if(el)el.textContent=name;
   });
+  if(id==='modal-handover'){
+    document.getElementById('ho-edit-id').value='';
+    document.getElementById('ho-modal-title').textContent='📣 申し送り';
+    document.getElementById('ho-content').value='';
+    const normalEl=document.querySelector('[name=ho-pri][value="normal"]');
+    if(normalEl)normalEl.checked=true;
+  }
   document.getElementById(id).classList.add('on');
   // 記録日時セレクターを注入（対象モーダルのみ）
   const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight'];
@@ -3448,12 +3462,29 @@ function saveRecord(type){
   }else if(type==='handover'){
     const content=document.getElementById('ho-content').value.trim();
     if(!content){toast('内容を入力してください');return;}
-    addHandover(S.currentRes,content,
-      document.getElementById('ho-cat').value,
-      document.querySelector('[name=ho-pri]:checked')?.value||'normal');
+    const editId=document.getElementById('ho-edit-id')?.value||'';
+    if(editId){
+      const h=getHandovers();
+      const hos=h[S.currentRes]||[];
+      const idx=hos.findIndex(x=>x.id===editId);
+      if(idx>=0){
+        hos[idx].content=content;
+        hos[idx].cat=document.getElementById('ho-cat').value;
+        hos[idx].pri=document.querySelector('[name=ho-pri]:checked')?.value||'normal';
+        hos[idx].editedBy=S.user||'──';
+        hos[idx].editedDate=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});
+        h[S.currentRes]=hos;
+        saveHandovers(h);
+      }
+      toast('申し送りを更新しました ✓');
+    } else {
+      addHandover(S.currentRes,content,
+        document.getElementById('ho-cat').value,
+        document.querySelector('[name=ho-pri]:checked')?.value||'normal');
+      toast('申し送りを保存しました ✓');
+    }
     closeModal('modal-handover');
     renderDetail();
-    toast('申し送りを保存しました');
     return;
   }
   const recs=getRecords();
@@ -3469,6 +3500,34 @@ function addHandover(rid,content,cat='other',pri='normal'){
   if(!h[rid]) h[rid]=[];
   h[rid].unshift({id:'h'+Date.now(),cat,pri,content,by:S.user||'──',date:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'})});
   saveHandovers(h);
+}
+function openEditHandover(id){
+  const hos=(getHandovers()[S.currentRes]||[]);
+  const entry=hos.find(x=>x.id===id);
+  if(!entry)return;
+  document.getElementById('ho-edit-id').value=id;
+  document.getElementById('ho-modal-title').textContent='✏️ 申し送り編集';
+  document.querySelectorAll('#ho-cat-btns .cat-btn').forEach(b=>{
+    b.classList.toggle('on',b.dataset.val===entry.cat);
+  });
+  document.getElementById('ho-cat').value=entry.cat||'other';
+  const priEl=document.querySelector(`[name=ho-pri][value="${entry.pri||'normal'}"]`);
+  if(priEl)priEl.checked=true;
+  document.getElementById('ho-content').value=entry.content||'';
+  document.getElementById('modal-handover').classList.add('on');
+}
+function deleteHandover(id){
+  const h=getHandovers();
+  const hos=h[S.currentRes]||[];
+  const idx=hos.findIndex(x=>x.id===id);
+  if(idx<0)return;
+  if(hos[idx].by!==S.user&&!isAdmin()){toast('削除できるのは作成者と管理者のみです');return;}
+  if(!confirm('この申し送りを削除しますか？'))return;
+  hos.splice(idx,1);
+  h[S.currentRes]=hos;
+  saveHandovers(h);
+  renderDetail();
+  toast('申し送りを削除しました');
 }
 
 // ═══════════ VOICE INPUT ═══════════
