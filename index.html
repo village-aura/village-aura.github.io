@@ -959,16 +959,64 @@ a{color:var(--p);text-decoration:none}
 
   <!-- DIARY SCREEN -->
   <div id="scr-diary" class="scr">
-    <div style="padding:16px 12px 8px;border-bottom:1px solid var(--bdr);margin-bottom:4px">
+    <div style="padding:16px 12px 8px;border-bottom:1px solid var(--bdr)">
       <div style="font-size:18px;font-weight:800;margin-bottom:4px">📋 業務日誌</div>
-      <div style="font-size:12px;color:var(--sub)">施設単位の日次記録・帳票出力</div>
+      <div style="font-size:12px;color:var(--sub)">日次記録・帳票出力</div>
     </div>
-    <div style="margin:40px 16px;padding:24px;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);text-align:center">
-      <div style="font-size:40px;margin-bottom:12px">🚧</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:8px">実装準備中</div>
-      <div style="font-size:13px;color:var(--sub);line-height:1.7">帳票フォーマットを受領後に実装します。<br>記録データからの自動転記に対応予定です。</div>
+    <div class="tab-bar">
+      <button class="tab on" id="diary-tab-visit" onclick="switchDiaryTab('visit')">訪問介護日報</button>
+    </div>
+    <div id="diary-visit-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="changeDiaryDate(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
+          <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);min-width:130px;text-align:center"></span>
+          <button onclick="changeDiaryDate(1)" id="diary-date-next" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">▶</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="printVisitReport()" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;touch-action:manipulation">🖨 印刷</button>
+          <button onclick="openVisitReportModal()" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;touch-action:manipulation">＋ 追加</button>
+        </div>
+      </div>
+      <div id="diary-visit-list" style="padding:10px 12px"></div>
     </div>
   </div>
+
+  <!-- VISIT REPORT MODAL -->
+<div class="overlay" id="modal-visit-report" onclick="closeModal('modal-visit-report',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <input type="hidden" id="vr-edit-idx" value="-1">
+    <div class="sheet-title" id="vr-modal-title">📋 訪問記録を追加</div>
+    <div class="field"><label>利用者</label>
+      <select id="vr-resident" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff"></select>
+    </div>
+    <div class="field"><label>サービスの種類</label>
+      <select id="vr-service" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
+        <option value="身体介護">身体介護</option>
+        <option value="生活援助">生活援助</option>
+        <option value="通院等乗降介助">通院等乗降介助</option>
+        <option value="身体介護・生活援助">身体介護・生活援助</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+    <div class="field"><label>訪問時間</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="time" id="vr-time-from" style="flex:1;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px">
+        <span style="color:var(--sub)">〜</span>
+        <input type="time" id="vr-time-to" style="flex:1;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px">
+      </div>
+    </div>
+    <div class="field"><label>業務内容</label>
+      <textarea id="vr-content" rows="3" placeholder="身体介護：入浴介助、更衣介助など" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;resize:none"></textarea>
+    </div>
+    <div class="field"><label>担当者</label>
+      <input type="text" id="vr-staff" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px">
+    </div>
+    <button class="btn-primary" onclick="saveVisitReport()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-visit-report')">キャンセル</button>
+  </div>
+</div>
 
   <!-- PROPOSAL SCREEN -->
   <div id="scr-proposal" class="scr">
@@ -2072,7 +2120,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports'];
 let db=null, fbReady=false, fbListeners=[];
 
 (async function initFirebase(){
@@ -3026,6 +3074,7 @@ function showScr(id){
   if(id==='scr-residents') renderResList();
   if(id==='scr-handover-board') renderHandoverBoard();
   if(id==='scr-schedule') renderSchedule();
+  if(id==='scr-diary') renderDiary();
   if(id==='scr-settings') renderSettings();
   if(id==='scr-help') initHelpScreen();
   if(id==='scr-proposal') renderProposalScr();
@@ -3531,6 +3580,168 @@ function deleteHandover(id){
   toast('申し送りを削除しました');
 }
 
+// ═══════════ 業務日誌 ═══════════
+let S_diary_offset=0;
+function getDiaryDate(off=S_diary_offset){const d=new Date();d.setDate(d.getDate()+off);return d;}
+function getDiaryDateStr(off=S_diary_offset){const d=getDiaryDate(off);return d.toISOString().slice(0,10);}
+function getVisitReports(){return ls('visit_reports')||{};}
+function saveVisitReports(data){lsSet('visit_reports',data);fsSet('visit_reports',data);}
+function changeDiaryDate(delta){
+  S_diary_offset+=delta;
+  if(S_diary_offset>0)S_diary_offset=0;
+  renderDiary();
+}
+function switchDiaryTab(tab){renderDiary();}
+function renderDiary(){
+  const d=getDiaryDate();
+  const WD=['日','月','火','水','木','金','土'];
+  const label=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${WD[d.getDay()]}）`;
+  const lbl=document.getElementById('diary-date-label');
+  if(lbl)lbl.textContent=label;
+  const nxt=document.getElementById('diary-date-next');
+  if(nxt){nxt.style.opacity=S_diary_offset===0?'.35':'1';nxt.style.pointerEvents=S_diary_offset===0?'none':'';}
+  const reports=(getVisitReports()[getDiaryDateStr()]||[]);
+  const el=document.getElementById('diary-visit-list');
+  if(!el)return;
+  if(!reports.length){
+    el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:24px 4px;text-align:center">この日の訪問記録はありません</div>';
+    return;
+  }
+  el.innerHTML=reports.map((r,idx)=>`
+    <div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <span style="font-size:13px;font-weight:700;color:var(--p)">${idx+1}. ${r.resName}様</span>
+          <span style="font-size:11px;color:var(--sub);margin-left:8px">${r.timeFrom||''}〜${r.timeTo||''}</span>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button onclick="openVisitReportModal(${idx})" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️</button>
+          <button onclick="deleteVisitReport(${idx})" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:3px">${r.service||''}</div>
+      <div style="font-size:13px;line-height:1.5;margin-bottom:4px">${r.content||''}</div>
+      <div style="font-size:11px;color:var(--sub)">担当：${r.staff||''}</div>
+    </div>
+  `).join('');
+}
+function openVisitReportModal(editIdx=-1){
+  document.getElementById('vr-edit-idx').value=editIdx;
+  document.getElementById('vr-modal-title').textContent=editIdx>=0?'✏️ 訪問記録を編集':'📋 訪問記録を追加';
+  const sel=document.getElementById('vr-resident');
+  if(sel)sel.innerHTML=getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  if(editIdx>=0){
+    const entry=(getVisitReports()[getDiaryDateStr()]||[])[editIdx];
+    if(entry){
+      if(sel)sel.value=entry.rid||'';
+      document.getElementById('vr-service').value=entry.service||'身体介護';
+      document.getElementById('vr-time-from').value=entry.timeFrom||'';
+      document.getElementById('vr-time-to').value=entry.timeTo||'';
+      document.getElementById('vr-content').value=entry.content||'';
+      document.getElementById('vr-staff').value=entry.staff||'';
+    }
+  } else {
+    document.getElementById('vr-service').value='身体介護';
+    document.getElementById('vr-time-from').value='';
+    document.getElementById('vr-time-to').value='';
+    document.getElementById('vr-content').value='';
+    document.getElementById('vr-staff').value=S.user||'';
+  }
+  document.getElementById('modal-visit-report').classList.add('on');
+}
+function saveVisitReport(){
+  const rid=document.getElementById('vr-resident').value;
+  const res=getResidents().find(r=>r.id===rid);
+  if(!res){toast('利用者を選択してください');return;}
+  const content=document.getElementById('vr-content').value.trim();
+  if(!content){toast('業務内容を入力してください');return;}
+  const entry={
+    id:'vr'+Date.now(),rid,resName:res.name,
+    service:document.getElementById('vr-service').value,
+    timeFrom:document.getElementById('vr-time-from').value,
+    timeTo:document.getElementById('vr-time-to').value,
+    content,staff:document.getElementById('vr-staff').value.trim()
+  };
+  const dateStr=getDiaryDateStr();
+  const all=getVisitReports();
+  if(!all[dateStr])all[dateStr]=[];
+  const editIdx=parseInt(document.getElementById('vr-edit-idx').value||'-1');
+  if(editIdx>=0&&all[dateStr][editIdx]){
+    all[dateStr][editIdx]={...all[dateStr][editIdx],...entry};
+    toast('更新しました ✓');
+  } else {
+    all[dateStr].push(entry);
+    toast('追加しました ✓');
+  }
+  saveVisitReports(all);
+  closeModal('modal-visit-report');
+  renderDiary();
+}
+function deleteVisitReport(idx){
+  if(!confirm('この訪問記録を削除しますか？'))return;
+  const dateStr=getDiaryDateStr();
+  const all=getVisitReports();
+  if(!all[dateStr])return;
+  all[dateStr].splice(idx,1);
+  saveVisitReports(all);
+  renderDiary();
+  toast('削除しました');
+}
+function printVisitReport(){
+  const d=getDiaryDate();
+  const WD=['日','月','火','水','木','金','土'];
+  const reiwa=d.getFullYear()-2018;
+  const reports=(getVisitReports()[getDiaryDateStr()]||[]);
+  const rows=Array.from({length:27},(_,i)=>reports[i]||null);
+  const rowsHTML=rows.map((r,i)=>`<tr>
+    <td style="text-align:center;border:1px solid #333;padding:3px 4px;font-size:11px">${i+1}</td>
+    <td style="border:1px solid #333;padding:3px 6px;font-size:11px">${r?r.resName+'　様':'　様'}</td>
+    <td style="text-align:center;border:1px solid #333;padding:3px 4px;font-size:10px;white-space:nowrap">${r?r.service||'':''}</td>
+    <td style="text-align:center;border:1px solid #333;padding:3px 4px;font-size:11px;white-space:nowrap">${r?(r.timeFrom||'')+'〜'+(r.timeTo||''):'〜'}</td>
+    <td style="border:1px solid #333;padding:3px 6px;font-size:11px">${r?r.content||'':''}</td>
+    <td style="border:1px solid #333;padding:3px 6px;font-size:11px">${r?r.staff||'':''}</td>
+  </tr>`).join('');
+  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>業務日報（訪問介護）${reiwa}.${d.getMonth()+1}.${d.getDate()}</title>
+<style>
+@page{size:A4 portrait;margin:12mm 10mm}
+body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:12px}
+.hd{display:flex;align-items:baseline;margin-bottom:10px}
+.hd-date{font-size:13px;white-space:nowrap}
+.hd-title{font-size:20px;font-weight:bold;margin:0 auto}
+table{width:100%;border-collapse:collapse}
+th{border:1px solid #333;padding:4px 5px;font-size:10px;background:#f5f5f5;text-align:center}
+td{border:1px solid #333;padding:2px 5px;font-size:11px;min-height:16px}
+.biko td{height:70px;vertical-align:top}
+@media print{.no-print{display:none}}
+</style></head><body>
+<div class="hd">
+  <span class="hd-date">令和 ${reiwa} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日（${WD[d.getDay()]}）</span>
+  <span class="hd-title">業務日報　（訪問介護）</span>
+</div>
+<table>
+<thead><tr>
+  <th style="width:4%"></th>
+  <th style="width:15%">ご利用者様</th>
+  <th style="width:13%">サービスの種類</th>
+  <th style="width:13%">訪問時間</th>
+  <th style="width:44%">業務内容</th>
+  <th style="width:11%">担当</th>
+</tr></thead>
+<tbody>${rowsHTML}
+<tr class="biko">
+  <td style="writing-mode:vertical-rl;text-align:center;padding:4px">備考</td>
+  <td colspan="5" style="height:70px;vertical-align:top"></td>
+</tr>
+</tbody></table>
+<div class="no-print" style="text-align:right;margin-top:10px">
+  <button onclick="window.print()" style="padding:8px 20px;font-size:13px;cursor:pointer;background:#1565c0;color:#fff;border-radius:6px">🖨 印刷</button>
+</div>
+</body></html>`;
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+}
 // ═══════════ VOICE INPUT ═══════════
 // ── VOICE SMART PARSER ──
 function startVoiceSmart(type){
