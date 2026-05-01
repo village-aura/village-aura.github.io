@@ -874,8 +874,8 @@ a{color:var(--p);text-decoration:none}
     <div class="setting-group" id="ai-key-group" style="display:none">
       <h3>🤖 AI FAQ 設定（Groq）</h3>
       <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px">
-        <div style="font-size:12px;color:var(--sub);line-height:1.6">AI FAQは設定不要で使えます。独自キーを使う場合のみ入力してください。<br><span style="color:var(--ok)">✓ デフォルトキー設定済み（Groq / Llama 3.3）</span></div>
-        <input type="password" id="ai-api-key-input" placeholder="gsk_... (任意)" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
+        <div style="font-size:12px;color:var(--sub);line-height:1.6">Groqの無料APIキーを入力すると使えます。<br><a href="https://console.groq.com" target="_blank" style="color:var(--p)">console.groq.com</a> でAPIキーを取得してください。</div>
+        <input type="password" id="ai-api-key-input" placeholder="gsk_..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
         <div style="display:flex;gap:8px">
           <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
           <button onclick="clearAIKey()" style="padding:10px 14px;background:#f3f4f6;color:var(--ng);border-radius:8px;font-size:14px;font-weight:700">削除</button>
@@ -2200,7 +2200,6 @@ const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システ
 主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
 データはlocalStorageに保存。管理者ID: 1006。初期PW: aura01。職員ロール：全権管理者・事業所管理者・看護師・介護職員・医療事務・居宅職員。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
-const _AK=['gsk_Or0ik','9JYq4M5EU','JThZm2WGd','yb3FYXarb','fX7keroa','FT7HUzUlJNYo'].join('');
 let aiHistory=[];
 function initHelpScreen(){
   const key=localStorage.getItem('ai_api_key');
@@ -2235,7 +2234,8 @@ function appendAIMsg(role,text){
 async function sendAIMessage(){
   const inp=document.getElementById('ai-input');
   const text=inp.value.trim();if(!text)return;
-  const key=localStorage.getItem('ai_api_key')||_AK;
+  const key=localStorage.getItem('ai_api_key')||'';
+  if(!key){toast('設定画面でGroq APIキーを登録してください');return;}
   inp.value='';
   appendAIMsg('user',text);
   aiHistory.push({role:'user',content:text});
@@ -2243,7 +2243,7 @@ async function sendAIMessage(){
   btn.disabled=true;
   const typing=appendAIMsg('typing','考え中…');
   try{
-    const useKey=localStorage.getItem('ai_api_key')||_AK;
+    const useKey=localStorage.getItem('ai_api_key')||'';
     const messages=[{role:'system',content:AI_SYSTEM},...aiHistory];
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
