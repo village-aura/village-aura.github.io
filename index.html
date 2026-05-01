@@ -3853,7 +3853,7 @@ function renderBoardSection(elId,items,section){
     </div>`;
     return `<div style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
       ${PRI_BADGE[h.pri]||PRI_BADGE.normal}
-      ${_res?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="display:inline-flex;align-items:center;gap:4px;background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:6px">👤 ${_res.name}様</button>`:''}
+      ${_res?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="display:inline-flex;align-items:center;gap:4px;background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-bottom:6px;touch-action:manipulation">👤 ${_res.name}様</button>`:`<button onclick="event.stopPropagation();openBoardHandover('${section}',${idx})" style="display:inline-flex;align-items:center;gap:4px;background:#f5f5f5;color:#9ca3af;border:1px dashed #d1d5db;border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer;margin-bottom:6px;touch-action:manipulation">👤 利用者を選択</button>`}
       <div style="font-size:14px;line-height:1.6">${h.content||''}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px">${badge}${h.by} · ${h.time} ${editedNote}</div>
       ${actions}
