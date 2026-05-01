@@ -725,7 +725,7 @@ a{color:var(--p);text-decoration:none}
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <span style="font-size:13px;font-weight:700;color:#c62828">🩺 医師から</span>
-        <button onclick="openModal('modal-doctor-order')" style="background:#c62828;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
+        <button onclick="const e=document.getElementById('do-edit-idx');if(e)e.value=-1;document.getElementById('do-content').value='';openModal('modal-doctor-order')" style="background:#c62828;color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">+ 追加</button>
       </div>
       <div id="hb-doctor-list"></div>
     </div>
@@ -3788,14 +3788,23 @@ function renderHandoverBoard(){
   renderBoardSection('hb-sak-list',d.sak[S_sak_shift],'sak');
   // doctor
   const doEl=document.getElementById('hb-doctor-list');
-  doEl.innerHTML=d.doctor.length?d.doctor.map(o=>`
-    <div style="${PRI_STYLE[o.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
+  doEl.innerHTML=d.doctor.length?d.doctor.map((o,idx)=>{
+    const editedNote=o.editedBy?`<span style="color:#9ca3af;font-size:10px">（${o.editedBy}が${o.editedTime}に修正）</span>`:'';
+    const resLink=o.rid?`<button onclick="event.stopPropagation();openResident('${o.rid}')" style="display:inline-flex;align-items:center;gap:3px;background:#fff0f0;color:#c62828;border:1px solid #c62828;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">👤 カルテ</button>`:'';
+    const actions=isAdmin()?`<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+      ${resLink}
+      <button onclick="event.stopPropagation();editDoctorOrder(${idx})" style="background:#fff0f0;color:#c62828;border:1px solid #c62828;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer">✏️ 編集</button>
+      <button onclick="event.stopPropagation();deleteDoctorOrder(${idx})" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer">🗑 削除</button>
+    </div>`:(resLink?`<div style="margin-top:8px">${resLink}</div>`:'');
+    return `<div style="${PRI_STYLE[o.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
       ${PRI_BADGE[o.pri]||PRI_BADGE.normal}
       <span style="display:inline-block;background:#c62828;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px;margin-left:4px">🩺 ${o.doctor||'医師'}</span>
       ${o.resident?`<div style="font-size:11px;color:var(--sub);margin-bottom:4px">対象: ${o.resident}</div>`:''}
       <div style="font-size:14px;line-height:1.6">${o.content}</div>
-      <div style="font-size:11px;color:var(--sub);margin-top:4px"><span class="staff-badge" style="background:#c62828">医師</span>${o.by} · ${o.time}</div>
-    </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">本日の医師指示はありません</div>';
+      <div style="font-size:11px;color:var(--sub);margin-top:4px"><span class="staff-badge" style="background:#c62828">医師</span>${o.by} · ${o.time} ${editedNote}</div>
+      ${actions}
+    </div>`;
+  }).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">本日の医師指示はありません</div>';
   renderBoardSection('hb-nurse-list',d.nurse,'nurse');
   renderBoardSection('hb-shot-list',d.shot,'shot');
   renderBoardSection('hb-day-list',d.day,'day');
@@ -3909,16 +3918,54 @@ function saveDoctorOrder(){
   if(!content){toast('指示内容を入力してください');return;}
   const d=getBoardData();
   const doPri=document.querySelector('input[name="do-pri"]:checked')?.value||'normal';
-  d.doctor.unshift({
-    content,doctor:document.getElementById('do-doctor').value||'医師',
-    resident:document.getElementById('do-resident').value,
-    pri:doPri,
-    staffRole:'doctor',by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
-  });
+  const editIdx=parseInt(document.getElementById('do-edit-idx')?.value||'-1');
+  if(editIdx>=0&&d.doctor[editIdx]){
+    d.doctor[editIdx].content=content;
+    d.doctor[editIdx].pri=doPri;
+    d.doctor[editIdx].doctor=document.getElementById('do-doctor').value||'医師';
+    d.doctor[editIdx].resident=document.getElementById('do-resident').value;
+    d.doctor[editIdx].editedBy=S.user||'──';
+    d.doctor[editIdx].editedTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    toast('医師指示を更新しました ✓');
+  } else {
+    d.doctor.unshift({
+      id:Date.now().toString(),content,
+      doctor:document.getElementById('do-doctor').value||'医師',
+      resident:document.getElementById('do-resident').value,
+      pri:doPri,rid:'',
+      staffRole:'doctor',by:S.user||'──',
+      time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),
+      editedBy:null,editedTime:null
+    });
+    toast('医師指示を保存しました ✓');
+  }
   saveBoardData(d);
   closeModal('modal-doctor-order');
-  toast('医師指示を保存しました ✓');
   renderHandoverBoard();
+}
+function editDoctorOrder(idx){
+  if(!isAdmin()){toast('全権管理者のみ編集できます');return;}
+  const d=getBoardData();
+  const o=d.doctor[idx];
+  if(!o)return;
+  document.getElementById('do-content').value=o.content||'';
+  document.getElementById('do-doctor').value=o.doctor||'稲田俊雄';
+  document.getElementById('do-resident').value=o.resident||'';
+  const priEl=document.querySelector(`input[name="do-pri"][value="${o.pri||'normal'}"]`);
+  if(priEl)priEl.checked=true;
+  let idxEl=document.getElementById('do-edit-idx');
+  if(!idxEl){idxEl=document.createElement('input');idxEl.type='hidden';idxEl.id='do-edit-idx';document.getElementById('modal-doctor-order').appendChild(idxEl);}
+  idxEl.value=idx;
+  openModal('modal-doctor-order');
+}
+function deleteDoctorOrder(idx){
+  if(!isAdmin()){toast('全権管理者のみ削除できます');return;}
+  if(!confirm('この医師指示を削除しますか？'))return;
+  const d=getBoardData();
+  d.doctor.splice(idx,1);
+  saveBoardData(d);
+  renderHandoverBoard();
+  toast('削除しました');
 }
 
 // ═══════════ SCHEDULE ═══════════
