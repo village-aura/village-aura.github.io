@@ -406,7 +406,7 @@ a{color:var(--p);text-decoration:none}
     <span class="aurora-orb a3"></span>
   </div>
   <div class="login-inner">
-    <div class="login-brand" id="login-brand-tap" onclick="handleBrandTap()" style="touch-action:manipulation">
+    <div class="login-brand" id="login-brand-tap" ontouchstart="handleBrandPress()" ontouchend="handleBrandRelease()" ontouchcancel="handleBrandRelease()" onmousedown="handleBrandPress()" onmouseup="handleBrandRelease()" style="touch-action:manipulation;user-select:none">
       <img class="login-logo-img" src="facility-logo.png" alt="Village Aura" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
       <div class="logo-fallback-lg" style="display:none">🏥</div>
       <div class="login-title">Village Aura</div>
@@ -2113,20 +2113,17 @@ function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 })();
 
 // ═══════════ AUTH ═══════════
-let _brandTapCount=0, _brandTapTimer=null;
-function handleBrandTap(){
-  _brandTapCount++;
-  clearTimeout(_brandTapTimer);
-  _brandTapTimer=setTimeout(()=>{_brandTapCount=0;},1500);
-  if(_brandTapCount>=5){
-    _brandTapCount=0;
+let _brandPressTimer=null;
+function handleBrandPress(){
+  _brandPressTimer=setTimeout(()=>{
     const admin=Object.entries(STAFF_INFO).find(([,v])=>v.role==='super_admin');
     if(!admin)return;
     document.getElementById('login-id').value=getStaffLoginId(admin[0]);
     document.getElementById('login-pass').value=getStaffPass(admin[0]);
     document.getElementById('login-pass').focus();
-  }
+  },1500);
 }
+function handleBrandRelease(){clearTimeout(_brandPressTimer);}
 async function login(){
   const inputId=document.getElementById('login-id').value.trim();
   const inputPass=document.getElementById('login-pass').value;
