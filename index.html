@@ -2175,6 +2175,9 @@ async function login(){
   const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
   const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
   addAuditLog('ログイン','ID: '+inputId);
+  aiHistory=[];
+  const aiEl=document.getElementById('ai-messages');
+  if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
@@ -2187,6 +2190,9 @@ function logout(){
 }
 function _doLogout(){
   clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
+  aiHistory=[];
+  const aiEl=document.getElementById('ai-messages');
+  if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
@@ -2197,8 +2203,8 @@ function _doLogout(){
 
 // ═══════════ HELP / AI FAQ ═══════════
 const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
-主な機能：ログイン（ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
-データはlocalStorageに保存。管理者ID: 1006。初期PW: aura01。職員ロール：全権管理者・事業所管理者・看護師・介護職員・医療事務・居宅職員。
+主な機能：ログイン（職員ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
+職員ロール：全権管理者・事業所管理者・看護師・介護職員・医療事務・居宅職員。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
 let aiHistory=[];
 function initHelpScreen(){
