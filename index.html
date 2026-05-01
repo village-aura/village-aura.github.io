@@ -483,22 +483,27 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-dashboard" class="scr on">
     <div id="backup-banner" style="display:none;margin:10px 12px 0;padding:10px 12px;border:1.5px solid;border-radius:10px;display:none;align-items:center;gap:10px;font-size:13px"></div>
     <div class="dash-date" id="dash-date"></div>
-    <div class="alert-banner" onclick="showScr('scr-residents');setFilter('all')">
-      <span class="ico">⚠️</span>
-      <div class="txt">
-        <b id="alert-count">バイタル未記録: 0名</b>
-        <span id="alert-names"></span>
+    <!-- Section 1: 掲示板 -->
+    <div style="margin:8px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+      <div style="background:linear-gradient(90deg,var(--p),#5b9bd5);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">📋 掲示板</div>
+      <div onclick="showScr('scr-residents');setFilter('all')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--bdr);cursor:pointer;background:linear-gradient(135deg,#fffbf0,#fff)">
+        <span style="font-size:20px">⚠️</span>
+        <div style="flex:1">
+          <b id="alert-count" style="display:block;font-size:13px;font-weight:700;color:#E65100">バイタル未記録: 0名</b>
+          <span id="alert-names" style="font-size:11px;color:#BF360C"></span>
+        </div>
+        <span style="color:#FB8C00;font-size:16px">›</span>
       </div>
-      <span class="arrow">›</span>
-    </div>
-    <div id="doctor-order-banner" style="display:none;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;display:none;align-items:center;gap:10px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1)" onclick="showScr('scr-handover-board')">
-      <span style="font-size:22px">🩺</span>
-      <div style="flex:1">
-        <b id="doctor-order-count" style="display:block;font-size:14px;font-weight:700"></b>
-        <span id="doctor-order-preview" style="font-size:12px"></span>
+      <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:#fff">
+        <span style="font-size:20px">🩺</span>
+        <div style="flex:1">
+          <b id="doctor-order-count" style="display:block;font-size:13px;font-weight:700"></b>
+          <span id="doctor-order-preview" style="font-size:11px;color:var(--sub)"></span>
+        </div>
+        <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
       </div>
-      <span style="font-size:18px">›</span>
     </div>
+    <!-- Section 2 divider -->
     <div class="sec-head">クイックアクセス</div>
     <div class="quick-grid">
   <button class="quick-btn" onclick="showScr('scr-residents')" style="background:linear-gradient(135deg,#e8f0fb,#d4e6ff)">
@@ -1768,6 +1773,10 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="board-ho-title">📣 申し送り追加</div>
     <input type="hidden" id="board-ho-section">
+    <input type="hidden" id="board-ho-edit-idx" value="-1">
+    <div class="field"><label>関連利用者（任意）</label>
+      <select id="bho-resident"><option value="">全体・施設共通</option></select>
+    </div>
     <div class="field"><label>重要度</label>
       <div class="radio-group">
         <label><input type="radio" name="bho-pri" value="normal" checked> 📌 通常</label>
@@ -3035,28 +3044,35 @@ function renderDashboard(){
   const noVital=res.filter(r=>!vitalToday.has(r.id));
   document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
   document.getElementById('alert-names').textContent=noVital.slice(0,3).map(r=>r.name).join('・')+(noVital.length>3?'…':'');
-  // 医師指示バナー
+  // 医師指示行
   const doctorOrders=getBoardData().doctor||[];
-  const doBanner=document.getElementById('doctor-order-banner');
-  if(doBanner){
+  const doRow=document.getElementById('doctor-order-row');
+  if(doRow){
     if(doctorOrders.length){
       const hasUrgent=doctorOrders.some(o=>o.pri==='urgent');
       const hasImportant=doctorOrders.some(o=>o.pri==='important');
       const latest=doctorOrders[0];
+      const countEl=document.getElementById('doctor-order-count');
+      const arrowEl=document.getElementById('doctor-order-arrow');
       if(hasUrgent){
-        doBanner.style.cssText='display:flex;align-items:center;gap:10px;cursor:pointer;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#fff5f5,#fff);border:1.5px solid #e53935;box-shadow:0 2px 8px rgba(229,57,53,.15)';
-        document.getElementById('doctor-order-count').style.color='#c62828';
+        doRow.style.background='linear-gradient(135deg,#fff5f5,#fff)';
+        if(countEl){countEl.style.color='#c62828';}
+        if(arrowEl){arrowEl.style.color='#c62828';}
       } else if(hasImportant){
-        doBanner.style.cssText='display:flex;align-items:center;gap:10px;cursor:pointer;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#fffbf0,#fff);border:1.5px solid #FB8C00;box-shadow:0 2px 8px rgba(251,140,0,.15)';
-        document.getElementById('doctor-order-count').style.color='#e65100';
+        doRow.style.background='linear-gradient(135deg,#fffbf0,#fff)';
+        if(countEl){countEl.style.color='#e65100';}
+        if(arrowEl){arrowEl.style.color='#e65100';}
       } else {
-        doBanner.style.cssText='display:flex;align-items:center;gap:10px;cursor:pointer;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#e8f0fb,#f0f6ff);border:1.5px solid var(--p);box-shadow:0 2px 8px rgba(61,122,181,.12)';
-        document.getElementById('doctor-order-count').style.color='#1565c0';
+        doRow.style.background='#fff';
+        if(countEl){countEl.style.color='#1565c0';}
+        if(arrowEl){arrowEl.style.color='var(--sub)';}
       }
-      document.getElementById('doctor-order-count').textContent=`医師指示：${doctorOrders.length}件`;
-      document.getElementById('doctor-order-preview').textContent=(latest.content||'').substring(0,30)+((latest.content||'').length>30?'…':'');
+      doRow.style.display='flex';
+      if(countEl)countEl.textContent=`医師指示：${doctorOrders.length}件`;
+      const previewEl=document.getElementById('doctor-order-preview');
+      if(previewEl)previewEl.textContent=(latest.content||'').substring(0,30)+((latest.content||'').length>30?'…':'');
     } else {
-      doBanner.style.display='none';
+      doRow.style.display='none';
     }
   }
   // 要注目：準緊急以上の申し送り・経時記録（直近7日）
@@ -3756,7 +3772,7 @@ function switchSakShift(shift){
   document.getElementById('sak-am-btn').style.color=shift==='am'?'#fff':'var(--sub)';
   document.getElementById('sak-pm-btn').style.background=shift==='pm'?'var(--p)':'none';
   document.getElementById('sak-pm-btn').style.color=shift==='pm'?'#fff':'var(--sub)';
-  renderBoardSection('hb-sak-list',getBoardData().sak[S_sak_shift]);
+  renderBoardSection('hb-sak-list',getBoardData().sak[S_sak_shift],'sak');
 }
 function getBoardData(){
   const d=ls('board_data2')||{};
@@ -3769,7 +3785,7 @@ function getBoardData(){
 function saveBoardData(d){lsSet('board_data2',d);fsSet('board_data2',d);}
 function renderHandoverBoard(){
   const d=getBoardData();
-  renderBoardSection('hb-sak-list',d.sak[S_sak_shift]);
+  renderBoardSection('hb-sak-list',d.sak[S_sak_shift],'sak');
   // doctor
   const doEl=document.getElementById('hb-doctor-list');
   doEl.innerHTML=d.doctor.length?d.doctor.map(o=>`
@@ -3780,10 +3796,10 @@ function renderHandoverBoard(){
       <div style="font-size:14px;line-height:1.6">${o.content}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px"><span class="staff-badge" style="background:#c62828">医師</span>${o.by} · ${o.time}</div>
     </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">本日の医師指示はありません</div>';
-  renderBoardSection('hb-nurse-list',d.nurse);
-  renderBoardSection('hb-shot-list',d.shot);
-  renderBoardSection('hb-day-list',d.day);
-  renderBoardSection('hb-visit-list',d.visit);
+  renderBoardSection('hb-nurse-list',d.nurse,'nurse');
+  renderBoardSection('hb-shot-list',d.shot,'shot');
+  renderBoardSection('hb-day-list',d.day,'day');
+  renderBoardSection('hb-visit-list',d.visit,'visit');
   // populate doctor order resident select
   const sel=document.getElementById('do-resident');
   if(sel) sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
@@ -3798,40 +3814,95 @@ const PRI_BADGE={
   important:'<span style="display:inline-block;background:#FB8C00;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">⚠ 重要</span>',
   normal:'<span style="display:inline-block;background:#9ca3af;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px">📌 通常</span>'
 };
-function renderBoardSection(elId,items){
+function renderBoardSection(elId,items,section){
   const el=document.getElementById(elId);
   if(!el)return;
-  el.innerHTML=items&&items.length?items.map(h=>{
+  el.innerHTML=items&&items.length?items.map((h,idx)=>{
     const rc=h.staffRole?ROLE_COLORS[h.staffRole]:null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
+    const editedNote=h.editedBy?`<span style="color:#9ca3af;font-size:10px">（${h.editedBy}が${h.editedTime}に修正）</span>`:'';
+    const resLink=h.rid?`<button onclick="event.stopPropagation();openResident('${h.rid}')" style="display:inline-flex;align-items:center;gap:3px;background:var(--ps);color:var(--p);border:1px solid var(--p);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">👤 カルテ</button>`:'';
+    const canDelete=h.by===S.user||isAdmin();
+    const actions=`<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+      ${resLink}
+      <button onclick="event.stopPropagation();openBoardHandover('${section}',${idx})" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer">✏️ 編集</button>
+      ${canDelete?`<button onclick="event.stopPropagation();deleteBoardHandover('${section}',${idx})" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer">🗑 削除</button>`:''}
+    </div>`;
     return `<div style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
       ${PRI_BADGE[h.pri]||PRI_BADGE.normal}
       <div style="font-size:14px;line-height:1.6">${h.content}</div>
-      <div style="font-size:11px;color:var(--sub);margin-top:4px">${badge}${h.by} · ${h.time}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">${badge}${h.by} · ${h.time} ${editedNote}</div>
+      ${actions}
     </div>`;
   }).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">申し送りはありません</div>';
 }
-function openBoardHandover(section){
+function openBoardHandover(section,editIdx=-1){
   document.getElementById('board-ho-section').value=section;
+  document.getElementById('board-ho-edit-idx').value=editIdx;
   const labels={sak:'🏠 サ高住から',nurse:'👩‍⚕️ 看護師から',shot:'🏡 小多機から',day:'☀️ デイから',visit:'🚗 訪問介護から'};
   const shiftLabel=section==='sak'?(S_sak_shift==='am'?' (朝)':' (夕)'):'';
-  document.getElementById('board-ho-title').textContent=(labels[section]||section)+shiftLabel+' 申し送り';
-  document.getElementById('bho-content').value='';
+  document.getElementById('board-ho-title').textContent=(editIdx>=0?'✏️ 編集：':(labels[section]||section)+shiftLabel+' 申し送り');
+  // populate resident selector
+  const sel=document.getElementById('bho-resident');
+  if(sel){sel.innerHTML='<option value="">全体・施設共通</option>'+getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');}
+  if(editIdx>=0){
+    const d=getBoardData();
+    const items=section==='sak'?d.sak[S_sak_shift]:d[section];
+    const entry=items[editIdx];
+    if(entry){
+      document.getElementById('bho-content').value=entry.content||'';
+      if(sel)sel.value=entry.rid||'';
+      const priEl=document.querySelector(`input[name="bho-pri"][value="${entry.pri||'normal'}"]`);
+      if(priEl)priEl.checked=true;
+    }
+  } else {
+    document.getElementById('bho-content').value='';
+    const normalEl=document.querySelector('input[name="bho-pri"][value="normal"]');
+    if(normalEl)normalEl.checked=true;
+  }
   document.getElementById('modal-board-ho').classList.add('on');
 }
 function saveBoardHandover(){
   const content=document.getElementById('bho-content').value.trim();
   if(!content){toast('内容を入力してください');return;}
   const section=document.getElementById('board-ho-section').value;
+  const editIdx=parseInt(document.getElementById('board-ho-edit-idx').value||'-1');
   const pri=document.querySelector('[name=bho-pri]:checked')?.value||'normal';
-  const entry={content,pri,staffRole:S.userRole,by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};
+  const rid=document.getElementById('bho-resident')?.value||'';
   const d=getBoardData();
-  if(section==='sak') d.sak[S_sak_shift].unshift(entry);
-  else d[section].unshift(entry);
+  const items=section==='sak'?d.sak[S_sak_shift]:d[section];
+  if(editIdx>=0&&items[editIdx]){
+    items[editIdx].content=content;
+    items[editIdx].pri=pri;
+    items[editIdx].rid=rid;
+    items[editIdx].editedBy=S.user||'──';
+    items[editIdx].editedTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    if(section==='sak') d.sak[S_sak_shift]=items;
+    else d[section]=items;
+    toast('申し送りを更新しました ✓');
+  } else {
+    const entry={id:Date.now().toString(),content,pri,rid,staffRole:S.userRole,by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),editedBy:null,editedTime:null};
+    if(section==='sak') d.sak[S_sak_shift].unshift(entry);
+    else d[section].unshift(entry);
+    toast('申し送りを保存しました ✓');
+  }
   saveBoardData(d);
   closeModal('modal-board-ho');
-  toast('申し送りを保存しました ✓');
   renderHandoverBoard();
+}
+function deleteBoardHandover(section,idx){
+  const d=getBoardData();
+  const items=section==='sak'?d.sak[S_sak_shift]:d[section];
+  const entry=items[idx];
+  if(!entry)return;
+  if(entry.by!==S.user&&!isAdmin()){toast('削除できるのは作成者と管理者のみです');return;}
+  if(!confirm('この申し送りを削除しますか？'))return;
+  items.splice(idx,1);
+  if(section==='sak') d.sak[S_sak_shift]=items;
+  else d[section]=items;
+  saveBoardData(d);
+  renderHandoverBoard();
+  toast('削除しました');
 }
 function saveDoctorOrder(){
   const content=document.getElementById('do-content').value.trim();
