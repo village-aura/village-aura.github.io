@@ -199,10 +199,14 @@ a{color:var(--p);text-decoration:none}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--p)}
 .field textarea{resize:vertical;min-height:80px;line-height:1.6}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.radio-group{display:flex;gap:8px;flex-wrap:wrap}
-.radio-group label{display:flex;align-items:center;gap:6px;font-size:14px;padding:8px 12px;border:1.5px solid var(--bdr);border-radius:8px;cursor:pointer}
-.radio-group input[type=radio]{accent-color:var(--p)}
-.radio-group label:has(input:checked){border-color:var(--p);background:var(--ps);color:var(--p);font-weight:600}
+.radio-group{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.radio-group label{display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700;padding:9px 6px;border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.radio-group input[type=radio]{display:none}
+.radio-group label:has(input:checked){border-color:var(--p);background:var(--ps);color:var(--p)}
+.radio-group label:has(input[value="urgent"]:checked){border-color:#e53935;background:#ffebee;color:#e53935}
+.radio-group label:has(input[value="important"]:checked){border-color:#FB8C00;background:#fff3e0;color:#FB8C00}
+.radio-group label:has(input[value="high"]:checked){border-color:#e53935;background:#ffebee;color:#e53935}
+.radio-group label:has(input[value="medium"]:checked){border-color:#FB8C00;background:#fff3e0;color:#FB8C00}
 .slider-wrap{display:flex;align-items:center;gap:10px}
 .slider-wrap input[type=range]{flex:1;accent-color:var(--p)}
 .slider-val{min-width:30px;text-align:right;font-weight:700;font-size:16px;color:var(--p)}
@@ -218,6 +222,10 @@ a{color:var(--p);text-decoration:none}
 .tag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .ttag{padding:6px 12px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;font-weight:600;background:var(--card);color:var(--sub);cursor:pointer;transition:all .15s}
 .ttag.on{background:var(--ps);border-color:var(--p);color:var(--p)}
+.tag-group-label{width:100%;font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.08em;padding:4px 0 2px;margin-top:2px}
+.cat-btn-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.cat-btn{padding:7px 12px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;font-weight:600;background:var(--card);color:var(--sub);cursor:pointer;transition:all .15s;touch-action:manipulation}
+.cat-btn.on{background:var(--ps);border-color:var(--p);color:var(--p)}
 .ts-row{display:flex;align-items:center;gap:8px;padding:10px 0 4px;border-top:1px solid var(--bdr);margin-top:10px;flex-wrap:wrap}
 .ts-label{font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap}
 .ts-tabs{display:flex;background:#f0f2f5;border-radius:8px;padding:2px;gap:1px}
@@ -1387,24 +1395,28 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-sub" id="chrono-sub">利用者名 様</div>
     <div class="field"><label>カテゴリ（複数可）</label>
       <div class="tag-grid" id="chrono-tags">
+        <div class="tag-group-label">時間帯・活動</div>
         <button class="ttag on" onclick="toggleTag(this)">就寝前</button>
         <button class="ttag" onclick="toggleTag(this)">起床時</button>
         <button class="ttag" onclick="toggleTag(this)">食事中</button>
         <button class="ttag" onclick="toggleTag(this)">入浴</button>
         <button class="ttag" onclick="toggleTag(this)">排泄</button>
+        <div class="tag-group-label">医療・対応</div>
         <button class="ttag" onclick="toggleTag(this)">医療処置</button>
-        <button class="ttag" onclick="toggleTag(this)">家族対応</button>
-        <button class="ttag" onclick="toggleTag(this)">転倒・事故</button>
-        <button class="ttag" onclick="toggleTag(this)">コミュニケーション</button>
         <button class="ttag" onclick="toggleTag(this)">受診</button>
+        <button class="ttag" onclick="toggleTag(this)">転倒・事故</button>
+        <div class="tag-group-label">コミュニケーション</div>
+        <button class="ttag" onclick="toggleTag(this)">家族対応</button>
+        <button class="ttag" onclick="toggleTag(this)">コミュニケーション</button>
+        <div class="tag-group-label">その他</div>
         <button class="ttag" onclick="toggleTag(this)">その他</button>
       </div>
     </div>
     <div class="field"><label>重要度</label>
       <div class="radio-group">
-        <label><input type="radio" name="priority" value="normal" checked> 通常</label>
-        <label><input type="radio" name="priority" value="important"> 重要</label>
-        <label><input type="radio" name="priority" value="urgent"> 緊急</label>
+        <label><input type="radio" name="priority" value="normal" checked> 📌 通常</label>
+        <label><input type="radio" name="priority" value="important"> ⚠️ 重要</label>
+        <label><input type="radio" name="priority" value="urgent"> 🚨 緊急</label>
       </div>
     </div>
     <div class="field"><label>記録内容</label>
@@ -1444,13 +1456,20 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div class="sheet-title">📣 申し送り</div>
     <div class="field"><label>カテゴリ</label>
-      <select id="ho-cat"><option value="medical">医療・バイタル</option><option value="daily">生活・ADL</option><option value="family">家族対応</option><option value="medication">投薬</option><option value="other">その他</option></select>
+      <div class="cat-btn-group" id="ho-cat-btns">
+        <button class="cat-btn on" data-val="medical" onclick="selectCatBtn(this,'ho-cat')">🩺 医療</button>
+        <button class="cat-btn" data-val="daily" onclick="selectCatBtn(this,'ho-cat')">🏃 生活</button>
+        <button class="cat-btn" data-val="family" onclick="selectCatBtn(this,'ho-cat')">👨‍👩‍👧 家族</button>
+        <button class="cat-btn" data-val="medication" onclick="selectCatBtn(this,'ho-cat')">💊 投薬</button>
+        <button class="cat-btn" data-val="other" onclick="selectCatBtn(this,'ho-cat')">📝 その他</button>
+      </div>
+      <select id="ho-cat" style="display:none"><option value="medical">医療・バイタル</option><option value="daily">生活・ADL</option><option value="family">家族対応</option><option value="medication">投薬</option><option value="other">その他</option></select>
     </div>
     <div class="field"><label>重要度</label>
       <div class="radio-group">
-        <label><input type="radio" name="ho-pri" value="normal" checked> 通常</label>
-        <label><input type="radio" name="ho-pri" value="important"> 重要</label>
-        <label><input type="radio" name="ho-pri" value="urgent"> 緊急</label>
+        <label><input type="radio" name="ho-pri" value="normal" checked> 📌 通常</label>
+        <label><input type="radio" name="ho-pri" value="important"> ⚠️ 重要</label>
+        <label><input type="radio" name="ho-pri" value="urgent"> 🚨 緊急</label>
       </div>
     </div>
     <div class="field"><label>内容</label><textarea id="ho-content" placeholder="申し送り内容..." rows="4"></textarea>
@@ -1734,9 +1753,9 @@ a{color:var(--p);text-decoration:none}
     <input type="hidden" id="board-ho-section">
     <div class="field"><label>重要度</label>
       <div class="radio-group">
-        <label><input type="radio" name="bho-pri" value="normal" checked> 通常</label>
-        <label><input type="radio" name="bho-pri" value="important"> 重要</label>
-        <label><input type="radio" name="bho-pri" value="urgent"> 緊急</label>
+        <label><input type="radio" name="bho-pri" value="normal" checked> 📌 通常</label>
+        <label><input type="radio" name="bho-pri" value="important"> ⚠️ 重要</label>
+        <label><input type="radio" name="bho-pri" value="urgent"> 🚨 緊急</label>
       </div>
     </div>
     <div class="field"><label>内容</label>
@@ -1762,9 +1781,9 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="field"><label>緊急度</label>
       <div class="radio-group">
-        <label><input type="radio" name="do-pri" value="normal" checked> 通常</label>
-        <label><input type="radio" name="do-pri" value="important"> 重要</label>
-        <label><input type="radio" name="do-pri" value="urgent"> 緊急</label>
+        <label><input type="radio" name="do-pri" value="normal" checked> 📌 通常</label>
+        <label><input type="radio" name="do-pri" value="important"> ⚠️ 重要</label>
+        <label><input type="radio" name="do-pri" value="urgent"> 🚨 緊急</label>
       </div>
     </div>
     <div class="field"><label>医師</label>
@@ -1792,9 +1811,9 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="field"><label>優先度</label>
       <div class="radio-group">
-        <label><input type="radio" name="prop-pri" value="low" checked> 低</label>
-        <label><input type="radio" name="prop-pri" value="medium"> 中</label>
-        <label><input type="radio" name="prop-pri" value="high"> 高</label>
+        <label><input type="radio" name="prop-pri" value="low" checked> 🔵 低</label>
+        <label><input type="radio" name="prop-pri" value="medium"> 🟡 中</label>
+        <label><input type="radio" name="prop-pri" value="high"> 🔴 高</label>
       </div>
     </div>
     <div class="field"><label>タイトル</label>
@@ -3477,6 +3496,11 @@ function startVoice(targetId,btn){
 }
 function stopVoice(){if(recognition){recognition.stop();recognition=null;}}
 function toggleTag(el){el.classList.toggle('on');}
+function selectCatBtn(btn, selectId){
+  btn.closest('.cat-btn-group').querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(selectId).value=btn.dataset.val;
+}
 
 // ═══════════ CSV IMPORT ═══════════
 function handleFile(inp){
