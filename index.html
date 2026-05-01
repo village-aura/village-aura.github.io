@@ -584,6 +584,7 @@ a{color:var(--p);text-decoration:none}
         <button class="inp-btn" onclick="openModal('modal-chrono')"><span class="ib-ico">📝</span><span class="ib-lbl">経時記録</span></button>
         <button class="inp-btn" onclick="openModal('modal-weight')"><span class="ib-ico">⚖️</span><span class="ib-lbl">体重測定</span></button>
         <button class="inp-btn" onclick="openModal('modal-handover')"><span class="ib-ico">📣</span><span class="ib-lbl">申し送り</span></button>
+        <button class="inp-btn" onclick="openVisitReportFromDetail()"><span class="ib-ico">🚗</span><span class="ib-lbl">訪問介護</span></button>
       </div>
     </div>
     </div><!-- /detail-col-left -->
@@ -3625,9 +3626,12 @@ function renderDiary(){
     </div>
   `).join('');
 }
-function openVisitReportModal(editIdx=-1){
+function openVisitReportFromDetail(){
+  openVisitReportModal(-1, S.currentRes);
+}
+function openVisitReportModal(editIdx=-1, presetRid=null){
   document.getElementById('vr-edit-idx').value=editIdx;
-  document.getElementById('vr-modal-title').textContent=editIdx>=0?'✏️ 訪問記録を編集':'📋 訪問記録を追加';
+  document.getElementById('vr-modal-title').textContent=editIdx>=0?'✏️ 訪問記録を編集':'🚗 訪問介護記録を追加';
   const sel=document.getElementById('vr-resident');
   if(sel)sel.innerHTML=getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
   if(editIdx>=0){
@@ -3641,6 +3645,7 @@ function openVisitReportModal(editIdx=-1){
       document.getElementById('vr-staff').value=entry.staff||'';
     }
   } else {
+    if(presetRid&&sel)sel.value=presetRid;
     document.getElementById('vr-service').value='身体介護';
     document.getElementById('vr-time-from').value='';
     document.getElementById('vr-time-to').value='';
@@ -3666,16 +3671,16 @@ function saveVisitReport(){
   const all=getVisitReports();
   if(!all[dateStr])all[dateStr]=[];
   const editIdx=parseInt(document.getElementById('vr-edit-idx').value||'-1');
-  if(editIdx>=0&&all[dateStr][editIdx]){
+  const isEdit=editIdx>=0&&all[dateStr][editIdx];
+  if(isEdit){
     all[dateStr][editIdx]={...all[dateStr][editIdx],...entry};
-    toast('更新しました ✓');
   } else {
     all[dateStr].push(entry);
-    toast('追加しました ✓');
   }
   saveVisitReports(all);
   closeModal('modal-visit-report');
-  renderDiary();
+  if(S.screen==='scr-diary') renderDiary();
+  toast(isEdit?'更新しました ✓':'訪問介護記録を保存しました ✓');
 }
 function deleteVisitReport(idx){
   if(!confirm('この訪問記録を削除しますか？'))return;
