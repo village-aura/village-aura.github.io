@@ -491,6 +491,14 @@ a{color:var(--p);text-decoration:none}
       </div>
       <span class="arrow">›</span>
     </div>
+    <div id="doctor-order-banner" style="display:none;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;display:none;align-items:center;gap:10px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1)" onclick="showScr('scr-handover-board')">
+      <span style="font-size:22px">🩺</span>
+      <div style="flex:1">
+        <b id="doctor-order-count" style="display:block;font-size:14px;font-weight:700"></b>
+        <span id="doctor-order-preview" style="font-size:12px"></span>
+      </div>
+      <span style="font-size:18px">›</span>
+    </div>
     <div class="sec-head">クイックアクセス</div>
     <div class="quick-grid">
   <button class="quick-btn" onclick="showScr('scr-residents')" style="background:linear-gradient(135deg,#e8f0fb,#d4e6ff)">
@@ -3027,6 +3035,30 @@ function renderDashboard(){
   const noVital=res.filter(r=>!vitalToday.has(r.id));
   document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
   document.getElementById('alert-names').textContent=noVital.slice(0,3).map(r=>r.name).join('・')+(noVital.length>3?'…':'');
+  // 医師指示バナー
+  const doctorOrders=getBoardData().doctor||[];
+  const doBanner=document.getElementById('doctor-order-banner');
+  if(doBanner){
+    if(doctorOrders.length){
+      const hasUrgent=doctorOrders.some(o=>o.pri==='urgent');
+      const hasImportant=doctorOrders.some(o=>o.pri==='important');
+      const latest=doctorOrders[0];
+      if(hasUrgent){
+        doBanner.style.cssText='display:flex;align-items:center;gap:10px;cursor:pointer;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#fff5f5,#fff);border:1.5px solid #e53935;box-shadow:0 2px 8px rgba(229,57,53,.15)';
+        document.getElementById('doctor-order-count').style.color='#c62828';
+      } else if(hasImportant){
+        doBanner.style.cssText='display:flex;align-items:center;gap:10px;cursor:pointer;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#fffbf0,#fff);border:1.5px solid #FB8C00;box-shadow:0 2px 8px rgba(251,140,0,.15)';
+        document.getElementById('doctor-order-count').style.color='#e65100';
+      } else {
+        doBanner.style.cssText='display:flex;align-items:center;gap:10px;cursor:pointer;margin:4px 12px 0;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#e8f0fb,#f0f6ff);border:1.5px solid var(--p);box-shadow:0 2px 8px rgba(61,122,181,.12)';
+        document.getElementById('doctor-order-count').style.color='#1565c0';
+      }
+      document.getElementById('doctor-order-count').textContent=`医師指示：${doctorOrders.length}件`;
+      document.getElementById('doctor-order-preview').textContent=(latest.content||'').substring(0,30)+((latest.content||'').length>30?'…':'');
+    } else {
+      doBanner.style.display='none';
+    }
+  }
   // 要注目：準緊急以上の申し送り・経時記録（直近7日）
   const sevenAgo=new Date(now.getTime()-7*24*3600*1000);
   const urgentRecs=recs.filter(r=>{
