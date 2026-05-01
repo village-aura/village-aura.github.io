@@ -216,7 +216,8 @@ a{color:var(--p);text-decoration:none}
 .slider-wrap input[type=range]{flex:1;accent-color:var(--p)}
 .slider-val{min-width:30px;text-align:right;font-weight:700;font-size:16px;color:var(--p)}
 .btn-voice{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--ps);color:var(--p);border-radius:10px;font-size:14px;font-weight:600;width:100%;justify-content:center;margin-top:6px;transition:all .2s}
-.btn-voice-smart{width:100%;padding:12px;background:linear-gradient(135deg,#1565c0,var(--p));color:#fff;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-voice-smart{width:100%;padding:10px 12px;background:linear-gradient(135deg,#1565c0,var(--p));color:#fff;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all .2s}
+.btn-voice-smart .vs-ex{font-size:11px;font-weight:400;opacity:.85}
 .btn-voice-smart.recording{background:linear-gradient(135deg,#b71c1c,#e53935);animation:pulse 1s infinite}
 .btn-voice.recording{background:#fde8e8;color:var(--ng);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -1308,7 +1309,7 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-title">🌡️ バイタル入力</div>
     <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-vital');showHelpTab('vital')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
-    <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力（例：血圧130の80 脈72 体温36.5 SpO2 98）</button>
+    <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：血圧130の80 脈72 体温36.5 SpO2 98</span></button>
     <div class="field-row">
       <div class="field"><label>収縮期血圧 mmHg</label><input type="number" id="v-sys" placeholder="130"></div>
       <div class="field"><label>拡張期血圧 mmHg</label><input type="number" id="v-dia" placeholder="80"></div>
@@ -1340,7 +1341,7 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-title">🍚 食事・飲水</div>
     <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-meal');showHelpTab('meal')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="meal-sub">利用者名 様</div>
-    <button id="vs-btn-meal" class="btn-voice-smart" onclick="startVoiceSmart('meal')">🎤 音声で一括入力（例：昼食 主食8割 副食7割 水分200）</button>
+    <button id="vs-btn-meal" class="btn-voice-smart" onclick="startVoiceSmart('meal')">🎤 音声で一括入力<span class="vs-ex">例：昼食 主食8割 副食7割 水分200</span></button>
     <div class="field"><label>食事区分</label>
       <div class="radio-group">
         <label><input type="radio" name="meal-type" value="breakfast" checked> 朝食</label>
@@ -1380,7 +1381,7 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div class="sheet-title">💧 排泄記録</div>
     <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-excretion');showHelpTab('excretion')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
-    <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力（例：排尿あり普通量 軟便あり）</button>
+    <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力<span class="vs-ex">例：排尿あり普通量 軟便あり</span></button>
     <div class="field"><label>種別</label>
       <div class="radio-group">
         <label><input type="radio" name="ex-type" value="urine" checked> 排尿</label>
