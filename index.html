@@ -3803,7 +3803,7 @@ function renderHandoverBoard(){
       ${PRI_BADGE[o.pri]||PRI_BADGE.normal}
       <span style="display:inline-block;background:#c62828;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;margin-bottom:5px;margin-left:4px">🩺 ${o.doctor||'医師'}</span>
       ${o.resident?`<div style="font-size:11px;color:var(--sub);margin-bottom:4px">対象: ${o.resident}</div>`:''}
-      <div style="font-size:14px;line-height:1.6">${o.content}</div>
+      <div style="font-size:14px;line-height:1.6">${linkifyResidents(o.content||'')}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px"><span class="staff-badge" style="background:#c62828">医師</span>${o.by} · ${o.time} ${editedNote}</div>
       ${actions}
     </div>`;
@@ -3815,6 +3815,15 @@ function renderHandoverBoard(){
   // populate doctor order resident select
   const sel=document.getElementById('do-resident');
   if(sel) sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+}
+function linkifyResidents(text){
+  let result=text;
+  getResidents().forEach(r=>{
+    const esc=r.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    result=result.replace(new RegExp(esc,'g'),
+      `<button onclick="event.stopPropagation();openResident('${r.id}')" style="display:inline;background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:12px;padding:1px 7px;font-size:inherit;font-weight:700;cursor:pointer">👤 ${r.name}</button>`);
+  });
+  return result;
 }
 const PRI_STYLE={
   urgent:'background:#fde8e8;border-left:4px solid #e53935',
@@ -3845,7 +3854,7 @@ function renderBoardSection(elId,items,section){
     </div>`;
     return `<div style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:8px">
       ${PRI_BADGE[h.pri]||PRI_BADGE.normal}
-      <div style="font-size:14px;line-height:1.6">${h.content}</div>
+      <div style="font-size:14px;line-height:1.6">${linkifyResidents(h.content||'')}</div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px">${badge}${h.by} · ${h.time} ${editedNote}</div>
       ${actions}
     </div>`;
