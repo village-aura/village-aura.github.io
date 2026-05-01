@@ -573,6 +573,7 @@ a{color:var(--p);text-decoration:none}
       <div id="vital-graph"></div>
     </div>
     <div id="handover-area"></div>
+    <div id="board-handover-area"></div>
     <div class="input-section">
       <h3>記録入力</h3>
       <div class="inp-grid">
@@ -3272,6 +3273,28 @@ function renderDetail(){
       <div class="handover-by">${h.by} · ${h.date}</div>
     </div>
   `).join(''):'';
+  // ボード申し送り（今シフト）
+  const bd=getBoardData();
+  const _secDefs=[
+    {items:[...bd.sak.am,...bd.sak.pm],label:'🏠 サ高住'},
+    {items:bd.nurse,label:'👩‍⚕️ 看護師'},
+    {items:bd.shot,label:'🏡 小多機'},
+    {items:bd.day,label:'☀️ デイ'},
+    {items:bd.visit,label:'🚗 訪問介護'},
+  ];
+  const boardItems=[];
+  _secDefs.forEach(sec=>sec.items.forEach(h=>{if(h.rid===S.currentRes)boardItems.push({...h,sectionLabel:sec.label});}));
+  const bha=document.getElementById('board-handover-area');
+  if(bha)bha.innerHTML=boardItems.length?`
+    <div style="padding:10px 14px 4px;font-size:11px;font-weight:700;color:#0891b2;letter-spacing:.05em">📣 今シフトの申し送り</div>
+    ${boardItems.map(h=>`
+      <div style="margin:0 12px 8px;padding:10px 12px;background:#f0fdff;border-left:3px solid #0891b2;border-radius:0 8px 8px 0">
+        <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:4px">${h.sectionLabel}${h.pri==='urgent'?' 🚨':h.pri==='important'?' ⚠️':''}</div>
+        <div style="font-size:13px;line-height:1.5">${h.content||''}</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px">${h.by} · ${h.time}</div>
+      </div>
+    `).join('')}
+  `:'';
   // Timeline
   renderTimeline();
 }
