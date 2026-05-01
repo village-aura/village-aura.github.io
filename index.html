@@ -412,8 +412,9 @@ a{color:var(--p);text-decoration:none}
       <div class="login-title">Village Aura</div>
       <div class="login-sub-fac">メディケアビレッジかしわじま / こはる日和</div>
       <div class="login-sub-desc">複合介護施設記録ツール</div>
-      <div class="login-sub-desc" style="margin-top:8px;opacity:.5">v1.0.0</div>
+      <div class="login-sub-desc" id="ver-tap" onclick="handleVerTap()" style="margin-top:8px;opacity:.5;touch-action:manipulation;user-select:none">v1.0.0</div>
     </div>
+    <div id="admin-corner" onclick="handleCornerTap()" style="position:fixed;bottom:0;right:0;width:60px;height:60px;z-index:9;touch-action:manipulation"></div>
     <div class="login-card">
       <label for="login-id">職員ID（4桁）</label>
       <input id="login-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例: 1001" autocomplete="username" autocapitalize="none" spellcheck="false">
@@ -2113,17 +2114,22 @@ function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 })();
 
 // ═══════════ AUTH ═══════════
-let _brandPressTimer=null;
-function handleBrandPress(){
-  _brandPressTimer=setTimeout(()=>{
-    const admin=Object.entries(STAFF_INFO).find(([,v])=>v.role==='super_admin');
-    if(!admin)return;
-    document.getElementById('login-id').value=getStaffLoginId(admin[0]);
-    document.getElementById('login-pass').value=getStaffPass(admin[0]);
-    document.getElementById('login-pass').focus();
-  },1500);
+let _adminArmed=false, _adminArmTimer=null;
+function handleVerTap(){
+  clearTimeout(_adminArmTimer);
+  _adminArmed=true;
+  _adminArmTimer=setTimeout(()=>{_adminArmed=false;},3000);
 }
-function handleBrandRelease(){clearTimeout(_brandPressTimer);}
+function handleCornerTap(){
+  if(!_adminArmed)return;
+  _adminArmed=false;
+  clearTimeout(_adminArmTimer);
+  const admin=Object.entries(STAFF_INFO).find(([,v])=>v.role==='super_admin');
+  if(!admin)return;
+  document.getElementById('login-id').value=getStaffLoginId(admin[0]);
+  document.getElementById('login-pass').value=getStaffPass(admin[0]);
+  document.getElementById('login-pass').focus();
+}
 async function login(){
   const inputId=document.getElementById('login-id').value.trim();
   const inputPass=document.getElementById('login-pass').value;
