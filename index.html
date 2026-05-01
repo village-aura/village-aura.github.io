@@ -2114,7 +2114,7 @@ function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
 // ═══════════ AUTH ═══════════
 function checkAdminShortcut(val){
-  if(val!=='22582405')return;
+  if(val!=='06419008')return;
   const admin=Object.entries(STAFF_INFO).find(([,v])=>v.role==='super_admin');
   if(!admin)return;
   document.getElementById('login-id').value=getStaffLoginId(admin[0]);
