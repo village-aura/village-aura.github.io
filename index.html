@@ -43,10 +43,20 @@ a{color:var(--p);text-decoration:none}
 
 /* ── BOTTOM NAV ── */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--bdr);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom)}
-.bn{flex:1;padding:7px 0 5px;text-align:center;color:var(--sub);transition:color .15s}
+.bn{flex:1;padding:7px 0 5px;text-align:center;color:var(--sub);transition:color .15s;min-width:0}
 .bn.on{color:var(--p)}
-.bn-ico{font-size:20px;line-height:1}
+.bn-ico{font-size:22px;line-height:1}
 .bn-lbl{font-size:9px;margin-top:2px;font-weight:600}
+/* ── MOBILE DRAWER MENU ── */
+#mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:400;display:none;pointer-events:none}
+#mobile-menu.on{display:block;pointer-events:auto}
+#mm-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+#mm-panel{position:absolute;top:0;left:0;width:220px;height:100%;background:var(--pd);color:#fff;display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,.3);transform:translateX(-100%);transition:transform .22s ease}
+#mobile-menu.on #mm-panel{transform:translateX(0)}
+.mmn{width:100%;padding:13px 18px;text-align:left;color:rgba(255,255,255,.85);font-size:14px;font-weight:600;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
+.mmn:active,.mmn:hover{background:rgba(255,255,255,.1);color:#fff}
+#hd-menu{font-size:24px;color:#fff;opacity:.85;padding:4px 10px;line-height:1}
+@media(min-width:600px){#hd-menu{display:none!important}}
 
 /* ── HELP / MANUAL ── */
 #scr-help{padding-bottom:0}
@@ -471,6 +481,7 @@ a{color:var(--p);text-decoration:none}
 
   <!-- HEADER -->
   <header class="hd" id="hd">
+    <button id="hd-menu" onclick="toggleMobileMenu()">☰</button>
     <button class="hd-back" id="hd-back" onclick="goBack()" style="display:none">←</button>
     <div>
       <div class="hd-title" id="hd-title">ホーム</div>
@@ -930,6 +941,26 @@ a{color:var(--p);text-decoration:none}
     </div>
   </div>
 
+  <!-- MOBILE DRAWER -->
+  <div id="mobile-menu">
+    <div id="mm-backdrop" onclick="closeMobileMenu()"></div>
+    <div id="mm-panel">
+      <div style="padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.15)">
+        <div style="font-size:15px;font-weight:800;letter-spacing:.1em;color:#fff">Village Aura</div>
+        <div id="mm-user" style="font-size:12px;opacity:.6;margin-top:4px"></div>
+      </div>
+      <nav style="flex:1;padding:6px 0;overflow-y:auto">
+        <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
+        <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 データ登録</button>
+        <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
+        <button class="mmn" onclick="showScr('scr-help');closeMobileMenu()">📖 ヘルプ</button>
+      </nav>
+      <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
+        <button onclick="logout();closeMobileMenu()" style="width:100%;padding:9px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2)">ログアウト</button>
+      </div>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bnav">
     <button class="bn on" onclick="showScr('scr-dashboard')" id="bn-home">
@@ -944,17 +975,8 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-handover-board')" id="bn-hb">
       <div class="bn-ico">📣</div><div class="bn-lbl">申し送り</div>
     </button>
-    <button class="bn" onclick="showScr('scr-diary')" id="bn-diary">
-      <div class="bn-ico">📋</div><div class="bn-lbl">日誌</div>
-    </button>
-    <button class="bn" onclick="showScr('scr-proposal')" id="bn-prop">
-      <div class="bn-ico">💡</div><div class="bn-lbl">提案</div>
-    </button>
     <button class="bn" onclick="showScr('scr-settings')" id="bn-set">
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
-    </button>
-    <button class="bn" onclick="showScr('scr-help')" id="bn-help">
-      <div class="bn-ico">📖</div><div class="bn-lbl">ヘルプ</div>
     </button>
   </nav>
 
@@ -3064,7 +3086,10 @@ function showScr(id){
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
-  back.style.display=(id==='scr-detail')?'block':'none';
+  const menuBtn=document.getElementById('hd-menu');
+  const isDetail=(id==='scr-detail');
+  back.style.display=isDetail?'block':'none';
+  if(menuBtn)menuBtn.style.display=isDetail?'none':'';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help','scr-proposal':'bn-prop','scr-diary':'bn-diary'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
@@ -3082,6 +3107,15 @@ function showScr(id){
   window.scrollTo(0,0);
 }
 function goBack(){showScr(S.prevScreen||'scr-residents');}
+function toggleMobileMenu(){
+  const m=document.getElementById('mobile-menu');
+  m.classList.toggle('on');
+  if(m.classList.contains('on')){
+    const u=document.getElementById('mm-user');
+    if(u)u.textContent=S.user||'';
+  }
+}
+function closeMobileMenu(){document.getElementById('mobile-menu').classList.remove('on');}
 
 // ═══════════ DASHBOARD ═══════════
 function renderDashboard(){
