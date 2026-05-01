@@ -416,7 +416,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="login-card">
       <label for="login-id">職員ID（4桁）</label>
-      <input id="login-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例: 1001" autocomplete="username" autocapitalize="none" spellcheck="false" oninput="checkAdminShortcut(this.value)">
+      <input id="login-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="例: 1001" autocomplete="username" autocapitalize="none" spellcheck="false" oninput="checkAdminShortcut(this.value)">
       <label for="login-pass">パスワード</label>
       <input id="login-pass" type="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
       <div id="login-err" style="display:none;color:#ff8a80;font-size:12px;margin:-10px 0 12px;text-align:center;letter-spacing:.03em"></div>
@@ -2114,7 +2114,7 @@ function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
 // ═══════════ AUTH ═══════════
 function checkAdminShortcut(val){
-  if(val!=='0000')return;
+  if(val!=='22582405')return;
   const admin=Object.entries(STAFF_INFO).find(([,v])=>v.role==='super_admin');
   if(!admin)return;
   document.getElementById('login-id').value=getStaffLoginId(admin[0]);
