@@ -440,6 +440,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
+      <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
@@ -491,7 +492,7 @@ a{color:var(--p);text-decoration:none}
         <span class="qi">📣</span>
         <div><div class="ql">申し送りボード</div><div class="qs">サ高住・小多機</div></div>
       </button>
-      <button class="quick-btn" onclick="alert('施設日誌機能は本番版で実装予定です')">
+      <button class="quick-btn" onclick="showScr('scr-diary')">
         <span class="qi">📋</span>
         <div><div class="ql">業務日誌</div><div class="qs">施設単位記録</div></div>
       </button>
@@ -910,6 +911,9 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-handover-board')" id="bn-hb">
       <div class="bn-ico">📣</div><div class="bn-lbl">申し送り</div>
     </button>
+    <button class="bn" onclick="showScr('scr-diary')" id="bn-diary">
+      <div class="bn-ico">📋</div><div class="bn-lbl">日誌</div>
+    </button>
     <button class="bn" onclick="showScr('scr-proposal')" id="bn-prop">
       <div class="bn-ico">💡</div><div class="bn-lbl">提案</div>
     </button>
@@ -920,6 +924,19 @@ a{color:var(--p);text-decoration:none}
       <div class="bn-ico">📖</div><div class="bn-lbl">ヘルプ</div>
     </button>
   </nav>
+
+  <!-- DIARY SCREEN -->
+  <div id="scr-diary" class="scr">
+    <div style="padding:16px 12px 8px;border-bottom:1px solid var(--bdr);margin-bottom:4px">
+      <div style="font-size:18px;font-weight:800;margin-bottom:4px">📋 業務日誌</div>
+      <div style="font-size:12px;color:var(--sub)">施設単位の日次記録・帳票出力</div>
+    </div>
+    <div style="margin:40px 16px;padding:24px;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);text-align:center">
+      <div style="font-size:40px;margin-bottom:12px">🚧</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">実装準備中</div>
+      <div style="font-size:13px;color:var(--sub);line-height:1.7">帳票フォーマットを受領後に実装します。<br>記録データからの自動転記に対応予定です。</div>
+    </div>
+  </div>
 
   <!-- PROPOSAL SCREEN -->
   <div id="scr-proposal" class="scr">
@@ -2952,9 +2969,9 @@ function showScr(id){
   const back=document.getElementById('hd-back');
   back.style.display=(id==='scr-detail')?'block':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
-  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help','scr-proposal':'bn-prop'};
+  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help','scr-proposal':'bn-prop','scr-diary':'bn-diary'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
