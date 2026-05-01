@@ -519,7 +519,7 @@ a{color:var(--p);text-decoration:none}
   <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2)">
     <span class="qi">📣</span>
     <div class="ql">申し送りボード</div>
-    <div class="qs" style="color:#e65100">サ高住・小多機</div>
+    <div class="qs" style="color:#e65100">現在：サ高住・小多機</div>
   </button>
   <button class="quick-btn" onclick="showScr('scr-diary')" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7)">
     <span class="qi">📋</span>
@@ -527,7 +527,7 @@ a{color:var(--p);text-decoration:none}
     <div class="qs" style="color:#6a1b9a">施設単位記録</div>
   </button>
 </div>
-    <div id="dash-urgent-sec" style="display:none;margin:8px 12px 0;background:linear-gradient(135deg,#fff5f5,#fff8f8);border:1.5px solid #ffcdd2;border-radius:14px;overflow:hidden">
+    <div id="dash-urgent-sec" style="display:none;margin:16px 12px 0;background:linear-gradient(135deg,#fff5f5,#fff8f8);border:1.5px solid #ffcdd2;border-radius:14px;overflow:hidden">
       <div style="background:linear-gradient(90deg,#e53935,#ef5350);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🚨 要注目</div>
       <div id="dash-urgent" style="padding:8px 10px"></div>
     </div>
@@ -3790,7 +3790,10 @@ function renderHandoverBoard(){
   const doEl=document.getElementById('hb-doctor-list');
   doEl.innerHTML=d.doctor.length?d.doctor.map((o,idx)=>{
     const editedNote=o.editedBy?`<span style="color:#9ca3af;font-size:10px">（${o.editedBy}が${o.editedTime}に修正）</span>`:'';
-    const resLink=o.rid?`<button onclick="event.stopPropagation();openResident('${o.rid}')" style="display:inline-flex;align-items:center;gap:3px;background:#fff0f0;color:#c62828;border:1px solid #c62828;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">👤 カルテ</button>`:'';
+    const _doResById=o.rid?getResidents().find(r=>r.id===o.rid):null;
+    const _doResByName=!_doResById&&o.resident?getResidents().find(r=>r.name===o.resident):null;
+    const _doRes=_doResById||_doResByName;
+    const resLink=_doRes?`<button onclick="event.stopPropagation();openResident('${_doRes.id}')" style="display:inline-flex;align-items:center;gap:3px;background:#fff0f0;color:#c62828;border:1px solid #c62828;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">👤 カルテ</button>`:'';
     const actions=isAdmin()?`<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
       ${resLink}
       <button onclick="event.stopPropagation();editDoctorOrder(${idx})" style="background:#fff0f0;color:#c62828;border:1px solid #c62828;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer">✏️ 編集</button>
@@ -3830,7 +3833,10 @@ function renderBoardSection(elId,items,section){
     const rc=h.staffRole?ROLE_COLORS[h.staffRole]:null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
     const editedNote=h.editedBy?`<span style="color:#9ca3af;font-size:10px">（${h.editedBy}が${h.editedTime}に修正）</span>`:'';
-    const resLink=h.rid?`<button onclick="event.stopPropagation();openResident('${h.rid}')" style="display:inline-flex;align-items:center;gap:3px;background:var(--ps);color:var(--p);border:1px solid var(--p);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">👤 カルテ</button>`:'';
+    const _resById=h.rid?getResidents().find(r=>r.id===h.rid):null;
+    const _resByName=!_resById&&h.resident?getResidents().find(r=>r.name===h.resident):null;
+    const _res=_resById||_resByName;
+    const resLink=_res?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="display:inline-flex;align-items:center;gap:3px;background:var(--ps);color:var(--p);border:1px solid var(--p);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">👤 カルテ</button>`:'';
     const canDelete=h.by===S.user||isAdmin();
     const actions=`<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
       ${resLink}
