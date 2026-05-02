@@ -519,54 +519,55 @@ a{color:var(--p);text-decoration:none}
         <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
       </div>
     </div>
-    <!-- 事業所から入力 -->
-    <div class="sec-head">🏢 事業所から入力</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 10px">
-      <button onclick="openSvcEntry('resident')" style="background:var(--card);border:none;border-top:4px solid #3D7AB5;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
-        <div style="font-size:26px;margin-bottom:5px">🏠</div>
-        <div style="font-size:13px;font-weight:800;color:var(--txt)">サ高住</div>
-        <div style="font-size:10px;color:var(--sub);margin-top:2px">サービス付き高齢者住宅</div>
-      </button>
-      <button onclick="openSvcEntry('stay')" style="background:var(--card);border:none;border-top:4px solid #2e7d32;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
-        <div style="font-size:26px;margin-bottom:5px">🏡</div>
-        <div style="font-size:13px;font-weight:800;color:var(--txt)">小多機</div>
-        <div style="font-size:10px;color:var(--sub);margin-top:2px">小規模多機能型居宅介護</div>
-      </button>
-      <button onclick="openSvcEntry('commute')" style="background:var(--card);border:none;border-top:4px solid #e65100;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
-        <div style="font-size:26px;margin-bottom:5px">☀️</div>
-        <div style="font-size:13px;font-weight:800;color:var(--txt)">デイサービス</div>
-        <div style="font-size:10px;color:var(--sub);margin-top:2px">通所介護</div>
-      </button>
-      <button onclick="openSvcEntry('visit')" style="background:var(--card);border:none;border-top:4px solid #6a1b9a;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
-        <div style="font-size:26px;margin-bottom:5px">🚗</div>
-        <div style="font-size:13px;font-weight:800;color:var(--txt)">訪問介護</div>
-        <div style="font-size:10px;color:var(--sub);margin-top:2px">在宅訪問サービス</div>
-      </button>
+    <!-- 統合グリッド -->
+    <div style="margin:8px 12px 10px">
+      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:7px;text-transform:uppercase">🖊 今日の記録を入力する</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:14px">
+        <button class="quick-btn" onclick="openSvcEntry('resident')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #3D7AB5;align-items:center;text-align:center;touch-action:manipulation">
+          <span class="qi">🏠</span>
+          <div class="ql">サ高住</div>
+          <div class="qs" style="color:var(--sub)">高齢者向け住宅</div>
+        </button>
+        <button class="quick-btn" onclick="openSvcEntry('stay')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #2e7d32;align-items:center;text-align:center;touch-action:manipulation">
+          <span class="qi">🏡</span>
+          <div class="ql">小多機</div>
+          <div class="qs" style="color:var(--sub)">小規模多機能型</div>
+        </button>
+        <button class="quick-btn" onclick="openSvcEntry('commute')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #e65100;align-items:center;text-align:center;touch-action:manipulation">
+          <span class="qi">☀️</span>
+          <div class="ql">デイサービス</div>
+          <div class="qs" style="color:var(--sub)">通所介護</div>
+        </button>
+        <button class="quick-btn" onclick="openSvcEntry('visit')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;align-items:center;text-align:center;touch-action:manipulation">
+          <span class="qi">🚗</span>
+          <div class="ql">訪問介護</div>
+          <div class="qs" style="color:var(--sub)">在宅訪問</div>
+        </button>
+      </div>
+      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:7px;text-transform:uppercase">🗂 画面を開く</div>
+      <div class="quick-grid">
+        <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr)">
+          <span class="qi">👤</span>
+          <div class="ql">利用者一覧</div>
+          <div class="qs" id="q-count" style="color:var(--sub)">-- 名</div>
+        </button>
+        <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr)">
+          <span class="qi">📅</span>
+          <div class="ql">スケジュール</div>
+          <div class="qs" id="q-sched-today" style="color:var(--sub)">本日の予定</div>
+        </button>
+        <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr)">
+          <span class="qi">📣</span>
+          <div class="ql">申し送りボード</div>
+          <div class="qs" style="color:var(--sub)">医師・看護師・事業所間</div>
+        </button>
+        <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr)">
+          <span class="qi">📋</span>
+          <div class="ql">業務日誌</div>
+          <div class="qs" style="color:var(--sub)">施設単位記録</div>
+        </button>
+      </div>
     </div>
-    <!-- クイックアクセス -->
-    <div class="sec-head">クイックアクセス</div>
-    <div style="margin:0 12px 10px"><div class="quick-grid">
-      <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr)">
-        <span class="qi">👤</span>
-        <div class="ql">利用者一覧</div>
-        <div class="qs" id="q-count" style="color:var(--sub)">-- 名</div>
-      </button>
-      <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr)">
-        <span class="qi">📅</span>
-        <div class="ql">スケジュール</div>
-        <div class="qs" id="q-sched-today" style="color:var(--sub)">本日の予定</div>
-      </button>
-      <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr)">
-        <span class="qi">📣</span>
-        <div class="ql">申し送りボード</div>
-        <div class="qs" style="color:var(--sub)">医師・看護師・事業所間</div>
-      </button>
-      <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr)">
-        <span class="qi">📋</span>
-        <div class="ql">業務日誌</div>
-        <div class="qs" style="color:var(--sub)">施設単位記録</div>
-      </button>
-    </div></div>
     <!-- アラート所見 -->
     <div id="dash-urgent-sec" style="display:none;margin:12px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">
       <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
