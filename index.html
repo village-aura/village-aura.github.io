@@ -1884,8 +1884,11 @@ a{color:var(--p);text-decoration:none}
     <div id="tpl-picker-list" style="max-height:260px;overflow-y:auto;margin-bottom:10px"></div>
     <div style="border-top:1px solid var(--bdr);padding-top:10px">
       <input type="text" id="tpl-new-name" placeholder="テンプレート名" style="width:100%;padding:8px 10px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px">
-      <div style="display:flex;gap:6px;margin-bottom:4px">
-        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="tpl-shared"> 共通テンプレートとして保存（管理者・看護師のみ）</label>
+      <div id="tpl-shared-wrap" style="display:none;margin-bottom:6px">
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="tpl-shared">
+          <span>🏢 法人テンプレートとして保存（全職員が使用可）</span>
+        </label>
       </div>
       <button onclick="saveCurrentAsTemplate()" style="width:100%;padding:9px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700">現在の内容をテンプレートに保存</button>
     </div>
@@ -2755,8 +2758,10 @@ function openTemplatePicker(type){
   }
   el.innerHTML=html;
   document.getElementById('tpl-picker-title').textContent=type==='chrono'?'📝 経時記録テンプレート':'📣 申し送りテンプレート';
+  const sharedWrap=document.getElementById('tpl-shared-wrap');
+  if(sharedWrap)sharedWrap.style.display=isAdmin()?'block':'none';
   const sharedChk=document.getElementById('tpl-shared');
-  if(sharedChk)sharedChk.disabled=!(isAdmin()||S.userRole==='看護師');
+  if(sharedChk)sharedChk.checked=false;
   document.getElementById('tpl-new-name').value='';
   document.getElementById('modal-tpl-picker').classList.add('on');
 }
@@ -2782,7 +2787,7 @@ function saveCurrentAsTemplate(){
   const tid=_tplTarget==='chrono'?'c-content':'ho-content';
   const content=document.getElementById(tid).value.trim();
   if(!content){toast('先に内容を入力してください');return;}
-  const shared=document.getElementById('tpl-shared')?.checked&&(isAdmin()||S.userRole==='看護師');
+  const shared=document.getElementById('tpl-shared')?.checked&&isAdmin();
   const tpls=getTemplates();
   tpls.push({id:'tpl'+Date.now(),type:_tplTarget,name,content,shared,owner:S.user});
   saveTemplates(tpls);
