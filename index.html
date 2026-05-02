@@ -592,7 +592,9 @@ a{color:var(--p);text-decoration:none}
     <div id="handover-area"></div>
     <div id="board-handover-area"></div>
     <div class="input-section">
-      <h3>記録入力</h3>
+      <h3 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px">記録入力
+        <span id="record-date-chip" style="font-size:11px;font-weight:700;color:#fff;background:var(--p);border-radius:20px;padding:3px 10px;white-space:nowrap"></span>
+      </h3>
       <div id="service-selector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
       <div class="inp-grid" id="inp-grid"></div>
     </div>
@@ -3445,6 +3447,9 @@ function renderDetail(){
       </div>
     `).join('')}
   `:'';
+  // 今日の日付チップ
+  const chip=document.getElementById('record-date-chip');
+  if(chip){const now=new Date();const WD=['日','月','火','水','木','金','土'];chip.textContent=`${now.getMonth()+1}月${now.getDate()}日（${WD[now.getDay()]}）`;}
   // サービスセレクタ + 動的inp-grid（全サービス常時表示）
   const svcSel=document.getElementById('service-selector');
   if(svcSel)svcSel.innerHTML=Object.entries(SVC_META).map(([svc,m])=>{
