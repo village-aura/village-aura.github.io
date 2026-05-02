@@ -1178,7 +1178,10 @@ a{color:var(--p);text-decoration:none}
             <div class="man-item"><b>設定</b> → 「パスワード変更」から個人で変更できます</div>
             <div class="man-item">新しいパスワードは <b>英字と数字を含む6文字以上</b> が必要です</div>
           </div>
-          <div style="padding:12px 16px"><button onclick="showHelpTab('faq')" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;text-decoration:underline">❓ よくある質問を見る →</button></div>
+          <div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="showTutorial(true)" style="flex:1;padding:12px;border-radius:12px;background:linear-gradient(135deg,#2d4a8a,#1a2744);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">▶ チュートリアルを見る</button>
+            <button onclick="showHelpTab('faq')" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;text-decoration:underline">❓ よくある質問を見る →</button>
+          </div>
         </div>
 
         <!-- home -->
@@ -2538,8 +2541,9 @@ const TUT_STEPS=[
   {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\nAI FAQにも質問できます（APIキー登録後）。'},
 ];
 let S_tut_step=0;
-function showTutorial(){
-  if(localStorage.getItem('tutorial_done')==='1')return;
+function showTutorial(force=false){
+  const key='tutorial_done_'+(S.user||'_');
+  if(!force&&localStorage.getItem(key)==='1')return;
   S_tut_step=0;
   _renderTutStep();
   document.getElementById('tutorial-overlay').style.display='flex';
@@ -2562,7 +2566,7 @@ function nextTutorialStep(){
   else{skipTutorial();}
 }
 function skipTutorial(){
-  localStorage.setItem('tutorial_done','1');
+  localStorage.setItem('tutorial_done_'+(S.user||'_'),'1');
   document.getElementById('tutorial-overlay').style.display='none';
 }
 function saveAIKey(){
