@@ -3162,7 +3162,7 @@ function renderAuditLog(){
 }
 // ── ヘルプ左タブ ──
 function showHelpTab(id){
-  showScr('scr-help');
+  if(S.screen!=='scr-help') showScr('scr-help');
   document.querySelectorAll('.help-sec').forEach(el=>el.style.display='none');
   const target=document.getElementById('hsec-'+id);
   if(target)target.style.display='block';
