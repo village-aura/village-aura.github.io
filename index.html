@@ -579,8 +579,8 @@ a{color:var(--p);text-decoration:none}
     <div class="filter-chips" id="filter-chips">
       <button class="chip on" data-f="all" onclick="setFilter('all')">全員</button>
       <button class="chip" data-f="resident" onclick="setFilter('resident')">居住</button>
-      <button class="chip" data-f="commute" onclick="setFilter('commute')">通い</button>
-      <button class="chip" data-f="stay" onclick="setFilter('stay')">泊まり</button>
+      <button class="chip" data-f="commute" onclick="setFilter('commute')">デイ</button>
+      <button class="chip" data-f="stay" onclick="setFilter('stay')">小多機</button>
       <button class="chip" data-f="visit" onclick="setFilter('visit')">訪問</button>
     </div>
     <div class="res-list" id="res-list"></div>
@@ -686,8 +686,8 @@ a{color:var(--p);text-decoration:none}
         <div class="field"><label>サービス種別（複数可）</label>
           <div class="checkbox-list">
             <label><input type="checkbox" id="m-sv-res" value="resident"> 居住（サ高住入居）</label>
-            <label><input type="checkbox" id="m-sv-com" value="commute"> 通い</label>
-            <label><input type="checkbox" id="m-sv-sta" value="stay"> 泊まり</label>
+            <label><input type="checkbox" id="m-sv-com" value="commute"> デイサービス（通所）</label>
+            <label><input type="checkbox" id="m-sv-sta" value="stay"> 小多機（通い・泊まり・訪問）</label>
             <label><input type="checkbox" id="m-sv-vis" value="visit"> 訪問</label>
           </div>
         </div>
@@ -1641,11 +1641,11 @@ a{color:var(--p);text-decoration:none}
       </label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
         <input type="checkbox" id="ss-stay" value="stay" style="width:18px;height:18px;accent-color:#2e7d32">
-        <span style="font-size:14px;font-weight:600">🏡 小多機（宿泊）</span>
+        <span style="font-size:14px;font-weight:600">🏡 小多機（通い・泊まり・訪問）</span>
       </label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
         <input type="checkbox" id="ss-com" value="commute" style="width:18px;height:18px;accent-color:#f57c00">
-        <span style="font-size:14px;font-weight:600">☀️ デイ（通い）</span>
+        <span style="font-size:14px;font-weight:600">☀️ デイサービス（通所介護）</span>
       </label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px 0">
         <input type="checkbox" id="ss-vis" value="visit" style="width:18px;height:18px;accent-color:#6a1b9a">
@@ -1683,8 +1683,8 @@ a{color:var(--p);text-decoration:none}
     <div class="field"><label>サービス種別</label>
       <div class="checkbox-list">
         <label><input type="checkbox" id="er-sv-res" value="resident"> 居住（サ高住入居）</label>
-        <label><input type="checkbox" id="er-sv-com" value="commute"> 通い</label>
-        <label><input type="checkbox" id="er-sv-sta" value="stay"> 泊まり</label>
+        <label><input type="checkbox" id="er-sv-com" value="commute"> デイサービス（通所）</label>
+        <label><input type="checkbox" id="er-sv-sta" value="stay"> 小多機（通い・泊まり・訪問）</label>
         <label><input type="checkbox" id="er-sv-vis" value="visit"> 訪問</label>
       </div>
     </div>
@@ -3372,7 +3372,7 @@ function renderResList(){
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
-  const tagLabel={resident:'居住',commute:'通い',stay:'泊まり',visit:'訪問'};
+  const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
   document.getElementById('res-list').innerHTML=res.map(r=>{
     const ok=vitalToday.has(r.id);
@@ -3449,7 +3449,7 @@ function renderDetail(){
   const r=getResidents().find(x=>x.id===S.currentRes);
   if(!r)return;
   const careLabel=c=>({none:'自立',support1:'要支援1',support2:'要支援2',care1:'要介護1',care2:'要介護2',care3:'要介護3',care4:'要介護4',care5:'要介護5'}[c]||c);
-  const tagLabel={resident:'居住',commute:'通い',stay:'泊まり',visit:'訪問'};
+  const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   document.getElementById('hd-title').textContent=r.name+' 様';
   // Hero
   document.getElementById('detail-hero').innerHTML=`
@@ -4178,7 +4178,7 @@ function genShotGyomu(dateStr){
   return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>小多機 業務日誌</title><style>${_PCSS()}</style></head><body>
 <div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">小規模多機能型居宅介護　業務日誌</span></div>
 <div style="display:flex;gap:20px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #ccc;font-size:11px">
-  <span>通い：<b>${commuteC}</b>名</span><span>訪問：<b>${visitC}</b>名</span><span>宿泊：<b>${stayC}</b>名</span>
+  <span>通い：<b>${commuteC+stayC}</b>名</span><span style="font-size:10px;color:#999">（デイ ${commuteC}・小多機 ${stayC}）</span><span>訪問：<b>${visitC}</b>名</span>
 </div>
 <div class="sec">▌個別記録</div>
 <table><thead><tr><th style="width:4%"></th><th style="width:16%">氏名</th><th style="width:9%">来所</th><th style="width:9%">退所</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:6%">朝</th><th style="width:6%">昼</th><th style="width:6%">夕</th><th>特記</th></tr></thead><tbody>${resRows}</tbody></table>
