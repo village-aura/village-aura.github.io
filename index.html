@@ -2558,7 +2558,7 @@ function _doLogout(){
 function startAIKeySync(){
   if(!db)return;
   if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
-  _aiKeyUnsub=db.collection('settings').doc('global').onSnapshot(snap=>{
+  _aiKeyUnsub=db.collection('va_data').doc('__config').onSnapshot(snap=>{
     _aiKey=(snap.exists&&snap.data().ai_api_key)||'';
     const inp=document.getElementById('ai-api-key-input');
     const sts=document.getElementById('ai-key-status');
@@ -2623,14 +2623,14 @@ function saveAIKey(){
   const val=document.getElementById('ai-api-key-input').value.trim();
   if(!val||val.startsWith('••')){toast('新しいAPIキーを入力してください');return;}
   if(!db){toast('Firebaseに接続できません');return;}
-  db.collection('settings').doc('global').set({ai_api_key:val},{merge:true})
+  db.collection('va_data').doc('__config').set({ai_api_key:val},{merge:true})
     .then(()=>toast('APIキーを保存しました（全端末に反映） ✓'))
     .catch(e=>toast('保存エラー: '+e.message));
 }
 function clearAIKey(){
   if(!confirm('APIキーを削除しますか？全端末から削除されます。'))return;
   if(!db){toast('Firebaseに接続できません');return;}
-  db.collection('settings').doc('global').update({ai_api_key:firebase.firestore.FieldValue.delete()})
+  db.collection('va_data').doc('__config').update({ai_api_key:firebase.firestore.FieldValue.delete()})
     .then(()=>toast('APIキーを削除しました'))
     .catch(e=>toast('削除エラー: '+e.message));
 }
