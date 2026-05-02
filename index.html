@@ -3682,9 +3682,9 @@ function showScr(id){
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
   const menuBtn=document.getElementById('hd-menu');
-  const isDetail=(id==='scr-detail'||id==='scr-svc-entry');
-  back.style.display=isDetail?'block':'none';
-  if(menuBtn)menuBtn.style.display=isDetail?'none':'';
+  const isHome=(id==='scr-dashboard');
+  back.style.display=isHome?'none':'block';
+  if(menuBtn)menuBtn.style.display=isHome?'':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help','scr-proposal':'bn-prop','scr-diary':'bn-diary'};
   if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
@@ -3702,7 +3702,7 @@ function showScr(id){
   if(id==='scr-proposal') renderProposalScr();
   window.scrollTo(0,0);
 }
-function goBack(){showScr(S.prevScreen||'scr-residents');}
+function goBack(){showScr(S.prevScreen||'scr-dashboard');}
 function toggleMobileMenu(){
   const m=document.getElementById('mobile-menu');
   m.classList.toggle('on');
