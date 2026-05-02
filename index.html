@@ -520,52 +520,48 @@ a{color:var(--p);text-decoration:none}
         <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
       </div>
     </div>
-    <!-- 統合グリッド -->
+    <!-- 統合グリッド 2行4列 -->
     <div style="margin:8px 12px 10px">
-      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:7px;text-transform:uppercase">🖊 今日の記録を入力する</div>
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
         <button class="quick-btn" onclick="openSvcEntry('resident')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #3D7AB5;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">🏠</span>
           <div class="ql">サ高住</div>
-          <div class="qs" style="color:var(--sub)">高齢者向け住宅</div>
+          <div class="qs" style="color:var(--sub)">住宅</div>
         </button>
         <button class="quick-btn" onclick="openSvcEntry('stay')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #2e7d32;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">🏡</span>
           <div class="ql">小多機</div>
-          <div class="qs" style="color:var(--sub)">小規模多機能型</div>
+          <div class="qs" style="color:var(--sub)">小規模多機能</div>
         </button>
         <button class="quick-btn" onclick="openSvcEntry('commute')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #e65100;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">☀️</span>
-          <div class="ql">デイサービス</div>
+          <div class="ql">デイ</div>
           <div class="qs" style="color:var(--sub)">通所介護</div>
         </button>
         <button class="quick-btn" onclick="openSvcEntry('visit')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">🚗</span>
-          <div class="ql">訪問介護</div>
+          <div class="ql">訪問</div>
           <div class="qs" style="color:var(--sub)">在宅訪問</div>
         </button>
-      </div>
-      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:7px;text-transform:uppercase">🗂 画面を開く</div>
-      <div class="quick-grid2">
-        <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">👤</span>
-          <div class="ql">利用者一覧</div>
+          <div class="ql">利用者</div>
           <div class="qs" id="q-count" style="color:var(--sub)">-- 名</div>
         </button>
-        <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">📅</span>
           <div class="ql">スケジュール</div>
           <div class="qs" id="q-sched-today" style="color:var(--sub)">本日の予定</div>
         </button>
-        <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">📣</span>
-          <div class="ql">申し送りボード</div>
-          <div class="qs" style="color:var(--sub)">医師・看護師・事業所間</div>
+          <div class="ql">申し送り</div>
+          <div class="qs" style="color:var(--sub)">ボード</div>
         </button>
-        <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">📋</span>
           <div class="ql">業務日誌</div>
-          <div class="qs" style="color:var(--sub)">施設単位記録</div>
+          <div class="qs" style="color:var(--sub)">施設記録</div>
         </button>
       </div>
     </div>
