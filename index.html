@@ -588,15 +588,8 @@ a{color:var(--p);text-decoration:none}
     <div id="board-handover-area"></div>
     <div class="input-section">
       <h3>記録入力</h3>
-      <div class="inp-grid">
-        <button class="inp-btn" onclick="openModal('modal-vital')"><span class="ib-ico">🌡️</span><span class="ib-lbl">バイタル</span></button>
-        <button class="inp-btn" onclick="openModal('modal-meal')"><span class="ib-ico">🍚</span><span class="ib-lbl">食事・飲水</span></button>
-        <button class="inp-btn" onclick="openModal('modal-excretion')"><span class="ib-ico">💧</span><span class="ib-lbl">排泄</span></button>
-        <button class="inp-btn" onclick="openModal('modal-chrono')"><span class="ib-ico">📝</span><span class="ib-lbl">経時記録</span></button>
-        <button class="inp-btn" onclick="openModal('modal-weight')"><span class="ib-ico">⚖️</span><span class="ib-lbl">体重測定</span></button>
-        <button class="inp-btn" onclick="openModal('modal-handover')"><span class="ib-ico">📣</span><span class="ib-lbl">申し送り</span></button>
-        <button class="inp-btn" onclick="openVisitReportFromDetail()"><span class="ib-ico">🚗</span><span class="ib-lbl">訪問介護</span></button>
-      </div>
+      <div id="service-selector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+      <div class="inp-grid" id="inp-grid"></div>
     </div>
     </div><!-- /detail-col-left -->
     <div class="detail-col-right">
@@ -1004,6 +997,25 @@ a{color:var(--p);text-decoration:none}
       <div id="diary-visit-list" style="padding:10px 12px"></div>
     </div>
   </div>
+
+  <!-- ATTENDANCE MODAL -->
+<div class="overlay" id="modal-attendance" onclick="closeModal('modal-attendance',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="att-modal-title">🕐 来所・退所時間</div>
+    <div class="field"><label>来所時間</label>
+      <input type="time" id="att-time-from" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:16px">
+    </div>
+    <div class="field"><label>退所時間（退所時に入力）</label>
+      <input type="time" id="att-time-to" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:16px">
+    </div>
+    <div class="field"><label>備考</label>
+      <input type="text" id="att-note" placeholder="特記事項など" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px">
+    </div>
+    <button class="btn-primary" onclick="saveAttendance()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-attendance')">キャンセル</button>
+  </div>
+</div>
 
   <!-- VISIT REPORT MODAL -->
 <div class="overlay" id="modal-visit-report" onclick="closeModal('modal-visit-report',event)">
@@ -2118,6 +2130,28 @@ function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId|
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
+const SVC_META = {
+  resident:{label:'🏠 サ高住', color:'#1565c0', section:'sak'},
+  commute: {label:'☀️ デイ',   color:'#f57c00', section:'day'},
+  stay:    {label:'🏡 小多機', color:'#2e7d32', section:'shot'},
+  visit:   {label:'🚗 訪問介護',color:'#6a1b9a', section:'visit'},
+};
+const SVC_BTNS = {
+  resident:['vital','meal','excretion','chrono','weight','handover'],
+  commute: ['attendance','vital','meal','excretion','chrono','handover'],
+  stay:    ['attendance','vital','meal','excretion','chrono','weight','handover'],
+  visit:   ['visit_report','chrono','handover'],
+};
+const BTN_DEF = {
+  vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openModal('modal-vital')"},
+  meal:        {ico:'🍚', lbl:'食事・飲水',  fn:"openModal('modal-meal')"},
+  excretion:   {ico:'💧', lbl:'排泄',        fn:"openModal('modal-excretion')"},
+  chrono:      {ico:'📝', lbl:'経時記録',    fn:"openModal('modal-chrono')"},
+  weight:      {ico:'⚖️', lbl:'体重測定',    fn:"openModal('modal-weight')"},
+  handover:    {ico:'📣', lbl:'申し送り',    fn:'openHandoverFromDetail()'},
+  attendance:  {ico:'🕐', lbl:'来所/退所',   fn:'openAttendance()'},
+  visit_report:{ico:'🚗', lbl:'訪問介護記録',fn:'openVisitReportFromDetail()'},
+};
 const ROLE_COLORS = {
   super_admin:     {bg:'#b71c1c',label:'全権管理者'},
   facility_manager:{bg:'#e65100',label:'事業所管理者'},
@@ -2206,6 +2240,7 @@ let S = {
   graphRange: 'today', tlOffset: 0,
   schedView: 'month', schedScope: 'all', schedRid: null,
   schedYear: _now.getFullYear(), schedMonth: _now.getMonth(), schedDay: _now.getDate(),
+  currentService: null,
 };
 const _EK=['Va9k','Lp3x','Qm7j','Rw5t'].join('')+'_VillageAura';
 function _enc(str){
@@ -3199,8 +3234,8 @@ function renderDashboard(){
   }
   // 直近の記録（全種類・最新5件）
   const recent=recs.slice().sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,5);
-  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣'};
-  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り'};
+  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐'};
+  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所'};
   document.getElementById('recent-list').innerHTML=recent.map(r=>{
     const res2=getResidents().find(x=>x.id===r.rid)||{name:'不明'};
     const t=new Date(r.ts);
@@ -3243,6 +3278,7 @@ function summarizeRecord(r){
   if(r.type==='chrono')return (r.data.content||'').substring(0,30)+'...';
   if(r.type==='weight')return `${r.data.val}kg`;
   if(r.type==='handover')return (r.data.content||'').substring(0,30);
+  if(r.type==='attendance'){const d=r.data;return `来所${d.timeFrom||'──'}${d.timeTo?'・退所'+d.timeTo:''}`;}
   return '';
 }
 const mealLabel=t=>({breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食'}[t]||t);
@@ -3290,6 +3326,7 @@ function renderResList(){
 function openResident(id){
   S.currentRes=id;
   S.tlOffset=0;
+  S.currentService=null;
   showScr('scr-detail');
   renderDetail();
 }
@@ -3387,9 +3424,27 @@ function renderDetail(){
       </div>
     `).join('')}
   `:'';
+  // サービスセレクタ + 動的inp-grid
+  const svcs=r.services||[];
+  const svcSel=document.getElementById('service-selector');
+  if(svcSel)svcSel.innerHTML=svcs.map(svc=>{
+    const m=SVC_META[svc];if(!m)return'';
+    const on=S.currentService===svc;
+    return `<button onclick="selectService('${svc}')" style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
+  }).join('');
+  const grid=document.getElementById('inp-grid');
+  if(grid){
+    if(!S.currentService){
+      grid.innerHTML='<div style="color:var(--sub);font-size:13px;padding:10px 2px;grid-column:1/-1">↑ 今日のサービスを選択してください</div>';
+    } else {
+      const btns=SVC_BTNS[S.currentService]||[];
+      grid.innerHTML=btns.map(key=>{const b=BTN_DEF[key];return`<button class="inp-btn" onclick="${b.fn}"><span class="ib-ico">${b.ico}</span><span class="ib-lbl">${b.lbl}</span></button>`;}).join('');
+    }
+  }
   // Timeline
   renderTimeline();
 }
+function selectService(svc){S.currentService=svc;renderDetail();}
 function changeTlDate(delta){
   S.tlOffset+=delta;
   if(S.tlOffset>0) S.tlOffset=0;
@@ -3411,8 +3466,8 @@ function renderTimeline(){
   const allRecs=getRecords().filter(rc=>rc.rid===S.currentRes);
   const recs=allRecs.filter(rc=>new Date(rc.ts).toDateString()===targetStr)
     .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣'};
-  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り'};
+  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐'};
+  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所'};
   if(!recs.length){
     document.getElementById('timeline').innerHTML=`<div class="tl-empty">${dateLabel}の記録はありません</div>`;
     return;
@@ -3662,6 +3717,34 @@ function renderDiary(){
 }
 function openVisitReportFromDetail(){
   openVisitReportModal(-1, S.currentRes);
+}
+function openHandoverFromDetail(){
+  const m=S.currentService?SVC_META[S.currentService]:null;
+  openBoardHandover(m?m.section:'sak', -1, S.currentRes);
+}
+function openAttendance(){
+  const m=S.currentService?SVC_META[S.currentService]:null;
+  const t=document.getElementById('att-modal-title');
+  if(t)t.textContent=`🕐 来所・退所時間${m?' ('+m.label+')':''}`;
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('att-time-from').value=`${hh}:${mm}`;
+  document.getElementById('att-time-to').value='';
+  document.getElementById('att-note').value='';
+  document.getElementById('modal-attendance').classList.add('on');
+}
+function saveAttendance(){
+  const timeFrom=document.getElementById('att-time-from').value;
+  const timeTo=document.getElementById('att-time-to').value;
+  const note=document.getElementById('att-note').value.trim();
+  const data={timeFrom,timeTo,service:S.currentService,note};
+  const recs=getRecords();
+  recs.unshift({id:'rc'+Date.now(),type:'attendance',rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:new Date().toISOString(),data});
+  saveRecords(recs);
+  closeModal('modal-attendance');
+  renderDetail();
+  toast('来所/退所時間を保存しました ✓');
 }
 function openVisitReportModal(editIdx=-1, presetRid=null){
   document.getElementById('vr-edit-idx').value=editIdx;
@@ -4193,7 +4276,7 @@ function renderBoardSection(elId,items,section){
     </div>`;
   }).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px 0">申し送りはありません</div>';
 }
-function openBoardHandover(section,editIdx=-1){
+function openBoardHandover(section,editIdx=-1,presetRid=null){
   document.getElementById('board-ho-section').value=section;
   document.getElementById('board-ho-edit-idx').value=editIdx;
   const labels={sak:'🏠 サ高住から',nurse:'👩‍⚕️ 看護師から',shot:'🏡 小多機から',day:'☀️ デイから',visit:'🚗 訪問介護から'};
@@ -4214,6 +4297,7 @@ function openBoardHandover(section,editIdx=-1){
     }
   } else {
     document.getElementById('bho-content').value='';
+    if(sel&&presetRid)sel.value=presetRid;
     const normalEl=document.querySelector('input[name="bho-pri"][value="normal"]');
     if(normalEl)normalEl.checked=true;
   }
