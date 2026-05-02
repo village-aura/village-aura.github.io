@@ -522,6 +522,16 @@ a{color:var(--p);text-decoration:none}
     </div>
     <!-- Section 2 divider -->
     <div class="sec-head">クイックアクセス</div>
+    <!-- 事業所から入力 -->
+    <div style="margin:0 12px 10px;background:linear-gradient(135deg,#1c2340,#2d5e8e);border-radius:14px;padding:13px 14px;box-shadow:0 4px 16px rgba(21,101,192,.25)">
+      <div style="color:rgba(255,255,255,.65);font-size:10px;font-weight:700;letter-spacing:.09em;margin-bottom:9px;text-transform:uppercase">🏢 事業所から入力</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+        <button onclick="openSvcEntry('resident')" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(21,101,192,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">🏠<br>サ高住</button>
+        <button onclick="openSvcEntry('stay')"     style="background:rgba(255,255,255,.1);border:1.5px solid rgba(46,125,50,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">🏡<br>小多機</button>
+        <button onclick="openSvcEntry('commute')"  style="background:rgba(255,255,255,.1);border:1.5px solid rgba(245,124,0,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">☀️<br>デイ</button>
+        <button onclick="openSvcEntry('visit')"    style="background:rgba(255,255,255,.1);border:1.5px solid rgba(106,27,154,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">🚗<br>訪問介護</button>
+      </div>
+    </div>
     <div class="quick-grid">
   <button class="quick-btn" onclick="showScr('scr-residents')" style="background:linear-gradient(135deg,#e8f0fb,#d4e6ff)">
     <span class="qi">👤</span>
@@ -550,6 +560,12 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="sec-head">📋 直近の記録</div>
     <div class="recent-list" id="recent-list"></div>
+  </div>
+
+  <!-- ─── SERVICE ENTRY ─── -->
+  <div id="scr-svc-entry" class="scr">
+    <div id="svc-entry-today" style="padding:8px 12px 0;font-size:11px;font-weight:700;color:var(--sub)"></div>
+    <div id="svc-entry-list" style="padding:8px 12px 12px"></div>
   </div>
 
   <!-- ─── RESIDENT LIST ─── -->
@@ -3140,12 +3156,13 @@ function showScr(id){
   const titles={
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
     'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
-    'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ'
+    'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
+    'scr-svc-entry':'事業所から入力'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
   const menuBtn=document.getElementById('hd-menu');
-  const isDetail=(id==='scr-detail');
+  const isDetail=(id==='scr-detail'||id==='scr-svc-entry');
   back.style.display=isDetail?'block':'none';
   if(menuBtn)menuBtn.style.display=isDetail?'none':'';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
@@ -3159,6 +3176,7 @@ function showScr(id){
   if(id==='scr-handover-board') renderHandoverBoard();
   if(id==='scr-schedule') renderSchedule();
   if(id==='scr-diary') renderDiary();
+  if(id==='scr-svc-entry') renderSvcEntry();
   if(id==='scr-settings') renderSettings();
   if(id==='scr-help') initHelpScreen();
   if(id==='scr-proposal') renderProposalScr();
@@ -3345,6 +3363,51 @@ function renderResList(){
   }).join('')||'<div class="empty"><div class="e-ico">🔍</div><p>該当する利用者がいません</p></div>';
 }
 
+// ═══════════ SERVICE ENTRY ROUTE ═══════════
+let S_svc_entry=null;
+function openSvcEntry(svc){
+  S_svc_entry=svc;
+  S.currentService=svc;
+  showScr('scr-svc-entry');
+}
+function renderSvcEntry(){
+  const m=SVC_META[S_svc_entry];
+  if(m){document.getElementById('hd-title').textContent=m.label+' から入力';}
+  const now=new Date();
+  const WD=['日','月','火','水','木','金','土'];
+  const todayEl=document.getElementById('svc-entry-today');
+  if(todayEl)todayEl.textContent=`📅 ${now.getMonth()+1}月${now.getDate()}日（${WD[now.getDay()]}）の記録`;
+  const residents=getResidents();
+  const sorted=[...residents].sort((a,b)=>{
+    const aHas=(a.services||[]).includes(S_svc_entry)?0:1;
+    const bHas=(b.services||[]).includes(S_svc_entry)?0:1;
+    return aHas-bHas;
+  });
+  const svcColor=m?m.color:'var(--p)';
+  const el=document.getElementById('svc-entry-list');
+  if(!el)return;
+  el.innerHTML=sorted.map(r=>{
+    const has=(r.services||[]).includes(S_svc_entry);
+    const badge=has
+      ?`<span style="font-size:10px;font-weight:700;color:${svcColor};border:1.5px solid ${svcColor};border-radius:12px;padding:2px 8px;white-space:nowrap">${m?m.label:''}</span>`
+      :`<span style="font-size:10px;color:var(--sub);border:1.5px solid var(--bdr);border-radius:12px;padding:2px 8px;white-space:nowrap">他サービス</span>`;
+    return `<div onclick="openFromSvc('${r.id}')" style="background:var(--card);border-radius:10px;padding:13px 14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;touch-action:manipulation;border-left:3px solid ${has?svcColor:'var(--bdr)'}">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700">${r.name}　様</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">${r.room?r.room+'号室 · ':''}${r.kana||''}</div>
+      </div>
+      ${badge}
+      <span style="color:var(--sub);font-size:18px;flex-shrink:0">›</span>
+    </div>`;
+  }).join('');
+}
+function openFromSvc(rid){
+  S.currentRes=rid;
+  S.tlOffset=0;
+  // S.currentService preserved from openSvcEntry
+  showScr('scr-detail');
+  renderDetail();
+}
 // ═══════════ RESIDENT DETAIL ═══════════
 function openResident(id){
   S.currentRes=id;
