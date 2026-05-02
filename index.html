@@ -500,19 +500,18 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-dashboard" class="scr on">
     <div id="backup-banner" style="display:none;margin:10px 12px 0;padding:10px 12px;border:1.5px solid;border-radius:10px;display:none;align-items:center;gap:10px;font-size:13px"></div>
     <div class="dash-date" id="dash-date"></div>
-    <!-- Section 1: 掲示板 -->
-    <div style="margin:8px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)">
-      <div style="background:linear-gradient(90deg,var(--p),#5b9bd5);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">📋 掲示板</div>
-      <div onclick="showScr('scr-residents');setFilter('all')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--bdr);cursor:pointer;background:linear-gradient(135deg,#fffbf0,#fff)">
-        <span style="font-size:20px">⚠️</span>
+    <!-- Section 1: ステータス -->
+    <div style="margin:4px 12px 0">
+      <div onclick="showScr('scr-residents');setFilter('all')" style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #E65100;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
+        <span style="font-size:18px">⚠️</span>
         <div style="flex:1">
-          <b id="alert-count" style="display:block;font-size:13px;font-weight:700;color:#E65100">バイタル未記録: 0名</b>
+          <b id="alert-count" style="display:block;font-size:13px;font-weight:700;color:#E65100">バイタル未記録：0名</b>
           <span id="alert-names" style="font-size:11px;color:#BF360C"></span>
         </div>
-        <span style="color:#FB8C00;font-size:16px">›</span>
+        <span style="color:#E65100;font-size:16px">›</span>
       </div>
-      <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:#fff">
-        <span style="font-size:20px">🩺</span>
+      <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #1565c0;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
+        <span style="font-size:18px">🩺</span>
         <div style="flex:1">
           <b id="doctor-order-count" style="display:block;font-size:13px;font-weight:700"></b>
           <span id="doctor-order-preview" style="font-size:11px;color:var(--sub)"></span>
@@ -520,42 +519,43 @@ a{color:var(--p);text-decoration:none}
         <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
       </div>
     </div>
-    <!-- Section 2 divider -->
-    <div class="sec-head">クイックアクセス</div>
     <!-- 事業所から入力 -->
-    <div style="margin:0 12px 10px;background:linear-gradient(135deg,#1c2340,#2d5e8e);border-radius:14px;padding:13px 14px;box-shadow:0 4px 16px rgba(21,101,192,.25)">
-      <div style="color:rgba(255,255,255,.65);font-size:10px;font-weight:700;letter-spacing:.09em;margin-bottom:9px;text-transform:uppercase">🏢 事業所から入力</div>
+    <div class="sec-head">🏢 事業所から入力</div>
+    <div style="margin:0 12px 10px;background:linear-gradient(135deg,#1c2340,#2d5e8e);border-radius:14px;padding:12px 14px;box-shadow:0 4px 16px rgba(21,101,192,.2)">
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
-        <button onclick="openSvcEntry('resident')" style="background:rgba(255,255,255,.1);border:1.5px solid rgba(21,101,192,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">🏠<br>サ高住</button>
-        <button onclick="openSvcEntry('stay')"     style="background:rgba(255,255,255,.1);border:1.5px solid rgba(46,125,50,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">🏡<br>小多機</button>
-        <button onclick="openSvcEntry('commute')"  style="background:rgba(255,255,255,.1);border:1.5px solid rgba(245,124,0,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">☀️<br>デイ</button>
-        <button onclick="openSvcEntry('visit')"    style="background:rgba(255,255,255,.1);border:1.5px solid rgba(106,27,154,.7);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.5">🚗<br>訪問介護</button>
+        <button onclick="openSvcEntry('resident')" style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">🏠<br>サ高住</button>
+        <button onclick="openSvcEntry('stay')"     style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">🏡<br>小多機</button>
+        <button onclick="openSvcEntry('commute')"  style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">☀️<br>デイ</button>
+        <button onclick="openSvcEntry('visit')"    style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">🚗<br>訪問介護</button>
       </div>
     </div>
+    <!-- クイックアクセス -->
+    <div class="sec-head">クイックアクセス</div>
     <div class="quick-grid">
-  <button class="quick-btn" onclick="showScr('scr-residents')" style="background:linear-gradient(135deg,#e8f0fb,#d4e6ff)">
-    <span class="qi">👤</span>
-    <div class="ql">利用者一覧</div>
-    <div class="qs" id="q-count" style="color:#2d5e8e">-- 名</div>
-  </button>
-  <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9)">
-    <span class="qi">📅</span>
-    <div class="ql">スケジュール</div>
-    <div class="qs" id="q-sched-today" style="color:#2e7d32">本日の予定</div>
-  </button>
-  <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2)">
-    <span class="qi">📣</span>
-    <div class="ql">申し送りボード</div>
-    <div class="qs" style="color:#e65100">医師・看護師・事業所間</div>
-  </button>
-  <button class="quick-btn" onclick="showScr('scr-diary')" style="background:linear-gradient(135deg,#f3e5f5,#e1bee7)">
-    <span class="qi">📋</span>
-    <div class="ql">業務日誌</div>
-    <div class="qs" style="color:#6a1b9a">施設単位記録</div>
-  </button>
-</div>
-    <div id="dash-urgent-sec" style="display:none;margin:16px 12px 0;background:linear-gradient(135deg,#fff5f5,#fff8f8);border:1.5px solid #ffcdd2;border-radius:14px;overflow:hidden">
-      <div style="background:linear-gradient(90deg,#e53935,#ef5350);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🚨 要注目</div>
+      <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <span class="qi">👤</span>
+        <div class="ql">利用者一覧</div>
+        <div class="qs" id="q-count" style="color:var(--sub)">-- 名</div>
+      </button>
+      <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <span class="qi">📅</span>
+        <div class="ql">スケジュール</div>
+        <div class="qs" id="q-sched-today" style="color:var(--sub)">本日の予定</div>
+      </button>
+      <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <span class="qi">📣</span>
+        <div class="ql">申し送りボード</div>
+        <div class="qs" style="color:var(--sub)">医師・看護師・事業所間</div>
+      </button>
+      <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr)">
+        <span class="qi">📋</span>
+        <div class="ql">業務日誌</div>
+        <div class="qs" style="color:var(--sub)">施設単位記録</div>
+      </button>
+    </div>
+    <!-- アラート所見 -->
+    <div id="dash-urgent-sec" style="display:none;margin:12px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">
+      <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
       <div id="dash-urgent" style="padding:8px 10px"></div>
     </div>
     <div class="sec-head">📋 直近の記録</div>
@@ -3357,15 +3357,15 @@ function renderDashboard(){
       const countEl=document.getElementById('doctor-order-count');
       const arrowEl=document.getElementById('doctor-order-arrow');
       if(hasUrgent){
-        doRow.style.background='linear-gradient(135deg,#fff5f5,#fff)';
+        doRow.style.borderLeftColor='#c62828';
         if(countEl){countEl.style.color='#c62828';}
         if(arrowEl){arrowEl.style.color='#c62828';}
       } else if(hasImportant){
-        doRow.style.background='linear-gradient(135deg,#fffbf0,#fff)';
+        doRow.style.borderLeftColor='#e65100';
         if(countEl){countEl.style.color='#e65100';}
         if(arrowEl){arrowEl.style.color='#e65100';}
       } else {
-        doRow.style.background='#fff';
+        doRow.style.borderLeftColor='#1565c0';
         if(countEl){countEl.style.color='#1565c0';}
         if(arrowEl){arrowEl.style.color='var(--sub)';}
       }
@@ -3989,7 +3989,7 @@ function _renderReportCard(r){
     extras=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
       <select id="rcard-res-${r.id}" style="flex:1;min-width:110px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px">${resOpts}</select>
       <input type="month" id="rcard-ym-${r.id}" value="${ym}" style="flex:1;min-width:100px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px">
-    </div>`;
+    </div>${r.fn==='genKojinRecord'?`<button onclick="previewAllKojin('${r.id}')" style="width:100%;margin-top:6px;padding:8px;background:linear-gradient(90deg,#1c2340,var(--p));color:#fff;border-radius:8px;font-size:12px;font-weight:700;touch-action:manipulation;border:none">🖨 全員一括印刷</button>`:''}`;
   }else if(r.monthlyOnly){
     const d=getDiaryDate();
     const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -4060,6 +4060,31 @@ function previewReport(id){
   if(!modal||!iframe)return;
   if(title)title.textContent=rdef.ico+' '+rdef.title;
   iframe.srcdoc=html;
+  modal.style.display='flex';
+}
+function previewAllKojin(id){
+  const ymEl=document.getElementById('rcard-ym-'+id);
+  const d=getDiaryDate();
+  const ym=ymEl?ymEl.value:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const [yr,mo]=ym.split('-').map(Number);
+  const ress=getResidents();
+  if(!ress.length){toast('利用者が登録されていません');return;}
+  const bodies=ress.map((res,i)=>{
+    const html=genKojinRecord(res.id,yr,mo);
+    const m=html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    const content=(m?m[1]:html).replace(/<button[^>]*prbtn[^>]*>[\s\S]*?<\/button>/i,'');
+    return (i>0?'<div style="page-break-before:always"></div>':'')+content;
+  }).join('');
+  const combined=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>個人記録一括 ${yr}年${mo}月</title>
+<style>${_PCSS()}.pb{page-break-after:always}</style></head><body>
+${bodies}
+<button class="prbtn" onclick="window.print()">🖨 全員印刷（${ress.length}名）</button></body></html>`;
+  const modal=document.getElementById('modal-report-preview');
+  const iframe=document.getElementById('rp-iframe');
+  const title=document.getElementById('rp-title');
+  if(!modal||!iframe)return;
+  if(title)title.textContent=`👥 個人記録一括（${ress.length}名） ${yr}年${mo}月`;
+  iframe.srcdoc=combined;
   modal.style.display='flex';
 }
 function closeReportPreview(){
