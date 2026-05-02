@@ -6265,6 +6265,9 @@ const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
 const murl=URL.createObjectURL(blob);
 const link=document.createElement('link');
 link.rel='manifest';link.href=murl;document.head.appendChild(link);
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
