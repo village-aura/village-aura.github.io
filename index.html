@@ -1628,6 +1628,35 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- SERVICE SETTING -->
+<div class="overlay" id="modal-svc-setting" onclick="closeModal('modal-svc-setting',event)">
+  <div class="sheet" onclick="event.stopPropagation()" style="padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🔧 利用サービスを編集</div>
+    <div style="padding:0 4px 8px;font-size:12px;color:var(--sub)">この利用者が利用するサービスにチェックを入れてください</div>
+    <div class="checkbox-list" style="margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+        <input type="checkbox" id="ss-res" value="resident" style="width:18px;height:18px;accent-color:#1565c0">
+        <span style="font-size:14px;font-weight:600">🏠 サ高住（居住）</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+        <input type="checkbox" id="ss-stay" value="stay" style="width:18px;height:18px;accent-color:#2e7d32">
+        <span style="font-size:14px;font-weight:600">🏡 小多機（宿泊）</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+        <input type="checkbox" id="ss-com" value="commute" style="width:18px;height:18px;accent-color:#f57c00">
+        <span style="font-size:14px;font-weight:600">☀️ デイ（通い）</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 0">
+        <input type="checkbox" id="ss-vis" value="visit" style="width:18px;height:18px;accent-color:#6a1b9a">
+        <span style="font-size:14px;font-weight:600">🚗 訪問介護</span>
+      </label>
+    </div>
+    <button class="btn-primary" onclick="saveSvcSetting()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-svc-setting')">キャンセル</button>
+  </div>
+</div>
+
 <!-- EDIT RESIDENT -->
 <div class="overlay" id="modal-edit-res" onclick="closeModal('modal-edit-res',event)">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -3515,10 +3544,15 @@ function renderDetail(){
   if(chip){const now=new Date();const WD=['日','月','火','水','木','金','土'];chip.textContent=`${now.getMonth()+1}月${now.getDate()}日（${WD[now.getDay()]}）`;}
   // サービスセレクタ + 動的inp-grid（全サービス常時表示）
   const svcSel=document.getElementById('service-selector');
-  if(svcSel)svcSel.innerHTML=Object.entries(SVC_META).map(([svc,m])=>{
-    const on=S.currentService===svc;
-    return `<button onclick="selectService('${svc}')" style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
-  }).join('');
+  if(svcSel){
+    const registeredSvcs=r.services||[];
+    svcSel.innerHTML=Object.entries(SVC_META).map(([svc,m])=>{
+      const on=S.currentService===svc;
+      const registered=registeredSvcs.includes(svc);
+      return `<button onclick="selectService('${svc}')" style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s;opacity:${registered?'1':'.45'}">${m.label}</button>`;
+    }).join('')
+    +`<button onclick="openSvcSetting()" style="padding:7px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid var(--bdr);background:#fff;color:var(--sub);transition:all .15s;margin-left:auto" title="利用サービスを編集">⚙</button>`;
+  }
   const grid=document.getElementById('inp-grid');
   if(grid){
     if(!S.currentService){
@@ -3532,6 +3566,30 @@ function renderDetail(){
   renderTimeline();
 }
 function selectService(svc){S.currentService=svc;renderDetail();}
+function openSvcSetting(){
+  const r=getResidents().find(x=>x.id===S.currentRes);
+  if(!r)return;
+  const svcs=r.services||[];
+  document.getElementById('ss-res').checked=svcs.includes('resident');
+  document.getElementById('ss-stay').checked=svcs.includes('stay');
+  document.getElementById('ss-com').checked=svcs.includes('commute');
+  document.getElementById('ss-vis').checked=svcs.includes('visit');
+  document.getElementById('modal-svc-setting').classList.add('on');
+}
+function saveSvcSetting(){
+  const res=getResidents();
+  const idx=res.findIndex(x=>x.id===S.currentRes);
+  if(idx<0)return;
+  const services=[];
+  [{id:'ss-res',val:'resident'},{id:'ss-stay',val:'stay'},{id:'ss-com',val:'commute'},{id:'ss-vis',val:'visit'}]
+    .forEach(({id,val})=>{if(document.getElementById(id).checked)services.push(val);});
+  if(!services.length){toast('少なくとも1つ選択してください');return;}
+  res[idx]={...res[idx],services};
+  saveResidents(res);
+  closeModal('modal-svc-setting');
+  renderDetail();
+  toast('サービス設定を更新しました ✓');
+}
 function changeTlDate(delta){
   S.tlOffset+=delta;
   if(S.tlOffset>0) S.tlOffset=0;
