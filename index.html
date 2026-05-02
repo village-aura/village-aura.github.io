@@ -970,9 +970,14 @@ a{color:var(--p);text-decoration:none}
         <div id="mm-user" style="font-size:12px;opacity:.6;margin-top:4px"></div>
       </div>
       <nav style="flex:1;padding:6px 0;overflow-y:auto">
+        <button class="mmn" onclick="showScr('scr-dashboard');closeMobileMenu()">🏠 ホーム</button>
+        <button class="mmn" onclick="showScr('scr-residents');closeMobileMenu()">👥 利用者一覧</button>
+        <button class="mmn" onclick="showScr('scr-schedule');closeMobileMenu()">📅 スケジュール</button>
+        <button class="mmn" onclick="showScr('scr-handover-board');closeMobileMenu()">📣 申し送りボード</button>
         <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
         <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 データ登録</button>
         <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
+        <button class="mmn" onclick="showScr('scr-settings');closeMobileMenu()">⚙️ 設定</button>
         <button class="mmn" onclick="showScr('scr-help');closeMobileMenu()">📖 ヘルプ</button>
       </nav>
       <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
