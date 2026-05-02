@@ -124,10 +124,10 @@ a{color:var(--p);text-decoration:none}
 .alert-banner .arrow{color:#FB8C00;font-size:18px}
 .quick-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .quick-grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.quick-btn{border-radius:14px;padding:16px 14px;box-shadow:0 3px 12px rgba(0,0,0,.09);display:flex;flex-direction:column;align-items:flex-start;gap:6px;transition:transform .12s,box-shadow .12s;border:none;text-align:left;cursor:pointer}
+.quick-btn{border-radius:14px;padding:12px 8px;box-shadow:0 3px 12px rgba(0,0,0,.09);display:flex;flex-direction:column;align-items:flex-start;gap:4px;transition:transform .12s,box-shadow .12s;border:none;text-align:left;cursor:pointer}
 .quick-btn:active{transform:scale(.96);box-shadow:0 1px 6px rgba(0,0,0,.1)}
-.quick-btn .qi{font-size:30px;line-height:1}
-.quick-btn .ql{font-size:14px;font-weight:800;color:var(--txt)}
+.quick-btn .qi{font-size:22px;line-height:1}
+.quick-btn .ql{font-size:11px;font-weight:800;color:var(--txt);white-space:nowrap}
 .quick-btn .qs{font-size:11px;margin-top:1px;font-weight:500}
 .recent-list{padding:0 12px;margin-top:6px}
 .recent-item{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;gap:10px;align-items:flex-start;cursor:pointer;transition:box-shadow .15s}
@@ -525,15 +525,15 @@ a{color:var(--p);text-decoration:none}
       <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
         <button class="quick-btn" onclick="openSvcEntry('resident')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #3D7AB5;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">🏠</span>
-          <div class="ql">サービス付き高齢者向け住宅</div>
+          <div class="ql">サ高住</div>
         </button>
         <button class="quick-btn" onclick="openSvcEntry('stay')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #2e7d32;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">🏡</span>
-          <div class="ql">小規模多機能型居宅介護</div>
+          <div class="ql">小多機</div>
         </button>
         <button class="quick-btn" onclick="openSvcEntry('commute')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #e65100;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">☀️</span>
-          <div class="ql">デイサービス</div>
+          <div class="ql">デイ</div>
         </button>
         <button class="quick-btn" onclick="openSvcEntry('visit')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;align-items:center;text-align:center;touch-action:manipulation">
           <span class="qi">🚗</span>
@@ -545,11 +545,11 @@ a{color:var(--p);text-decoration:none}
         </button>
         <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">📅</span>
-          <div class="ql">スケジュール<span id="q-sched-today" style="display:none"></span></div>
+          <div class="ql">予定表<span id="q-sched-today" style="display:none"></span></div>
         </button>
         <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">📣</span>
-          <div class="ql">申し送りボード</div>
+          <div class="ql">申し送り</div>
         </button>
         <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">📋</span>
