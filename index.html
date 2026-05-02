@@ -3424,11 +3424,9 @@ function renderDetail(){
       </div>
     `).join('')}
   `:'';
-  // サービスセレクタ + 動的inp-grid
-  const svcs=r.services||[];
+  // サービスセレクタ + 動的inp-grid（全サービス常時表示）
   const svcSel=document.getElementById('service-selector');
-  if(svcSel)svcSel.innerHTML=svcs.map(svc=>{
-    const m=SVC_META[svc];if(!m)return'';
+  if(svcSel)svcSel.innerHTML=Object.entries(SVC_META).map(([svc,m])=>{
     const on=S.currentService===svc;
     return `<button onclick="selectService('${svc}')" style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
   }).join('');
