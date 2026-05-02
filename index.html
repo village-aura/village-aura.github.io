@@ -155,7 +155,7 @@ a{color:var(--p);text-decoration:none}
 .chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
 .res-list{padding:0 12px}
 .res-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
-.res-avatar{width:44px;height:44px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.res-avatar{width:44px;height:44px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
 .res-avatar.male{background:#e3f2fd}
 .res-info{flex:1}
 .res-name{font-size:16px;font-weight:700}
@@ -1696,6 +1696,7 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="field"><label>記録内容</label>
+      <button onclick="openTemplatePicker('chrono')" style="font-size:12px;color:var(--p);background:var(--ps);border-radius:6px;padding:4px 10px;margin-bottom:6px;font-weight:700">📋 テンプレートから入力</button>
       <textarea id="c-content" placeholder="自由記述..." rows="4" oninput="updateTriagePreview()"></textarea>
       <button class="btn-voice" id="voice-btn" onclick="startVoice('c-content',this)">🎤 タップして音声入力</button>
       <div id="c-triage-preview" class="triage-preview" style="display:none">
@@ -1749,7 +1750,9 @@ a{color:var(--p);text-decoration:none}
         <label><input type="radio" name="ho-pri" value="urgent"> 🚨 緊急</label>
       </div>
     </div>
-    <div class="field"><label>内容</label><textarea id="ho-content" placeholder="申し送り内容..." rows="4"></textarea>
+    <div class="field"><label>内容</label>
+      <button onclick="openTemplatePicker('handover')" style="font-size:12px;color:var(--p);background:var(--ps);border-radius:6px;padding:4px 10px;margin-bottom:6px;font-weight:700">📋 テンプレートから入力</button>
+      <textarea id="ho-content" placeholder="申し送り内容..." rows="4"></textarea>
       <button class="btn-voice" onclick="startVoice('ho-content',this)">🎤 音声入力</button>
     </div>
     <div class="field"><label>有効期限</label><input type="date" id="ho-expire"></div>
@@ -1825,8 +1828,68 @@ a{color:var(--p);text-decoration:none}
       </select>
     </div>
     <div class="field"><label>アレルギー・注意事項</label><textarea id="er-allergy"></textarea></div>
+    <div class="field">
+      <label>写真</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="er-photo-preview" style="width:64px;height:64px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;flex-shrink:0">👤</div>
+        <div>
+          <input type="file" id="er-photo-input" accept="image/*" onchange="handlePhotoSelect(this)" style="display:none">
+          <button onclick="document.getElementById('er-photo-input').click()" style="padding:8px 14px;background:var(--ps);color:var(--p);border-radius:8px;font-size:13px;font-weight:700;margin-bottom:6px">📷 写真を選択</button>
+          <button id="er-photo-clear" onclick="clearResPhoto()" style="padding:8px 10px;background:#f3f4f6;color:var(--sub);border-radius:8px;font-size:12px;display:none">削除</button>
+          <div style="font-size:11px;color:var(--sub)">カメラ・ギャラリーから選択できます</div>
+        </div>
+      </div>
+    </div>
     <button class="btn-primary" onclick="saveEditResident()">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-edit-res')">キャンセル</button>
+  </div>
+</div>
+
+<!-- VITAL RANGES -->
+<div class="overlay" id="modal-vital-ranges" onclick="closeModal('modal-vital-ranges',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⚙️ バイタル基準値設定</div>
+    <div style="font-size:11px;color:var(--sub);background:var(--ps);padding:8px 10px;border-radius:8px;margin-bottom:12px">デフォルト：BP 90-140 / 40-85、脈拍 50-100、体温 35.5-37.2℃、SpO₂ ≥95%</div>
+    <div class="field-row">
+      <div class="field"><label>収縮期 下限</label><input type="number" id="vr-sys-min" placeholder="90"></div>
+      <div class="field"><label>収縮期 上限</label><input type="number" id="vr-sys-max" placeholder="140"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>拡張期 下限</label><input type="number" id="vr-dia-min" placeholder="40"></div>
+      <div class="field"><label>拡張期 上限</label><input type="number" id="vr-dia-max" placeholder="85"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>脈拍 下限</label><input type="number" id="vr-pulse-min" placeholder="50"></div>
+      <div class="field"><label>脈拍 上限</label><input type="number" id="vr-pulse-max" placeholder="100"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>体温 下限</label><input type="number" id="vr-temp-min" step="0.1" placeholder="35.5"></div>
+      <div class="field"><label>体温 上限</label><input type="number" id="vr-temp-max" step="0.1" placeholder="37.2"></div>
+    </div>
+    <div class="field"><label>SpO₂ 下限（以下でアラート）</label><input type="number" id="vr-spo2-min" placeholder="95"></div>
+    <div class="field"><label>変更理由（必須）</label><textarea id="vr-reason" placeholder="例：主治医指示 2026-05-02" rows="2"></textarea></div>
+    <button onclick="showVRHistory()" style="width:100%;padding:8px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:12px;font-weight:700;margin-bottom:8px">📋 変更履歴</button>
+    <div id="vr-history" style="display:none;max-height:180px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px"></div>
+    <button class="btn-primary" onclick="saveVitalRanges()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-vital-ranges')">キャンセル</button>
+  </div>
+</div>
+
+<!-- TEMPLATE PICKER -->
+<div class="overlay" id="modal-tpl-picker" onclick="closeModal('modal-tpl-picker',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="tpl-picker-title">📝 テンプレート</div>
+    <div id="tpl-picker-list" style="max-height:260px;overflow-y:auto;margin-bottom:10px"></div>
+    <div style="border-top:1px solid var(--bdr);padding-top:10px">
+      <input type="text" id="tpl-new-name" placeholder="テンプレート名" style="width:100%;padding:8px 10px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px">
+      <div style="display:flex;gap:6px;margin-bottom:4px">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="tpl-shared"> 共通テンプレートとして保存（管理者・看護師のみ）</label>
+      </div>
+      <button onclick="saveCurrentAsTemplate()" style="width:100%;padding:9px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700">現在の内容をテンプレートに保存</button>
+    </div>
+    <button class="btn-cancel" onclick="closeModal('modal-tpl-picker')">閉じる</button>
   </div>
 </div>
 
@@ -2589,6 +2652,148 @@ function _doLogout(){
   _aiKey='';
 }
 
+// ═══════════ PHOTO ═══════════
+function compressPhoto(file,cb){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      let w=img.width,h=img.height,mx=320;
+      if(w>h){h=Math.round(h*mx/w);w=mx;}else{w=Math.round(w*mx/h);h=mx;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      let q=0.82,d;
+      do{d=canvas.toDataURL('image/jpeg',q);q-=0.1;}while(d.length>160*1024*1.33&&q>0.2);
+      cb(d);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function handlePhotoSelect(input){
+  const file=input.files[0];if(!file)return;
+  compressPhoto(file,data=>{
+    const prev=document.getElementById('er-photo-preview');
+    prev.innerHTML=`<img src="${data}" style="width:100%;height:100%;object-fit:cover">`;
+    prev.dataset.photo=data;
+    const clr=document.getElementById('er-photo-clear');if(clr)clr.style.display='';
+  });
+}
+function clearResPhoto(){
+  const prev=document.getElementById('er-photo-preview');
+  prev.innerHTML='👤';prev.dataset.photo='';
+  const clr=document.getElementById('er-photo-clear');if(clr)clr.style.display='none';
+  document.getElementById('er-photo-input').value='';
+}
+// ═══════════ VITAL RANGES ═══════════
+function openVitalRanges(){
+  const r=getResidents().find(x=>x.id===S.currentRes);if(!r)return;
+  const vr=r.vitalRanges||{};
+  document.getElementById('vr-sys-min').value=vr.sys?.min??90;
+  document.getElementById('vr-sys-max').value=vr.sys?.max??140;
+  document.getElementById('vr-dia-min').value=vr.dia?.min??40;
+  document.getElementById('vr-dia-max').value=vr.dia?.max??85;
+  document.getElementById('vr-pulse-min').value=vr.pulse?.min??50;
+  document.getElementById('vr-pulse-max').value=vr.pulse?.max??100;
+  document.getElementById('vr-temp-min').value=vr.temp?.min??35.5;
+  document.getElementById('vr-temp-max').value=vr.temp?.max??37.2;
+  document.getElementById('vr-spo2-min').value=vr.spo2?.min??95;
+  document.getElementById('vr-reason').value='';
+  document.getElementById('vr-history').style.display='none';
+  document.getElementById('modal-vital-ranges').classList.add('on');
+}
+function saveVitalRanges(){
+  const reason=document.getElementById('vr-reason').value.trim();
+  if(!reason){toast('変更理由を入力してください');return;}
+  const res=getResidents();
+  const idx=res.findIndex(x=>x.id===S.currentRes);if(idx<0)return;
+  const newR={
+    sys:{min:parseFloat(document.getElementById('vr-sys-min').value)||90,max:parseFloat(document.getElementById('vr-sys-max').value)||140},
+    dia:{min:parseFloat(document.getElementById('vr-dia-min').value)||40,max:parseFloat(document.getElementById('vr-dia-max').value)||85},
+    pulse:{min:parseFloat(document.getElementById('vr-pulse-min').value)||50,max:parseFloat(document.getElementById('vr-pulse-max').value)||100},
+    temp:{min:parseFloat(document.getElementById('vr-temp-min').value)||35.5,max:parseFloat(document.getElementById('vr-temp-max').value)||37.2},
+    spo2:{min:parseFloat(document.getElementById('vr-spo2-min').value)||95}
+  };
+  const hist=res[idx].vitalRangeHistory||[];
+  hist.unshift({date:new Date().toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),staff:S.user,reason,old:res[idx].vitalRanges||null,set:newR});
+  res[idx].vitalRanges=newR;res[idx].vitalRangeHistory=hist;
+  saveResidents(res);
+  addAuditLog('バイタル基準値変更',res[idx].name+' / 理由: '+reason);
+  closeModal('modal-vital-ranges');toast('バイタル基準値を更新しました ✓');renderDetail();
+}
+function showVRHistory(){
+  const r=getResidents().find(x=>x.id===S.currentRes);
+  const hist=r?.vitalRangeHistory||[];
+  const el=document.getElementById('vr-history');
+  if(el.style.display!=='none'){el.style.display='none';return;}
+  if(!hist.length){toast('変更履歴がありません');return;}
+  el.innerHTML=hist.map(h=>`<div style="border-bottom:1px solid var(--bdr);padding:6px 0"><div><b>${h.date}</b>　${h.staff}</div><div style="color:var(--ng);margin-top:2px">理由: ${h.reason}</div></div>`).join('');
+  el.style.display='block';
+}
+// ═══════════ TEMPLATES ═══════════
+function getTemplates(){return ls('record_templates')||[];}
+function saveTemplates(t){lsSet('record_templates',t);}
+let _tplTarget='chrono';
+function openTemplatePicker(type){
+  _tplTarget=type;
+  const tpls=getTemplates().filter(t=>t.type===type);
+  const shared=tpls.filter(t=>t.shared);
+  const personal=tpls.filter(t=>!t.shared&&t.owner===S.user);
+  const el=document.getElementById('tpl-picker-list');
+  let html='';
+  if(!shared.length&&!personal.length){
+    html='<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px">テンプレートがありません<br>内容を入力してから下の「テンプレートに保存」で登録できます</div>';
+  }
+  if(shared.length){
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--sub);margin:6px 0 4px">📌 共通</div>`;
+    shared.forEach(t=>{html+=_tplRow(t);});
+  }
+  if(personal.length){
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--sub);margin:6px 0 4px">👤 個人</div>`;
+    personal.forEach(t=>{html+=_tplRow(t);});
+  }
+  el.innerHTML=html;
+  document.getElementById('tpl-picker-title').textContent=type==='chrono'?'📝 経時記録テンプレート':'📣 申し送りテンプレート';
+  const sharedChk=document.getElementById('tpl-shared');
+  if(sharedChk)sharedChk.disabled=!(isAdmin()||S.userRole==='看護師');
+  document.getElementById('tpl-new-name').value='';
+  document.getElementById('modal-tpl-picker').classList.add('on');
+}
+function _tplRow(t){
+  return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)">
+    <div style="flex:1;cursor:pointer" onclick="applyTemplate('${t.id}')">
+      <div style="font-size:13px;font-weight:700">${t.name}${t.shared?'<span style="font-size:10px;color:var(--p);margin-left:4px">共通</span>':''}</div>
+      <div style="font-size:11px;color:var(--sub)">${(t.content||'').substring(0,40)}…</div>
+    </div>
+    <button onclick="deleteTpl('${t.id}')" style="font-size:16px;color:var(--sub);padding:4px 6px">🗑</button>
+  </div>`;
+}
+function applyTemplate(id){
+  const t=getTemplates().find(x=>x.id===id);if(!t)return;
+  const tid=_tplTarget==='chrono'?'c-content':'ho-content';
+  document.getElementById(tid).value=t.content;
+  if(_tplTarget==='chrono')updateTriagePreview();
+  closeModal('modal-tpl-picker');
+}
+function saveCurrentAsTemplate(){
+  const name=document.getElementById('tpl-new-name').value.trim();
+  if(!name){toast('テンプレート名を入力してください');return;}
+  const tid=_tplTarget==='chrono'?'c-content':'ho-content';
+  const content=document.getElementById(tid).value.trim();
+  if(!content){toast('先に内容を入力してください');return;}
+  const shared=document.getElementById('tpl-shared')?.checked&&(isAdmin()||S.userRole==='看護師');
+  const tpls=getTemplates();
+  tpls.push({id:'tpl'+Date.now(),type:_tplTarget,name,content,shared,owner:S.user});
+  saveTemplates(tpls);
+  toast('テンプレートを保存しました ✓');
+  openTemplatePicker(_tplTarget);
+}
+function deleteTpl(id){
+  if(!confirm('このテンプレートを削除しますか？'))return;
+  saveTemplates(getTemplates().filter(t=>t.id!==id));
+  openTemplatePicker(_tplTarget);
+}
 // ═══════════ LOGIN LOCKOUT ═══════════
 const _LOCK_KEY='va_lock_until', _FAIL_KEY='va_login_fails', _MAX_FAILS=5, _LOCK_MIN=15;
 function _checkLock(){
@@ -3607,15 +3812,20 @@ function renderDashboard(){
     </div>`;
   }).join('')||'<div class="empty"><div class="e-ico">📋</div><p>今日の記録はまだありません</p></div>';
 }
-function vAbnormal(key,val){
-  if(val===undefined||val===null||val==='') return false;
+const VITAL_BASE={sys:{min:90,max:140},dia:{min:40,max:85},pulse:{min:50,max:100},temp:{min:35.5,max:37.2},spo2:{min:95}};
+function getResVRanges(rid){
+  if(!rid)return null;
+  const r=getResidents().find(x=>x.id===rid);
+  return r?.vitalRanges||null;
+}
+function vAbnormal(key,val,rid){
+  if(val===undefined||val===null||val==='')return false;
   const v=parseFloat(val);
-  if(key==='sys') return v<90||v>140;
-  if(key==='dia') return v<40||v>85;
-  if(key==='pulse') return v<50||v>100;
-  if(key==='temp') return v<35.5||v>37.2;
-  if(key==='spo2') return v<=94;
-  return false;
+  const custom=getResVRanges(rid);
+  const rng=(custom&&custom[key])||VITAL_BASE[key];
+  if(!rng)return false;
+  if(key==='spo2')return v<rng.min;
+  return v<rng.min||v>rng.max;
 }
 function vSpan(key,val){
   const ng=vAbnormal(key,val);
@@ -3661,9 +3871,9 @@ function renderResList(){
     const ok=vitalToday.has(r.id);
     const tags=r.services.map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
     return `<div class="res-card" onclick="openResident('${r.id}')">
-      <div class="res-avatar ${r.gender==='male'?'male':''}">${r.gender==='male'?'👴':'👵'}</div>
+      <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
-        <div class="res-name">${r.name} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span></div>
+        <div class="res-name">${r.name} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
         <div class="res-meta">${r.room?r.room+'号室・':''} ${careLabel(r.care)} | ${r.facility}</div>
         <div class="res-tags">${tags}<span class="tag tag-care">${careLabel(r.care)}</span></div>
       </div>
@@ -3736,12 +3946,14 @@ function renderDetail(){
   document.getElementById('hd-title').textContent=r.name+' 様';
   // Hero
   document.getElementById('detail-hero').innerHTML=`
-    <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5">
+    <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5;flex-wrap:wrap;justify-content:flex-end">
       <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📅 予定</button>
       <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📋 フェイスシート</button>
       <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">✏️ 編集</button>
+      <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
     </div>
-    <div class="detail-name">${r.name} 様</div>
+    ${r.photo?`<div style="position:absolute;top:12px;left:12px;z-index:5"><img src="${r.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.5)"></div>`:''}
+    <div class="detail-name" style="${r.photo?'padding-left:70px':''}">  ${r.name} 様</div>
     <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
     <div class="detail-tags">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
   `;
@@ -3752,10 +3964,10 @@ function renderDetail(){
   const latestVital=todayRecs.filter(rc=>rc.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
   const fluidToday=todayRecs.filter(rc=>rc.type==='meal').reduce((s,rc)=>s+(rc.data.fluid||0),0);
   const latestWeight=recs.filter(rc=>rc.type==='weight').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
-  const bpClass=latestVital?(vAbnormal('sys',latestVital.data.sys)||vAbnormal('dia',latestVital.data.dia)?'warn':'ok'):'warn';
-  const pulseClass=latestVital?(vAbnormal('pulse',latestVital.data.pulse)?'warn':'ok'):'warn';
-  const tempClass=latestVital?(vAbnormal('temp',latestVital.data.temp)?'warn':'ok'):'warn';
-  const spo2Class=latestVital?(vAbnormal('spo2',latestVital.data.spo2)?'warn':'ok'):'warn';
+  const bpClass=latestVital?(vAbnormal('sys',latestVital.data.sys,r.id)||vAbnormal('dia',latestVital.data.dia,r.id)?'warn':'ok'):'warn';
+  const pulseClass=latestVital?(vAbnormal('pulse',latestVital.data.pulse,r.id)?'warn':'ok'):'warn';
+  const tempClass=latestVital?(vAbnormal('temp',latestVital.data.temp,r.id)?'warn':'ok'):'warn';
+  const spo2Class=latestVital?(vAbnormal('spo2',latestVital.data.spo2,r.id)?'warn':'ok'):'warn';
   const vitalTime=latestVital?new Date(latestVital.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
   document.getElementById('summary-row').innerHTML=`
     <div class="sum-card">
@@ -4994,6 +5206,10 @@ function openEditResident(){
   ['er-sv-res','er-sv-com','er-sv-sta','er-sv-vis'].forEach(id=>{
     document.getElementById(id).checked=r.services.includes(document.getElementById(id).value);
   });
+  const prev=document.getElementById('er-photo-preview');
+  const clrBtn=document.getElementById('er-photo-clear');
+  if(r.photo){prev.innerHTML=`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`;prev.dataset.photo=r.photo;if(clrBtn)clrBtn.style.display='';}
+  else{prev.innerHTML='👤';prev.dataset.photo='';if(clrBtn)clrBtn.style.display='none';}
   document.getElementById('modal-edit-res').classList.add('on');
 }
 function saveEditResident(){
@@ -5009,12 +5225,14 @@ function saveEditResident(){
   if(!services.length)services.push('resident');
   const birth=document.getElementById('er-birth').value;
   const age=birth?Math.floor((new Date()-new Date(birth))/(365.25*24*60*60*1000)):res[idx].age;
+  const photoData=document.getElementById('er-photo-preview').dataset.photo||'';
   res[idx]={...res[idx],name,kana:document.getElementById('er-kana').value,
     gender:document.getElementById('er-gender').value,age,
     care:document.getElementById('er-care').value,
     room:document.getElementById('er-room').value,
     services,facility:document.getElementById('er-facility').value,
-    allergy:document.getElementById('er-allergy').value};
+    allergy:document.getElementById('er-allergy').value,
+    photo:photoData};
   saveResidents(res);
   closeModal('modal-edit-res');
   toast('利用者情報を更新しました ✓');
