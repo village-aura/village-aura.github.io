@@ -2348,6 +2348,7 @@ const FB_CONFIG={
 };
 const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports'];
 let db=null, fbReady=false, fbListeners=[];
+let _aiKey='', _aiKeyUnsub=null;
 
 (async function initFirebase(){
   try{
@@ -2530,6 +2531,7 @@ async function login(){
   showScr('scr-dashboard');
   renderDashboard();
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+  startAIKeySync();
   setTimeout(showTutorial, 600);
 }
 function logout(){
@@ -2548,6 +2550,23 @@ function _doLogout(){
   document.getElementById('login-id').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').style.display='none';
+  if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
+  _aiKey='';
+}
+
+// ═══════════ AI KEY SYNC ═══════════
+function startAIKeySync(){
+  if(!db)return;
+  if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
+  _aiKeyUnsub=db.collection('settings').doc('global').onSnapshot(snap=>{
+    _aiKey=(snap.exists&&snap.data().ai_api_key)||'';
+    const inp=document.getElementById('ai-api-key-input');
+    const sts=document.getElementById('ai-key-status');
+    const notice=document.getElementById('ai-key-notice');
+    if(inp)inp.value=_aiKey?'••••••••••••'+_aiKey.slice(-4):'';
+    if(sts)sts.textContent=_aiKey?'✓ APIキー登録済み（全端末共通）':'未登録';
+    if(notice)notice.style.display=_aiKey?'none':'block';
+  },()=>{});
 }
 
 // ═══════════ HELP / AI FAQ ═══════════
@@ -2558,7 +2577,7 @@ const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システ
 let aiHistory=[];
 function initHelpScreen(){
   showHelpTab('login');
-  const key=localStorage.getItem('ai_api_key');
+  const key=_aiKey;
   const notice=document.getElementById('ai-key-notice');
   if(notice)notice.style.display=key?'none':'block';
 }
@@ -2603,18 +2622,17 @@ function skipTutorial(){
 function saveAIKey(){
   const val=document.getElementById('ai-api-key-input').value.trim();
   if(!val||val.startsWith('••')){toast('新しいAPIキーを入力してください');return;}
-  localStorage.setItem('ai_api_key',val);
-  document.getElementById('ai-key-status').textContent='✓ APIキー登録済み';
-  document.getElementById('ai-api-key-input').value='••••••••••••'+val.slice(-4);
-  toast('APIキーを保存しました ✓');
+  if(!db){toast('Firebaseに接続できません');return;}
+  db.collection('settings').doc('global').set({ai_api_key:val},{merge:true})
+    .then(()=>toast('APIキーを保存しました（全端末に反映） ✓'))
+    .catch(e=>toast('保存エラー: '+e.message));
 }
 function clearAIKey(){
-  if(!confirm('APIキーを削除しますか？'))return;
-  localStorage.removeItem('ai_api_key');
-  document.getElementById('ai-api-key-input').value='';
-  document.getElementById('ai-key-status').textContent='未登録';
-  const notice=document.getElementById('ai-key-notice');if(notice)notice.style.display='block';
-  toast('APIキーを削除しました');
+  if(!confirm('APIキーを削除しますか？全端末から削除されます。'))return;
+  if(!db){toast('Firebaseに接続できません');return;}
+  db.collection('settings').doc('global').update({ai_api_key:firebase.firestore.FieldValue.delete()})
+    .then(()=>toast('APIキーを削除しました'))
+    .catch(e=>toast('削除エラー: '+e.message));
 }
 function appendAIMsg(role,text){
   const el=document.getElementById('ai-messages');if(!el)return;
@@ -2628,7 +2646,7 @@ function appendAIMsg(role,text){
 async function sendAIMessage(){
   const inp=document.getElementById('ai-input');
   const text=inp.value.trim();if(!text)return;
-  const key=localStorage.getItem('ai_api_key')||'';
+  const key=_aiKey||'';
   if(!key){toast('設定画面でGroq APIキーを登録してください');return;}
   inp.value='';
   appendAIMsg('user',text);
@@ -2637,7 +2655,7 @@ async function sendAIMessage(){
   btn.disabled=true;
   const typing=appendAIMsg('typing','考え中…');
   try{
-    const useKey=localStorage.getItem('ai_api_key')||'';
+    const useKey=_aiKey||'';
     const messages=[{role:'system',content:AI_SYSTEM},...aiHistory];
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
@@ -2811,7 +2829,7 @@ function renderSettings(){
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pw-err').style.display='none';
-  const key=localStorage.getItem('ai_api_key')||'';
+  const key=_aiKey||'';
   const inp=document.getElementById('ai-api-key-input');
   const sts=document.getElementById('ai-key-status');
   if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
