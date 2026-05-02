@@ -37,6 +37,24 @@ a{color:var(--p);text-decoration:none}
 .scr.on{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
+
+/* ── SETTINGS ACCORDION ── */
+.acc-wrap{padding:10px 0 20px}
+.acc-item{background:var(--card);border-radius:14px;margin:0 12px 10px;box-shadow:var(--sh);overflow:hidden}
+.acc-hd{width:100%;display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;text-align:left;background:none;border:none;border-bottom:2px solid transparent;transition:background .15s;color:var(--txt)}
+.acc-item.open>.acc-hd{border-bottom-color:var(--bdr)}
+.acc-hd:active{background:rgba(0,0,0,.04)}
+.acc-ico{font-size:22px;width:32px;text-align:center;flex-shrink:0}
+.acc-ttl{flex:1;font-size:15px;font-weight:700}
+.acc-arrow{color:var(--sub);font-size:22px;font-style:normal;transition:transform .22s;flex-shrink:0;line-height:1}
+.acc-item.open>.acc-hd>.acc-arrow{transform:rotate(90deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+.acc-item.open>.acc-body{max-height:3000px;transition:max-height .5s cubic-bezier(.4,0,.2,1)}
+.acc-inner{padding:12px 0 4px}
+.acc-inner .setting-item{margin-bottom:8px}
+.acc-admin-wrap{display:none}
+.acc-section-label{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;padding:14px 24px 4px;text-transform:uppercase}
+
 /* ── HEADER ── */
 .hd{background:var(--p);color:#fff;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
 .hd-back{font-size:22px;padding:4px 8px 4px 0;opacity:.9}
@@ -498,12 +516,10 @@ a{color:var(--p);text-decoration:none}
       <div class="hd-sub" id="hd-sub">メディケアビレッジかしわじま</div>
     </div>
     <div class="hd-badge" id="hd-badge" style="display:none"></div>
-    <button onclick="showScr('scr-settings')" style="font-size:22px;color:#fff;opacity:.8">⚙</button>
   </header>
 
   <!-- ─── DASHBOARD ─── -->
   <div id="scr-dashboard" class="scr on">
-    <div id="backup-banner" style="display:none;margin:10px 12px 0;padding:10px 12px;border:1.5px solid;border-radius:10px;display:none;align-items:center;gap:10px;font-size:13px"></div>
     <div class="dash-date" id="dash-date"></div>
     <!-- Section 1: ステータス -->
     <div style="margin:4px 12px 0">
@@ -810,184 +826,246 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── SETTINGS ─── -->
   <div id="scr-settings" class="scr">
-    <div class="setting-group" id="access-control-group">
-      <h3>🔒 アクセス制限 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
-      <!-- 端末管理 -->
-      <div style="margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <span style="font-size:20px">📱</span>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:700">端末制限</div>
-            <div style="font-size:12px;color:var(--sub)">登録した端末からのみログインを許可</div>
+    <div class="acc-wrap">
+
+      <!-- ─── アカウント ─── -->
+      <div class="acc-item open" id="acc-account">
+        <button class="acc-hd" onclick="toggleAcc(this)">
+          <span class="acc-ico">👤</span>
+          <span class="acc-ttl">アカウント</span>
+          <i class="acc-arrow">›</i>
+        </button>
+        <div class="acc-body"><div class="acc-inner">
+          <div class="setting-item" style="margin-bottom:12px">
+            <span class="si-ico">👤</span>
+            <div class="si-body">
+              <div class="si-name" id="setting-user">──</div>
+              <div class="si-desc">ログイン日時: <span id="setting-login-time"></span></div>
+            </div>
+            <button onclick="logout()" style="background:var(--ng);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">ログアウト</button>
           </div>
-          <label class="toggle"><input type="checkbox" id="toggle-device" onchange="toggleDeviceRestriction(this.checked)"><span class="toggle-slider"></span></label>
-        </div>
-        <div id="device-list-wrap" style="background:#f8f9fb;border-radius:10px;padding:10px;display:none">
-          <div style="font-size:11px;color:var(--sub);margin-bottom:8px">※ この端末は自動登録されます。他の端末はログイン試行後に一覧に表示されます。</div>
-          <div id="device-list"></div>
-        </div>
+          <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔑 パスワード変更</div>
+          <input type="password" id="pw-cur" placeholder="現在のパスワード" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:var(--card);color:var(--txt)">
+          <input type="password" id="pw-new" placeholder="新しいパスワード（英数字6文字以上）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:var(--card);color:var(--txt)">
+          <input type="password" id="pw-new2" placeholder="新しいパスワード（確認）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:var(--card);color:var(--txt)">
+          <div id="pw-err" style="display:none;color:var(--ng);font-size:12px;margin-bottom:8px"></div>
+          <button onclick="changePassword()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">パスワードを変更する</button>
+        </div></div>
       </div>
-      <!-- Wi-Fi制限 -->
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <span style="font-size:20px">📶</span>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:700">Wi-Fi制限（IP制限）</div>
-            <div style="font-size:12px;color:var(--sub)">登録したネットワーク（IPアドレス）からのみログインを許可</div>
+
+      <!-- ─── 表示設定 ─── -->
+      <div class="acc-item" id="acc-display">
+        <button class="acc-hd" onclick="toggleAcc(this)">
+          <span class="acc-ico">🎨</span>
+          <span class="acc-ttl">表示設定</span>
+          <i class="acc-arrow">›</i>
+        </button>
+        <div class="acc-body"><div class="acc-inner">
+          <div class="setting-item" style="margin-bottom:8px">
+            <span class="si-ico">🌙</span>
+            <div class="si-body"><div class="si-name">ダークモード</div><div class="si-desc">夜間業務に優しい暗色テーマ</div></div>
+            <label class="toggle"><input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
           </div>
-          <label class="toggle"><input type="checkbox" id="toggle-wifi" onchange="toggleWifiRestriction(this.checked)"><span class="toggle-slider"></span></label>
-        </div>
-        <div id="wifi-setting-wrap" style="background:#f8f9fb;border-radius:10px;padding:10px;display:none">
-          <div style="font-size:12px;color:var(--sub);margin-bottom:8px">現在のIPアドレス: <span id="current-ip-display" style="font-weight:700;color:var(--p)">確認中…</span></div>
-          <div id="allowed-ip-list" style="margin-bottom:8px"></div>
-          <div style="display:flex;gap:8px">
-            <input type="text" id="new-ip-input" placeholder="例: 192.168.1." style="flex:1;padding:8px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#fff">
-            <button onclick="addAllowedIP()" style="padding:8px 12px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">追加</button>
+          <div class="setting-item">
+            <span class="si-ico">🔤</span>
+            <div class="si-body"><div class="si-name">文字サイズ</div></div>
+            <div style="display:flex;gap:6px">
+              <button id="fs-sm" onclick="setFontSize('sm')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">小</button>
+              <button id="fs-md" onclick="setFontSize('md')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">標準</button>
+              <button id="fs-lg" onclick="setFontSize('lg')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">大</button>
+            </div>
           </div>
-          <button onclick="addCurrentIP()" style="margin-top:8px;width:100%;padding:8px;background:#e8f0fb;color:var(--p);border-radius:7px;font-size:13px;font-weight:700">現在のIPを追加</button>
+        </div></div>
+      </div>
+
+      <!-- ─── 改善提案 ─── -->
+      <div class="acc-item">
+        <button class="acc-hd" onclick="toggleAcc(this)">
+          <span class="acc-ico">💡</span>
+          <span class="acc-ttl">改善提案</span>
+          <i class="acc-arrow">›</i>
+        </button>
+        <div class="acc-body"><div class="acc-inner">
+          <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">気づいたこと・使いにくいと感じたことを気軽に送ってください。管理者が確認します。</div>
+          <button onclick="openProposalForm()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を送る</button>
+        </div></div>
+      </div>
+
+      <!-- ─── 管理者専用 ─── -->
+      <div class="acc-admin-wrap" id="acc-admin-wrap">
+        <div class="acc-section-label">管理者専用</div>
+
+        <!-- セキュリティ -->
+        <div class="acc-item" id="acc-security">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">🔒</span>
+            <span class="acc-ttl">セキュリティ</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <!-- 端末制限 -->
+            <div style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <span style="font-size:20px">📱</span>
+                <div style="flex:1">
+                  <div style="font-size:14px;font-weight:700">端末制限</div>
+                  <div style="font-size:12px;color:var(--sub)">登録した端末からのみログインを許可</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="toggle-device" onchange="toggleDeviceRestriction(this.checked)"><span class="toggle-slider"></span></label>
+              </div>
+              <div id="device-list-wrap" style="background:var(--bg);border-radius:10px;padding:10px;display:none">
+                <div style="font-size:11px;color:var(--sub);margin-bottom:8px">※ この端末は自動登録されます。</div>
+                <div id="device-list"></div>
+              </div>
+            </div>
+            <!-- Wi-Fi制限 -->
+            <div style="margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <span style="font-size:20px">📶</span>
+                <div style="flex:1">
+                  <div style="font-size:14px;font-weight:700">Wi-Fi制限（IP制限）</div>
+                  <div style="font-size:12px;color:var(--sub)">登録したIPアドレスからのみログインを許可</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="toggle-wifi" onchange="toggleWifiRestriction(this.checked)"><span class="toggle-slider"></span></label>
+              </div>
+              <div id="wifi-setting-wrap" style="background:var(--bg);border-radius:10px;padding:10px;display:none">
+                <div style="font-size:12px;color:var(--sub);margin-bottom:8px">現在のIP: <span id="current-ip-display" style="font-weight:700;color:var(--p)">確認中…</span></div>
+                <div id="allowed-ip-list" style="margin-bottom:8px"></div>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="new-ip-input" placeholder="例: 192.168.1." style="flex:1;padding:8px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--card);color:var(--txt)">
+                  <button onclick="addAllowedIP()" style="padding:8px 12px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">追加</button>
+                </div>
+                <button onclick="addCurrentIP()" style="margin-top:8px;width:100%;padding:8px;background:#e8f0fb;color:var(--p);border-radius:7px;font-size:13px;font-weight:700">現在のIPを追加</button>
+              </div>
+            </div>
+            <!-- セッション管理 -->
+            <div class="setting-item" style="margin-bottom:8px">
+              <span class="si-ico">🔐</span>
+              <div class="si-body">
+                <div class="si-name">自動ロック（10分）</div>
+                <div class="si-desc">操作がない場合に自動でログアウト</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="toggle-autolock" checked onchange="toggleAutoLock(this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-item">
+              <span class="si-ico">🚪</span>
+              <div class="si-body">
+                <div class="si-name">ログアウト時に画面クリア</div>
+                <div class="si-desc">「戻る」ボタンで記録が閲覧されるのを防ぐ</div>
+              </div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+          </div></div>
         </div>
-      </div>
-    </div>
-    <div class="setting-group">
-      <h3>⏱ セッション管理</h3>
-      <div class="setting-item">
-        <span class="si-ico">🔐</span>
-        <div class="si-body">
-          <div class="si-name">自動ロック（10分）</div>
-          <div class="si-desc">10分間操作がない場合、自動でログアウトします。<br>8分経過時に警告を表示します。</div>
+
+        <!-- 職員・ログ管理 -->
+        <div class="acc-item" id="acc-staff">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">🛡</span>
+            <span class="acc-ttl">職員・ログ管理</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div id="admin-staff-list"></div>
+            <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
+              <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📋 操作ログ</div>
+              <button id="audit-log-btn" onclick="toggleAuditLog()" style="width:100%;padding:10px;background:var(--bg);color:var(--p);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--p)">▼ ログを表示</button>
+              <div id="audit-log-list" style="display:none;max-height:300px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;margin-top:8px;background:var(--card)"></div>
+            </div>
+            <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
+              <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📊 アカウント別履歴</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="hist-filter-bar">
+                <button class="hist-filter on" data-cat="all" onclick="setHistFilter(this,'all')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">すべて</button>
+                <button class="hist-filter" data-cat="login" onclick="setHistFilter(this,'login')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">ログイン</button>
+                <button class="hist-filter" data-cat="record" onclick="setHistFilter(this,'record')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">記録入力</button>
+                <button class="hist-filter" data-cat="handover" onclick="setHistFilter(this,'handover')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">申し送り</button>
+                <button class="hist-filter" data-cat="settings" onclick="setHistFilter(this,'settings')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">設定変更</button>
+              </div>
+              <div class="hist-wrap">
+                <div class="hist-tabs" id="hist-tab-list"></div>
+                <div class="hist-panel" id="hist-panel"></div>
+              </div>
+            </div>
+          </div></div>
         </div>
-        <label class="toggle"><input type="checkbox" id="toggle-autolock" checked onchange="toggleAutoLock(this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="setting-item">
-        <span class="si-ico">🚪</span>
-        <div class="si-body">
-          <div class="si-name">ログアウト時に画面クリア</div>
-          <div class="si-desc">ブラウザの「戻る」ボタンで記録が閲覧されるのを防ぎます。</div>
+
+        <!-- データ管理 -->
+        <div class="acc-item" id="acc-data">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">📊</span>
+            <span class="acc-ttl">データ管理</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 手動バックアップ</div>
+            <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px">バックアップをダウンロード（JSON）</button>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。毎日0時に自動バックアップが実行されています。</div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📊 CSVエクスポート</div>
+            <div style="display:flex;gap:8px;margin-bottom:6px">
+              <button onclick="exportResidentsCSV()" style="flex:1;padding:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #a5d6a7">👥 利用者一覧</button>
+              <button onclick="exportVitalsCSV()" style="flex:1;padding:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #90caf9">🌡 バイタル記録</button>
+            </div>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:16px">Excel・Numbersで開けるCSV形式</div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📥 利用者・職員 登録</div>
+            <div class="setting-item" onclick="showScr('scr-import')" style="cursor:pointer;margin-bottom:16px">
+              <span class="si-ico">📥</span>
+              <div class="si-body">
+                <div class="si-name">CSVインポート・手動入力</div>
+                <div class="si-desc">データの登録・管理</div>
+              </div>
+              <span style="font-size:18px;color:var(--sub)">›</span>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔄 デモリセット</div>
+            <div class="setting-item">
+              <span class="si-ico">🔄</span>
+              <div class="si-body">
+                <div class="si-name">デモデータをリセット</div>
+                <div class="si-desc">サンプルデータを初期状態に戻します</div>
+              </div>
+              <button onclick="resetDemo()" style="background:var(--bg);color:var(--sub);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;border:1px solid var(--bdr)">リセット</button>
+            </div>
+          </div></div>
         </div>
-        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-      </div>
-    </div>
-    <div class="setting-group">
-      <h3>🎨 表示設定</h3>
-      <div class="setting-item">
-        <span class="si-ico">🌙</span>
-        <div class="si-body"><div class="si-name">ダークモード</div><div class="si-desc">夜間業務に目に優しい暗色テーマ</div></div>
-        <label class="toggle"><input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="setting-item" style="align-items:center">
-        <span class="si-ico">🔤</span>
-        <div class="si-body"><div class="si-name">文字サイズ</div></div>
-        <div style="display:flex;gap:6px">
-          <button id="fs-sm" onclick="setFontSize('sm')" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">小</button>
-          <button id="fs-md" onclick="setFontSize('md')" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">標準</button>
-          <button id="fs-lg" onclick="setFontSize('lg')" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">大</button>
+
+        <!-- AI設定 -->
+        <div class="acc-item" id="acc-ai">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">🤖</span>
+            <span class="acc-ttl">AI FAQ設定（Groq）</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:10px">Groqの無料APIキーを入力するとAI FAQが使えます。<br><a href="https://console.groq.com" target="_blank" style="color:var(--p)">console.groq.com</a> でキーを取得してください。</div>
+            <input type="password" id="ai-api-key-input" placeholder="gsk_..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--txt);margin-bottom:8px">
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
+              <button onclick="clearAIKey()" style="padding:10px 14px;background:var(--bg);color:var(--ng);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--bdr)">削除</button>
+            </div>
+            <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
+          </div></div>
         </div>
-      </div>
-    </div>
-    <div class="setting-group">
-      <h3>👤 ログイン中</h3>
-      <div class="setting-item">
-        <span class="si-ico">👤</span>
-        <div class="si-body">
-          <div class="si-name" id="setting-user">──</div>
-          <div class="si-desc">ログイン日時: <span id="setting-login-time"></span></div>
+
+        <!-- 提案管理 -->
+        <div class="acc-item" id="acc-proposal">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">📋</span>
+            <span class="acc-ttl">提案管理</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="display:flex;gap:6px;margin-bottom:12px">
+              <button id="ptab-pending" onclick="switchProposalTab('pending')" style="flex:1;padding:8px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700">未審査 <span id="ptab-pending-cnt"></span></button>
+              <button id="ptab-approved" onclick="switchProposalTab('approved')" style="flex:1;padding:8px;background:var(--bg);color:var(--p);border-radius:8px;font-size:12px;font-weight:700;border:1px solid var(--bdr)">承認済</button>
+              <button id="ptab-rejected" onclick="switchProposalTab('rejected')" style="flex:1;padding:8px;background:var(--bg);color:var(--sub);border-radius:8px;font-size:12px;font-weight:700;border:1px solid var(--bdr)">却下</button>
+            </div>
+            <div id="proposal-list"></div>
+          </div></div>
         </div>
-        <button onclick="logout()" style="background:var(--ng);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">ログアウト</button>
-      </div>
-      <!-- パスワード変更 -->
-      <div style="padding:12px 0 4px">
-        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔑 パスワード変更</div>
-        <input type="password" id="pw-cur" placeholder="現在のパスワード" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
-        <input type="password" id="pw-new" placeholder="新しいパスワード（英数字6文字以上）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
-        <input type="password" id="pw-new2" placeholder="新しいパスワード（確認）" style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:15px;margin-bottom:8px;background:#fff">
-        <div id="pw-err" style="display:none;color:var(--ng);font-size:12px;margin-bottom:8px"></div>
-        <button onclick="changePassword()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">パスワードを変更する</button>
-      </div>
-    </div>
-    <div class="setting-group" id="admin-staff-group" style="display:none">
-      <h3>🛡 職員アカウント管理 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
-      <div id="admin-staff-list"></div>
-      <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📋 操作ログ</div>
-        <button id="audit-log-btn" onclick="toggleAuditLog()" style="width:100%;padding:10px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--p)">▼ ログを表示</button>
-        <div id="audit-log-list" style="display:none;max-height:300px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;margin-top:8px;background:#fff"></div>
-      </div>
-      <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 データバックアップ</div>
-        <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">バックアップをダウンロード</button>
-        <div style="font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6">利用者・記録・操作ログをJSONファイルで保存します。定期的な実施を推奨します。</div>
-      </div>
-    </div>
-    <div class="setting-group">
-      <h3>💡 アプリ改善提案</h3>
-      <div style="font-size:13px;color:var(--sub);margin-bottom:10px;line-height:1.6">気づいたこと・使いにくいと感じたことを気軽に送ってください。管理者が確認・審査します。</div>
-      <button onclick="openProposalForm()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を送る</button>
-    </div>
-    <div class="setting-group" id="history-admin-group" style="display:none">
-      <h3>📊 アカウント別履歴 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="hist-filter-bar">
-        <button class="hist-filter on" data-cat="all" onclick="setHistFilter(this,'all')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">すべて</button>
-        <button class="hist-filter" data-cat="login" onclick="setHistFilter(this,'login')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:#f3f4f6;color:var(--sub)">ログイン</button>
-        <button class="hist-filter" data-cat="record" onclick="setHistFilter(this,'record')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:#f3f4f6;color:var(--sub)">記録入力</button>
-        <button class="hist-filter" data-cat="handover" onclick="setHistFilter(this,'handover')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:#f3f4f6;color:var(--sub)">申し送り</button>
-        <button class="hist-filter" data-cat="settings" onclick="setHistFilter(this,'settings')" style="padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:#f3f4f6;color:var(--sub)">設定変更</button>
-      </div>
-      <div class="hist-wrap">
-        <div class="hist-tabs" id="hist-tab-list"></div>
-        <div class="hist-panel" id="hist-panel"></div>
-      </div>
-    </div>
-    <div class="setting-group" id="proposal-admin-group" style="display:none">
-      <h3>📋 改善提案 管理 <span style="font-size:11px;font-weight:400;color:var(--sub)">管理者専用</span></h3>
-      <div style="display:flex;gap:6px;margin-bottom:12px">
-        <button id="ptab-pending" onclick="switchProposalTab('pending')" style="flex:1;padding:8px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700">未審査 <span id="ptab-pending-cnt"></span></button>
-        <button id="ptab-approved" onclick="switchProposalTab('approved')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:12px;font-weight:700">承認済</button>
-        <button id="ptab-rejected" onclick="switchProposalTab('rejected')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--sub);border-radius:8px;font-size:12px;font-weight:700">却下</button>
-      </div>
-      <div id="proposal-list"></div>
-    </div>
-    <div class="setting-group">
-      <h3>📥 データ登録</h3>
-      <div class="setting-item" onclick="showScr('scr-import')" style="cursor:pointer">
-        <span class="si-ico">📥</span>
-        <div class="si-body">
-          <div class="si-name">利用者・職員 登録</div>
-          <div class="si-desc">CSVインポート・手動入力でデータを登録・管理</div>
-        </div>
-        <span style="font-size:18px;color:var(--sub)">›</span>
-      </div>
-    </div>
-    <div class="setting-group" id="ai-key-group" style="display:none">
-      <h3>🤖 AI FAQ 設定（Groq）</h3>
-      <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px">
-        <div style="font-size:12px;color:var(--sub);line-height:1.6">Groqの無料APIキーを入力すると使えます。<br><a href="https://console.groq.com" target="_blank" style="color:var(--p)">console.groq.com</a> でAPIキーを取得してください。</div>
-        <input type="password" id="ai-api-key-input" placeholder="gsk_..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
-        <div style="display:flex;gap:8px">
-          <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
-          <button onclick="clearAIKey()" style="padding:10px 14px;background:#f3f4f6;color:var(--ng);border-radius:8px;font-size:14px;font-weight:700">削除</button>
-        </div>
-        <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
-      </div>
-    </div>
-    <div class="setting-group" id="data-mgmt-group" style="display:none">
-      <h3>🗑 データ管理</h3>
-      <div style="margin-bottom:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📊 CSVエクスポート</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button onclick="exportResidentsCSV()" style="flex:1;padding:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #a5d6a7">👥 利用者一覧</button>
-          <button onclick="exportVitalsCSV()" style="flex:1;padding:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #90caf9">🌡 バイタル記録</button>
-        </div>
-        <div style="font-size:11px;color:var(--sub);margin-top:6px">Excel・Numbersで開けるCSV形式でダウンロード</div>
-      </div>
-      <div class="setting-item">
-        <span class="si-ico">🔄</span>
-        <div class="si-body">
-          <div class="si-name">デモデータをリセット</div>
-          <div class="si-desc">サンプルデータを初期状態に戻します。</div>
-        </div>
-        <button onclick="resetDemo()" style="background:#f3f4f6;color:var(--sub);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">リセット</button>
-      </div>
-    </div>
+
+      </div><!-- /acc-admin-wrap -->
+    </div><!-- /acc-wrap -->
+  </div>
+
   </div>
 
   <!-- MOBILE DRAWER -->
@@ -3165,28 +3243,15 @@ function renderSettings(){
   const sts=document.getElementById('ai-key-status');
   if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
   if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
-  const adminGrp=document.getElementById('admin-staff-group');
-  const accessGrp=document.getElementById('access-control-group');
-  const aiKeyGrp=document.getElementById('ai-key-group');
-  const dataMgmtGrp=document.getElementById('data-mgmt-group');
-  const proposalAdminGrp=document.getElementById('proposal-admin-group');
-  const histAdminGrp=document.getElementById('history-admin-group');
+  const adminWrap=document.getElementById('acc-admin-wrap');
   if(isAdmin()){
-    adminGrp.style.display='block';
-    if(accessGrp) accessGrp.style.display='block';
-    if(aiKeyGrp) aiKeyGrp.style.display='block';
-    if(dataMgmtGrp) dataMgmtGrp.style.display='block';
-    if(proposalAdminGrp){proposalAdminGrp.style.display='block';renderProposalList();}
-    if(histAdminGrp){histAdminGrp.style.display='block';renderHistoryViewer();}
+    if(adminWrap) adminWrap.style.display='block';
     renderAdminStaffList();
     renderAccessSettings();
+    renderProposalList();
+    renderHistoryViewer();
   } else {
-    adminGrp.style.display='none';
-    if(accessGrp) accessGrp.style.display='none';
-    if(aiKeyGrp) aiKeyGrp.style.display='none';
-    if(dataMgmtGrp) dataMgmtGrp.style.display='none';
-    if(proposalAdminGrp) proposalAdminGrp.style.display='none';
-    if(histAdminGrp) histAdminGrp.style.display='none';
+    if(adminWrap) adminWrap.style.display='none';
   }
 }
 function changePassword(){
@@ -3647,24 +3712,8 @@ function getBackupStatus(){
   const days=Math.floor((Date.now()-new Date(last).getTime())/(1000*60*60*24));
   return {days, urgent:days>=7, warn:days>=5, lastDate:new Date(last).toLocaleDateString('ja-JP')};
 }
-function renderBackupBanner(){
-  const el=document.getElementById('backup-banner');
-  if(!el||!isAdmin()) return;
-  const s=getBackupStatus();
-  if(s.urgent){
-    el.style.display='block';
-    el.style.background='#fff3e0';
-    el.style.borderColor='#FB8C00';
-    el.innerHTML=`<span style="font-size:16px">⚠️</span><div style="flex:1"><b>${s.days===null?'バックアップ未実施':'最終バックアップから'+s.days+'日経過'}</b><br><span style="font-size:11px;color:var(--sub)">週1回のバックアップを推奨します</span></div><button onclick="exportData()" style="background:#FB8C00;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap">今すぐ実行</button>`;
-  } else if(s.warn){
-    el.style.display='block';
-    el.style.background='#fffde7';
-    el.style.borderColor='#fbc02d';
-    el.innerHTML=`<span style="font-size:16px">📦</span><div style="flex:1"><b>最終バックアップ: ${s.lastDate}（${s.days}日前）</b><br><span style="font-size:11px;color:var(--sub)">もうすぐ1週間です</span></div><button onclick="exportData()" style="background:#fbc02d;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap">バックアップ</button>`;
-  } else {
-    el.style.display='none';
-  }
-}
+function renderBackupBanner(){}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
 
 // ═══════════ NAVIGATION ═══════════
 function showScr(id){
