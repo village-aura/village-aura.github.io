@@ -58,6 +58,11 @@ a{color:var(--p);text-decoration:none}
 #hd-menu{font-size:24px;color:#fff;opacity:.85;padding:4px 10px;line-height:1}
 @media(min-width:600px){#hd-menu{display:none!important}}
 
+/* ── DIARY TABS ── */
+.dtab{padding:10px 18px;font-size:12px;font-weight:700;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;background:none}
+.dtab.on{color:var(--p);border-bottom-color:var(--p)}
+.dtab:active{background:var(--ps)}
+
 /* ── HELP / MANUAL ── */
 #scr-help{padding-bottom:0}
 .man-section{margin:0 12px 12px;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
@@ -975,24 +980,30 @@ a{color:var(--p);text-decoration:none}
 
   <!-- DIARY SCREEN -->
   <div id="scr-diary" class="scr">
-    <div style="padding:16px 12px 8px;border-bottom:1px solid var(--bdr)">
-      <div style="font-size:18px;font-weight:800;margin-bottom:4px">📋 業務日誌</div>
-      <div style="font-size:12px;color:var(--sub)">日次記録・帳票出力</div>
+    <div style="padding:14px 12px 8px;border-bottom:1px solid var(--bdr)">
+      <div style="font-size:18px;font-weight:800;margin-bottom:2px">📋 業務日誌 / 帳票</div>
+      <div style="font-size:12px;color:var(--sub)">日次記録・帳票プレビュー・印刷</div>
     </div>
-    <div class="tab-bar">
-      <button class="tab on" id="diary-tab-visit" onclick="switchDiaryTab('visit')">訪問介護日報</button>
+    <!-- Service type tabs -->
+    <div style="display:flex;overflow-x:auto;border-bottom:2px solid var(--bdr);background:var(--card);-webkit-overflow-scrolling:touch">
+      <button id="dtab-sak"   class="dtab on"  onclick="setDiaryTab('sak')"   style="flex-shrink:0">🏠 サ高住</button>
+      <button id="dtab-shot"  class="dtab"     onclick="setDiaryTab('shot')"  style="flex-shrink:0">🏡 小多機</button>
+      <button id="dtab-day"   class="dtab"     onclick="setDiaryTab('day')"   style="flex-shrink:0">☀️ デイ</button>
+      <button id="dtab-visit" class="dtab"     onclick="setDiaryTab('visit')" style="flex-shrink:0">🚗 訪問介護</button>
     </div>
-    <div id="diary-visit-panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
-        <div style="display:flex;align-items:center;gap:6px">
-          <button onclick="changeDiaryDate(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
-          <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);min-width:130px;text-align:center"></span>
-          <button onclick="changeDiaryDate(1)" id="diary-date-next" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">▶</button>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button onclick="printVisitReport()" style="background:#e8f5e9;color:#388e3c;border:1.5px solid #388e3c;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;touch-action:manipulation">🖨 印刷</button>
-          <button onclick="openVisitReportModal()" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;touch-action:manipulation">＋ 追加</button>
-        </div>
+    <!-- Date navigation -->
+    <div style="display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
+      <button onclick="changeDiaryDate(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
+      <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);flex:1;text-align:center"></span>
+      <button onclick="changeDiaryDate(1)" id="diary-date-next" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">▶</button>
+    </div>
+    <!-- Report cards -->
+    <div id="diary-report-cards" style="padding:12px"></div>
+    <!-- Visit record input (visit tab only) -->
+    <div id="diary-visit-section" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--card);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)">
+        <div style="font-size:13px;font-weight:700">📝 訪問記録入力</div>
+        <button onclick="openVisitReportModal()" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;touch-action:manipulation">＋ 追加</button>
       </div>
       <div id="diary-visit-list" style="padding:10px 12px"></div>
     </div>
@@ -1051,6 +1062,16 @@ a{color:var(--p);text-decoration:none}
     <button class="btn-primary" onclick="saveVisitReport()">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-visit-report')">キャンセル</button>
   </div>
+</div>
+
+<!-- REPORT PREVIEW MODAL -->
+<div id="modal-report-preview" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column">
+  <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;flex-shrink:0">
+    <span id="rp-title" style="flex:1;font-size:14px;font-weight:700">帳票プレビュー</span>
+    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;touch-action:manipulation">🖨 印刷</button>
+    <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation">✕</button>
+  </div>
+  <iframe id="rp-iframe" style="flex:1;width:100%;border:none;background:#fff"></iframe>
 </div>
 
   <!-- PROPOSAL SCREEN -->
@@ -3670,6 +3691,27 @@ function deleteHandover(id){
 
 // ═══════════ 業務日誌 ═══════════
 let S_diary_offset=0;
+let S_diary_tab='sak';
+const DIARY_REPORTS={
+  sak:[
+    {id:'sak_gyomu', title:'業務日誌',       ico:'📋', desc:'スタッフ勤務・在籍状況・申し送り', fn:'genSakGyomu'},
+    {id:'sak_kojin', title:'個人記録（月次）', ico:'👤', desc:'バイタル・食事・排泄・体重（月次）', fn:'genKojinRecord', monthly:true},
+    {id:'sak_yakin', title:'夜間日誌',        ico:'🌙', desc:'夜間巡視・異常有無・引継ぎ', fn:'genYakin'},
+    {id:'sak_riyohyo',title:'曜日別利用票',   ico:'📅', desc:'曜日別サービス利用者名簿', fn:'genRiyohyo', monthlyOnly:true},
+  ],
+  shot:[
+    {id:'shot_gyomu', title:'業務日誌',        ico:'📋', desc:'スタッフ・来所/外出/宿泊・個別記録・申し送り', fn:'genShotGyomu'},
+    {id:'shot_kojin', title:'個別記録（月次）', ico:'👤', desc:'バイタル・食事・入浴・体重（月次）', fn:'genKojinRecord', monthly:true},
+  ],
+  day:[
+    {id:'day_gyomu',  title:'業務日誌',         ico:'📋', desc:'デイサービス利用者・バイタル・ケア記録', fn:'genDayGyomu'},
+    {id:'day_status', title:'デイ利用者状況',    ico:'📊', desc:'利用者別水分・体重・特記事項', fn:'genDayStatus'},
+  ],
+  visit:[
+    {id:'visit_gyomu',  title:'訪問介護 業務日報', ico:'📋', desc:'訪問員別業務・時間帯一覧', fn:'genVisitGyomu'},
+    {id:'visit_record', title:'訪問介護記録',      ico:'📝', desc:'利用者別月次訪問履歴', fn:'genVisitRecord', monthly:true},
+  ],
+};
 function getDiaryDate(off=S_diary_offset){const d=new Date();d.setDate(d.getDate()+off);return d;}
 function getDiaryDateStr(off=S_diary_offset){const d=getDiaryDate(off);return d.toISOString().slice(0,10);}
 function getVisitReports(){return ls('visit_reports')||{};}
@@ -3679,7 +3721,13 @@ function changeDiaryDate(delta){
   if(S_diary_offset>0)S_diary_offset=0;
   renderDiary();
 }
-function switchDiaryTab(tab){renderDiary();}
+function setDiaryTab(tab){
+  S_diary_tab=tab;
+  document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('on'));
+  const tb=document.getElementById('dtab-'+tab);
+  if(tb)tb.classList.add('on');
+  renderDiary();
+}
 function renderDiary(){
   const d=getDiaryDate();
   const WD=['日','月','火','水','木','金','土'];
@@ -3688,13 +3736,44 @@ function renderDiary(){
   if(lbl)lbl.textContent=label;
   const nxt=document.getElementById('diary-date-next');
   if(nxt){nxt.style.opacity=S_diary_offset===0?'.35':'1';nxt.style.pointerEvents=S_diary_offset===0?'none':'';}
+  const rpts=DIARY_REPORTS[S_diary_tab]||[];
+  const el=document.getElementById('diary-report-cards');
+  if(el)el.innerHTML=rpts.map(_renderReportCard).join('');
+  const vs=document.getElementById('diary-visit-section');
+  if(vs)vs.style.display=S_diary_tab==='visit'?'block':'none';
+  if(S_diary_tab==='visit')_renderVisitList();
+}
+function _renderReportCard(r){
+  let extras='';
+  if(r.monthly){
+    const ress=getResidents();
+    const resOpts=ress.map(res=>`<option value="${res.id}">${res.name}</option>`).join('');
+    const d=getDiaryDate();
+    const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    extras=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
+      <select id="rcard-res-${r.id}" style="flex:1;min-width:110px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px">${resOpts}</select>
+      <input type="month" id="rcard-ym-${r.id}" value="${ym}" style="flex:1;min-width:100px;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px">
+    </div>`;
+  }else if(r.monthlyOnly){
+    const d=getDiaryDate();
+    const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    extras=`<div style="margin-top:8px"><input type="month" id="rcard-ym-${r.id}" value="${ym}" style="width:100%;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px"></div>`;
+  }
+  return `<div style="background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--sh)">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:3px">${r.ico} ${r.title}</div>
+        <div style="font-size:11px;color:var(--sub)">${r.desc}</div>
+      </div>
+      <button onclick="previewReport('${r.id}')" style="background:var(--p);color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;white-space:nowrap;touch-action:manipulation;margin-left:8px;flex-shrink:0">👁 プレビュー</button>
+    </div>${extras}
+  </div>`;
+}
+function _renderVisitList(){
   const reports=(getVisitReports()[getDiaryDateStr()]||[]);
   const el=document.getElementById('diary-visit-list');
   if(!el)return;
-  if(!reports.length){
-    el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:24px 4px;text-align:center">この日の訪問記録はありません</div>';
-    return;
-  }
+  if(!reports.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:24px 4px;text-align:center">この日の訪問記録はありません</div>';return;}
   el.innerHTML=reports.map((r,idx)=>`
     <div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
@@ -3703,15 +3782,399 @@ function renderDiary(){
           <span style="font-size:11px;color:var(--sub);margin-left:8px">${r.timeFrom||''}〜${r.timeTo||''}</span>
         </div>
         <div style="display:flex;gap:4px">
-          <button onclick="openVisitReportModal(${idx})" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️</button>
-          <button onclick="deleteVisitReport(${idx})" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑</button>
+          <button onclick="openVisitReportModal(${idx})" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;touch-action:manipulation">✏️</button>
+          <button onclick="deleteVisitReport(${idx})" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;touch-action:manipulation">🗑</button>
         </div>
       </div>
       <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:3px">${r.service||''}</div>
       <div style="font-size:13px;line-height:1.5;margin-bottom:4px">${r.content||''}</div>
       <div style="font-size:11px;color:var(--sub)">担当：${r.staff||''}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
+}
+// ═══════════ REPORT PREVIEW ═══════════
+function previewReport(id){
+  let rdef=null;
+  for(const tab of Object.values(DIARY_REPORTS)){rdef=tab.find(r=>r.id===id);if(rdef)break;}
+  if(!rdef)return;
+  const d=getDiaryDate();
+  const dateStr=getDiaryDateStr();
+  let html='';
+  if(rdef.monthly){
+    const ymEl=document.getElementById('rcard-ym-'+id);
+    const ym=ymEl?ymEl.value:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const [yr,mo]=ym.split('-').map(Number);
+    const resEl=document.getElementById('rcard-res-'+id);
+    const rid=resEl?resEl.value:(getResidents()[0]||{}).id;
+    if(rdef.fn==='genKojinRecord')html=genKojinRecord(rid,yr,mo);
+    else if(rdef.fn==='genVisitRecord')html=genVisitRecord(rid,yr,mo);
+  }else if(rdef.monthlyOnly){
+    const ymEl=document.getElementById('rcard-ym-'+id);
+    const ym=ymEl?ymEl.value:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const [yr,mo]=ym.split('-').map(Number);
+    html=genRiyohyo(yr,mo);
+  }else{
+    const fnMap={genSakGyomu,genYakin,genShotGyomu,genDayGyomu,genDayStatus,genVisitGyomu};
+    const fn=fnMap[rdef.fn];
+    if(fn)html=fn(dateStr);
+  }
+  if(!html)return;
+  const modal=document.getElementById('modal-report-preview');
+  const iframe=document.getElementById('rp-iframe');
+  const title=document.getElementById('rp-title');
+  if(!modal||!iframe)return;
+  if(title)title.textContent=rdef.ico+' '+rdef.title;
+  iframe.srcdoc=html;
+  modal.style.display='flex';
+}
+function closeReportPreview(){
+  const m=document.getElementById('modal-report-preview');
+  if(m)m.style.display='none';
+}
+function printReportPreview(){
+  const f=document.getElementById('rp-iframe');
+  if(f&&f.contentWindow)f.contentWindow.print();
+}
+// ── helpers ──
+function _reiwa(y){return y-2018;}
+function _wd(d){return['日','月','火','水','木','金','土'][d.getDay()];}
+function _PCSS(){
+  return `@page{size:A4 portrait;margin:10mm 8mm}
+body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:11px;color:#111}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #555;padding:2px 4px;font-size:10px;vertical-align:middle}
+th{background:#e0e0e0;text-align:center;font-weight:bold}
+.hdr{display:flex;align-items:baseline;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:4px;gap:12px}
+.hdr-title{font-size:17px;font-weight:bold;flex:1;text-align:center}
+.hdr-date{font-size:11px;white-space:nowrap}
+.sec{font-size:12px;font-weight:bold;background:#d0d0d0;padding:3px 6px;margin:8px 0 3px;border-left:3px solid #555}
+.prbtn{position:fixed;bottom:15px;right:15px;padding:10px 22px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;z-index:99}
+@media print{.prbtn{display:none}}`;
+}
+// ── サ高住 業務日誌 ──
+function genSakGyomu(dateStr){
+  const d=new Date(dateStr);
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const residents=getResidents().filter(r=>r.services&&r.services.includes('resident'));
+  const records=getRecords().filter(r=>r.ts.startsWith(dateStr));
+  const attRecs=records.filter(r=>r.type==='attendance'&&r.data.service==='resident');
+  const chronos=records.filter(r=>r.type==='chrono');
+  const boardData=getBoardData();
+  const resRows=residents.map((r,i)=>{
+    const att=attRecs.find(a=>a.rid===r.id);
+    return `<tr><td style="text-align:center">${i+1}</td><td>${r.name}　様</td><td style="text-align:center">${r.room||'-'}</td><td style="text-align:center">${att?att.data.timeFrom||'':''}</td><td style="text-align:center">${att?att.data.timeTo||'':''}</td><td></td></tr>`;
+  }).join('');
+  const chronoRows=chronos.map(r=>{
+    const res=getResidents().find(re=>re.id===r.rid);
+    return `<tr><td style="text-align:center">${r.ts.slice(11,16)}</td><td>${res?res.name:''}</td><td>${(r.data.tags||[]).join(' ')}</td><td>${r.data.content||''}</td></tr>`;
+  }).join('')||`<tr><td colspan="4" style="text-align:center;color:#999">なし</td></tr>`;
+  const sakE=[...(boardData.sak?.entries||[]),...(boardData.nurse?.entries||[])];
+  const boardRows=sakE.map(e=>`<tr><td>${e._res||''}</td><td>${e.section||''}</td><td>${e.text||''}</td></tr>`).join('')||`<tr><td colspan="3" style="text-align:center;color:#999">なし</td></tr>`;
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>サ高住 業務日誌</title><style>${_PCSS()}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">サービス付き高齢者向け住宅　業務日誌</span><span class="hdr-date">担当：　　　　</span></div>
+<div class="sec">▌在籍状況</div>
+<table><thead><tr><th style="width:5%"></th><th style="width:23%">氏名</th><th style="width:10%">居室</th><th style="width:13%">入室時刻</th><th style="width:13%">退室時刻</th><th>備考</th></tr></thead><tbody>${resRows||'<tr><td colspan="6" style="text-align:center;color:#999">在籍記録なし</td></tr>'}</tbody></table>
+<div class="sec">▌特記・経時記録</div>
+<table><thead><tr><th style="width:10%">時刻</th><th style="width:18%">利用者</th><th style="width:15%">種別</th><th>内容</th></tr></thead><tbody>${chronoRows}</tbody></table>
+<div class="sec">▌申し送り事項</div>
+<table><thead><tr><th style="width:18%">利用者</th><th style="width:15%">区分</th><th>内容</th></tr></thead><tbody>${boardRows}</tbody></table>
+<div class="sec">▌業務備考</div><div style="border:1px solid #555;min-height:60px;padding:6px"></div>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── 個人記録（サ高住・小多機 共用） ──
+function genKojinRecord(rid,year,month){
+  const res=getResidents().find(r=>r.id===rid);
+  if(!res)return'<html><body>利用者が見つかりません</body></html>';
+  const allRecs=getRecords();
+  const daysInMonth=new Date(year,month,0).getDate();
+  const ry=_reiwa(year);
+  const dayData=[];
+  for(let day=1;day<=daysInMonth;day++){
+    const ds=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dr=allRecs.filter(r=>r.rid===rid&&r.ts.startsWith(ds));
+    const vitals=dr.filter(r=>r.type==='vital').sort((a,b)=>a.ts.localeCompare(b.ts));
+    const meals=dr.filter(r=>r.type==='meal');
+    const excs=dr.filter(r=>r.type==='excretion');
+    const weights=dr.filter(r=>r.type==='weight');
+    const bk=meals.find(m=>m.data.mtype==='breakfast');
+    const lk=meals.find(m=>m.data.mtype==='lunch');
+    const dk=meals.find(m=>m.data.mtype==='dinner');
+    const mv=vitals[0];
+    const stool=excs.some(e=>e.data.stool&&e.data.stool!=='×')?'○':(excs.length>0?'×':'');
+    const urineC=excs.filter(e=>e.data.urine||e.data.etype==='urine').length;
+    const totalFluid=(bk?.data?.fluid||0)+(lk?.data?.fluid||0)+(dk?.data?.fluid||0);
+    dayData.push({day,wd:_wd(new Date(year,month-1,day)),mv,bk,lk,dk,urineC,stool,fluid:totalFluid,weight:weights[0]?.data?.weight||''});
+  }
+  function mkTbl(days){
+    const thead=`<thead>
+      <tr>
+        <th rowspan="2" style="width:4%">日</th><th rowspan="2" style="width:4%">曜</th>
+        <th colspan="3" style="background:#ddeeff">午前バイタル</th>
+        <th colspan="3" style="background:#ddffd4">食事（割）</th>
+        <th style="background:#ffe8e8" rowspan="2" style="width:5%">尿回数</th>
+        <th style="background:#ffe8e8" rowspan="2" style="width:5%">便</th>
+        <th style="background:#ffe8e8" rowspan="2" style="width:7%">水分ml</th>
+        <th rowspan="2" style="width:6%">体重kg</th>
+        <th rowspan="2">特記</th>
+      </tr>
+      <tr>
+        <th style="background:#ddeeff;width:9%">血圧</th>
+        <th style="background:#ddeeff;width:5%">脈</th>
+        <th style="background:#ddeeff;width:5%">体温</th>
+        <th style="background:#ddffd4;width:4%">朝</th>
+        <th style="background:#ddffd4;width:4%">昼</th>
+        <th style="background:#ddffd4;width:4%">夕</th>
+      </tr></thead>`;
+    const rows=days.map(d=>{
+      const bp=d.mv?`${d.mv.data.sys||''}/${d.mv.data.dia||''}`:'';
+      const pulse=d.mv?d.mv.data.pulse||'':'';
+      const temp=d.mv?d.mv.data.temp||'':'';
+      const bg=d.wd==='日'?'background:#fff5f5':d.wd==='土'?'background:#f5f5ff':'';
+      return `<tr style="${bg}">
+        <td style="text-align:center;font-weight:700">${d.day}</td>
+        <td style="text-align:center;color:${d.wd==='日'?'#c00':d.wd==='土'?'#00c':''}">${d.wd}</td>
+        <td style="text-align:center">${bp}</td>
+        <td style="text-align:center">${pulse}</td>
+        <td style="text-align:center">${temp}</td>
+        <td style="text-align:center">${d.bk?d.bk.data.staple:''}</td>
+        <td style="text-align:center">${d.lk?d.lk.data.staple:''}</td>
+        <td style="text-align:center">${d.dk?d.dk.data.staple:''}</td>
+        <td style="text-align:center">${d.urineC||''}</td>
+        <td style="text-align:center">${d.stool}</td>
+        <td style="text-align:center">${d.fluid||''}</td>
+        <td style="text-align:center">${d.weight}</td>
+        <td style="min-height:14px"></td>
+      </tr>`;
+    }).join('');
+    return `<table>${thead}<tbody>${rows}</tbody></table>`;
+  }
+  const first=dayData.slice(0,15);
+  const second=dayData.slice(15);
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>個人記録 ${res.name}</title>
+<style>${_PCSS()}.pb{page-break-after:always}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${month}月（前半）</span><span class="hdr-title">個人記録</span><span class="hdr-date">${res.name}　様　${res.facility||''}</span></div>
+<div style="font-size:9px;color:#555;margin-bottom:4px">※食事：10割=全量 ／ 水分：ml合計 ／ 体重：kg</div>
+${mkTbl(first)}<div class="pb"></div>
+<div class="hdr"><span class="hdr-date">令和${ry}年${month}月（後半）</span><span class="hdr-title">個人記録</span><span class="hdr-date">${res.name}　様</span></div>
+${mkTbl(second)}
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── 夜間日誌 ──
+function genYakin(dateStr){
+  const d=new Date(dateStr);
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const nextDs=new Date(d.getTime()+86400000).toISOString().slice(0,10);
+  const allRecs=getRecords();
+  const residents=getResidents();
+  const nightRecs=allRecs.filter(r=>{
+    if(r.ts.startsWith(dateStr)){const h=parseInt(r.ts.slice(11,13));return h>=21;}
+    if(r.ts.startsWith(nextDs)){const h=parseInt(r.ts.slice(11,13));return h<8;}
+    return false;
+  }).sort((a,b)=>a.ts.localeCompare(b.ts));
+  const vitals=nightRecs.filter(r=>r.type==='vital');
+  const chronos=nightRecs.filter(r=>r.type==='chrono');
+  const patrolRows=['22:00','00:00','03:00','06:00'].map(pt=>`<tr><td style="text-align:center">${pt}</td><td style="height:18px"></td><td></td><td style="text-align:center">□</td></tr>`).join('');
+  const vRows=vitals.map(r=>{
+    const res=residents.find(re=>re.id===r.rid);
+    return `<tr><td style="text-align:center">${r.ts.slice(11,16)}</td><td>${res?res.name:''}様</td><td style="text-align:center">${r.data.sys||''}/${r.data.dia||''}</td><td style="text-align:center">${r.data.pulse||''}</td><td style="text-align:center">${r.data.temp||''}</td><td style="text-align:center">${r.data.spo2||''}</td><td>${r.data.note||''}</td></tr>`;
+  }).join('')||`<tr><td colspan="7" style="text-align:center;color:#999">なし</td></tr>`;
+  const cRows=chronos.map(r=>{
+    const res=residents.find(re=>re.id===r.rid);
+    return `<tr><td style="text-align:center">${r.ts.slice(11,16)}</td><td>${res?res.name:''}様</td><td>${(r.data.tags||[]).join(' ')}</td><td>${r.data.content||''}</td></tr>`;
+  }).join('')||`<tr><td colspan="4" style="text-align:center;color:#999">なし</td></tr>`;
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>夜間日誌</title><style>${_PCSS()}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）夜間〜翌朝</span><span class="hdr-title">夜間日誌</span><span class="hdr-date">担当：　　　　</span></div>
+<div class="sec">▌夜間巡視記録</div>
+<table><thead><tr><th style="width:13%">巡視時刻</th><th>特記事項</th><th style="width:18%">担当</th><th style="width:8%">確認</th></tr></thead><tbody>${patrolRows}</tbody></table>
+<div class="sec">▌夜間バイタル記録</div>
+<table><thead><tr><th style="width:9%">時刻</th><th style="width:18%">利用者</th><th style="width:12%">血圧</th><th style="width:7%">脈</th><th style="width:7%">体温</th><th style="width:8%">SpO2</th><th>特記</th></tr></thead><tbody>${vRows}</tbody></table>
+<div class="sec">▌夜間特記・経時記録</div>
+<table><thead><tr><th style="width:9%">時刻</th><th style="width:18%">利用者</th><th style="width:14%">種別</th><th>内容</th></tr></thead><tbody>${cRows}</tbody></table>
+<div class="sec">▌翌日への申し送り</div><div style="border:1px solid #555;min-height:80px;padding:6px"></div>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── 曜日別利用票 ──
+function genRiyohyo(year,month){
+  const ry=_reiwa(year);
+  const residents=getResidents();
+  const daysInMonth=new Date(year,month,0).getDate();
+  const byWd={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+  for(let day=1;day<=daysInMonth;day++)byWd[new Date(year,month-1,day).getDay()].push(day);
+  const WD=['日','月','火','水','木','金','土'];
+  let html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>曜日別利用票</title>
+<style>${_PCSS()}.wh{font-size:13px;font-weight:bold;background:#2d5e8e;color:#fff;padding:4px 10px;margin:10px 0 4px}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${month}月</span><span class="hdr-title">曜日別利用票</span></div>`;
+  for(let wd=1;wd<=6;wd++){
+    const days=byWd[wd];if(!days.length)continue;
+    const resRows=residents.map((r,i)=>`<tr>
+      <td style="text-align:center">${i+1}</td><td>${r.name}　様</td><td style="text-align:center">${r.room||''}</td>
+      <td style="text-align:center">${r.services?.includes('resident')?'○':''}</td>
+      <td style="text-align:center">${r.services?.includes('commute')?'○':''}</td>
+      <td style="text-align:center">${r.services?.includes('stay')?'○':''}</td>
+      <td style="text-align:center">${r.services?.includes('visit')?'○':''}</td>
+      <td></td></tr>`).join('');
+    html+=`<div class="wh">${WD[wd]}曜日（${days.map(d=>`${month}/${d}`).join('・')}）</div>
+<table><thead><tr><th style="width:5%"></th><th style="width:22%">氏名</th><th style="width:9%">居室</th><th style="width:9%">サ高住</th><th style="width:9%">デイ</th><th style="width:9%">小多機</th><th style="width:9%">訪問</th><th>備考</th></tr></thead><tbody>${resRows}</tbody></table>`;
+  }
+  html+=`<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+  return html;
+}
+// ── 小多機 業務日誌 ──
+function genShotGyomu(dateStr){
+  const d=new Date(dateStr);
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const residents=getResidents();
+  const records=getRecords().filter(r=>r.ts.startsWith(dateStr));
+  const boardData=getBoardData();
+  const attRecs=records.filter(r=>r.type==='attendance');
+  const commuteC=attRecs.filter(r=>r.data.service==='commute').length;
+  const visitC=attRecs.filter(r=>r.data.service==='visit').length;
+  const stayC=attRecs.filter(r=>r.data.service==='stay').length;
+  const vByR={};records.filter(r=>r.type==='vital').forEach(r=>{if(!vByR[r.rid])vByR[r.rid]=[];vByR[r.rid].push(r);});
+  const mByR={};records.filter(r=>r.type==='meal').forEach(r=>{if(!mByR[r.rid])mByR[r.rid]=[];mByR[r.rid].push(r);});
+  const resRows=residents.map((r,i)=>{
+    const mv=(vByR[r.id]||[])[0];
+    const ms=mByR[r.id]||[];
+    const bk=ms.find(m=>m.data.mtype==='breakfast');
+    const lk=ms.find(m=>m.data.mtype==='lunch');
+    const dk=ms.find(m=>m.data.mtype==='dinner');
+    const att=attRecs.find(a=>a.rid===r.id);
+    return `<tr><td style="text-align:center">${i+1}</td><td>${r.name}様</td>
+      <td style="text-align:center">${att?att.data.timeFrom||'':''}</td><td style="text-align:center">${att?att.data.timeTo||'':''}</td>
+      <td style="text-align:center">${mv?mv.data.sys+'/'+mv.data.dia:''}</td><td style="text-align:center">${mv?mv.data.pulse:''}</td><td style="text-align:center">${mv?mv.data.temp:''}</td>
+      <td style="text-align:center">${bk?bk.data.staple:''}</td><td style="text-align:center">${lk?lk.data.staple:''}</td><td style="text-align:center">${dk?dk.data.staple:''}</td><td></td></tr>`;
+  }).join('');
+  const cRows=records.filter(r=>r.type==='chrono').map(r=>{
+    const res=residents.find(re=>re.id===r.rid);
+    return `<tr><td style="text-align:center">${r.ts.slice(11,16)}</td><td>${res?res.name:''}</td><td>${(r.data.tags||[]).join(' ')}</td><td>${r.data.content||''}</td></tr>`;
+  }).join('')||`<tr><td colspan="4" style="text-align:center;color:#999">なし</td></tr>`;
+  const shotE=(boardData.shot?.entries||[]);
+  const bRows=shotE.map(e=>`<tr><td>${e._res||''}</td><td>${e.text||''}</td></tr>`).join('')||`<tr><td colspan="2" style="text-align:center;color:#999">なし</td></tr>`;
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>小多機 業務日誌</title><style>${_PCSS()}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">小規模多機能型居宅介護　業務日誌</span></div>
+<div style="display:flex;gap:20px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #ccc;font-size:11px">
+  <span>通い：<b>${commuteC}</b>名</span><span>訪問：<b>${visitC}</b>名</span><span>宿泊：<b>${stayC}</b>名</span>
+</div>
+<div class="sec">▌個別記録</div>
+<table><thead><tr><th style="width:4%"></th><th style="width:16%">氏名</th><th style="width:9%">来所</th><th style="width:9%">退所</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:6%">朝</th><th style="width:6%">昼</th><th style="width:6%">夕</th><th>特記</th></tr></thead><tbody>${resRows}</tbody></table>
+<div class="sec">▌経時記録</div>
+<table><thead><tr><th style="width:9%">時刻</th><th style="width:18%">利用者</th><th style="width:14%">種別</th><th>内容</th></tr></thead><tbody>${cRows}</tbody></table>
+<div class="sec">▌申し送り</div>
+<table><thead><tr><th style="width:20%">利用者</th><th>内容</th></tr></thead><tbody>${bRows}</tbody></table>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── デイ 業務日誌 ──
+function genDayGyomu(dateStr){
+  const d=new Date(dateStr);
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const residents=getResidents();
+  const records=getRecords().filter(r=>r.ts.startsWith(dateStr));
+  const boardData=getBoardData();
+  const attRecs=records.filter(r=>r.type==='attendance'&&r.data.service==='commute');
+  const dayRes=residents.filter(r=>attRecs.some(a=>a.rid===r.id));
+  const vByR={};records.filter(r=>r.type==='vital').forEach(r=>{if(!vByR[r.rid])vByR[r.rid]=[];vByR[r.rid].push(r);});
+  const mByR={};records.filter(r=>r.type==='meal').forEach(r=>{if(!mByR[r.rid])mByR[r.rid]=[];mByR[r.rid].push(r);});
+  const resRows=dayRes.length?dayRes.map((r,i)=>{
+    const mv=(vByR[r.id]||[])[0];
+    const lk=(mByR[r.id]||[]).find(m=>m.data.mtype==='lunch');
+    const att=attRecs.find(a=>a.rid===r.id);
+    return `<tr><td style="text-align:center">${i+1}</td><td>${r.name}様</td>
+      <td style="text-align:center">${att?att.data.timeFrom||'':''}</td><td style="text-align:center">${att?att.data.timeTo||'':''}</td>
+      <td style="text-align:center">${mv?mv.data.sys+'/'+mv.data.dia:''}</td><td style="text-align:center">${mv?mv.data.pulse:''}</td><td style="text-align:center">${mv?mv.data.temp:''}</td><td style="text-align:center">${mv?mv.data.spo2:''}</td>
+      <td style="text-align:center">${lk?lk.data.staple+'割':''}</td><td style="text-align:center">${lk?lk.data.fluid||'':''}</td><td></td></tr>`;
+  }).join(''):`<tr><td colspan="11" style="text-align:center;color:#999">来所記録なし</td></tr>`;
+  const dayE=(boardData.day?.entries||[]);
+  const bRows=dayE.map(e=>`<tr><td>${e._res||''}</td><td>${e.text||''}</td></tr>`).join('')||`<tr><td colspan="2" style="text-align:center;color:#999">なし</td></tr>`;
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>デイ 業務日誌</title><style>${_PCSS()}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">デイサービス　業務日誌</span><span class="hdr-date">利用者：<b>${dayRes.length}</b>名</span></div>
+<div class="sec">▌利用者記録</div>
+<table><thead><tr><th style="width:4%"></th><th style="width:17%">氏名</th><th style="width:9%">来所</th><th style="width:9%">退所</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:7%">SpO2</th><th style="width:6%">昼食</th><th style="width:7%">水分</th><th>特記</th></tr></thead><tbody>${resRows}</tbody></table>
+<div class="sec">▌申し送り</div>
+<table><thead><tr><th style="width:20%">利用者</th><th>内容</th></tr></thead><tbody>${bRows}</tbody></table>
+<div class="sec">▌業務備考</div><div style="border:1px solid #555;min-height:60px;padding:6px"></div>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── デイ利用者状況 ──
+function genDayStatus(dateStr){
+  const d=new Date(dateStr);
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const residents=getResidents().filter(r=>r.services&&r.services.includes('commute'));
+  const records=getRecords().filter(r=>r.ts.startsWith(dateStr));
+  const vByR={};records.filter(r=>r.type==='vital').forEach(r=>{if(!vByR[r.rid])vByR[r.rid]=[];vByR[r.rid].push(r);});
+  const mByR={};records.filter(r=>r.type==='meal').forEach(r=>{if(!mByR[r.rid])mByR[r.rid]=[];mByR[r.rid].push(r);});
+  const wByR={};records.filter(r=>r.type==='weight').forEach(r=>{wByR[r.rid]=r.data.weight||'';});
+  const blocks=residents.map((r,i)=>{
+    const mv=(vByR[r.id]||[])[0];
+    const ms=mByR[r.id]||[];
+    const lk=ms.find(m=>m.data.mtype==='lunch');
+    const fluid=ms.reduce((s,m)=>s+(m.data.fluid||0),0);
+    const w=wByR[r.id]||'';
+    return `<tr>
+      <td rowspan="3" style="text-align:center;vertical-align:middle;font-size:10px;font-weight:bold;background:#e8f0fb;width:15%">${r.name}様</td>
+      <td style="font-size:9px;background:#f0f0f0;width:12%">血圧/脈/体温</td>
+      <td style="text-align:center;width:13%">${mv?mv.data.sys+'/'+mv.data.dia:''}</td>
+      <td style="text-align:center;width:8%">${mv?mv.data.pulse:''}</td>
+      <td style="text-align:center;width:8%">${mv?mv.data.temp:''}</td>
+      <td style="text-align:center;width:8%">${mv?mv.data.spo2:''}</td>
+      <td colspan="2"></td></tr>
+    <tr>
+      <td style="font-size:9px;background:#f0f0f0">食事/水分/体重</td>
+      <td style="text-align:center">${lk?lk.data.staple+'割':''}</td>
+      <td colspan="2" style="text-align:center">${fluid?fluid+'ml':''}</td>
+      <td style="text-align:center">${w?w+'kg':''}</td>
+      <td colspan="2"></td></tr>
+    <tr>
+      <td style="font-size:9px;background:#f0f0f0">特記事項</td>
+      <td colspan="6" style="min-height:18px"></td></tr>`;
+  }).join('');
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>デイ利用者状況</title><style>${_PCSS()}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">デイサービス　利用者状況</span><span class="hdr-date">${residents.length}名</span></div>
+<table><thead><tr><th style="width:15%">氏名</th><th style="width:12%">項目</th><th>①</th><th>②</th><th>③</th><th>④</th><th style="width:18%">⑤</th><th>備考</th></tr></thead>
+<tbody>${blocks||'<tr><td colspan="8" style="text-align:center;color:#999">デイサービス利用者なし</td></tr>'}</tbody></table>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── 訪問介護 業務日報 ──
+function genVisitGyomu(dateStr){
+  const d=new Date(dateStr);
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const reports=(getVisitReports()[dateStr]||[]);
+  const rows=Array.from({length:27},(_,i)=>reports[i]||null);
+  const rowsHTML=rows.map((r,i)=>`<tr>
+    <td style="text-align:center">${i+1}</td>
+    <td>${r?r.resName+'　様':'　様'}</td>
+    <td style="text-align:center;font-size:10px;white-space:nowrap">${r?r.service||'':''}</td>
+    <td style="text-align:center;white-space:nowrap">${r?(r.timeFrom||'')+'〜'+(r.timeTo||''):'〜'}</td>
+    <td>${r?r.content||'':''}</td>
+    <td>${r?r.staff||'':''}</td></tr>`).join('');
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>業務日報（訪問介護）</title>
+<style>@page{size:A4 portrait;margin:12mm 10mm}body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:12px}
+.hd{display:flex;align-items:baseline;margin-bottom:10px}.hd-date{font-size:13px;white-space:nowrap}.hd-title{font-size:20px;font-weight:bold;margin:0 auto}
+table{width:100%;border-collapse:collapse}th{border:1px solid #333;padding:4px 5px;font-size:10px;background:#f5f5f5;text-align:center}td{border:1px solid #333;padding:2px 5px;font-size:11px;min-height:16px}
+@media print{.prbtn{display:none}}</style></head><body>
+<div class="hd"><span class="hd-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hd-title">業務日報（訪問介護）</span></div>
+<table><thead><tr><th style="width:4%"></th><th style="width:15%">ご利用者様</th><th style="width:13%">サービス種別</th><th style="width:13%">訪問時間</th><th style="width:44%">業務内容</th><th style="width:11%">担当</th></tr></thead>
+<tbody>${rowsHTML}<tr><td style="writing-mode:vertical-rl;text-align:center;padding:4px">備考</td><td colspan="5" style="height:70px;vertical-align:top"></td></tr></tbody></table>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
+}
+// ── 訪問介護記録（月次） ──
+function genVisitRecord(rid,year,month){
+  const res=getResidents().find(r=>r.id===rid);
+  if(!res)return'<html><body>利用者が見つかりません</body></html>';
+  const ry=_reiwa(year);
+  const monthStr=`${year}-${String(month).padStart(2,'0')}`;
+  const entries=[];
+  Object.entries(getVisitReports()).forEach(([ds,reps])=>{
+    if(ds.startsWith(monthStr))reps.forEach(r=>{if(r.rid===rid)entries.push({...r,date:ds});});
+  });
+  entries.sort((a,b)=>a.date.localeCompare(b.date));
+  const rows=entries.map(e=>{
+    const dObj=new Date(e.date);
+    return `<tr><td style="text-align:center">${month}/${dObj.getDate()}（${_wd(dObj)}）</td><td style="text-align:center;white-space:nowrap">${e.timeFrom||''}〜${e.timeTo||''}</td><td>${e.service||''}</td><td style="line-height:1.4">${e.content||''}</td><td style="text-align:center">${e.staff||''}</td></tr>`;
+  }).join('')||`<tr><td colspan="5" style="text-align:center;color:#999">記録なし</td></tr>`;
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>訪問介護記録 ${res.name}</title><style>${_PCSS()}</style></head><body>
+<div class="hdr"><span class="hdr-date">令和${ry}年${month}月</span><span class="hdr-title">訪問介護記録</span><span class="hdr-date">${res.name}　様</span></div>
+<table><thead><tr><th style="width:18%">日付</th><th style="width:18%">訪問時間</th><th style="width:18%">サービス種別</th><th>内容</th><th style="width:12%">担当</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="sec">▌担当者確認欄</div><div style="border:1px solid #555;min-height:40px;padding:6px"></div>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
 }
 function openVisitReportFromDetail(){
   openVisitReportModal(-1, S.currentRes);
@@ -3807,61 +4270,7 @@ function deleteVisitReport(idx){
   renderDiary();
   toast('削除しました');
 }
-function printVisitReport(){
-  const d=getDiaryDate();
-  const WD=['日','月','火','水','木','金','土'];
-  const reiwa=d.getFullYear()-2018;
-  const reports=(getVisitReports()[getDiaryDateStr()]||[]);
-  const rows=Array.from({length:27},(_,i)=>reports[i]||null);
-  const rowsHTML=rows.map((r,i)=>`<tr>
-    <td style="text-align:center;border:1px solid #333;padding:3px 4px;font-size:11px">${i+1}</td>
-    <td style="border:1px solid #333;padding:3px 6px;font-size:11px">${r?r.resName+'　様':'　様'}</td>
-    <td style="text-align:center;border:1px solid #333;padding:3px 4px;font-size:10px;white-space:nowrap">${r?r.service||'':''}</td>
-    <td style="text-align:center;border:1px solid #333;padding:3px 4px;font-size:11px;white-space:nowrap">${r?(r.timeFrom||'')+'〜'+(r.timeTo||''):'〜'}</td>
-    <td style="border:1px solid #333;padding:3px 6px;font-size:11px">${r?r.content||'':''}</td>
-    <td style="border:1px solid #333;padding:3px 6px;font-size:11px">${r?r.staff||'':''}</td>
-  </tr>`).join('');
-  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
-<title>業務日報（訪問介護）${reiwa}.${d.getMonth()+1}.${d.getDate()}</title>
-<style>
-@page{size:A4 portrait;margin:12mm 10mm}
-body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:12px}
-.hd{display:flex;align-items:baseline;margin-bottom:10px}
-.hd-date{font-size:13px;white-space:nowrap}
-.hd-title{font-size:20px;font-weight:bold;margin:0 auto}
-table{width:100%;border-collapse:collapse}
-th{border:1px solid #333;padding:4px 5px;font-size:10px;background:#f5f5f5;text-align:center}
-td{border:1px solid #333;padding:2px 5px;font-size:11px;min-height:16px}
-.biko td{height:70px;vertical-align:top}
-@media print{.no-print{display:none}}
-</style></head><body>
-<div class="hd">
-  <span class="hd-date">令和 ${reiwa} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日（${WD[d.getDay()]}）</span>
-  <span class="hd-title">業務日報　（訪問介護）</span>
-</div>
-<table>
-<thead><tr>
-  <th style="width:4%"></th>
-  <th style="width:15%">ご利用者様</th>
-  <th style="width:13%">サービスの種類</th>
-  <th style="width:13%">訪問時間</th>
-  <th style="width:44%">業務内容</th>
-  <th style="width:11%">担当</th>
-</tr></thead>
-<tbody>${rowsHTML}
-<tr class="biko">
-  <td style="writing-mode:vertical-rl;text-align:center;padding:4px">備考</td>
-  <td colspan="5" style="height:70px;vertical-align:top"></td>
-</tr>
-</tbody></table>
-<div class="no-print" style="text-align:right;margin-top:10px">
-  <button onclick="window.print()" style="padding:8px 20px;font-size:13px;cursor:pointer;background:#1565c0;color:#fff;border-radius:6px">🖨 印刷</button>
-</div>
-</body></html>`;
-  const win=window.open('','_blank');
-  win.document.write(html);
-  win.document.close();
-}
+function printVisitReport(){previewReport('visit_gyomu');}
 // ═══════════ VOICE INPUT ═══════════
 // ── VOICE SMART PARSER ──
 function startVoiceSmart(type){
