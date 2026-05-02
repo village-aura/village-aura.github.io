@@ -23,6 +23,9 @@
   --bg:#F0F2F5;--card:#fff;--txt:#1c2340;--sub:#6b7280;--bdr:#e2e5ea;
   --r:12px;--sh:0 2px 8px rgba(0,0,0,.08);
 }
+body.dark-mode{--bg:#1a1a2e;--card:#16213e;--txt:#e8eaf6;--sub:#9e9e9e;--bdr:#2d3748;--p:#7bafd4;--pd:#3a6a94;--ps:#1e3a5f}
+body.font-lg{font-size:18px}
+body.font-sm{font-size:13px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
@@ -450,7 +453,8 @@ a{color:var(--p);text-decoration:none}
       <label for="login-pass">パスワード</label>
       <input id="login-pass" type="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
       <div id="login-err" style="display:none;color:#ff8a80;font-size:12px;margin:-10px 0 12px;text-align:center;letter-spacing:.03em"></div>
-      <button class="btn-login" onclick="login()">ログイン</button>
+      <div id="login-lock-msg" style="display:none;background:rgba(229,57,53,.12);border:1px solid #ff8a80;border-radius:8px;padding:10px 12px;font-size:12px;color:#ff8a80;text-align:center;margin-bottom:12px;line-height:1.6"></div>
+      <button class="btn-login" id="btn-login" onclick="login()">ログイン</button>
     </div>
   </div>
 </div>
@@ -864,6 +868,23 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="setting-group">
+      <h3>🎨 表示設定</h3>
+      <div class="setting-item">
+        <span class="si-ico">🌙</span>
+        <div class="si-body"><div class="si-name">ダークモード</div><div class="si-desc">夜間業務に目に優しい暗色テーマ</div></div>
+        <label class="toggle"><input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-item" style="align-items:center">
+        <span class="si-ico">🔤</span>
+        <div class="si-body"><div class="si-name">文字サイズ</div></div>
+        <div style="display:flex;gap:6px">
+          <button id="fs-sm" onclick="setFontSize('sm')" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">小</button>
+          <button id="fs-md" onclick="setFontSize('md')" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">標準</button>
+          <button id="fs-lg" onclick="setFontSize('lg')" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">大</button>
+        </div>
+      </div>
+    </div>
+    <div class="setting-group">
       <h3>👤 ログイン中</h3>
       <div class="setting-item">
         <span class="si-ico">👤</span>
@@ -950,6 +971,14 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="setting-group" id="data-mgmt-group" style="display:none">
       <h3>🗑 データ管理</h3>
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📊 CSVエクスポート</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="exportResidentsCSV()" style="flex:1;padding:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #a5d6a7">👥 利用者一覧</button>
+          <button onclick="exportVitalsCSV()" style="flex:1;padding:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #90caf9">🌡 バイタル記録</button>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:6px">Excel・Numbersで開けるCSV形式でダウンロード</div>
+      </div>
       <div class="setting-item">
         <span class="si-ico">🔄</span>
         <div class="si-body">
@@ -2354,6 +2383,9 @@ let _aiKey='', _aiKeyUnsub=null;
   try{
     firebase.initializeApp(FB_CONFIG);
     db=firebase.firestore();
+    db.enablePersistence({synchronizeTabs:true}).catch(e=>{
+      if(e.code==='unimplemented') console.warn('Offline persistence not supported');
+    });
     await firebase.auth().signInAnonymously();
     fbReady=true;
   }catch(e){console.warn('Firebase unavailable:',e);}
@@ -2466,8 +2498,8 @@ async function login(){
   const inputId=document.getElementById('login-id').value.trim();
   const inputPass=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-err');
-  const btnEl=document.querySelector('.btn-login');
   errEl.style.display='none';
+  if(_checkLock()){_startLockTimer();return;}
   if(!inputId||!inputPass){
     errEl.textContent='職員IDとパスワードを入力してください';
     errEl.style.display='block';
@@ -2479,11 +2511,14 @@ async function login(){
     Object.keys(csEntries).find(k=>(getStaffSettings()[k]?.loginId||csEntries[k].loginId)===inputId);
   const staffInfo=STAFF_INFO[staffKey]||csEntries[staffKey];
   if(!staffKey||getStaffPass(staffKey)!==inputPass){
-    errEl.textContent='職員IDまたはパスワードが正しくありません';
+    const rem=_recordFail();
+    if(_checkLock()){_startLockTimer();return;}
+    errEl.textContent='職員IDまたはパスワードが正しくありません'+(rem>0?'（あと'+rem+'回失敗するとロックされます）':'');
     errEl.style.display='block';
     document.getElementById('login-pass').value='';
     return;
   }
+  _clearLock();
   if(isStaffDisabled(staffKey)){
     errEl.textContent='このアカウントは利用停止中です。管理者にお問い合わせください。';
     errEl.style.display='block';
@@ -2554,6 +2589,89 @@ function _doLogout(){
   _aiKey='';
 }
 
+// ═══════════ LOGIN LOCKOUT ═══════════
+const _LOCK_KEY='va_lock_until', _FAIL_KEY='va_login_fails', _MAX_FAILS=5, _LOCK_MIN=15;
+function _checkLock(){
+  const until=parseInt(localStorage.getItem(_LOCK_KEY)||'0');
+  if(until>Date.now()){const m=Math.ceil((until-Date.now())/60000);return m;}
+  return 0;
+}
+function _recordFail(){
+  if(parseInt(localStorage.getItem(_LOCK_KEY)||'0')>Date.now()) return;
+  const f=parseInt(localStorage.getItem(_FAIL_KEY)||'0')+1;
+  if(f>=_MAX_FAILS){localStorage.setItem(_LOCK_KEY,Date.now()+_LOCK_MIN*60000);localStorage.removeItem(_FAIL_KEY);}
+  else localStorage.setItem(_FAIL_KEY,f);
+  return _MAX_FAILS-f;
+}
+function _clearLock(){localStorage.removeItem(_LOCK_KEY);localStorage.removeItem(_FAIL_KEY);}
+function _startLockTimer(){
+  const msg=document.getElementById('login-lock-msg');
+  const btn=document.getElementById('btn-login');
+  const t=setInterval(()=>{
+    const m=_checkLock();
+    if(!m){clearInterval(t);msg.style.display='none';btn.disabled=false;btn.style.opacity='';return;}
+    msg.style.display='block';
+    msg.textContent='🔒 ログインを'+_MAX_FAILS+'回失敗しました。あと'+m+'分後に再試行できます。';
+    btn.disabled=true;btn.style.opacity='.5';
+  },10000);
+  // 即時実行
+  const m=_checkLock();
+  if(m){msg.style.display='block';msg.textContent='🔒 ログインを'+_MAX_FAILS+'回失敗しました。あと'+m+'分後に再試行できます。';btn.disabled=true;btn.style.opacity='.5';}
+}
+// ═══════════ DISPLAY PREFS ═══════════
+function toggleDarkMode(on){
+  document.body.classList.toggle('dark-mode',on);
+  localStorage.setItem('va_dark',on?'1':'0');
+}
+function setFontSize(sz){
+  document.body.classList.remove('font-sm','font-lg');
+  if(sz!=='md') document.body.classList.add('font-'+sz);
+  localStorage.setItem('va_font',sz);
+  ['sm','md','lg'].forEach(s=>{
+    const b=document.getElementById('fs-'+s);
+    if(!b)return;
+    const on=s===sz;
+    b.style.borderColor=on?'var(--p)':'var(--bdr)';
+    b.style.background=on?'var(--p)':'var(--bg)';
+    b.style.color=on?'#fff':'var(--sub)';
+  });
+}
+function initDisplayPrefs(){
+  const dark=localStorage.getItem('va_dark')==='1';
+  if(dark) document.body.classList.add('dark-mode');
+  const dmt=document.getElementById('dark-mode-toggle');
+  if(dmt) dmt.checked=dark;
+  setFontSize(localStorage.getItem('va_font')||'md');
+}
+// ═══════════ CSV EXPORT ═══════════
+function _csvDL(rows,fname){
+  const bom='﻿';
+  const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(bom+csv);
+  a.download=fname;a.click();
+}
+function exportResidentsCSV(){
+  const ress=getResidents();
+  if(!ress.length){toast('利用者データがありません');return;}
+  const rows=[['氏名','よみ','生年月日','性別','部屋','サービス','要介護度','主治医','入居日','緊急連絡先']];
+  ress.forEach(r=>rows.push([r.name,r.kana||'',r.dob||'',r.gender||'',r.room||'',r.service||'',r.careLevel||'',r.doctor||'',r.admitDate||'',r.emergencyContact||'']));
+  const d=new Date();
+  _csvDL(rows,'residents_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv');
+  toast('利用者一覧をCSVで出力しました ✓');
+}
+function exportVitalsCSV(){
+  const ress=getResidents();
+  if(!ress.length){toast('利用者データがありません');return;}
+  const rows=[['日付','氏名','体温','血圧（上）','血圧（下）','SpO2','脈拍','体重','記録者']];
+  ress.forEach(r=>{
+    const vitals=getVitalRecords(r.id)||[];
+    vitals.forEach(v=>rows.push([v.date||'',r.name,v.temp||'',v.bpH||'',v.bpL||'',v.spo2||'',v.pulse||'',v.weight||'',v.staff||'']));
+  });
+  const d=new Date();
+  _csvDL(rows,'vitals_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv');
+  toast('バイタル記録をCSVで出力しました ✓');
+}
 // ═══════════ AI KEY SYNC ═══════════
 function startAIKeySync(){
   if(!db)return;
@@ -2827,6 +2945,9 @@ function copyProposalPrompt(){
 function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
+  const dmt=document.getElementById('dark-mode-toggle');
+  if(dmt) dmt.checked=document.body.classList.contains('dark-mode');
+  setFontSize(localStorage.getItem('va_font')||'md');
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pw-err').style.display='none';
   const key=_aiKey||'';
@@ -6305,6 +6426,8 @@ link.rel='manifest';link.href=murl;document.head.appendChild(link);
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
+initDisplayPrefs();
+_startLockTimer();
 </script>
 </body>
 </html>
