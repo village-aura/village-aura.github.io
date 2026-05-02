@@ -122,7 +122,7 @@ a{color:var(--p);text-decoration:none}
 .alert-banner .txt b{display:block;font-size:14px;color:#E65100;font-weight:700}
 .alert-banner .txt span{font-size:12px;color:#BF360C}
 .alert-banner .arrow{color:#FB8C00;font-size:18px}
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px;margin-top:6px}
+.quick-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .quick-btn{border-radius:14px;padding:16px 14px;box-shadow:0 3px 12px rgba(0,0,0,.09);display:flex;flex-direction:column;align-items:flex-start;gap:6px;transition:transform .12s,box-shadow .12s;border:none;text-align:left;cursor:pointer}
 .quick-btn:active{transform:scale(.96);box-shadow:0 1px 6px rgba(0,0,0,.1)}
 .quick-btn .qi{font-size:30px;line-height:1}
@@ -399,7 +399,7 @@ a{color:var(--p);text-decoration:none}
   #scr-dashboard{max-width:1200px;margin:0 auto;padding:24px 24px 0}
   .dash-date{padding-left:0;padding-top:0}
   .alert-banner{margin-left:0;margin-right:0}
-  .quick-grid{padding:0;max-width:none}
+  .quick-grid{max-width:none}
   .recent-list{padding:0}
   /* resident list */
   #scr-residents{padding:0}
@@ -545,7 +545,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <!-- クイックアクセス -->
     <div class="sec-head">クイックアクセス</div>
-    <div class="quick-grid">
+    <div style="margin:0 12px 10px"><div class="quick-grid">
       <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr)">
         <span class="qi">👤</span>
         <div class="ql">利用者一覧</div>
@@ -566,7 +566,7 @@ a{color:var(--p);text-decoration:none}
         <div class="ql">業務日誌</div>
         <div class="qs" style="color:var(--sub)">施設単位記録</div>
       </button>
-    </div>
+    </div></div>
     <!-- アラート所見 -->
     <div id="dash-urgent-sec" style="display:none;margin:12px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">
       <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
