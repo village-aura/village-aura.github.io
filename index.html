@@ -521,13 +521,27 @@ a{color:var(--p);text-decoration:none}
     </div>
     <!-- 事業所から入力 -->
     <div class="sec-head">🏢 事業所から入力</div>
-    <div style="margin:0 12px 10px;background:linear-gradient(135deg,#1c2340,#2d5e8e);border-radius:14px;padding:12px 14px;box-shadow:0 4px 16px rgba(21,101,192,.2)">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
-        <button onclick="openSvcEntry('resident')" style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">🏠<br>サ高住</button>
-        <button onclick="openSvcEntry('stay')"     style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">🏡<br>小多機</button>
-        <button onclick="openSvcEntry('commute')"  style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">☀️<br>デイ</button>
-        <button onclick="openSvcEntry('visit')"    style="background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:700;touch-action:manipulation;line-height:1.6">🚗<br>訪問介護</button>
-      </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 10px">
+      <button onclick="openSvcEntry('resident')" style="background:var(--card);border:none;border-top:4px solid #3D7AB5;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
+        <div style="font-size:26px;margin-bottom:5px">🏠</div>
+        <div style="font-size:13px;font-weight:800;color:var(--txt)">サ高住</div>
+        <div style="font-size:10px;color:var(--sub);margin-top:2px">サービス付き高齢者住宅</div>
+      </button>
+      <button onclick="openSvcEntry('stay')" style="background:var(--card);border:none;border-top:4px solid #2e7d32;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
+        <div style="font-size:26px;margin-bottom:5px">🏡</div>
+        <div style="font-size:13px;font-weight:800;color:var(--txt)">小多機</div>
+        <div style="font-size:10px;color:var(--sub);margin-top:2px">小規模多機能型居宅介護</div>
+      </button>
+      <button onclick="openSvcEntry('commute')" style="background:var(--card);border:none;border-top:4px solid #e65100;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
+        <div style="font-size:26px;margin-bottom:5px">☀️</div>
+        <div style="font-size:13px;font-weight:800;color:var(--txt)">デイサービス</div>
+        <div style="font-size:10px;color:var(--sub);margin-top:2px">通所介護</div>
+      </button>
+      <button onclick="openSvcEntry('visit')" style="background:var(--card);border:none;border-top:4px solid #6a1b9a;border-radius:12px;padding:14px 8px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation;cursor:pointer;transition:transform .12s">
+        <div style="font-size:26px;margin-bottom:5px">🚗</div>
+        <div style="font-size:13px;font-weight:800;color:var(--txt)">訪問介護</div>
+        <div style="font-size:10px;color:var(--sub);margin-top:2px">在宅訪問サービス</div>
+      </button>
     </div>
     <!-- クイックアクセス -->
     <div class="sec-head">クイックアクセス</div>
