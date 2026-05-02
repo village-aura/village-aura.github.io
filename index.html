@@ -1082,6 +1082,23 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- TUTORIAL OVERLAY -->
+<div id="tutorial-overlay" style="display:none;position:fixed;inset:0;background:rgba(9,25,41,.97);z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:380px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:0">
+    <div id="tut-icon" style="font-size:64px;margin-bottom:16px;line-height:1"></div>
+    <div id="tut-title" style="font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.3"></div>
+    <div id="tut-body" style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.8;max-width:320px"></div>
+    <div id="tut-tip" style="margin-top:14px;background:rgba(61,122,181,.3);border:1px solid rgba(61,122,181,.5);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.85);text-align:left;width:100%;display:none"></div>
+  </div>
+  <div style="width:100%;max-width:380px;padding-bottom:env(safe-area-inset-bottom)">
+    <div id="tut-dots" style="display:flex;justify-content:center;gap:8px;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button id="tut-skip" onclick="skipTutorial()" style="flex:1;padding:13px;border-radius:12px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-size:14px;font-weight:600;border:none;cursor:pointer;touch-action:manipulation">スキップ</button>
+      <button id="tut-next" onclick="nextTutorialStep()" style="flex:2;padding:13px;border-radius:12px;background:var(--p);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">次へ　→</button>
+    </div>
+  </div>
+</div>
+
 <!-- REPORT PREVIEW MODAL -->
 <div id="modal-report-preview" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column">
   <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;flex-shrink:0">
@@ -1130,6 +1147,7 @@ a{color:var(--p);text-decoration:none}
         <button id="htab-chrono" onclick="showHelpTab('chrono')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📋<br>経時記録</button>
         <button id="htab-handover" onclick="showHelpTab('handover')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📣<br>申し送り</button>
         <button id="htab-schedule" onclick="showHelpTab('schedule')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📅<br>予定</button>
+        <button id="htab-diary" onclick="showHelpTab('diary')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📋<br>業務日誌</button>
         <button id="htab-settings" onclick="showHelpTab('settings')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">⚙️<br>設定</button>
         <button id="htab-faq" onclick="showHelpTab('faq')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">❓<br>Q&amp;A</button>
         <button id="htab-ai" onclick="showHelpTab('ai')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🤖<br>AI FAQ</button>
@@ -1170,6 +1188,12 @@ a{color:var(--p);text-decoration:none}
             <div style="font-size:12px;opacity:.7">最初に表示されるダッシュボード</div>
           </div>
           <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">🏢 事業所から入力（新機能）</div>
+            <div class="man-item">ダッシュボード上部の紺色カードから <b>サ高住・小多機・デイ・訪問介護</b> を選んでタップ</div>
+            <div class="man-item">選択した事業所の利用者一覧が開き、そのままサービスが選択済みの状態で記録入力できます</div>
+            <div class="man-item" style="background:#f0f9f6;border-radius:6px;padding:6px 10px;margin:4px 0">例：デイ出勤時 → 「☀️ デイ」タップ → 利用者選択 → バイタル・食事入力</div>
+          </div>
+          <div class="man-section">
             <div class="man-section-hd">バイタル未記録アラート</div>
             <div class="man-item">本日バイタルが未記録の利用者数を赤い数字で表示</div>
             <div class="man-item">タップすると対象の利用者一覧にジャンプします</div>
@@ -1180,8 +1204,8 @@ a{color:var(--p);text-decoration:none}
             <div class="man-item">🚨 赤 = 緊急　⚠️ オレンジ = 重要</div>
           </div>
           <div class="man-section">
-            <div class="man-section-hd">クイックリンク</div>
-            <div class="man-item">スケジュール・申し送りへのショートカットボタンがあります</div>
+            <div class="man-section-hd">クイックアクセス</div>
+            <div class="man-item">利用者一覧 / スケジュール / 申し送りボード / 業務日誌 へのショートカット</div>
           </div>
         </div>
 
@@ -1197,9 +1221,21 @@ a{color:var(--p);text-decoration:none}
             <div class="man-item">カードをタップ → <b>詳細画面</b>へ移動</div>
           </div>
           <div class="man-section">
-            <div class="man-section-hd">詳細画面の記録ボタン</div>
-            <div class="man-item">🌡️ バイタル　🍚 食事・飲水　💧 排泄　📋 経時記録　⚖️ 体重</div>
-            <div class="man-item">各ボタンをタップすると入力モーダルが開きます</div>
+            <div class="man-section-hd">今日のサービスを選択（新機能）</div>
+            <div class="man-item">詳細画面の「記録入力」エリアに <b>サ高住 / 小多機 / デイ / 訪問介護</b> のサービスボタンがあります</div>
+            <div class="man-item">今日利用するサービスをタップして選ぶと、そのサービス用の入力ボタンが表示されます</div>
+            <div class="man-item">登録済みサービスは濃く、未登録は薄く表示されます（タップは常時可能）</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">⚙ サービス設定（新機能）</div>
+            <div class="man-item">サービスボタン右端の <b>⚙</b> をタップ → 利用するサービスをチェックして保存</div>
+            <div class="man-item">小多機は「通い・泊まり・訪問」を包括するサービスです。デイサービスとは別に登録してください</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">記録ボタン（サービス別）</div>
+            <div class="man-item"><b>サ高住</b>：バイタル / 食事・飲水 / 排泄 / 経時記録 / 体重 / 申し送り</div>
+            <div class="man-item"><b>小多機・デイ</b>：上記＋来所/退所</div>
+            <div class="man-item"><b>訪問介護</b>：訪問介護記録 / 経時記録 / 申し送り</div>
           </div>
           <div class="man-section">
             <div class="man-section-hd">バイタルサマリー</div>
@@ -1208,7 +1244,7 @@ a{color:var(--p);text-decoration:none}
           </div>
           <div class="man-section">
             <div class="man-section-hd">フェイスシート</div>
-            <div class="man-item">「フェイスシート」ボタンで既往歴・緊急連絡先・担当医などを確認できます</div>
+            <div class="man-item">右上「📋 フェイスシート」ボタンで既往歴・緊急連絡先・担当医などを確認・編集できます</div>
           </div>
           <div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap">
             <button onclick="showHelpTab('vital')" style="font-size:12px;color:var(--p);background:#f0f4ff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer">🌡️ バイタル入力の詳細 →</button>
@@ -1329,6 +1365,37 @@ a{color:var(--p);text-decoration:none}
           <div class="man-section">
             <div class="man-section-hd">利用者個別の申し送り</div>
             <div class="man-item">利用者詳細 → 「申し送り」タブから個別に確認・追加できます</div>
+          </div>
+        </div>
+
+        <!-- diary (new) -->
+        <div id="hsec-diary" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#4a148c,#6a1b9a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">📋 業務日誌・帳票出力</div>
+            <div style="font-size:12px;opacity:.7">日次記録・帳票プレビュー・印刷</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">4つのサービスタブ</div>
+            <div class="man-item">🏠 サ高住　🏡 小多機　☀️ デイ　🚗 訪問介護 のタブを選択して帳票カードを表示</div>
+            <div class="man-item">日付ナビゲーターで対象日を選択できます（◀▶で前後の日へ）</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">帳票一覧</div>
+            <div class="man-item"><b>サ高住</b>：業務日誌 / 個人記録（月次）/ 夜間日誌 / 曜日別利用票</div>
+            <div class="man-item"><b>小多機</b>：業務日誌 / 個別記録（月次）</div>
+            <div class="man-item"><b>デイ</b>：業務日誌 / デイ利用者状況</div>
+            <div class="man-item"><b>訪問介護</b>：訪問介護業務日報 / 訪問介護記録（月次）</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">👁 プレビュー → 🖨 印刷</div>
+            <div class="man-item">各帳票カードの「👁 プレビュー」をタップするとA4フルスクリーンで表示されます</div>
+            <div class="man-item">月次帳票（個人記録・訪問介護記録）は利用者選択と月指定が必要です</div>
+            <div class="man-item">プレビュー画面の「🖨 印刷」ボタンから直接印刷・PDF保存ができます</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">訪問介護 入力リスト</div>
+            <div class="man-item">訪問介護タブ下部に当日の訪問記録一覧と「＋ 追加」ボタンがあります</div>
+            <div class="man-item">入力した記録は「訪問介護業務日報」帳票に自動的に反映されます</div>
           </div>
         </div>
 
@@ -2429,6 +2496,7 @@ async function login(){
   showScr('scr-dashboard');
   renderDashboard();
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+  setTimeout(showTutorial, 600);
 }
 function logout(){
   if(!confirm('ログアウトしますか？'))return;
@@ -2455,9 +2523,47 @@ const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システ
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
 let aiHistory=[];
 function initHelpScreen(){
+  showHelpTab('login');
   const key=localStorage.getItem('ai_api_key');
   const notice=document.getElementById('ai-key-notice');
   if(notice)notice.style.display=key?'none':'block';
+}
+// ═══════════ TUTORIAL ═══════════
+const TUT_STEPS=[
+  {ico:'🌟',title:'Village Aura へようこそ！',body:'介護記録・申し送り・帳票出力をスマホひとつで管理できます。\n初めての方向けに基本操作をご案内します。'},
+  {ico:'🏢',title:'2つの入力ルート',body:'① ホームの「事業所から入力」カードで担当事業所をタップ→利用者を選択\n② 利用者一覧から直接利用者を選択',tip:'デイ出勤時は「☀️ デイ」をタップすれば利用者一覧にすぐアクセスできます'},
+  {ico:'📋',title:'今日のサービスを選んで記録',body:'利用者詳細画面で「今日のサービス」を選択すると、そのサービス用の入力ボタンが表示されます。\n⚙ ボタンから利用サービスを登録・編集できます。',tip:'小多機は「通い・泊まり・訪問」を包括するサービスです'},
+  {ico:'📣',title:'2種類の申し送り',body:'・ボード申し送り：シフト間の当日引き継ぎ（申し送りボード）\n・カルテ申し送り：長期的な医療・ケア情報（利用者詳細）',tip:'利用者詳細 → 「今シフトの申し送り」で両方を一覧確認できます'},
+  {ico:'📊',title:'業務日誌・帳票出力',body:'業務日誌タブ（☰ メニュー内）から事業所ごとに帳票をプレビュー・印刷できます。\n入力した記録が自動的に帳票に反映されます。',tip:'個人記録・訪問介護記録は利用者選択と月指定が必要です'},
+  {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\nAI FAQにも質問できます（APIキー登録後）。'},
+];
+let S_tut_step=0;
+function showTutorial(){
+  if(localStorage.getItem('tutorial_done')==='1')return;
+  S_tut_step=0;
+  _renderTutStep();
+  document.getElementById('tutorial-overlay').style.display='flex';
+}
+function _renderTutStep(){
+  const s=TUT_STEPS[S_tut_step];
+  document.getElementById('tut-icon').textContent=s.ico;
+  document.getElementById('tut-title').textContent=s.title;
+  document.getElementById('tut-body').innerHTML=s.body.replace(/\n/g,'<br>');
+  const tip=document.getElementById('tut-tip');
+  if(s.tip){tip.textContent='💡 '+s.tip;tip.style.display='block';}else{tip.style.display='none';}
+  const dots=document.getElementById('tut-dots');
+  dots.innerHTML=TUT_STEPS.map((_,i)=>`<div style="width:${i===S_tut_step?'22px':'8px'};height:8px;border-radius:4px;background:${i===S_tut_step?'var(--p)':'rgba(255,255,255,.25)'};transition:all .3s"></div>`).join('');
+  const nxt=document.getElementById('tut-next');
+  const isLast=S_tut_step===TUT_STEPS.length-1;
+  nxt.textContent=isLast?'✓ はじめる':'次へ　→';
+}
+function nextTutorialStep(){
+  if(S_tut_step<TUT_STEPS.length-1){S_tut_step++;_renderTutStep();}
+  else{skipTutorial();}
+}
+function skipTutorial(){
+  localStorage.setItem('tutorial_done','1');
+  document.getElementById('tutorial-overlay').style.display='none';
 }
 function saveAIKey(){
   const val=document.getElementById('ai-api-key-input').value.trim();
