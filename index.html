@@ -843,6 +843,19 @@ a{color:var(--p);text-decoration:none}
     <button class="sch-fab" onclick="openSchAdd()">＋</button>
   </div>
 
+  <!-- ─── URGENT REC ─── -->
+  <div id="scr-urgent-rec" class="scr">
+    <div style="padding:14px 16px 0">
+      <div style="font-size:18px;font-weight:800;color:#e65100;margin-bottom:4px">⚠️ 重要・緊急記録</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:12px">申し送り・経時記録の重要以上を一覧表示</div>
+      <div style="display:flex;gap:8px;margin-bottom:0">
+        <button id="urtab-pending"   onclick="switchUrTab('pending')"   style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--p);color:#fff;border:none">未確認 <span id="urtab-cnt"></span></button>
+        <button id="urtab-confirmed" onclick="switchUrTab('confirmed')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--bg);color:var(--p);border:1.5px solid var(--p)">確認済み</button>
+      </div>
+    </div>
+    <div id="urgent-rec-list" style="padding:10px 12px 16px"></div>
+  </div>
+
   <!-- ─── VITAL ALERT ─── -->
   <div id="scr-vital-alert" class="scr">
     <div style="padding:14px 16px 8px">
@@ -3890,7 +3903,7 @@ function renderQuickActions(){
 }
 
 function quickRecord(type, label, ico){
-  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents','vital_alert':'scr-vital-alert','urgent_rec':'scr-handover-board'};
+  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents','vital_alert':'scr-vital-alert','urgent_rec':'scr-urgent-rec'};
   if(specialNav[type]){showScr(specialNav[type]);return;}
   const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
   const recentIds=getRecentResidents();
@@ -3948,7 +3961,7 @@ function showScr(id){
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
     'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
-    'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧'
+    'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -3972,6 +3985,7 @@ function showScr(id){
   if(id==='scr-help') initHelpScreen();
   if(id==='scr-proposal') renderProposalScr();
   if(id==='scr-vital-alert') renderVitalAlert();
+  if(id==='scr-urgent-rec') renderUrgentRec();
   window.scrollTo(0,0);
 }
 function goBack(){showScr(S.prevScreen||'scr-dashboard');}
@@ -3988,6 +4002,99 @@ function toggleSvcSheet(){const s=document.getElementById('svc-sheet');s.style.d
 function closeSvcSheet(){document.getElementById('svc-sheet').style.display='none';}
 
 // ═══════════ DASHBOARD ═══════════
+function getDoctorConfirmed(){return ls('doctor_confirmed')||{};}
+function saveDoctorConfirmed(d){lsSet('doctor_confirmed',d);}
+function confirmRecord(recId){
+  const d=getDoctorConfirmed();
+  d[recId]={ts:new Date().toISOString(),by:S.user};
+  saveDoctorConfirmed(d);
+  renderUrgentRec();
+  toast('確認済みにしました ✓');
+}
+let _urTab='pending';
+function switchUrTab(tab){
+  _urTab=tab;
+  const tabs=['pending','confirmed'];
+  tabs.forEach(t=>{
+    const btn=document.getElementById('urtab-'+t);
+    if(btn){btn.style.background=t===tab?'var(--p)':'var(--bg)';btn.style.color=t===tab?'#fff':'var(--p)';btn.style.border=t===tab?'none':'1.5px solid var(--p)';}
+  });
+  renderUrgentRec();
+}
+function renderUrgentRec(){
+  const listEl=document.getElementById('urgent-rec-list');
+  if(!listEl)return;
+  const priColor={urgent:'#c62828',important:'#e65100'};
+  const priLabel={urgent:'緊急',important:'重要'};
+  const typeLabel={handover:'申し送り',chrono:'経時記録'};
+  const residents=getResidents();
+  const confirmed=getDoctorConfirmed();
+  const allRecs=getRecords().filter(r=>(r.type==='handover'||r.type==='chrono')
+    &&(r.data.priority==='urgent'||r.data.priority==='important'))
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const pending=allRecs.filter(r=>!confirmed[r.id]);
+  const done=allRecs.filter(r=>!!confirmed[r.id]).sort((a,b)=>new Date(confirmed[b.id].ts)-new Date(confirmed[a.id].ts));
+  const cntEl=document.getElementById('urtab-cnt');
+  if(cntEl)cntEl.textContent=pending.length?'('+pending.length+')':'';
+  const todayStr=new Date().toDateString();
+  function fmtTs(tsStr){const t=new Date(tsStr);return t.toDateString()===todayStr?'今日 '+t.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):t.toLocaleDateString('ja-JP',{month:'short',day:'numeric'})+' '+t.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});}
+  function cardBase(r,extra){
+    const res=residents.find(x=>x.id===r.rid)||{name:'不明'};
+    const pc=priColor[r.data.priority]||'#555';
+    const pl=priLabel[r.data.priority]||'';
+    const tl=typeLabel[r.type]||r.type;
+    const body=(r.data.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return {res,pc,pl,tl,body};
+  }
+  if(_urTab==='pending'){
+    if(!pending.length){listEl.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub)"><div style="font-size:40px;margin-bottom:10px">✅</div><div style="font-size:15px;font-weight:700">未確認の重要記録はありません</div></div>';return;}
+    listEl.innerHTML=pending.map(r=>{
+      const {res,pc,pl,tl,body}=cardBase(r);
+      return '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid '+pc+'">'
+        +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">'
+          +'<span style="background:'+pc+';color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px">'+pl+'</span>'
+          +'<span style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);padding:1px 6px;border-radius:10px">'+tl+'</span>'
+          +'<b style="font-size:14px">'+res.name+'様</b>'
+          +'<span style="margin-left:auto;font-size:11px;color:var(--sub)">'+fmtTs(r.ts)+'</span>'
+        +'</div>'
+        +'<div style="font-size:13px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap">'+body+'</div>'
+        +'<div style="display:flex;gap:8px">'
+          +'<button onclick="openResident(\''+r.rid+'\')" style="flex:1;padding:8px;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:8px;font-size:12px;font-weight:700">利用者を開く</button>'
+          +'<button onclick="confirmRecord(\''+r.id+'\')" style="flex:1;padding:8px;background:#2e7d32;color:#fff;border-radius:8px;font-size:12px;font-weight:700">✓ 確認済みにする</button>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+  } else {
+    if(!done.length){listEl.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub)"><div style="font-size:30px;margin-bottom:10px">📋</div><div>確認済みの記録はまだありません</div></div>';return;}
+    // 確認日付でグループ化
+    const groups={};
+    done.forEach(r=>{
+      const dk=new Date(confirmed[r.id].ts).toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+      if(!groups[dk])groups[dk]=[];
+      groups[dk].push(r);
+    });
+    let html='';
+    Object.entries(groups).forEach(([dk,items])=>{
+      html+='<div style="font-size:12px;font-weight:700;color:var(--sub);padding:10px 0 4px;border-bottom:2px solid var(--bdr);margin-bottom:8px;letter-spacing:.04em">'+dk+'</div>';
+      items.forEach(r=>{
+        const {res,pc,pl,tl,body}=cardBase(r);
+        const confTs=new Date(confirmed[r.id].ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+        const recTs=new Date(r.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+        html+='<div onclick="openResident(\''+r.rid+'\')" style="background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;opacity:.75;border-left:3px solid #ccc">'
+          +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px">'
+            +'<span style="color:#2e7d32;font-size:13px;font-weight:700">✓</span>'
+            +'<span style="background:'+pc+';color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:10px">'+pl+'</span>'
+            +'<span style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);padding:1px 5px;border-radius:8px">'+tl+'</span>'
+            +'<b style="font-size:13px">'+res.name+'様</b>'
+            +'<span style="margin-left:auto;font-size:10px;color:var(--sub)">記録 '+recTs+' / 確認 '+confTs+'</span>'
+          +'</div>'
+          +'<div style="font-size:12px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+body.substring(0,60)+(body.length>60?'…':'')+'</div>'
+        +'</div>';
+      });
+    });
+    listEl.innerHTML=html;
+  }
+}
 function renderVitalAlert(){
   const listEl=document.getElementById('vital-alert-list');
   if(!listEl)return;
