@@ -4340,10 +4340,23 @@ function vSpan(key,val){
   const ng=vAbnormal(key,val);
   return ng?`<span style="color:var(--ng);font-weight:700">${val}</span>`:(val||'?');
 }
+function vitalChips(r){
+  const d=r.data,rid=r.rid;
+  function chip(lbl,val,key){
+    const abn=vAbnormal(key,parseFloat(val),rid);
+    return '<span style="font-size:11px;font-weight:700;border-radius:4px;padding:2px 6px;background:'+(abn?'#fde8e8':'#f0f4f6')+';color:'+(abn?'#c62828':'#374151')+'">'+lbl+' <b>'+(val||'─')+'</b></span>';
+  }
+  return '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">'
+    +chip('BP',(d.sys&&d.dia)?d.sys+'/'+d.dia:'─','sys')
+    +chip('P',d.pulse||'─','pulse')
+    +chip('T',d.temp?d.temp+'℃':'─','temp')
+    +chip('SpO2',d.spo2?d.spo2+'%':'─','spo2')
+    +'</div>';
+}
 function summarizeRecord(r){
   if(r.type==='vital'){
     const d=r.data;
-    return `BP:${vSpan('sys',d.sys)}/${vSpan('dia',d.dia)} P:${vSpan('pulse',d.pulse)} T:${vSpan('temp',d.temp)}℃ SpO2:${vSpan('spo2',d.spo2)}%`;
+    return 'BP:'+(d.sys&&d.dia?d.sys+'/'+d.dia:'─')+' P:'+(d.pulse||'─')+' T:'+(d.temp?d.temp+'℃':'─')+' SpO2:'+(d.spo2?d.spo2+'%':'─');
   }
   if(r.type==='meal')return `${mealLabel(r.data.mtype)} 主:${r.data.staple}割 水:${r.data.fluid||0}ml`;
   if(r.type==='excretion')return `${r.data.etype==='urine'?'排尿':r.data.etype==='stool'?'排便':'排尿+排便'}`;
@@ -4662,7 +4675,7 @@ function renderTimeline(){
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
-        <div class="tl-val">${summarizeRecord(r)}</div>
+        ${r.type==='vital'?vitalChips(r):`<div class="tl-val">${summarizeRecord(r)}</div>`}
         ${r.data.note||r.data.content?`<div class="tl-note">${(r.data.note||r.data.content||'').substring(0,60)}</div>`:''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
         <div class="tl-staff">${badge}${staffName}</div>
