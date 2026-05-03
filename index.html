@@ -3763,8 +3763,8 @@ function getRoleQuickActions(){
   ];
   if(role==='home_care')return[
     {type:'facesheet',label:'フェイスシート',sub:'利用者情報', ico:'📋', color:'#1565c0'},
-    {type:'handover', label:'申し送り確認', sub:'ボード閲覧', ico:'📣', color:'#00796b'},
-    {type:'schedule', label:'スケジュール',  sub:'来訪・予定', ico:'📅', color:'#6a1b9a'},
+    {type:'diary',    label:'業務日誌',     sub:'日報・記録', ico:'📔', color:'#c0392b'},
+    {type:'schedule', label:'スケジュール',  sub:'予定・入力', ico:'📅', color:'#6a1b9a'},
   ];
   return[
     {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
@@ -3861,9 +3861,10 @@ function renderHomeCareView(){
       +'<span style="color:var(--sub);font-size:22px;flex-shrink:0">›</span>'
       +'</div>';
   }).join('');
-  wrap.innerHTML='<div style="margin:0 12px 10px;display:flex;gap:8px">'
-    +'<button onclick="showScr(\'scr-handover-board\')" style="flex:1;padding:13px;background:var(--card);border-radius:12px;font-size:13px;font-weight:800;color:#00796b;border:2px solid #00796b;box-shadow:var(--sh)">📣 申し送りボード</button>'
-    +'<button onclick="showScr(\'scr-schedule\')" style="flex:1;padding:13px;background:var(--card);border-radius:12px;font-size:13px;font-weight:800;color:#6a1b9a;border:2px solid #6a1b9a;box-shadow:var(--sh)">📅 スケジュール</button>'
+  wrap.innerHTML='<div style="margin:0 12px 10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
+    +'<button onclick="showScr(\'scr-handover-board\')" style="padding:11px 4px;background:var(--card);border-radius:12px;font-size:12px;font-weight:800;color:#00796b;border:2px solid #00796b;box-shadow:var(--sh)">📣<br>申し送り</button>'
+    +'<button onclick="showScr(\'scr-schedule\')" style="padding:11px 4px;background:var(--card);border-radius:12px;font-size:12px;font-weight:800;color:#6a1b9a;border:2px solid #6a1b9a;box-shadow:var(--sh)">📅<br>スケジュール</button>'
+    +'<button onclick="showScr(\'scr-diary\')" style="padding:11px 4px;background:var(--card);border-radius:12px;font-size:12px;font-weight:800;color:#c0392b;border:2px solid #c0392b;box-shadow:var(--sh)">📔<br>業務日誌</button>'
     +'</div>'
     +'<div class="sec-head">👤 利用者情報</div>'
     +'<div style="padding:0 12px 8px">'+cards+'</div>';
