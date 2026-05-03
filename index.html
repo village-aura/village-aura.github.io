@@ -4342,15 +4342,18 @@ function vSpan(key,val){
 }
 function vitalChips(r){
   const d=r.data,rid=r.rid;
-  function chip(lbl,val,key){
-    const abn=vAbnormal(key,parseFloat(val),rid);
-    return '<span style="font-size:11px;font-weight:700;border-radius:4px;padding:2px 6px;background:'+(abn?'#fde8e8':'#f0f4f6')+';color:'+(abn?'#c62828':'#374151')+'">'+lbl+' <b>'+(val||'─')+'</b></span>';
+  const bpAbn=vAbnormal('sys',d.sys,rid)||vAbnormal('dia',d.dia,rid);
+  const pAbn=vAbnormal('pulse',d.pulse,rid);
+  const tAbn=vAbnormal('temp',d.temp,rid);
+  const sAbn=vAbnormal('spo2',d.spo2,rid);
+  function chip(lbl,txt,abn){
+    return '<span style="font-size:11px;font-weight:700;border-radius:4px;padding:2px 6px;white-space:nowrap;background:'+(abn?'#fde8e8':'#f0f4f6')+';color:'+(abn?'#c62828':'#374151')+'">'+lbl+'<b>'+txt+'</b></span>';
   }
   return '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">'
-    +chip('BP',(d.sys&&d.dia)?d.sys+'/'+d.dia:'─','sys')
-    +chip('P',d.pulse||'─','pulse')
-    +chip('T',d.temp?d.temp+'℃':'─','temp')
-    +chip('SpO2',d.spo2?d.spo2+'%':'─','spo2')
+    +chip('BP ',(d.sys&&d.dia)?d.sys+'/'+d.dia:'─',bpAbn)
+    +chip('P ',d.pulse||'─',pAbn)
+    +chip('T ',d.temp?d.temp+'℃':'─',tAbn)
+    +chip('SpO2 ',d.spo2?d.spo2+'%':'─',sAbn)
     +'</div>';
 }
 function summarizeRecord(r){
