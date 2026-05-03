@@ -4394,6 +4394,7 @@ function renderDetail(){
     <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5;flex-wrap:wrap;justify-content:flex-end">
       <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📅 予定</button>
       <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📋 フェイスシート</button>
+      ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}')" style="background:rgba(255,255,255,.9);color:#c62828;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:800">📝 医師指示入力</button>`:''}
       <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">✏️ 編集</button>
       <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
     </div>
@@ -5383,23 +5384,45 @@ function printVisitReport(){previewReport('visit_gyomu');}
 function startVoiceSmart(type){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){toast('このブラウザは音声入力に対応していません');return;}
   const btn=document.getElementById('vs-btn-'+type);
-  if(recognition){stopVoice();if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}return;}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recognition=new SR();
-  recognition.lang='ja-JP';recognition.continuous=false;recognition.interimResults=true;
+  if(_voiceActive){
+    stopVoice();  // _voiceActive=false → onend が applyVoiceParsed を呼ぶ
+    return;
+  }
+  _voiceActive=true;
+  let finalText='';let accum='';
   if(btn){btn.classList.add('recording');btn.textContent='🔴 認識中… もう一度タップで停止';}
-  let finalText='';
-  recognition.onresult=e=>{
-    finalText=[...e.results].map(r=>r[0].transcript).join('');
-    if(btn)btn.textContent='🔴「'+finalText+'」';
-  };
-  recognition.onerror=()=>{stopVoice();if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}toast('音声認識エラー');};
-  recognition.onend=()=>{
-    recognition=null;
-    if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
-    if(finalText)applyVoiceParsed(type,finalText);
-  };
-  recognition.start();
+  function doStart(){
+    if(!_voiceActive){
+      if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
+      if(finalText)applyVoiceParsed(type,finalText);
+      return;
+    }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();
+    recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+    recognition.onresult=e=>{
+      const cur=[...e.results].map(r=>r[0].transcript).join('');
+      finalText=accum+cur;
+      if(btn)btn.textContent='🔴「'+finalText+'」';
+    };
+    recognition.onerror=ev=>{
+      recognition=null;
+      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,200);return;}
+      _voiceActive=false;
+      if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
+      if(ev.error!=='aborted')toast('音声認識エラー');
+    };
+    recognition.onend=()=>{
+      recognition=null;
+      if(_voiceActive){accum=finalText;setTimeout(doStart,200);}
+      else{
+        if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
+        if(finalText)applyVoiceParsed(type,finalText);
+      }
+    };
+    recognition.start();
+  }
+  doStart();
 }
 function parseVitalFromText(t){
   const r={};
@@ -5471,24 +5494,40 @@ function applyVoiceParsed(type,text){
 }
 
 let recognition=null;
+let _voiceActive=false;
 function startVoice(targetId,btn){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     toast('このブラウザは音声入力に対応していません');return;
   }
-  if(recognition){stopVoice();btn.classList.remove('recording');btn.textContent='🎤 音声入力';return;}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recognition=new SR();
-  recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+  if(_voiceActive){stopVoice();btn.classList.remove('recording');btn.textContent='🎤 音声入力';return;}
+  _voiceActive=true;
+  let accum='';
   btn.classList.add('recording');btn.textContent='🔴 録音中（タップで停止）';
-  recognition.onresult=e=>{
-    const t=[...e.results].map(r=>r[0].transcript).join('');
-    document.getElementById(targetId).value=t;
-  };
-  recognition.onerror=()=>{stopVoice();btn.classList.remove('recording');btn.textContent='🎤 音声入力';};
-  recognition.onend=()=>{recognition=null;btn.classList.remove('recording');btn.textContent='🎤 音声入力';};
-  recognition.start();
+  function doStart(){
+    if(!_voiceActive){btn.classList.remove('recording');btn.textContent='🎤 音声入力';return;}
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();
+    recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+    recognition.onresult=e=>{
+      const t=[...e.results].map(r=>r[0].transcript).join('');
+      const el=document.getElementById(targetId);if(el)el.value=accum+t;
+    };
+    recognition.onerror=ev=>{
+      recognition=null;
+      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,200);return;}
+      _voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤 音声入力';
+      if(ev.error!=='aborted')toast('音声認識エラー');
+    };
+    recognition.onend=()=>{
+      recognition=null;
+      if(_voiceActive){const el=document.getElementById(targetId);if(el)accum=el.value;setTimeout(doStart,200);}
+      else{btn.classList.remove('recording');btn.textContent='🎤 音声入力';}
+    };
+    recognition.start();
+  }
+  doStart();
 }
-function stopVoice(){if(recognition){recognition.stop();recognition=null;}}
+function stopVoice(){_voiceActive=false;if(recognition){recognition.stop();recognition=null;}}
 function toggleTag(el){el.classList.toggle('on');}
 function selectCatBtn(btn, selectId){
   btn.closest('.cat-btn-group').querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));
@@ -5864,6 +5903,18 @@ function deleteBoardHandover(section,idx){
   saveBoardData(d);
   renderHandoverBoard();
   toast('削除しました');
+}
+function openDoctorOrderFor(resName){
+  // 申し送りボードの利用者選択肢を先に作る
+  const sel=document.getElementById('do-resident');
+  if(sel){
+    sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>'<option value="'+r.name+'">'+r.name+'</option>').join('');
+    sel.value=resName||'';
+  }
+  const editIdx=document.getElementById('do-edit-idx');
+  if(editIdx) editIdx.value='-1';
+  document.getElementById('do-content').value='';
+  openModal('modal-doctor-order');
 }
 function saveDoctorOrder(){
   const content=document.getElementById('do-content').value.trim();
@@ -6842,7 +6893,7 @@ function addFsVoiceButtons(){
 // ── dictation / AI fill ──
 function toggleFsDictation(btn){
   const panel=document.getElementById('fs-dictation-panel');
-  const isRecording=!!recognition;
+  const isRecording=_voiceActive;
   if(isRecording){
     // 録音停止のみ — パネルは閉じない
     stopVoice();
@@ -6889,16 +6940,30 @@ function startVoiceContinuous(targetId, onEnd){
     toast('このブラウザは音声入力に対応していません');return;
   }
   if(recognition) stopVoice();
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recognition=new SR();
-  recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
-  recognition.onresult=e=>{
-    const t=[...e.results].map(r=>r[0].transcript).join('');
-    document.getElementById(targetId).value=t;
-  };
-  recognition.onerror=()=>{recognition=null;if(onEnd)onEnd();};
-  recognition.onend=()=>{recognition=null;if(onEnd)onEnd();};
-  recognition.start();
+  _voiceActive=true;
+  let accum='';
+  function doStart(){
+    if(!_voiceActive){if(onEnd)onEnd();return;}
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();
+    recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+    recognition.onresult=e=>{
+      const t=[...e.results].map(r=>r[0].transcript).join('');
+      const el=document.getElementById(targetId);if(el)el.value=accum+t;
+    };
+    recognition.onerror=ev=>{
+      recognition=null;
+      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,200);return;}
+      _voiceActive=false;if(onEnd)onEnd();
+    };
+    recognition.onend=()=>{
+      recognition=null;
+      if(_voiceActive){const el=document.getElementById(targetId);if(el)accum=el.value;setTimeout(doStart,200);}
+      else{if(onEnd)onEnd();}
+    };
+    recognition.start();
+  }
+  doStart();
 }
 function applyFsDictation(){
   const text=document.getElementById('fs-dictation-text').value.trim();
