@@ -191,6 +191,7 @@ a{color:var(--p);text-decoration:none}
 .tag-commute{background:#e3f2fd;color:#1565c0}
 .tag-stay{background:#fce4ec;color:#c62828}
 .tag-visit{background:#fff3e0;color:#e65100}
+.tag-nursing{background:#e0f7fa;color:#00796b}
 .tag-care{background:#f3e5f5;color:#6a1b9a}
 .res-status{text-align:right}
 .status-dot{width:10px;height:10px;border-radius:50%;margin:0 auto 4px}
@@ -578,6 +579,10 @@ a{color:var(--p);text-decoration:none}
           <span class="qi">🚗</span>
           <div class="ql">訪問介護</div>
         </button>
+        <button class="quick-btn" onclick="openSvcEntry('nursing')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;align-items:center;text-align:center;touch-action:manipulation">
+          <div style="font-size:20px;margin-bottom:4px">💊</div>
+          <div class="ql">訪問看護</div>
+        </button>
         <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
           <span class="qi">👤</span>
           <div class="ql">利用者一覧<span id="q-count" style="display:none"></span></div>
@@ -625,6 +630,7 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" data-f="commute" onclick="setFilter('commute')">デイ</button>
       <button class="chip" data-f="stay" onclick="setFilter('stay')">小多機</button>
       <button class="chip" data-f="visit" onclick="setFilter('visit')">訪問</button>
+      <button class="chip" data-f="nursing" onclick="setFilter('nursing')">訪問看護</button>
     </div>
     <div class="res-list" id="res-list"></div>
   </div>
@@ -732,6 +738,7 @@ a{color:var(--p);text-decoration:none}
             <label><input type="checkbox" id="m-sv-com" value="commute"> デイサービス（通所）</label>
             <label><input type="checkbox" id="m-sv-sta" value="stay"> 小多機（通い・泊まり・訪問）</label>
             <label><input type="checkbox" id="m-sv-vis" value="visit"> 訪問</label>
+            <label><input type="checkbox" id="m-sv-nur" value="nursing"> 訪問看護</label>
           </div>
         </div>
         <div class="field"><label>所属事業所</label>
@@ -1180,6 +1187,9 @@ a{color:var(--p);text-decoration:none}
         <button onclick="openSvcEntry('visit');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
           <div style="font-size:20px;margin-bottom:4px">🚗</div>訪問介護
         </button>
+        <button onclick="openSvcEntry('nursing');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
+          <div style="font-size:20px;margin-bottom:4px">💊</div>訪問看護
+        </button>
       </div>
     </div>
   </div>
@@ -1215,6 +1225,7 @@ a{color:var(--p);text-decoration:none}
       <button id="dtab-shot"  class="dtab"     onclick="setDiaryTab('shot')"  style="flex-shrink:0">🏡 小多機</button>
       <button id="dtab-day"   class="dtab"     onclick="setDiaryTab('day')"   style="flex-shrink:0">☀️ デイ</button>
       <button id="dtab-visit" class="dtab"     onclick="setDiaryTab('visit')" style="flex-shrink:0">🚗 訪問介護</button>
+      <button id="dtab-nursing" class="dtab"   onclick="setDiaryTab('nursing')" style="flex-shrink:0">💊 訪問看護</button>
     </div>
     <!-- Date navigation -->
     <div style="display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
@@ -1966,6 +1977,7 @@ a{color:var(--p);text-decoration:none}
         <label><input type="checkbox" id="er-sv-com" value="commute"> デイサービス（通所）</label>
         <label><input type="checkbox" id="er-sv-sta" value="stay"> 小多機（通い・泊まり・訪問）</label>
         <label><input type="checkbox" id="er-sv-vis" value="visit"> 訪問</label>
+        <label><input type="checkbox" id="er-sv-nur" value="nursing"> 訪問看護</label>
       </div>
     </div>
     <div class="field"><label>施設</label>
@@ -2245,6 +2257,12 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-title" id="visit-modal-title">訪問予定を追加</div>
     <input type="hidden" id="ve-idx">
     <input type="hidden" id="ve-date">
+    <div class="field"><label>サービス種別</label>
+      <div class="radio-group">
+        <label><input type="radio" name="ve-svc" value="visit" checked> 🚗 訪問介護</label>
+        <label><input type="radio" name="ve-svc" value="nursing"> 💊 訪問看護</label>
+      </div>
+    </div>
     <div class="field"><label>職員</label>
       <input type="text" id="ve-staff" list="ve-staff-list" placeholder="長谷川">
       <datalist id="ve-staff-list"></datalist>
@@ -2549,12 +2567,14 @@ const SVC_META = {
   commute: {label:'☀️ デイ',   color:'#f57c00', section:'day'},
   stay:    {label:'🏡 小多機', color:'#2e7d32', section:'shot'},
   visit:   {label:'🚗 訪問介護',color:'#6a1b9a', section:'visit'},
+  nursing: {label:'💊 訪問看護',color:'#00796b', section:'nursing'},
 };
 const SVC_BTNS = {
   resident:['vital','meal','excretion','chrono','weight','handover'],
   commute: ['attendance','vital','meal','excretion','chrono','handover'],
   stay:    ['attendance','vital','meal','excretion','chrono','weight','handover'],
   visit:   ['visit_report','chrono','handover'],
+  nursing: ['vital','chrono','handover'],
 };
 const BTN_DEF = {
   vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openModal('modal-vital')"},
@@ -5987,7 +6007,7 @@ function renderSchedule(){
   const scopeBtn=(k,l,rnd)=>`<button class="sch-toggle ${S.schedScope===k?'on':''}" onclick="setSchedScope('${k}')" style="border-radius:${rnd}">${l}</button>`;
   const viewBtn=(k,l,rnd)=>`<button class="sch-toggle ${S.schedView===k?'on':''}" onclick="setSchedView('${k}')" style="border-radius:${rnd}">${l}</button>`;
 
-  const isVisit=S.schedScope==='visit';
+  const isVisit=S.schedScope==='visit'||S.schedScope==='nursing';
   let resSelect='';
   if(S.schedScope==='individual'){
     resSelect=`<select onchange="S.schedRid=this.value;renderSchedule()" style="padding:7px 10px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);border-radius:8px;max-width:140px;background:#fff">${res.map(r=>`<option value="${r.id}"${S.schedRid===r.id?' selected':''}>${r.name}</option>`).join('')}</select>`;
@@ -6018,7 +6038,7 @@ function renderSchedule(){
   bar.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
-        ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0 0 0 0')}${scopeBtn('visit','訪問介護','0 8px 8px 0')}
+        ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0')}${scopeBtn('visit','訪問介護','0')}${scopeBtn('nursing','訪問看護','0 8px 8px 0')}
       </div>
       <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
         ${viewBtn('month','月','8px 0 0 8px')}${viewBtn('day','日','0 8px 8px 0')}
@@ -6138,7 +6158,8 @@ function renderVisitMonthCal(){
     const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const dow=new Date(year,month,day).getDay();
     const isToday=dateStr===todayStr;
-    const visits=getVisitSched(dateStr);
+    const allVisits=getVisitSched(dateStr);
+    const visits=allVisits.filter(v=>(v.svcType||'visit')===S.schedScope);
     const staffNames=[...new Set(visits.map(v=>v.staff))];
     const cls=['cal-cell',isToday?'today':'',dow===0?'csun':dow===6?'csat':''].filter(Boolean).join(' ');
     const evHtml=staffNames.slice(0,2).map(s=>`<div class="cal-event" style="background:#1565c0;color:#fff">${s.split(/[\s　]/)[0]}</div>`).join('');
@@ -6158,7 +6179,8 @@ function selectVisitDay(day){S.schedDay=day;S.schedView='day';renderSchedule();}
 
 function renderVisitSchedule(){
   const dateStr=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
-  const visits=getVisitSched(dateStr);
+  const allVisits=getVisitSched(dateStr);
+  const visits=allVisits.filter(v=>(v.svcType||'visit')===S.schedScope);
   if(!visits.length) return `<div style="padding:48px 20px;text-align:center;color:var(--sub)">
     <div style="font-size:32px;margin-bottom:10px">🚗</div>
     <div style="font-weight:700;margin-bottom:6px">この日の訪問介護予定はありません</div>
@@ -6226,6 +6248,8 @@ function openVisitEntryNew(){
   document.getElementById('ve-start').value='09:00';
   document.getElementById('ve-end').value='09:30';
   document.getElementById('ve-note').value='';
+  const svcRadios=document.querySelectorAll('input[name="ve-svc"]');
+  svcRadios.forEach(r=>{r.checked=(r.value===(S.schedScope==='nursing'?'nursing':'visit'));});
   document.getElementById('ve-delete-btn').style.display='none';
   populateVisitDataLists();
   document.getElementById('modal-visit-entry').classList.add('on');
@@ -6240,6 +6264,8 @@ function openVisitEntryEdit(dateStr,idx){
   document.getElementById('ve-start').value=v.start;
   document.getElementById('ve-end').value=v.end;
   document.getElementById('ve-note').value=v.note||'';
+  const svcRadios=document.querySelectorAll('input[name="ve-svc"]');
+  svcRadios.forEach(r=>{r.checked=(r.value===(v.svcType||'visit'));});
   document.getElementById('ve-delete-btn').style.display='';
   populateVisitDataLists();
   document.getElementById('modal-visit-entry').classList.add('on');
@@ -6258,12 +6284,14 @@ function populateVisitDataLists(){
 function saveVisitEntry(){
   const dateStr=document.getElementById('ve-date').value;
   const idxStr=document.getElementById('ve-idx').value;
+  const svcRadio=document.querySelector('input[name="ve-svc"]:checked');
   const entry={
     staff:document.getElementById('ve-staff').value.trim(),
     resident:document.getElementById('ve-resident').value.trim(),
     start:document.getElementById('ve-start').value,
     end:document.getElementById('ve-end').value,
     note:document.getElementById('ve-note').value.trim(),
+    svcType:svcRadio?svcRadio.value:'visit',
   };
   if(!entry.staff||!entry.resident||!entry.start){toast('職員・利用者・開始時間は必須です');return;}
   const visits=getVisitSched(dateStr);
