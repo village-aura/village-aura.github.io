@@ -381,7 +381,7 @@ a{color:var(--p);text-decoration:none}
   .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
   .res-list .res-card{margin-bottom:0}
   .inp-grid{grid-template-columns:repeat(6,1fr)}
-  #scr-handover-board.on{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start}
+  #scr-handover-board.on{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;padding:8px 12px}
   #scr-handover-board .card{margin-bottom:0}
 }
 
@@ -785,7 +785,7 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── HANDOVER BOARD ─── -->
   <div id="scr-handover-board" class="scr">
-    <div style="padding:12px 14px 6px;display:flex;align-items:center;justify-content:space-between">
+    <div style="padding:12px 14px 6px;display:flex;align-items:center;justify-content:space-between;grid-column:1/-1">
       <div style="font-size:17px;font-weight:800;color:var(--tx)">📋 申し送りボード</div>
       <div id="hb-date-label" style="font-size:11px;color:var(--sub)"></div>
     </div>
