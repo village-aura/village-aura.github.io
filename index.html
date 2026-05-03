@@ -381,7 +381,7 @@ a{color:var(--p);text-decoration:none}
   .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
   .res-list .res-card{margin-bottom:0}
   .inp-grid{grid-template-columns:repeat(6,1fr)}
-  #scr-handover-board.on{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;padding:8px 12px}
+  #scr-handover-board.on{padding:4px 0}
   #scr-handover-board .card{margin-bottom:0}
 }
 
@@ -443,7 +443,7 @@ a{color:var(--p);text-decoration:none}
   .detail-col-right .timeline-sec h3{display:none}
   .summary-row{grid-template-columns:repeat(4,1fr)}
   /* handover board */
-  #scr-handover-board.on{max-width:1200px;margin:0 auto;padding:16px;gap:12px}
+  #scr-handover-board.on{max-width:900px;margin:0 auto;padding:4px 0}
   #scr-handover-board .card{margin:0}
   /* settings / import */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
@@ -5817,30 +5817,29 @@ function renderHandoverBoard(){
   const docCount=document.getElementById('hb-doctor-count');
   if(docCount)docCount.textContent=d.doctor.length+'件';
   doEl.innerHTML=d.doctor.length?d.doctor.map((o,idx)=>{
-    const editedNote=o.editedBy?`<span style="color:#9ca3af;font-size:10px">（${o.editedBy}が${o.editedTime}に修正）</span>`:'';
+    const editedMark=o.editedBy?'*':'';
     const _doResById=o.rid?getResidents().find(r=>r.id===o.rid):null;
     const _doResByName=!_doResById&&o.resident?getResidents().find(r=>r.name===o.resident):null;
     const _doRes=_doResById||_doResByName;
     const priTag=PRI_BADGE[o.pri]||PRI_BADGE.normal;
-    const actions=isAdmin()?`<div style="display:flex;gap:6px;justify-content:flex-end">
-      <button onclick="event.stopPropagation();editDoctorOrder(${idx})" style="background:#fff5f5;color:#c62828;border:1px solid #c62828;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ 編集</button>
-      <button onclick="event.stopPropagation();deleteDoctorOrder(${idx})" style="background:#fff0f0;color:#e53935;border:1px solid #e53935;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">🗑 削除</button>
-    </div>`:'';
-    return `<div style="${PRI_STYLE[o.pri]||PRI_STYLE.normal};border-radius:0 10px 10px 0;padding:12px 12px 8px 14px;margin-bottom:8px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
-          ${priTag}
-          ${_doRes?`<button onclick="event.stopPropagation();openResident('${_doRes.id}')" style="display:inline-flex;align-items:center;gap:3px;background:#ffebee;color:#c62828;border:1px solid #c62828;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">👤 ${_doRes.name}様</button>`:''}
+    const resChip=_doRes
+      ?`<button onclick="event.stopPropagation();openResident('${_doRes.id}')" style="display:inline-flex;align-items:center;gap:2px;background:#ffebee;color:#c62828;border:1px solid #c62828;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation">👤 ${_doRes.name}</button>`
+      :'';
+    const actBtns=isAdmin()
+      ?`<button onclick="event.stopPropagation();editDoctorOrder(${idx})" style="background:transparent;border:none;cursor:pointer;padding:2px 3px;font-size:14px;color:#9ca3af;line-height:1" title="編集">✏️</button><button onclick="event.stopPropagation();deleteDoctorOrder(${idx})" style="background:transparent;border:none;cursor:pointer;padding:2px 3px;font-size:14px;color:#e53935;line-height:1" title="削除">🗑️</button>`
+      :'';
+    return `<div style="${PRI_STYLE[o.pri]||PRI_STYLE.normal};border-radius:0 8px 8px 0;padding:6px 6px 6px 10px;margin-bottom:3px">
+      <div style="display:flex;align-items:center;gap:5px;min-width:0">
+        ${priTag}${resChip}
+        <span style="flex:1;font-size:13px;color:#111827;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.45;min-width:0">${o.content||''}</span>
+        <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:4px">
+          <span style="font-size:10px;color:#9ca3af;white-space:nowrap">${o.time||''}</span>
+          ${actBtns}
         </div>
-        <span style="font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0;padding-left:8px;padding-top:2px">${o.time||''}</span>
       </div>
-      <div style="font-size:15px;line-height:1.65;color:#111827;padding:2px 0 6px">${o.content||''}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11px;color:#6b7280"><span class="staff-badge" style="background:#c62828;font-size:10px">医師</span> ${o.by||''} ${editedNote}</span>
-        ${actions}
-      </div>
+      <div style="font-size:10px;color:#9ca3af;margin-top:2px;padding-left:1px">医師 · ${o.by||''}${editedMark}</div>
     </div>`;
-  }).join(''):'<div style="color:#9ca3af;font-size:13px;padding:10px 2px 8px">本日の医師指示はありません</div>';
+  }).join(''):'<div style="color:#9ca3af;font-size:12px;padding:8px 2px 6px">本日の医師指示はありません</div>';
   renderBoardSection('hb-nurse-list',d.nurse,'nurse');
   renderBoardSection('hb-shot-list',d.shot,'shot');
   renderBoardSection('hb-day-list',d.day,'day');
@@ -5859,13 +5858,13 @@ function linkifyResidents(text){
   return result;
 }
 const PRI_STYLE={
-  urgent:'background:#fff5f5;border-left:4px solid #e53935',
-  important:'background:#fffbf2;border-left:4px solid #FB8C00',
-  normal:'background:#fafafa;border-left:4px solid #cfd8dc'
+  urgent:'border-left:3px solid #e53935;background:#fff5f5',
+  important:'border-left:3px solid #FB8C00;background:#fffbf2',
+  normal:'border-left:3px solid #b0bec5;background:#fafafa'
 };
 const PRI_BADGE={
-  urgent:'<span style="display:inline-block;background:#e53935;color:#fff;font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;margin-right:4px">🚨 緊急</span>',
-  important:'<span style="display:inline-block;background:#FB8C00;color:#fff;font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;margin-right:4px">⚠ 重要</span>',
+  urgent:'<span style="background:#e53935;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;flex-shrink:0">緊急</span>',
+  important:'<span style="background:#FB8C00;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;flex-shrink:0">重要</span>',
   normal:''
 };
 function renderBoardSection(elId,items,section){
@@ -5875,31 +5874,29 @@ function renderBoardSection(elId,items,section){
   if(countEl)countEl.textContent=(items&&items.length?items.length:0)+'件';
   el.innerHTML=items&&items.length?items.map((h,idx)=>{
     const rc=h.staffRole?ROLE_COLORS[h.staffRole]:null;
-    const roleBadge=rc?`<span class="staff-badge" style="background:${rc.bg};font-size:10px">${rc.label}</span> `:'';
-    const editedNote=h.editedBy?`<span style="color:#9ca3af;font-size:10px">（${h.editedBy}が${h.editedTime}に修正）</span>`:'';
+    const roleTxt=rc?rc.label:'';
+    const editedMark=h.editedBy?'*':'';
     const _resById=h.rid?getResidents().find(r=>r.id===h.rid):null;
     const _resByName=!_resById&&h.resident?getResidents().find(r=>r.name===h.resident):null;
     const _res=_resById||_resByName;
     const canDelete=h.by===S.user||isAdmin();
     const priTag=PRI_BADGE[h.pri]||PRI_BADGE.normal;
-    return `<div style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};border-radius:0 10px 10px 0;padding:12px 12px 8px 14px;margin-bottom:8px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
-          ${priTag}
-          ${_res?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="display:inline-flex;align-items:center;gap:3px;background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">👤 ${_res.name}様</button>`:`<button onclick="event.stopPropagation();openBoardHandover('${section}',${idx})" style="display:inline-flex;align-items:center;gap:3px;background:#f5f5f5;color:#9ca3af;border:1px dashed #d1d5db;border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer;touch-action:manipulation">👤 利用者を選択</button>`}
-        </div>
-        <span style="font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0;padding-left:8px;padding-top:2px">${h.time||''}</span>
-      </div>
-      <div style="font-size:15px;line-height:1.65;color:#111827;padding:2px 0 6px">${h.content||''}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11px;color:#6b7280">${roleBadge}${h.by||''} ${editedNote}</span>
-        <div style="display:flex;gap:6px">
-          <button onclick="event.stopPropagation();openBoardHandover('${section}',${idx})" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">✏️ 編集</button>
-          ${canDelete?`<button onclick="event.stopPropagation();deleteBoardHandover('${section}',${idx})" style="background:#fff0f0;color:#e53935;border:1px solid #e53935;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">🗑 削除</button>`:''}
+    const resChip=_res
+      ?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="display:inline-flex;align-items:center;gap:2px;background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation">👤 ${_res.name}</button>`
+      :'';
+    return `<div style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};border-radius:0 8px 8px 0;padding:6px 6px 6px 10px;margin-bottom:3px">
+      <div style="display:flex;align-items:center;gap:5px;min-width:0">
+        ${priTag}${resChip}
+        <span style="flex:1;font-size:13px;color:#111827;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.45;min-width:0">${h.content||''}</span>
+        <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;margin-left:4px">
+          <span style="font-size:10px;color:#9ca3af;white-space:nowrap">${h.time||''}</span>
+          <button onclick="event.stopPropagation();openBoardHandover('${section}',${idx})" style="background:transparent;border:none;cursor:pointer;padding:2px 3px;font-size:14px;color:#9ca3af;line-height:1" title="編集">✏️</button>
+          ${canDelete?`<button onclick="event.stopPropagation();deleteBoardHandover('${section}',${idx})" style="background:transparent;border:none;cursor:pointer;padding:2px 3px;font-size:14px;color:#e53935;line-height:1" title="削除">🗑️</button>`:''}
         </div>
       </div>
+      <div style="font-size:10px;color:#9ca3af;margin-top:2px;padding-left:1px">${roleTxt?roleTxt+' · ':''}${h.by||''}${editedMark}</div>
     </div>`;
-  }).join(''):'<div style="color:#9ca3af;font-size:13px;padding:10px 2px 8px">申し送りはありません</div>';
+  }).join(''):'<div style="color:#9ca3af;font-size:12px;padding:8px 2px 6px">申し送りはありません</div>';
 }
 function openBoardHandover(section,editIdx=-1,presetRid=null){
   document.getElementById('board-ho-section').value=section;
