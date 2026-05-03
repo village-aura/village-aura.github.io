@@ -4307,15 +4307,16 @@ function renderDashboard(){
     const res2=getResidents().find(x=>x.id===r.rid)||{name:'不明'};
     const t=new Date(r.ts);
     const timeStr=t.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
-    const summary=summarizeRecord(r);
-    return `<div class="recent-item" onclick="openResident('${r.rid}')">
+    const isVital=r.type==='vital';
+    const vAbn=isVital&&(vAbnormal('sys',r.data.sys,r.rid)||vAbnormal('dia',r.data.dia,r.rid)||vAbnormal('pulse',r.data.pulse,r.rid)||vAbnormal('temp',r.data.temp,r.rid)||vAbnormal('spo2',r.data.spo2,r.rid));
+    return `<div class="recent-item" onclick="openResident('${r.rid}')" style="${vAbn?'border-left:3px solid #e53935;':''}">
       <span class="recent-ico" style="font-size:22px">${icos[r.type]||'📄'}</span>
       <div class="recent-body" style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
           <span class="rec-type-badge">${typeNames[r.type]||r.type}</span>
           <b style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${res2.name}様</b>
         </div>
-        <span style="font-size:12px;color:var(--sub);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${summary}</span>
+        ${isVital?vitalChips(r):`<span style="font-size:12px;color:var(--sub);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${summarizeRecord(r)}</span>`}
       </div>
       <span class="recent-time" style="flex-shrink:0">${timeStr}</span>
     </div>`;
