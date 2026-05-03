@@ -2518,6 +2518,7 @@ function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
+function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key].role;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
@@ -2745,7 +2746,7 @@ async function login(){
   }
   const info=staffInfo;
   S.user=info.name;
-  S.userRole=info.role;
+  S.userRole=getStaffRole(staffKey);
   S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('scr-login').style.display='none';
   document.getElementById('app').style.display='block';
@@ -3365,9 +3366,12 @@ function changePassword(){
 function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
+  const roleOptions=Object.entries(ROLE_COLORS).map(([r,v])=>
+    '<option value="'+r+'">'+v.label+'</option>'
+  ).join('');
   list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>{
     const roleOrder={super_admin:0,facility_manager:1,nurse:2,care:3,medical_office:4,home_care:5,doctor:6};
-    const ra=roleOrder[a[1].role]??9, rb=roleOrder[b[1].role]??9;
+    const ra=roleOrder[getStaffRole(a[0])]??9, rb=roleOrder[getStaffRole(b[0])]??9;
     if(ra!==rb) return ra-rb;
     return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
   }).map(([key,info])=>{
@@ -3375,31 +3379,39 @@ function renderAdminStaffList(){
     const isMe=info.name===S.user;
     const curPass=getStaffPass(key);
     const curLoginId=getStaffLoginId(key);
-    return `<div style="border-bottom:1px solid var(--bdr);padding:12px 0">
-      <div class="setting-item" style="padding:0;border:none">
-        <span class="si-ico" style="font-size:18px">${disabled?'🔒':'👤'}</span>
-        <div class="si-body">
-          <div class="si-name" style="font-size:14px">${info.name}${isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':''}</div>
-          <div class="si-desc">ID: <b>${curLoginId}</b>　<span class="staff-badge" style="background:${(ROLE_COLORS[info.role]||{bg:'#9ca3af'}).bg}">${(ROLE_COLORS[info.role]||{label:info.role}).label}</span>　${disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>'}</div>
-        </div>
-        ${isMe?'<span style="font-size:11px;color:var(--sub)">──</span>':`<label class="toggle"><input type="checkbox" ${disabled?'':'checked'} onchange="toggleStaffDisabled('${key}',!this.checked)"><span class="toggle-slider"></span></label>`}
-      </div>
-      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
-        <div style="font-size:11px;color:var(--sub);white-space:nowrap">ID:</div>
-        <input type="text" id="adm-lid-${key}" value="${curLoginId}" placeholder="4桁ID" maxlength="8"
-          inputmode="numeric" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb;width:80px">
-        <button onclick="adminSetLoginId('${key}')"
-          style="padding:7px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap">変更</button>
-      </div>
-      <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
-        <div style="font-size:11px;color:var(--sub);white-space:nowrap">PW:</div>
-        <input type="text" id="adm-pw-${key}" value="${curPass}" placeholder="新しいパスワード"
-          style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb">
-        <button onclick="adminSetPassword('${key}')"
-          style="padding:7px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">変更</button>
-      </div>
-    </div>`;
+    const curRole=getStaffRole(key);
+    const rc=ROLE_COLORS[curRole]||{bg:'#9ca3af',label:curRole};
+    return '<div style="border-bottom:1px solid var(--bdr);padding:12px 0">'
+      +'<div class="setting-item" style="padding:0;border:none">'
+        +'<span class="si-ico" style="font-size:18px">'+(disabled?'🔒':'👤')+'</span>'
+        +'<div class="si-body">'
+          +'<div class="si-name" style="font-size:14px">'+info.name+(isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':'')+'</div>'
+          +'<div class="si-desc">ID: <b>'+curLoginId+'</b>　<span class="staff-badge" style="background:'+rc.bg+'">'+rc.label+'</span>　'+(disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>')+'</div>'
+        +'</div>'
+        +(isMe?'<span style="font-size:11px;color:var(--sub)">──</span>':'<label class="toggle"><input type="checkbox" '+(disabled?'':'checked')+' onchange="toggleStaffDisabled(\''+key+'\',!this.checked)"><span class="toggle-slider"></span></label>')
+      +'</div>'
+      +'<div style="margin-top:8px;display:flex;gap:8px;align-items:center">'
+        +'<div style="font-size:11px;color:var(--sub);white-space:nowrap">ロール:</div>'
+        +'<select id="adm-role-'+key+'" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb"'+(isMe?' disabled':'')+'>'+roleOptions+'</select>'
+        +'<button onclick="adminSetRole(\''+key+'\')" style="padding:7px 10px;background:#7c3aed;color:#fff;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap"'+(isMe?' disabled':'')+'>変更</button>'
+      +'</div>'
+      +'<div style="margin-top:6px;display:flex;gap:8px;align-items:center">'
+        +'<div style="font-size:11px;color:var(--sub);white-space:nowrap">ID:</div>'
+        +'<input type="text" id="adm-lid-'+key+'" value="'+curLoginId+'" placeholder="4桁ID" maxlength="8" inputmode="numeric" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb;width:80px">'
+        +'<button onclick="adminSetLoginId(\''+key+'\')" style="padding:7px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap">変更</button>'
+      +'</div>'
+      +'<div style="margin-top:6px;display:flex;gap:8px;align-items:center">'
+        +'<div style="font-size:11px;color:var(--sub);white-space:nowrap">PW:</div>'
+        +'<input type="text" id="adm-pw-'+key+'" value="'+curPass+'" placeholder="新しいパスワード" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb">'
+        +'<button onclick="adminSetPassword(\''+key+'\')" style="padding:7px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">変更</button>'
+      +'</div>'
+    +'</div>';
   }).join('');
+  // select要素に現在のロールをセット
+  Object.keys(STAFF_INFO).forEach(key=>{
+    const sel=document.getElementById('adm-role-'+key);
+    if(sel) sel.value=getStaffRole(key);
+  });
 }
 function toggleStaffDisabled(key,disable){
   const settings=getStaffSettings();
@@ -3432,6 +3444,20 @@ function adminSetPassword(key){
   saveStaffSettings(settings);
   addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' (ID:'+getStaffLoginId(key)+')');
   toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓');
+}
+function adminSetRole(key){
+  const sel=document.getElementById('adm-role-'+key);
+  if(!sel)return;
+  const newRole=sel.value;
+  if(!newRole){toast('ロールを選択してください');return;}
+  const settings=getStaffSettings();
+  if(!settings[key]) settings[key]={};
+  settings[key].role=newRole;
+  saveStaffSettings(settings);
+  renderAdminStaffList();
+  const label=(ROLE_COLORS[newRole]||{label:newRole}).label;
+  addAuditLog('ロール変更',STAFF_INFO[key].name+' → '+label);
+  toast(STAFF_INFO[key].name+' のロールを「'+label+'」に変更しました ✓');
 }
 // ── 端末管理・Wi-Fi制限 ──
 function getDeviceId(){
