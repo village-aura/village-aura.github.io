@@ -793,73 +793,87 @@ a{color:var(--p);text-decoration:none}
     <div style="margin:4px 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#1565c0;padding:10px 14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:14px;font-weight:800;color:#fff">🏠 サ高住から</span>
+          <span onclick="toggleHbSection('sak')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🏠 サ高住から <span id="hb-sak-chev" style="font-size:11px;opacity:0.75;transition:transform .2s">▼</span></span>
           <div style="display:flex;align-items:center;gap:8px">
             <span id="hb-sak-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
             <button onclick="openBoardHandover('sak')" style="background:#fff;color:#1565c0;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
           </div>
         </div>
-        <div style="display:flex;gap:6px">
+        <div id="hb-sak-shift-row" style="display:flex;gap:6px">
           <button id="sak-am-btn" onclick="switchSakShift('am')" style="flex:1;padding:6px;font-size:12px;font-weight:700;background:rgba(255,255,255,0.25);color:#fff;border:1.5px solid rgba(255,255,255,0.7);border-radius:7px;cursor:pointer">🌅 朝</button>
           <button id="sak-pm-btn" onclick="switchSakShift('pm')" style="flex:1;padding:6px;font-size:12px;font-weight:700;background:transparent;color:rgba(255,255,255,0.65);border:1.5px solid rgba(255,255,255,0.3);border-radius:7px;cursor:pointer">🌆 夕</button>
         </div>
       </div>
-      <div style="background:#fff;padding:10px 12px 4px"><div id="hb-sak-list"></div></div>
+      <div id="hb-sak-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-sak-list"></div></div>
     </div>
     <!-- 医師から -->
     <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#c62828;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:14px;font-weight:800;color:#fff">🩺 医師から</span>
+        <span onclick="toggleHbSection('doctor')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🩺 医師から <span id="hb-doctor-chev" style="font-size:11px;opacity:0.75">▼</span></span>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="hb-doctor-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
           <button onclick="const e=document.getElementById('do-edit-idx');if(e)e.value=-1;document.getElementById('do-content').value='';openModal('modal-doctor-order')" style="background:#fff;color:#c62828;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
         </div>
       </div>
-      <div style="background:#fff;padding:10px 12px 4px"><div id="hb-doctor-list"></div></div>
+      <div id="hb-doctor-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-doctor-list"></div></div>
     </div>
     <!-- 看護師から -->
     <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#00796b;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:14px;font-weight:800;color:#fff">👩‍⚕️ 看護師から</span>
+        <span onclick="toggleHbSection('nurse')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">👩‍⚕️ 看護師から <span id="hb-nurse-chev" style="font-size:11px;opacity:0.75">▼</span></span>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="hb-nurse-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
           <button onclick="openBoardHandover('nurse')" style="background:#fff;color:#00796b;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
         </div>
       </div>
-      <div style="background:#fff;padding:10px 12px 4px"><div id="hb-nurse-list"></div></div>
+      <div id="hb-nurse-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-nurse-list"></div></div>
     </div>
     <!-- 小多機から -->
     <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#2e7d32;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:14px;font-weight:800;color:#fff">🏡 小多機から</span>
+        <span onclick="toggleHbSection('shot')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🏡 小多機から <span id="hb-shot-chev" style="font-size:11px;opacity:0.75">▼</span></span>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="hb-shot-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
           <button onclick="openBoardHandover('shot')" style="background:#fff;color:#2e7d32;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
         </div>
       </div>
-      <div style="background:#fff;padding:10px 12px 4px"><div id="hb-shot-list"></div></div>
+      <div id="hb-shot-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-shot-list"></div></div>
     </div>
     <!-- デイから -->
     <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#e65100;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:14px;font-weight:800;color:#fff">☀️ デイから</span>
+        <span onclick="toggleHbSection('day')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">☀️ デイから <span id="hb-day-chev" style="font-size:11px;opacity:0.75">▼</span></span>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="hb-day-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
           <button onclick="openBoardHandover('day')" style="background:#fff;color:#e65100;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
         </div>
       </div>
-      <div style="background:#fff;padding:10px 12px 4px"><div id="hb-day-list"></div></div>
+      <div id="hb-day-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-day-list"></div></div>
     </div>
     <!-- 訪問介護から -->
     <div style="margin:0 12px 16px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#6a1b9a;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:14px;font-weight:800;color:#fff">🚗 訪問介護から</span>
+        <span onclick="toggleHbSection('visit')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🚗 訪問介護から <span id="hb-visit-chev" style="font-size:11px;opacity:0.75">▼</span></span>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="hb-visit-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
           <button onclick="openBoardHandover('visit')" style="background:#fff;color:#6a1b9a;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
         </div>
       </div>
-      <div style="background:#fff;padding:10px 12px 4px"><div id="hb-visit-list"></div></div>
+      <div id="hb-visit-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-visit-list"></div></div>
+    </div>
+  </div>
+
+  <!-- ─── DELETE CONFIRM SHEET ─── -->
+  <div id="del-confirm-sheet" onclick="closeDelConfirm()" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.45)">
+    <div onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-radius:20px 20px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -4px 24px rgba(0,0,0,0.18)">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:4px;margin:0 auto 18px"></div>
+      <div style="font-size:20px;text-align:center;margin-bottom:6px">🗑️</div>
+      <div id="del-confirm-msg" style="font-size:15px;font-weight:700;color:#111827;text-align:center;margin-bottom:4px">削除しますか？</div>
+      <div style="font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px">この操作は元に戻せません</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeDelConfirm()" style="flex:1;padding:13px;background:#f3f4f6;color:#374151;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer">キャンセル</button>
+        <button onclick="execDelConfirm()" style="flex:1;padding:13px;background:#e53935;color:#fff;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer">削除する</button>
+      </div>
     </div>
   </div>
 
@@ -1206,9 +1220,6 @@ a{color:var(--p);text-decoration:none}
         </button>
         <button onclick="openSvcEntry('visit');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
           <div style="font-size:20px;margin-bottom:4px">🚗</div>訪問介護
-        </button>
-        <button onclick="closeSvcSheet();showScr('scr-schedule');S.schedScope='nursing';renderSchedule()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
-          <div style="font-size:20px;margin-bottom:4px">💊</div>訪問看護
         </button>
       </div>
     </div>
@@ -5790,6 +5801,35 @@ function saveEditResident(){
 }
 
 // ═══════════ HANDOVER BOARD ═══════════
+// ── handover board collapse ──
+const S_hb_collapsed={};
+function toggleHbSection(s){
+  S_hb_collapsed[s]=!S_hb_collapsed[s];
+  const collapsed=S_hb_collapsed[s];
+  const body=document.getElementById('hb-'+s+'-body');
+  const chev=document.getElementById('hb-'+s+'-chev');
+  const shiftRow=s==='sak'?document.getElementById('hb-sak-shift-row'):null;
+  if(body)body.style.display=collapsed?'none':'';
+  if(shiftRow)shiftRow.style.display=collapsed?'none':'flex';
+  if(chev)chev.textContent=collapsed?'▶':'▼';
+}
+// ── delete confirm sheet ──
+let _delCb=null;
+function showDelConfirm(msg,cb){
+  const el=document.getElementById('del-confirm-sheet');
+  const msgEl=document.getElementById('del-confirm-msg');
+  if(!el||!msgEl)return;
+  msgEl.textContent=msg;
+  _delCb=cb;
+  el.style.display='block';
+}
+function closeDelConfirm(){
+  const el=document.getElementById('del-confirm-sheet');
+  if(el)el.style.display='none';
+  _delCb=null;
+}
+function execDelConfirm(){if(_delCb){_delCb();}_delCb=null;closeDelConfirm();}
+
 let S_sak_shift='am';
 function switchSakShift(shift){
   S_sak_shift=shift;
@@ -5959,13 +5999,16 @@ function deleteBoardHandover(section,idx){
   const entry=items[idx];
   if(!entry)return;
   if(entry.by!==S.user&&!isAdmin()){toast('削除できるのは作成者と管理者のみです');return;}
-  if(!confirm('この申し送りを削除しますか？'))return;
-  items.splice(idx,1);
-  if(section==='sak') d.sak[S_sak_shift]=items;
-  else d[section]=items;
-  saveBoardData(d);
-  renderHandoverBoard();
-  toast('削除しました');
+  showDelConfirm('この申し送りを削除しますか？',()=>{
+    const d2=getBoardData();
+    const items2=section==='sak'?d2.sak[S_sak_shift]:d2[section];
+    items2.splice(idx,1);
+    if(section==='sak') d2.sak[S_sak_shift]=items2;
+    else d2[section]=items2;
+    saveBoardData(d2);
+    renderHandoverBoard();
+    toast('削除しました');
+  });
 }
 function openDoctorOrderFor(resName){
   // 申し送りボードの利用者選択肢を先に作る
@@ -6026,12 +6069,13 @@ function editDoctorOrder(idx){
 }
 function deleteDoctorOrder(idx){
   if(!isAdmin()){toast('全権管理者のみ削除できます');return;}
-  if(!confirm('この医師指示を削除しますか？'))return;
-  const d=getBoardData();
-  d.doctor.splice(idx,1);
-  saveBoardData(d);
-  renderHandoverBoard();
-  toast('削除しました');
+  showDelConfirm('この医師指示を削除しますか？',()=>{
+    const d=getBoardData();
+    d.doctor.splice(idx,1);
+    saveBoardData(d);
+    renderHandoverBoard();
+    toast('削除しました');
+  });
 }
 
 // ═══════════ SCHEDULE ═══════════
