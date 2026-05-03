@@ -2546,12 +2546,12 @@ const BTN_DEF = {
 };
 const ROLE_COLORS = {
   super_admin:     {bg:'#b71c1c',label:'全権管理者'},
+  doctor:          {bg:'#c62828',label:'医師'},
   facility_manager:{bg:'#e65100',label:'事業所管理者'},
   nurse:           {bg:'#00796b',label:'看護師'},
   care:            {bg:'#1565c0',label:'介護職員'},
-  medical_office:  {bg:'#6a1b9a',label:'医療事務'},
   home_care:       {bg:'#2e7d32',label:'居宅職員'},
-  doctor:          {bg:'#c62828',label:'医師'},
+  medical_office:  {bg:'#6a1b9a',label:'医療事務'},
 };
 const EVENT_COLORS = {
   medical:'#c62828',commute:'#1565c0',care:'#00796b',
@@ -3370,7 +3370,7 @@ function renderAdminStaffList(){
     '<option value="'+r+'">'+v.label+'</option>'
   ).join('');
   list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>{
-    const roleOrder={super_admin:0,facility_manager:1,nurse:2,care:3,medical_office:4,home_care:5,doctor:6};
+    const roleOrder={super_admin:0,doctor:1,facility_manager:2,nurse:3,care:4,home_care:5,medical_office:6};
     const ra=roleOrder[getStaffRole(a[0])]??9, rb=roleOrder[getStaffRole(b[0])]??9;
     if(ra!==rb) return ra-rb;
     return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
