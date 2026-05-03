@@ -787,7 +787,10 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-handover-board" class="scr">
     <div style="padding:12px 14px 6px;display:flex;align-items:center;justify-content:space-between;grid-column:1/-1">
       <div style="font-size:17px;font-weight:800;color:var(--tx)">📋 申し送りボード</div>
-      <div id="hb-date-label" style="font-size:11px;color:var(--sub)"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="openBoardTrash()" style="background:transparent;color:var(--sub);border:1px solid var(--bdr);border-radius:8px;padding:3px 9px;font-size:11px;cursor:pointer">🗑 ゴミ箱</button>
+        <div id="hb-date-label" style="font-size:11px;color:var(--sub)"></div>
+      </div>
     </div>
     <!-- サ高住（朝/夕切替） -->
     <div style="margin:4px 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
@@ -869,11 +872,25 @@ a{color:var(--p);text-decoration:none}
       <div style="width:36px;height:4px;background:#e0e0e0;border-radius:4px;margin:0 auto 18px"></div>
       <div style="font-size:20px;text-align:center;margin-bottom:6px">🗑️</div>
       <div id="del-confirm-msg" style="font-size:15px;font-weight:700;color:#111827;text-align:center;margin-bottom:4px">削除しますか？</div>
-      <div style="font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px">この操作は元に戻せません</div>
+      <div style="font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px">ゴミ箱に30日間保管・復元できます。ログに記録されます。</div>
       <div style="display:flex;gap:10px">
         <button onclick="closeDelConfirm()" style="flex:1;padding:13px;background:#f3f4f6;color:#374151;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer">キャンセル</button>
         <button onclick="execDelConfirm()" style="flex:1;padding:13px;background:#e53935;color:#fff;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer">削除する</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ─── BOARD TRASH MODAL ─── -->
+  <div class="overlay" id="modal-board-trash" onclick="closeModal('modal-board-trash',event)">
+    <div class="modal-inner" onclick="event.stopPropagation()" style="max-width:500px">
+      <div style="font-size:16px;font-weight:800;margin-bottom:2px">🗑️ 削除ゴミ箱</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:14px">30日以内の削除データを復元できます</div>
+      <div id="board-trash-list"></div>
+      <details style="margin-top:14px">
+        <summary style="font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;padding:6px 0">📋 削除ログ（直近100件）</summary>
+        <div id="board-del-log-list" style="margin-top:8px;max-height:200px;overflow-y:auto"></div>
+      </details>
+      <button onclick="closeModal('modal-board-trash')" style="width:100%;padding:11px;background:var(--bg);border-radius:10px;font-size:13px;font-weight:700;margin-top:14px;border:none;cursor:pointer">閉じる</button>
     </div>
   </div>
 
@@ -4442,17 +4459,23 @@ function renderDetail(){
   document.getElementById('hd-title').textContent=r.name+' 様';
   // Hero
   document.getElementById('detail-hero').innerHTML=`
-    <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5;flex-wrap:wrap;justify-content:flex-end">
-      <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📅 予定</button>
-      <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">📋 フェイスシート</button>
-      ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}')" style="background:rgba(255,255,255,.9);color:#c62828;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:800">📝 医師指示入力</button>`:''}
-      <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">✏️ 編集</button>
-      <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      ${r.photo
+        ?`<img src="${r.photo}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.5);flex-shrink:0">`
+        :`<div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👤</div>`}
+      <div style="flex:1;min-width:0">
+        <div class="detail-name">${r.name} 様</div>
+        <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
+      </div>
     </div>
-    ${r.photo?`<div style="position:absolute;top:12px;left:12px;z-index:5"><img src="${r.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.5)"></div>`:''}
-    <div class="detail-name" style="${r.photo?'padding-left:70px':''}">  ${r.name} 様</div>
-    <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
-    <div class="detail-tags">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
+    <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📅 予定</button>
+      <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📋 フェイスシート</button>
+      ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}')" style="background:rgba(255,255,255,.9);color:#c62828;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">📝 医師指示</button>`:''}
+      <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">✏️ 編集</button>
+      <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
+    </div>
   `;
   // Summary
   const recs=getRecords().filter(rc=>rc.rid===S.currentRes);
@@ -5801,6 +5824,76 @@ function saveEditResident(){
 }
 
 // ═══════════ HANDOVER BOARD ═══════════
+// ── board trash & deletion log ──
+const BOARD_SEC_LABEL={sak:'サ高住',doctor:'医師',nurse:'看護師',shot:'小多機',day:'デイ',visit:'訪問介護'};
+function getBoardTrash(){
+  const t=ls('board_trash')||[];
+  const cutoff=Date.now()-30*24*3600*1000;
+  return t.filter(x=>new Date(x.deletedAt).getTime()>cutoff);
+}
+function saveBoardTrash(t){lsSet('board_trash',t);}
+function getDelLog(){return ls('board_del_log')||[];}
+function saveDelLog(l){lsSet('board_del_log',l);}
+function moveToTrash(section,shift,entry){
+  const trash=getBoardTrash();
+  trash.unshift({id:'tr_'+Date.now(),section,shift,data:{...entry},
+    deletedBy:S.user,deletedByRole:S.userRole||'',deletedAt:new Date().toISOString()});
+  saveBoardTrash(trash.slice(0,50));
+  const log=getDelLog();
+  log.unshift({ts:new Date().toISOString(),section,
+    contentPreview:(entry.content||'').slice(0,40),
+    resident:entry.resident||'',deletedBy:S.user,deletedByRole:S.userRole||''});
+  saveDelLog(log.slice(0,200));
+}
+function restoreFromTrash(id){
+  const trash=getBoardTrash();
+  const idx=trash.findIndex(x=>x.id===id);
+  if(idx<0)return;
+  const item=trash[idx];
+  const d=getBoardData();
+  if(item.section==='doctor') d.doctor.unshift(item.data);
+  else if(item.section==='sak'){const sh=item.shift||'am';d.sak[sh].unshift(item.data);}
+  else d[item.section].unshift(item.data);
+  saveBoardData(d);
+  trash.splice(idx,1);
+  saveBoardTrash(trash);
+  renderHandoverBoard();
+  renderBoardTrash();
+  toast('復元しました ✓');
+}
+function renderBoardTrash(){
+  const trash=getBoardTrash();
+  const el=document.getElementById('board-trash-list');
+  if(!el)return;
+  if(!trash.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:12px 0;text-align:center">ゴミ箱は空です</div>';return;}
+  el.innerHTML=trash.map(x=>{
+    const dt=new Date(x.deletedAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return '<div style="border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+      +'<span style="font-size:11px;font-weight:700;background:#f3f4f6;color:#374151;border-radius:5px;padding:1px 7px">'+(BOARD_SEC_LABEL[x.section]||x.section)+'</span>'
+      +'<span style="font-size:10px;color:#9ca3af">'+dt+' · '+x.deletedBy+'</span></div>'
+      +(x.data.resident?'<div style="font-size:11px;color:var(--p);margin-bottom:2px">👤 '+x.data.resident+'</div>':'')
+      +'<div style="font-size:13px;color:#111827;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.4;margin-bottom:8px">'+(x.data.content||'')+'</div>'
+      +'<button onclick="restoreFromTrash(\''+x.id+'\')" style="width:100%;padding:8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🔄 復元する</button>'
+      +'</div>';
+  }).join('');
+  // log
+  const logEl=document.getElementById('board-del-log-list');
+  if(logEl){
+    const log=getDelLog();
+    if(!log.length){logEl.innerHTML='<div style="color:var(--sub);font-size:12px;padding:6px 0">ログはありません</div>';return;}
+    logEl.innerHTML=log.map(l=>{
+      const dt=new Date(l.ts).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      return '<div style="font-size:11px;padding:5px 0;border-bottom:1px solid #f3f4f6;color:#374151">'
+        +'<span style="color:#9ca3af">'+dt+'</span> '
+        +'<b>'+(BOARD_SEC_LABEL[l.section]||l.section)+'</b> '
+        +(l.resident?'👤'+l.resident+' ':'')
+        +'"'+(l.contentPreview||'').slice(0,30)+'"'
+        +' <span style="color:#9ca3af">by '+l.deletedBy+'</span></div>';
+    }).join('');
+  }
+}
+function openBoardTrash(){renderBoardTrash();openModal('modal-board-trash');}
 // ── handover board collapse ──
 const S_hb_collapsed={};
 function toggleHbSection(s){
@@ -6002,6 +6095,7 @@ function deleteBoardHandover(section,idx){
   showDelConfirm('この申し送りを削除しますか？',()=>{
     const d2=getBoardData();
     const items2=section==='sak'?d2.sak[S_sak_shift]:d2[section];
+    if(items2[idx]) moveToTrash(section,section==='sak'?S_sak_shift:null,items2[idx]);
     items2.splice(idx,1);
     if(section==='sak') d2.sak[S_sak_shift]=items2;
     else d2[section]=items2;
@@ -6071,6 +6165,7 @@ function deleteDoctorOrder(idx){
   if(!isAdmin()){toast('全権管理者のみ削除できます');return;}
   showDelConfirm('この医師指示を削除しますか？',()=>{
     const d=getBoardData();
+    if(d.doctor[idx]) moveToTrash('doctor',null,d.doctor[idx]);
     d.doctor.splice(idx,1);
     saveBoardData(d);
     renderHandoverBoard();
