@@ -2481,7 +2481,7 @@ const INIT_VISIT_SCHED=(()=>{
 const STAFF_INFO = {
   s1:{name:'田中 花子',role:'nurse',            loginId:'1001', pass:'aura01'},
   s2:{name:'山本 次郎',role:'care',             loginId:'1002', pass:'aura01'},
-  s3:{name:'前原 明子',role:'medical_office',   loginId:'1003', pass:'aura01'},
+  s3:{name:'前原 明子',role:'care',             loginId:'1003', pass:'aura01'},
   s4:{name:'鈴木 健太',role:'care',             loginId:'1004', pass:'aura01'},
   s5:{name:'中村 由美',role:'nurse',            loginId:'1005', pass:'aura01'},
   s6:{name:'山田 一郎',role:'super_admin',      loginId:'1006', pass:'aura170',admin:true},
@@ -3757,11 +3757,6 @@ function getRoleQuickActions(){
     {type:'excretion',label:'排泄記録',sub:'排泄・状態', ico:'💧', color:'#e65100'},
     {type:'meal',    label:'食事記録', sub:'食事・飲水', ico:'🍚', color:'#2e7d32'},
     {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
-  ];
-  if(role==='medical_office')return[
-    {type:'handover',label:'申し送り', sub:'確認・入力', ico:'📣', color:'#00796b'},
-    {type:'schedule',label:'予定表',   sub:'今日の予定', ico:'📅', color:'#1565c0'},
-    {type:'diary',   label:'業務日誌', sub:'記録・確認', ico:'📋', color:'#6a1b9a'},
   ];
   return[
     {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
