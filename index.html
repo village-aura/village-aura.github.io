@@ -145,8 +145,15 @@ a{color:var(--p);text-decoration:none}
 .alert-banner .arrow{color:#FB8C00;font-size:18px}
 .quick-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .quick-grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.quick-btn{border-radius:14px;padding:12px 8px;box-shadow:0 3px 12px rgba(0,0,0,.09);display:flex;flex-direction:column;align-items:flex-start;gap:4px;transition:transform .12s,box-shadow .12s;border:none;text-align:left;cursor:pointer}
+.quick-btn{border-radius:14px;padding:12px 8px;box-shadow:0 3px 12px rgba(0,0,0,.09);display:flex;flex-direction:column;align-items:flex-start;gap:4px;transition:transform .12s,box-shadow .12s;border:none;text-align:left;cursor:pointer;min-height:56px}
 .quick-btn:active{transform:scale(.96);box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.qa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:2px}
+.qa-btn{border-radius:16px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;border:none;cursor:pointer;transition:transform .12s,box-shadow .12s;box-shadow:0 3px 12px rgba(0,0,0,.12);min-height:76px;touch-action:manipulation;width:100%}
+.qa-btn:active{transform:scale(.95)}
+.qa-ico{font-size:28px;line-height:1}
+.qa-lbl{font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:1.3;white-space:nowrap}
+.qa-sub{font-size:9px;color:rgba(255,255,255,.8);font-weight:600}
+.sec-head-sm{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.05em;padding:10px 0 6px;text-transform:uppercase}
 .quick-btn .qi{font-size:22px;line-height:1}
 .quick-btn .ql{font-size:11px;font-weight:800;color:var(--txt);white-space:nowrap}
 .quick-btn .qs{font-size:11px;margin-top:1px;font-weight:500}
@@ -210,7 +217,7 @@ a{color:var(--p);text-decoration:none}
 .input-section{padding:0 12px}
 .input-section h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0 6px;text-transform:uppercase;letter-spacing:.04em}
 .inp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.inp-btn{background:var(--card);border:2px solid var(--bdr);border-radius:12px;padding:14px 6px;text-align:center;transition:all .15s}
+.inp-btn{background:var(--card);border:2px solid var(--bdr);border-radius:12px;padding:16px 6px;text-align:center;transition:all .15s;min-height:72px}
 .inp-btn:hover{border-color:var(--p);transform:translateY(-1px)}
 .inp-btn .ib-ico{font-size:26px;display:block;margin-bottom:5px}
 .inp-btn .ib-lbl{font-size:11px;font-weight:700;color:var(--txt)}
@@ -539,6 +546,11 @@ a{color:var(--p);text-decoration:none}
         </div>
         <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
       </div>
+    </div>
+    <!-- クイック記録 -->
+    <div style="margin:8px 12px 0">
+      <div class="sec-head-sm">⚡ クイック記録</div>
+      <div class="qa-grid" id="qa-grid"></div>
     </div>
     <!-- 統合グリッド 2行4列 -->
     <div style="margin:8px 12px 10px">
@@ -1066,6 +1078,15 @@ a{color:var(--p);text-decoration:none}
     </div><!-- /acc-wrap -->
   </div>
 
+  </div>
+
+  <!-- QUICK RECORD PICKER -->
+  <div id="qr-picker" onclick="closeQRPicker()" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5)">
+    <div onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.15)">
+      <div id="qr-picker-title" style="font-size:16px;font-weight:800;margin-bottom:16px;text-align:center;color:var(--txt)"></div>
+      <div id="qr-picker-list" style="margin-bottom:10px"></div>
+      <button onclick="closeQRPicker()" style="width:100%;padding:13px;background:var(--bg);border-radius:12px;font-size:14px;font-weight:700;color:var(--sub);border:1.5px solid var(--bdr)">キャンセル</button>
+    </div>
   </div>
 
   <!-- MOBILE DRAWER -->
@@ -3715,6 +3736,99 @@ function getBackupStatus(){
 function renderBackupBanner(){}
 function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
 
+// ── RECENT RESIDENTS ──
+function getRecentResidents(){return ls('va_recent_res')||[];}
+function trackRecentResident(rid){
+  if(!rid)return;
+  let arr=getRecentResidents().filter(r=>r!==rid);
+  arr.unshift(rid);
+  lsSet('va_recent_res',arr.slice(0,5));
+}
+
+// ── ROLE-BASED QUICK ACTIONS ──
+function getRoleQuickActions(){
+  const role=S.userRole||'';
+  if(role==='nurse')return[
+    {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
+    {type:'meal',    label:'食事記録', sub:'食事・飲水', ico:'🍚', color:'#2e7d32'},
+    {type:'excretion',label:'排泄記録',sub:'排泄・状態', ico:'💧', color:'#e65100'},
+  ];
+  if(role==='care')return[
+    {type:'excretion',label:'排泄記録',sub:'排泄・状態', ico:'💧', color:'#e65100'},
+    {type:'meal',    label:'食事記録', sub:'食事・飲水', ico:'🍚', color:'#2e7d32'},
+    {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
+  ];
+  if(role==='medical_office')return[
+    {type:'handover',label:'申し送り', sub:'確認・入力', ico:'📣', color:'#00796b'},
+    {type:'schedule',label:'予定表',   sub:'今日の予定', ico:'📅', color:'#1565c0'},
+    {type:'diary',   label:'業務日誌', sub:'記録・確認', ico:'📋', color:'#6a1b9a'},
+  ];
+  return[
+    {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
+    {type:'meal',    label:'食事記録', sub:'食事・飲水', ico:'🍚', color:'#2e7d32'},
+    {type:'excretion',label:'排泄記録',sub:'排泄・状態', ico:'💧', color:'#e65100'},
+  ];
+}
+
+function renderQuickActions(){
+  const grid=document.getElementById('qa-grid');
+  if(!grid)return;
+  const actions=getRoleQuickActions();
+  grid.innerHTML=actions.map(a=>`
+    <button class="qa-btn" style="background:${a.color}" onclick="quickRecord('${a.type}','${a.label}','${a.ico}')">
+      <span class="qa-ico">${a.ico}</span>
+      <span class="qa-lbl">${a.label}</span>
+      <span class="qa-sub">${a.sub}</span>
+    </button>`).join('');
+}
+
+function quickRecord(type, label, ico){
+  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board'};
+  if(specialNav[type]){showScr(specialNav[type]);return;}
+  const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
+  const recentIds=getRecentResidents();
+  const allRes=getResidents();
+  const recentRes=recentIds.map(id=>allRes.find(r=>r.id===id)).filter(Boolean).slice(0,3);
+  const titleEl=document.getElementById('qr-picker-title');
+  const listEl=document.getElementById('qr-picker-list');
+  if(titleEl)titleEl.innerHTML=`${ico} ${label}`;
+  if(listEl){
+    let html='';
+    if(recentRes.length>0){
+      html+=`<div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">最近の利用者</div>`;
+      html+=recentRes.map(r=>`
+        <button onclick="openResidentDirect('${r.id}','${type}')" style="width:100%;padding:14px 16px;background:var(--bg);border-radius:12px;margin-bottom:8px;text-align:left;border:1.5px solid var(--bdr);display:flex;align-items:center;gap:12px;font-size:15px;font-weight:700;cursor:pointer">
+          <span style="font-size:24px">${r.photo?`<img src="${r.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">` : '👤'}</span>
+          <span style="flex:1">${r.name}　様</span>
+          <span style="color:var(--sub);font-size:18px">›</span>
+        </button>`).join('');
+      html+=`<div style="height:1px;background:var(--bdr);margin:10px 0"></div>`;
+    }
+    html+=`<button onclick="showScr('scr-residents');closeQRPicker()" style="width:100%;padding:13px;background:var(--bg);border-radius:12px;font-size:14px;font-weight:700;color:var(--p);border:1.5px solid var(--p)">👤 すべての利用者から選ぶ</button>`;
+    listEl.innerHTML=html;
+  }
+  document.getElementById('qr-picker').style.display='block';
+  window._pendingRecordType=type;
+}
+
+function openResidentDirect(rid, type){
+  closeQRPicker();
+  trackRecentResident(rid);
+  S.currentRes=rid;
+  S.tlOffset=0;
+  S.currentService=null;
+  S.quickRecordType=type;
+  showScr('scr-detail');
+  renderDetail();
+  const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
+  if(modalMap[type]) setTimeout(()=>eval(modalMap[type]),300);
+}
+
+function closeQRPicker(){
+  const el=document.getElementById('qr-picker');
+  if(el)el.style.display='none';
+}
+
 // ═══════════ NAVIGATION ═══════════
 function showScr(id){
   closeMobileMenu();
@@ -3766,6 +3880,7 @@ function closeSvcSheet(){document.getElementById('svc-sheet').style.display='non
 
 // ═══════════ DASHBOARD ═══════════
 function renderDashboard(){
+  renderQuickActions();
   renderBackupBanner();
   const now=new Date();
   document.getElementById('dash-date').textContent=
@@ -3979,6 +4094,7 @@ function renderSvcEntry(){
 }
 function openFromSvc(rid){
   S.currentRes=rid;
+  trackRecentResident(rid);
   S.tlOffset=0;
   // S.currentService preserved from openSvcEntry
   showScr('scr-detail');
@@ -3987,6 +4103,7 @@ function openFromSvc(rid){
 // ═══════════ RESIDENT DETAIL ═══════════
 function openResident(id){
   S.currentRes=id;
+  trackRecentResident(id);
   S.tlOffset=0;
   S.currentService=null;
   showScr('scr-detail');
