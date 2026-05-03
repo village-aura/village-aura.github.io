@@ -4253,26 +4253,45 @@ function getMonthlyGoals(){return ls('monthly_goals')||{};}
 function saveMonthlyGoals(g){lsSet('monthly_goals',g);}
 function _mgKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 const MG_CAT_COLOR={'接遇':'#1565c0','安全':'#c62828','感染対策':'#2e7d32','ケアの質':'#6a1b9a','チームワーク':'#e65100','その他':'#546e7a'};
+const MG_DEFAULTS={
+  1:{category:'接遇',    body:'新年の挨拶をていねいに。笑顔と明るい声かけで利用者様の新年を明るく迎えましょう。'},
+  2:{category:'安全',    body:'転倒・転落予防を徹底しましょう。床の濡れや障害物の除去を確認し、ヒヤリハットは必ず報告・共有してください。'},
+  3:{category:'ケアの質', body:'季節の変わり目は体調変動に注意。バイタルの微妙な変化を見逃さず、早めに多職種で情報共有しましょう。'},
+  4:{category:'チームワーク',body:'新年度スタート。新メンバーを温かく迎え、役割分担と報告・連絡・相談を徹底してチームの土台を整えましょう。'},
+  5:{category:'感染対策', body:'連休明けの感染リスクに備えます。手洗い・手指消毒の徹底と環境整備で、施設内感染ゼロを目指しましょう。'},
+  6:{category:'接遇',    body:'梅雨の時期は気分が沈みがち。利用者様への明るい声かけと、体調変化への細やかな気づきを意識してください。'},
+  7:{category:'安全',    body:'熱中症予防の徹底。こまめな水分補給の促しと室温・湿度の管理を意識し、熱中症ゼロを全員で目指しましょう。'},
+  8:{category:'ケアの質', body:'夏の体力低下に備えた食事・水分ケアを丁寧に。食欲不振や体重減少の早期察知と個別対応を心がけましょう。'},
+  9:{category:'チームワーク',body:'秋の行事は全員で協力して準備しましょう。役割分担と情報共有を密に行い、利用者様が喜ぶひとときを届けましょう。'},
+ 10:{category:'感染対策', body:'インフルエンザ・ノロウイルスの季節に備えます。手指衛生と換気・消毒を徹底し、早期発見・早期対応を全員で実践しましょう。'},
+ 11:{category:'接遇',    body:'一年の感謝を言葉で伝える月。利用者様・ご家族への言葉づかいと笑顔を改めて見直し、信頼関係を深めましょう。'},
+ 12:{category:'安全',    body:'年末年始の繁忙期こそ安全第一。焦らず丁寧に動き、ヒヤリハットの共有と環境整備を怠らないようにしましょう。'}
+};
+function _mgEffective(key,month){
+  const goals=getMonthlyGoals();
+  return goals[key]||MG_DEFAULTS[month]||null;
+}
 function renderMonthlyGoal(){
   const el=document.getElementById('monthly-goal-card');
   if(!el)return;
   const now=new Date();
   const key=_mgKey(now);
-  const label=now.getFullYear()+'年'+(now.getMonth()+1)+'月の目標';
-  const goals=getMonthlyGoals();
-  const g=goals[key];
+  const month=now.getMonth()+1;
+  const label=now.getFullYear()+'年'+month+'月の目標';
+  const g=_mgEffective(key,month);
   const admin=isAdmin();
+  const isCustom=!!(getMonthlyGoals()[key]);
   if(g){
     const cc=MG_CAT_COLOR[g.category]||'#1565c0';
     const bodyEsc=(g.body||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     el.innerHTML='<div style="background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden">'
       +'<div style="background:linear-gradient(90deg,'+cc+','+cc+'cc);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:8px">'
         +'<span style="font-size:14px;font-weight:800">🎯 '+label+'</span>'
-        +'<span style="background:rgba(255,255,255,.25);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700">'+( g.category||'')+'</span>'
+        +'<span style="background:rgba(255,255,255,.25);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700">'+(g.category||'')+'</span>'
         +(admin?'<button onclick="openMonthlyGoalEdit()" style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">✏️ 編集</button>':'')
       +'</div>'
       +'<div style="padding:10px 14px 6px;font-size:13px;line-height:1.7;color:var(--txt);white-space:pre-wrap">'+bodyEsc+'</div>'
-      +(g.updatedBy?'<div style="padding:0 14px 8px;font-size:10px;color:var(--sub)">設定: '+g.updatedBy+'　'+((g.updatedAt||'').slice(0,10))+'</div>':'')
+      +(isCustom&&g.updatedBy?'<div style="padding:0 14px 8px;font-size:10px;color:var(--sub)">設定: '+g.updatedBy+'　'+((g.updatedAt||'').slice(0,10))+'</div>':'')
     +'</div>';
   } else if(admin){
     el.innerHTML='<div style="background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:10px 14px;display:flex;align-items:center;gap:10px">'
@@ -4288,20 +4307,25 @@ function openMonthlyGoalEdit(){
   if(!isAdmin()){toast('管理者のみ設定できます');return;}
   const now=new Date();
   const curKey=_mgKey(now);
-  const curLabel=now.getFullYear()+'年'+(now.getMonth()+1)+'月（今月）';
+  const curMonth=now.getMonth()+1;
+  const curLabel=now.getFullYear()+'年'+curMonth+'月（今月）';
   const nxt=new Date(now.getFullYear(),now.getMonth()+1,1);
   const nxtKey=_mgKey(nxt);
-  const nxtLabel=nxt.getFullYear()+'年'+(nxt.getMonth()+1)+'月（来月）';
+  const nxtMonth=nxt.getMonth()+1;
+  const nxtLabel=nxt.getFullYear()+'年'+nxtMonth+'月（来月）';
   const sel=document.getElementById('mg-month');
   sel.innerHTML='<option value="'+curKey+'">'+curLabel+'</option><option value="'+nxtKey+'">'+nxtLabel+'</option>';
   const goals=getMonthlyGoals();
-  function fillForm(k){
-    const gg=goals[k]||{};
+  function fillForm(k,m){
+    const gg=goals[k]||MG_DEFAULTS[m]||{};
     document.getElementById('mg-category').value=gg.category||'接遇';
     document.getElementById('mg-body').value=gg.body||'';
   }
-  fillForm(curKey);
-  sel.onchange=function(){fillForm(sel.value);};
+  fillForm(curKey,curMonth);
+  sel.onchange=function(){
+    const isNxt=sel.value===nxtKey;
+    fillForm(isNxt?nxtKey:curKey, isNxt?nxtMonth:curMonth);
+  };
   openModal('modal-monthly-goal');
 }
 function saveMonthlyGoalEdit(){
