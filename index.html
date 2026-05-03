@@ -843,6 +843,15 @@ a{color:var(--p);text-decoration:none}
     <button class="sch-fab" onclick="openSchAdd()">＋</button>
   </div>
 
+  <!-- ─── VITAL ALERT ─── -->
+  <div id="scr-vital-alert" class="scr">
+    <div style="padding:14px 16px 8px">
+      <div style="font-size:18px;font-weight:800;color:var(--ng);margin-bottom:2px">🚨 要注意バイタル</div>
+      <div style="font-size:12px;color:var(--sub)">基準値を外れた最新バイタルの利用者一覧</div>
+    </div>
+    <div id="vital-alert-list" style="padding:0 12px 16px"></div>
+  </div>
+
   <!-- ─── SETTINGS ─── -->
   <div id="scr-settings" class="scr">
     <div class="acc-wrap">
@@ -3881,7 +3890,7 @@ function renderQuickActions(){
 }
 
 function quickRecord(type, label, ico){
-  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents','vital_alert':'scr-residents','urgent_rec':'scr-handover-board'};
+  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents','vital_alert':'scr-vital-alert','urgent_rec':'scr-handover-board'};
   if(specialNav[type]){showScr(specialNav[type]);return;}
   const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
   const recentIds=getRecentResidents();
@@ -3939,7 +3948,7 @@ function showScr(id){
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
     'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
-    'scr-svc-entry':'事業所から入力'
+    'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -3962,6 +3971,7 @@ function showScr(id){
   if(id==='scr-settings') renderSettings();
   if(id==='scr-help') initHelpScreen();
   if(id==='scr-proposal') renderProposalScr();
+  if(id==='scr-vital-alert') renderVitalAlert();
   window.scrollTo(0,0);
 }
 function goBack(){showScr(S.prevScreen||'scr-dashboard');}
@@ -3978,6 +3988,61 @@ function toggleSvcSheet(){const s=document.getElementById('svc-sheet');s.style.d
 function closeSvcSheet(){document.getElementById('svc-sheet').style.display='none';}
 
 // ═══════════ DASHBOARD ═══════════
+function renderVitalAlert(){
+  const listEl=document.getElementById('vital-alert-list');
+  if(!listEl)return;
+  const residents=getResidents();
+  const recs=getRecords();
+  const vKeys=['sys','dia','pulse','temp','spo2'];
+  const vLabel={sys:'収縮期血圧',dia:'拡張期血圧',pulse:'脈拍',temp:'体温',spo2:'SpO2'};
+  const vUnit={sys:'mmHg',dia:'mmHg',pulse:'回/分',temp:'℃',spo2:'%'};
+
+  // 利用者ごとに最新バイタルを取得
+  const latestVital={};
+  recs.filter(r=>r.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts)).forEach(r=>{
+    if(!latestVital[r.rid]) latestVital[r.rid]=r;
+  });
+
+  // 異常値のある利用者を抽出・ソート（異常項目数 多い順 → 新しい順）
+  const alertList=residents.map(res=>{
+    const v=latestVital[res.id];
+    if(!v) return null;
+    const abnItems=vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!==''&&vAbnormal(k,v.data[k],res.id));
+    if(!abnItems.length) return null;
+    return {res, v, abnItems, ts:new Date(v.ts)};
+  }).filter(Boolean).sort((a,b)=>b.abnItems.length-a.abnItems.length||b.ts-a.ts);
+
+  if(!alertList.length){
+    listEl.innerHTML='<div style="text-align:center;padding:40px 16px;color:var(--sub)">'
+      +'<div style="font-size:40px;margin-bottom:10px">✅</div>'
+      +'<div style="font-size:15px;font-weight:700">現在、要注意バイタルの利用者はいません</div></div>';
+    return;
+  }
+
+  const todayStr=new Date().toDateString();
+  listEl.innerHTML=alertList.map(({res,v,abnItems,ts})=>{
+    const dateStr=ts.toDateString()===todayStr?'今日 '+ts.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
+      :ts.toLocaleDateString('ja-JP',{month:'short',day:'numeric'})+' '+ts.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    const vitalsHtml=vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!=='').map(k=>{
+      const abn=vAbnormal(k,v.data[k],res.id);
+      const valStr=v.data[k]+(vUnit[k]||'');
+      return '<span style="display:inline-block;margin:2px 4px 2px 0;font-size:12px;'
+        +(abn?'color:#c62828;font-weight:800;background:#fff0f0;border:1px solid #ffcdd2;':'color:var(--tx);background:var(--bg);border:1px solid var(--bdr);')
+        +'border-radius:6px;padding:2px 7px">'+vLabel[k]+': '+valStr+'</span>';
+    }).join('');
+    return '<div onclick="openResident(\''+res.id+'\')" style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;border:2px solid '+(abnItems.length>=2?'#ffcdd2':'var(--bdr)')+';">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<div style="width:36px;height:36px;border-radius:50%;background:#ffebee;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚨</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:15px;font-weight:800">'+res.name+'<span style="font-size:11px;font-weight:400;color:var(--sub);margin-left:6px">'+(res.room?res.room+'号室':'')+'</span></div>'
+          +'<div style="font-size:11px;color:var(--sub)">異常 '+abnItems.length+'項目　'+(res.kana||'')+'</div>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--sub);flex-shrink:0;text-align:right">'+dateStr+'<br><span style="color:var(--ng);font-weight:700">›</span></div>'
+      +'</div>'
+      +'<div style="line-height:1.8">'+vitalsHtml+'</div>'
+    +'</div>';
+  }).join('');
+}
 function renderDashboard(){
   renderQuickActions();
   renderBackupBanner();
