@@ -1118,6 +1118,14 @@ a{color:var(--p);text-decoration:none}
               <span style="font-size:18px;color:var(--sub)">›</span>
             </div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔄 デモリセット</div>
+            <div class="setting-item" style="margin-bottom:8px">
+              <span class="si-ico">📥</span>
+              <div class="si-body">
+                <div class="si-name">5月分デモデータを挿入</div>
+                <div class="si-desc">全利用者の5月1〜31日分の記録を自動生成します</div>
+              </div>
+              <button onclick="loadMayDemoData()" style="background:var(--p);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">挿入</button>
+            </div>
             <div class="setting-item">
               <span class="si-ico">🔄</span>
               <div class="si-body">
@@ -7497,6 +7505,98 @@ function toast(msg){
 }
 
 // ═══════════ RESET ═══════════
+function loadMayDemoData(){
+  if(!confirm('5月1〜31日分のデモデータを挿入します。既存の5月分記録は上書きされます。続けますか？'))return;
+  const yr=2026,mo=5,days=31;
+  const recs=[];
+  let seq=10000;
+  // Deterministic LCG pseudo-random
+  function rnd(rid,d,n){
+    let h=((rid.charCodeAt(1)+1)*131+(d+1)*37+(n+1)*17)&0x7fffffff;
+    h=((h*1664525+1013904223)&0x7fffffff)>>>0;
+    return h/2147483647;
+  }
+  const PROFILES=[
+    {id:'r1', sysB:132,diaB:78, pB:70,tB:36.3,s2B:97, svc:'r',wtB:48.2},
+    {id:'r2', sysB:154,diaB:92, pB:76,tB:36.5,s2B:95, svc:'r',wtB:63.5},
+    {id:'r3', sysB:126,diaB:74, pB:68,tB:36.2,s2B:98, svc:'c',wd:[1,3,5]},
+    {id:'r4', sysB:130,diaB:80, pB:72,tB:36.4,s2B:96, svc:'r',wtB:57.8},
+    {id:'r5', sysB:120,diaB:70, pB:65,tB:36.2,s2B:97, svc:'c',wd:[1,3,4]},
+    {id:'r6', sysB:140,diaB:85, pB:78,tB:36.4,s2B:96, svc:'r',wtB:52.1},
+    {id:'r7', sysB:134,diaB:82, pB:72,tB:36.3,s2B:98, svc:'v',wd:[1,3,5]},
+    {id:'r8', sysB:155,diaB:90, pB:80,tB:36.3,s2B:94, svc:'r',wtB:44.6},
+    {id:'r9', sysB:124,diaB:72, pB:68,tB:36.3,s2B:98, svc:'c',wd:[2,4]},
+    {id:'r10',sysB:138,diaB:82, pB:74,tB:36.4,s2B:96, svc:'r',wtB:51.3},
+  ];
+  const SS=['s1','s2','s4','s5'];
+  // Special events (override BP on specific days)
+  const overrides={
+    r2:{7:{sys:168,dia:100}},
+    r1:{12:{sys:158,dia:95},13:{sys:162,dia:97},14:{sys:155,dia:93},15:{sys:148,dia:90}},
+    r8:{20:{sys:168,dia:98},21:{sys:172,dia:100},22:{sys:165,dia:95}},
+  };
+
+  for(const p of PROFILES){
+    for(let d=1;d<=days;d++){
+      const dow=new Date(yr,mo-1,d).getDay(); // 0=Sun
+      const ds=`${yr}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      let go=p.svc==='r';
+      if((p.svc==='c'||p.svc==='v')&&p.wd&&p.wd.includes(dow===0?7:dow)) go=true;
+      if(!go) continue;
+      const r=n=>rnd(p.id,d,n);
+      const sid=SS[(r(0)*4)|0];
+      const ov=(overrides[p.id]||{})[d]||{};
+      const sys=ov.sys||Math.round(p.sysB+(r(1)*2-1)*14);
+      const dia=ov.dia||Math.round(p.diaB+(r(2)*2-1)*9);
+      const pulse=Math.round(p.pB+(r(3)*2-1)*7);
+      const temp=+(p.tB+(r(4)*2-1)*0.3).toFixed(1);
+      const spo2=Math.min(100,Math.round(p.s2B+(r(5)*2-1)*2));
+      const vm=String(((r(6)*29)|0)+1).padStart(2,'0');
+      recs.push({id:'md'+(seq++),type:'vital',rid:p.id,staffId:sid,
+        ts:`${ds}T00:${vm}:00.000Z`,
+        data:{sys,dia,pulse,temp,spo2,cons:'alert',note:''}});
+      if(p.svc==='r'){
+        const sb=Math.round(7+r(7)*3),sl=Math.round(7+r(8)*3),sd=Math.round(5+r(9)*5);
+        recs.push({id:'md'+(seq++),type:'meal',rid:p.id,staffId:sid,ts:`${ds}T00:30:00.000Z`,data:{mtype:'breakfast',staple:sb,side:sb,fluid:((r(10)*70)|0)+130,note:''}});
+        recs.push({id:'md'+(seq++),type:'meal',rid:p.id,staffId:sid,ts:`${ds}T03:00:00.000Z`,data:{mtype:'lunch',staple:sl,side:sl,fluid:((r(11)*80)|0)+180,note:''}});
+        recs.push({id:'md'+(seq++),type:'meal',rid:p.id,staffId:sid,ts:`${ds}T09:00:00.000Z`,data:{mtype:'dinner',staple:sd,side:sd,fluid:((r(12)*70)|0)+130,note:''}});
+        const urC=((r(13)*3)|0)+2;
+        const hasStool=r(14)>0.55;
+        recs.push({id:'md'+(seq++),type:'excretion',rid:p.id,staffId:sid,ts:`${ds}T02:00:00.000Z`,
+          data:{etype:'urine',urine:'normal',stool:hasStool?'○':'',portable:false,incon:false,lax:false,note:'',urineCount:urC}});
+        if(dow===1&&p.wtB){
+          const wt=+(p.wtB+(r(15)*2-1)*0.8).toFixed(1);
+          recs.push({id:'md'+(seq++),type:'weight',rid:p.id,staffId:sid,ts:`${ds}T01:30:00.000Z`,data:{weight:wt}});
+        }
+      } else if(p.svc==='c'){
+        recs.push({id:'md'+(seq++),type:'meal',rid:p.id,staffId:'s4',ts:`${ds}T03:00:00.000Z`,
+          data:{mtype:'lunch',staple:Math.round(7+r(7)*3),side:Math.round(7+r(8)*3),fluid:((r(9)*80)|0)+180,note:''}});
+      }
+    }
+  }
+  // Chrono notes (特記事項)
+  [{d:'2026-05-07',rid:'r2',st:'s1',pri:'urgent',  note:'収縮期血圧168mmHg。主治医へ報告済み。降圧剤（アムロジピン）増量を検討中。安静継続、30分毎に血圧測定。'},
+   {d:'2026-05-03',rid:'r8',st:'s1',pri:'important',note:'両下肢浮腫増悪あり。足背部に圧痕を確認。主治医へ報告し利尿剤調整予定。水分・塩分制限を強化。'},
+   {d:'2026-05-10',rid:'r8',st:'s1',pri:'normal',   note:'下肢浮腫やや軽減傾向。引き続き体重・浮腫の経過観察を継続する。'},
+   {d:'2026-05-08',rid:'r4',st:'s2',pri:'important',note:'3日間排便なし。腹部膨満感の訴えあり。緩下剤（マグミット2錠）投与。翌日排便確認（少量・硬便）。'},
+   {d:'2026-05-03',rid:'r1',st:'s3',pri:'normal',   note:'長男来訪。施設生活について説明。食事・水分制限の意義を説明し理解を得る。次回面談：6月上旬予定。'},
+   {d:'2026-05-15',rid:'r1',st:'s1',pri:'important',note:'血圧160/96、頭痛の訴えあり。主治医へ報告。安静にて経過観察、30分後145/88に改善。ご家族へも連絡済み。'},
+   {d:'2026-05-20',rid:'r6',st:'s5',pri:'urgent',   note:'昼食後ムセ込みあり。誤嚥を疑い摂食中止。STに介入依頼。食形態の見直し（ミキサー食への変更）を検討。'},
+   {d:'2026-05-12',rid:'r3',st:'s4',pri:'important',note:'デイ送迎後、施設内で転倒（転落なし）。右手擦り傷、消毒・包帯処置済み。ご家族へ電話報告済み。経過観察継続。'},
+   {d:'2026-05-18',rid:'r2',st:'s1',pri:'normal',   note:'降圧剤増量後、血圧140-148/88-92で安定傾向。引き続き朝夕バイタル測定を継続。'},
+   {d:'2026-05-25',rid:'r10',st:'s2',pri:'important',note:'38.2℃発熱。感冒症状あり。隔離対応実施。主治医へ報告、抗生剤処方。ご家族へ連絡済み。'},
+  ].forEach(n=>{
+    recs.push({id:'md'+(seq++),type:'chrono',rid:n.rid,staffId:n.st,
+      ts:n.d+'T05:00:00.000Z',
+      data:{tags:['経過観察'],priority:n.pri,content:n.note,handover:n.pri!=='normal'}});
+  });
+
+  const existing=(ls('records')||[]).filter(r=>!r.ts.startsWith('2026-05-'));
+  lsSet('records',[...existing,...recs]);
+  toast('5月分デモデータを挿入しました（'+recs.length+'件）');
+  renderDashboard();
+}
+
 function resetDemo(){
   if(!confirm('デモデータをリセットしますか？'))return;
   ['residents','records','handovers','schedules','board_data2'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
