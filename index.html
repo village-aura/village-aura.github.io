@@ -452,6 +452,12 @@ a{color:var(--p);text-decoration:none}
   .sch-bar{top:0}
   .sch-fab{bottom:20px}
 }
+#preview-banner{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b71c1c;color:#fff;padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;box-shadow:0 -2px 12px rgba(0,0,0,.3);display:none}
+#preview-banner .pb-role{display:flex;align-items:center;gap:8px}
+#preview-banner button{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700}
+.role-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.role-preview-btn{padding:12px 8px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;text-align:center;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.role-preview-btn .rpb-ico{font-size:20px}
 </style>
 </head>
 <body>
@@ -1075,10 +1081,29 @@ a{color:var(--p);text-decoration:none}
           </div></div>
         </div>
 
+        <!-- ロールプレビュー -->
+        <div class="acc-item" id="acc-role-preview">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">👁</span>
+            <span class="acc-ttl">画面確認（ロールプレビュー）</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:12px;color:var(--sub);margin-bottom:12px">各ロールのホーム画面を確認できます。プレビュー中は画面下部にバナーが表示されます。</div>
+            <div class="role-preview-grid" id="role-preview-grid"></div>
+          </div></div>
+        </div>
+
       </div><!-- /acc-admin-wrap -->
     </div><!-- /acc-wrap -->
   </div>
 
+  </div>
+
+  <!-- ROLE PREVIEW BANNER -->
+  <div id="preview-banner">
+    <div class="pb-role"><span id="preview-banner-ico">👁</span><span id="preview-banner-lbl">プレビュー中</span></div>
+    <button onclick="exitRolePreview()">← 管理者に戻る</button>
   </div>
 
   <!-- QUICK RECORD PICKER -->
@@ -2487,6 +2512,7 @@ const STAFF_INFO = {
   s5:{name:'中村 由美',role:'nurse',            loginId:'1005', pass:'aura01'},
   s6:{name:'山田 一郎',role:'super_admin',      loginId:'1006', pass:'aura170',admin:true},
   s7:{name:'佐藤 真理',role:'home_care',        loginId:'1007', pass:'aura01'},
+  s8:{name:'木村 誠司',role:'doctor',           loginId:'1008', pass:'aura01'},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);}
@@ -3273,9 +3299,48 @@ function renderSettings(){
     renderAccessSettings();
     renderProposalList();
     renderHistoryViewer();
+    renderRolePreviewGrid();
   } else {
     if(adminWrap) adminWrap.style.display='none';
   }
+}
+function renderRolePreviewGrid(){
+  const grid=document.getElementById('role-preview-grid');
+  if(!grid)return;
+  const roles=[
+    {role:'nurse',      ico:'🩺', label:'看護師'},
+    {role:'care',       ico:'🤝', label:'介護職員'},
+    {role:'home_care',  ico:'🏠', label:'居宅職員'},
+    {role:'doctor',     ico:'👨‍⚕️', label:'医師'},
+  ];
+  grid.innerHTML=roles.map(r=>{
+    const col=(ROLE_COLORS[r.role]||{}).bg||'#555';
+    return '<button class="role-preview-btn" style="background:'+col+'" onclick="enterRolePreview(\''+r.role+'\')">'
+      +'<span class="rpb-ico">'+r.ico+'</span><span>'+r.label+'</span></button>';
+  }).join('');
+}
+function enterRolePreview(role){
+  S._previewOrigRole=S.userRole;
+  S._previewMode=true;
+  S.userRole=role;
+  const info=ROLE_COLORS[role]||{};
+  const banner=document.getElementById('preview-banner');
+  if(banner){
+    banner.style.display='flex';
+    banner.style.background=info.bg||'#555';
+    document.getElementById('preview-banner-lbl').textContent=(info.label||role)+' として閲覧中';
+  }
+  showScr('scr-home');
+  renderDashboard();
+}
+function exitRolePreview(){
+  S.userRole=S._previewOrigRole||'super_admin';
+  S._previewMode=false;
+  S._previewOrigRole=null;
+  const banner=document.getElementById('preview-banner');
+  if(banner) banner.style.display='none';
+  showScr('scr-settings');
+  renderSettings();
 }
 function changePassword(){
   const cur=document.getElementById('pw-cur').value;
@@ -3301,7 +3366,7 @@ function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
   list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>{
-    const roleOrder={super_admin:0,facility_manager:1,nurse:2,care:3,medical_office:4,home_care:5};
+    const roleOrder={super_admin:0,facility_manager:1,nurse:2,care:3,medical_office:4,home_care:5,doctor:6};
     const ra=roleOrder[a[1].role]??9, rb=roleOrder[b[1].role]??9;
     if(ra!==rb) return ra-rb;
     return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
@@ -3764,6 +3829,11 @@ function getRoleQuickActions(){
     {type:'facesheet',label:'フェイスシート',sub:'利用者情報', ico:'📋', color:'#1565c0'},
     {type:'diary',    label:'業務日誌',     sub:'日報・記録', ico:'📔', color:'#c0392b'},
     {type:'schedule', label:'スケジュール',  sub:'予定・入力', ico:'📅', color:'#6a1b9a'},
+  ];
+  if(role==='doctor')return[
+    {type:'facesheet',label:'フェイスシート',sub:'利用者情報', ico:'🩺', color:'#c62828'},
+    {type:'handover', label:'申し送り',     sub:'確認・入力', ico:'📝', color:'#1565c0'},
+    {type:'schedule', label:'スケジュール',  sub:'来訪予定',   ico:'📅', color:'#2e7d32'},
   ];
   return[
     {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
@@ -4234,10 +4304,11 @@ function renderDetail(){
       grid.innerHTML=btns.map(key=>{const b=BTN_DEF[key];return`<button class="inp-btn" onclick="${b.fn}"><span class="ib-ico">${b.ico}</span><span class="ib-lbl">${b.lbl}</span></button>`;}).join('');
     }
   }
-  // 居宅職員: 入力セクション非表示・フェイスシートボタン強調
+  // 居宅職員・医師: 入力セクション非表示・フェイスシートボタン強調
+  const viewOnlyRole=S.userRole==='home_care'||S.userRole==='doctor';
   const inputSec=document.querySelector('.input-section');
-  if(inputSec) inputSec.style.display=S.userRole==='home_care'?'none':'';
-  if(S.userRole==='home_care'){
+  if(inputSec) inputSec.style.display=viewOnlyRole?'none':'';
+  if(viewOnlyRole){
     const fsBtns=document.querySelectorAll('.detail-hero button');
     fsBtns.forEach(b=>{
       if(b.textContent.includes('フェイスシート')){
