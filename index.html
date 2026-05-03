@@ -598,6 +598,8 @@ a{color:var(--p);text-decoration:none}
         </button>
       </div>
     </div>
+    <!-- 今月の目標 -->
+    <div id="monthly-goal-card" style="margin:0 12px 10px"></div>
     <!-- アラート所見 -->
     <div id="dash-urgent-sec" style="display:none;margin:12px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">
       <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
@@ -793,25 +795,8 @@ a{color:var(--p);text-decoration:none}
         <div id="hb-date-label" style="font-size:11px;color:var(--sub)"></div>
       </div>
     </div>
-    <!-- サ高住（朝/夕切替） -->
-    <div style="margin:4px 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
-      <div style="background:#1565c0;padding:10px 14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span onclick="toggleHbSection('sak')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🏠 サ高住から <span id="hb-sak-chev" style="font-size:11px;opacity:0.75;transition:transform .2s">▼</span></span>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span id="hb-sak-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
-            <button onclick="openBoardHandover('sak')" style="background:#fff;color:#1565c0;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
-          </div>
-        </div>
-        <div id="hb-sak-shift-row" style="display:flex;gap:6px">
-          <button id="sak-am-btn" onclick="switchSakShift('am')" style="flex:1;padding:6px;font-size:12px;font-weight:700;background:rgba(255,255,255,0.25);color:#fff;border:1.5px solid rgba(255,255,255,0.7);border-radius:7px;cursor:pointer">🌅 朝</button>
-          <button id="sak-pm-btn" onclick="switchSakShift('pm')" style="flex:1;padding:6px;font-size:12px;font-weight:700;background:transparent;color:rgba(255,255,255,0.65);border:1.5px solid rgba(255,255,255,0.3);border-radius:7px;cursor:pointer">🌆 夕</button>
-        </div>
-      </div>
-      <div id="hb-sak-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-sak-list"></div></div>
-    </div>
     <!-- 医師から -->
-    <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
+    <div style="margin:4px 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
       <div style="background:#c62828;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
         <span onclick="toggleHbSection('doctor')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🩺 医師から <span id="hb-doctor-chev" style="font-size:11px;opacity:0.75">▼</span></span>
         <div style="display:flex;align-items:center;gap:8px">
@@ -831,6 +816,23 @@ a{color:var(--p);text-decoration:none}
         </div>
       </div>
       <div id="hb-nurse-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-nurse-list"></div></div>
+    </div>
+    <!-- サ高住（朝/夕切替） -->
+    <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
+      <div style="background:#1565c0;padding:10px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span onclick="toggleHbSection('sak')" style="font-size:14px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none">🏠 サ高住から <span id="hb-sak-chev" style="font-size:11px;opacity:0.75;transition:transform .2s">▼</span></span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="hb-sak-count" style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px">0件</span>
+            <button onclick="openBoardHandover('sak')" style="background:#fff;color:#1565c0;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer">+ 追加</button>
+          </div>
+        </div>
+        <div id="hb-sak-shift-row" style="display:flex;gap:6px">
+          <button id="sak-am-btn" onclick="switchSakShift('am')" style="flex:1;padding:6px;font-size:12px;font-weight:700;background:rgba(255,255,255,0.25);color:#fff;border:1.5px solid rgba(255,255,255,0.7);border-radius:7px;cursor:pointer">🌅 朝</button>
+          <button id="sak-pm-btn" onclick="switchSakShift('pm')" style="flex:1;padding:6px;font-size:12px;font-weight:700;background:transparent;color:rgba(255,255,255,0.65);border:1.5px solid rgba(255,255,255,0.3);border-radius:7px;cursor:pointer">🌆 夕</button>
+        </div>
+      </div>
+      <div id="hb-sak-body" style="background:#fff;padding:10px 12px 4px"><div id="hb-sak-list"></div></div>
     </div>
     <!-- 小多機から -->
     <div style="margin:0 12px 10px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
@@ -2431,6 +2433,33 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div id="pdetail-actions"></div>
     <button class="btn-cancel" onclick="closeModal('modal-proposal-detail')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
+<!-- MONTHLY GOAL EDIT -->
+<div class="overlay" id="modal-monthly-goal" onclick="closeModal('modal-monthly-goal',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🎯 今月の目標を設定</div>
+    <div class="field"><label>対象月</label>
+      <select id="mg-month" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--txt)"></select>
+    </div>
+    <div class="field"><label>カテゴリ</label>
+      <select id="mg-category" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--txt)">
+        <option value="接遇">接遇</option>
+        <option value="安全">安全</option>
+        <option value="感染対策">感染対策</option>
+        <option value="ケアの質">ケアの質</option>
+        <option value="チームワーク">チームワーク</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+    <div class="field"><label>目標テキスト</label>
+      <textarea id="mg-body" rows="4" placeholder="例：笑顔であいさつ。利用者様の話を最後まで聴く。"></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveMonthlyGoalEdit()">保存</button>
+    <button onclick="deleteMonthlyGoal()" style="width:100%;padding:12px;background:#fff0f0;color:#c62828;border-radius:10px;font-size:14px;font-weight:700;margin-top:6px">🗑 この月の目標を削除</button>
+    <button class="btn-cancel" onclick="closeModal('modal-monthly-goal')">キャンセル</button>
   </div>
 </div>
 
@@ -4219,9 +4248,89 @@ function renderVitalAlert(){
     +'</div>';
   }).join('');
 }
+// ── 今月の目標 ──
+function getMonthlyGoals(){return ls('monthly_goals')||{};}
+function saveMonthlyGoals(g){lsSet('monthly_goals',g);}
+function _mgKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+const MG_CAT_COLOR={'接遇':'#1565c0','安全':'#c62828','感染対策':'#2e7d32','ケアの質':'#6a1b9a','チームワーク':'#e65100','その他':'#546e7a'};
+function renderMonthlyGoal(){
+  const el=document.getElementById('monthly-goal-card');
+  if(!el)return;
+  const now=new Date();
+  const key=_mgKey(now);
+  const label=now.getFullYear()+'年'+(now.getMonth()+1)+'月の目標';
+  const goals=getMonthlyGoals();
+  const g=goals[key];
+  const admin=isAdmin();
+  if(g){
+    const cc=MG_CAT_COLOR[g.category]||'#1565c0';
+    const bodyEsc=(g.body||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    el.innerHTML='<div style="background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden">'
+      +'<div style="background:linear-gradient(90deg,'+cc+','+cc+'cc);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:14px;font-weight:800">🎯 '+label+'</span>'
+        +'<span style="background:rgba(255,255,255,.25);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700">'+( g.category||'')+'</span>'
+        +(admin?'<button onclick="openMonthlyGoalEdit()" style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">✏️ 編集</button>':'')
+      +'</div>'
+      +'<div style="padding:10px 14px 6px;font-size:13px;line-height:1.7;color:var(--txt);white-space:pre-wrap">'+bodyEsc+'</div>'
+      +(g.updatedBy?'<div style="padding:0 14px 8px;font-size:10px;color:var(--sub)">設定: '+g.updatedBy+'　'+((g.updatedAt||'').slice(0,10))+'</div>':'')
+    +'</div>';
+  } else if(admin){
+    el.innerHTML='<div style="background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:10px 14px;display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:18px;opacity:.4">🎯</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--sub)">'+label+'が設定されていません</span>'
+      +'<button onclick="openMonthlyGoalEdit()" style="background:var(--p);color:#fff;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700">設定する</button>'
+    +'</div>';
+  } else {
+    el.innerHTML='';
+  }
+}
+function openMonthlyGoalEdit(){
+  if(!isAdmin()){toast('管理者のみ設定できます');return;}
+  const now=new Date();
+  const curKey=_mgKey(now);
+  const curLabel=now.getFullYear()+'年'+(now.getMonth()+1)+'月（今月）';
+  const nxt=new Date(now.getFullYear(),now.getMonth()+1,1);
+  const nxtKey=_mgKey(nxt);
+  const nxtLabel=nxt.getFullYear()+'年'+(nxt.getMonth()+1)+'月（来月）';
+  const sel=document.getElementById('mg-month');
+  sel.innerHTML='<option value="'+curKey+'">'+curLabel+'</option><option value="'+nxtKey+'">'+nxtLabel+'</option>';
+  const goals=getMonthlyGoals();
+  function fillForm(k){
+    const gg=goals[k]||{};
+    document.getElementById('mg-category').value=gg.category||'接遇';
+    document.getElementById('mg-body').value=gg.body||'';
+  }
+  fillForm(curKey);
+  sel.onchange=function(){fillForm(sel.value);};
+  openModal('modal-monthly-goal');
+}
+function saveMonthlyGoalEdit(){
+  const key=document.getElementById('mg-month').value;
+  const category=document.getElementById('mg-category').value;
+  const body=document.getElementById('mg-body').value.trim();
+  if(!body){toast('目標テキストを入力してください');return;}
+  const goals=getMonthlyGoals();
+  goals[key]={category,body,updatedBy:S.user,updatedAt:new Date().toISOString()};
+  saveMonthlyGoals(goals);
+  closeModal('modal-monthly-goal');
+  renderMonthlyGoal();
+  toast('目標を保存しました');
+}
+function deleteMonthlyGoal(){
+  const key=document.getElementById('mg-month').value;
+  const goals=getMonthlyGoals();
+  if(!goals[key]){closeModal('modal-monthly-goal');return;}
+  delete goals[key];
+  saveMonthlyGoals(goals);
+  closeModal('modal-monthly-goal');
+  renderMonthlyGoal();
+  toast('削除しました');
+}
+
 function renderDashboard(){
   renderQuickActions();
   renderBackupBanner();
+  renderMonthlyGoal();
   const now=new Date();
   document.getElementById('dash-date').textContent=
     now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
