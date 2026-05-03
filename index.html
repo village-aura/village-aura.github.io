@@ -446,9 +446,11 @@ a{color:var(--p);text-decoration:none}
   /* handover board */
   #scr-handover-board.on{max-width:900px;margin:0 auto;padding:4px 0}
   #scr-handover-board .card{margin:0}
-  /* settings / import */
+  /* settings / import / diary / proposal */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
+  #scr-diary{max-width:800px;margin:0 auto}
+  #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
   .sch-bar{top:0}
@@ -980,17 +982,19 @@ a{color:var(--p);text-decoration:none}
         </div></div>
       </div>
 
-      <!-- ─── 改善提案 ─── -->
-      <div class="acc-item">
-        <button class="acc-hd" onclick="toggleAcc(this)">
-          <span class="acc-ico">💡</span>
-          <span class="acc-ttl">改善提案</span>
-          <i class="acc-arrow">›</i>
-        </button>
-        <div class="acc-body"><div class="acc-inner">
-          <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">気づいたこと・使いにくいと感じたことを気軽に送ってください。管理者が確認します。</div>
-          <button onclick="openProposalForm()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を送る</button>
-        </div></div>
+      <!-- ─── 改善提案（非管理者のみ表示） ─── -->
+      <div id="acc-proposal-user" style="display:none">
+        <div class="acc-item">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">💡</span>
+            <span class="acc-ttl">改善提案</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">気づいたこと・使いにくいと感じたことを気軽に送ってください。管理者が確認します。</div>
+            <button onclick="openProposalForm()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を送る</button>
+          </div></div>
+        </div>
       </div>
 
       <!-- ─── 管理者専用 ─── -->
@@ -3422,8 +3426,10 @@ function renderSettings(){
   if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
   if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminWrap=document.getElementById('acc-admin-wrap');
+  const propUser=document.getElementById('acc-proposal-user');
   if(isAdmin()){
     if(adminWrap) adminWrap.style.display='block';
+    if(propUser) propUser.style.display='none';
     renderAdminStaffList();
     renderAccessSettings();
     renderProposalList();
@@ -3431,6 +3437,7 @@ function renderSettings(){
     renderRolePreviewGrid();
   } else {
     if(adminWrap) adminWrap.style.display='none';
+    if(propUser) propUser.style.display='block';
   }
 }
 function renderRolePreviewGrid(){
