@@ -579,7 +579,7 @@ a{color:var(--p);text-decoration:none}
           <span class="qi">🚗</span>
           <div class="ql">訪問介護</div>
         </button>
-        <button class="quick-btn" onclick="openSvcEntry('nursing')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;align-items:center;text-align:center;touch-action:manipulation">
+        <button class="quick-btn" onclick="showScr('scr-schedule');S.schedScope='nursing';renderSchedule()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;align-items:center;text-align:center;touch-action:manipulation">
           <div style="font-size:20px;margin-bottom:4px">💊</div>
           <div class="ql">訪問看護</div>
         </button>
@@ -1187,7 +1187,7 @@ a{color:var(--p);text-decoration:none}
         <button onclick="openSvcEntry('visit');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
           <div style="font-size:20px;margin-bottom:4px">🚗</div>訪問介護
         </button>
-        <button onclick="openSvcEntry('nursing');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
+        <button onclick="closeSvcSheet();showScr('scr-schedule');S.schedScope='nursing';renderSchedule()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #00796b;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
           <div style="font-size:20px;margin-bottom:4px">💊</div>訪問看護
         </button>
       </div>
@@ -2574,7 +2574,7 @@ const SVC_BTNS = {
   commute: ['attendance','vital','meal','excretion','chrono','handover'],
   stay:    ['attendance','vital','meal','excretion','chrono','weight','handover'],
   visit:   ['visit_report','chrono','handover'],
-  nursing: ['vital','chrono','handover'],
+  nursing: ['handover'],
 };
 const BTN_DEF = {
   vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openModal('modal-vital')"},
@@ -4839,10 +4839,20 @@ function renderDiary(){
   if(lbl)lbl.textContent=label;
   const nxt=document.getElementById('diary-date-next');
   if(nxt){nxt.style.opacity=S_diary_offset===0?'.35':'1';nxt.style.pointerEvents=S_diary_offset===0?'none':'';}
-  const rpts=DIARY_REPORTS[S_diary_tab]||[];
   const el=document.getElementById('diary-report-cards');
-  if(el)el.innerHTML=rpts.map(_renderReportCard).join('');
   const vs=document.getElementById('diary-visit-section');
+  if(vs)vs.style.display='none';
+  if(S_diary_tab==='nursing'){
+    if(el)el.innerHTML='<div style="background:var(--card);border-radius:14px;padding:20px;text-align:center;box-shadow:var(--sh)">'
+      +'<div style="font-size:36px;margin-bottom:10px">💊</div>'
+      +'<div style="font-size:15px;font-weight:800;margin-bottom:6px">訪問看護</div>'
+      +'<div style="font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:16px">訪問看護の記録は電子カルテで管理しています。<br>訪問予定の確認・入力はスケジュールから行えます。</div>'
+      +'<button onclick="showScr(\'scr-schedule\');S.schedScope=\'nursing\';renderSchedule()" style="background:#00796b;color:#fff;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700">📅 訪問看護スケジュールを開く</button>'
+      +'</div>';
+    return;
+  }
+  const rpts=DIARY_REPORTS[S_diary_tab]||[];
+  if(el)el.innerHTML=rpts.map(_renderReportCard).join('');
   if(vs)vs.style.display=S_diary_tab==='visit'?'block':'none';
   if(S_diary_tab==='visit')_renderVisitList();
 }
