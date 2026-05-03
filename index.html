@@ -548,7 +548,6 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <!-- 居宅職員ビュー -->
-    <div id="home-care-browse" style="display:none"></div>
     <!-- クイック記録 -->
     <div style="margin:8px 12px 0">
       <div class="sec-head-sm">⚡ クイック記録</div>
@@ -3832,53 +3831,6 @@ function closeQRPicker(){
   if(el)el.style.display='none';
 }
 
-// ── 居宅職員ビュー ──
-function renderHomeCareView(){
-  const wrap=document.getElementById('home-care-browse');
-  const qaWrap=document.querySelector('#qa-grid');
-  const isHC=S.userRole==='home_care';
-  if(wrap) wrap.style.display=isHC?'block':'none';
-  if(!wrap||!isHC) return;
-  const residents=getResidents();
-  const recs=getRecords();
-  const todayStr=new Date().toDateString();
-  const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
-  const cards=residents.map(r=>{
-    const todayVitals=recs.filter(rc=>rc.rid===r.id&&rc.type==='vital'&&new Date(rc.ts).toDateString()===todayStr).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-    const lv=todayVitals[0];
-    const svcs=(r.services||[]).map(s=>tagLabel[s]||s).join('・');
-    const bpWarn=lv&&(vAbnormal('sys',lv.data.sys,r.id)||vAbnormal('dia',lv.data.dia,r.id));
-    const vColor=bpWarn?'#e53935':lv?'var(--ok)':'var(--sub)';
-    const photoHtml=r.photo?'<img src="'+r.photo+'" style="width:52px;height:52px;object-fit:cover">':'👤';
-    const vitalHtml=lv?'BP '+lv.data.sys+'/'+lv.data.dia+'　脈 '+(lv.data.pulse||'──')+'　体温 '+(lv.data.temp||'──')+'℃':'本日バイタル未記録';
-    return '<div onclick="openHomeCareResident(\''+r.id+'\')" style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh);display:flex;gap:12px;align-items:center;cursor:pointer;touch-action:manipulation;border-left:4px solid var(--p)">'
-      +'<div style="flex-shrink:0;width:52px;height:52px;border-radius:50%;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:28px">'+photoHtml+'</div>'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:16px;font-weight:800">'+r.name+'　様</div>'
-      +'<div style="font-size:12px;color:var(--sub);margin-top:2px">'+r.age+'歳 · '+(r.gender==='female'?'女性':'男性')+' · '+(svcs||'──')+'</div>'
-      +'<div style="font-size:12px;font-weight:700;color:'+vColor+';margin-top:4px">'+vitalHtml+'</div>'
-      +'</div>'
-      +'<span style="color:var(--sub);font-size:22px;flex-shrink:0">›</span>'
-      +'</div>';
-  }).join('');
-  wrap.innerHTML='<div style="margin:0 12px 10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
-    +'<button onclick="showScr(\'scr-handover-board\')" style="padding:11px 4px;background:var(--card);border-radius:12px;font-size:12px;font-weight:800;color:#00796b;border:2px solid #00796b;box-shadow:var(--sh)">📣<br>申し送り</button>'
-    +'<button onclick="showScr(\'scr-schedule\')" style="padding:11px 4px;background:var(--card);border-radius:12px;font-size:12px;font-weight:800;color:#6a1b9a;border:2px solid #6a1b9a;box-shadow:var(--sh)">📅<br>スケジュール</button>'
-    +'<button onclick="showScr(\'scr-diary\')" style="padding:11px 4px;background:var(--card);border-radius:12px;font-size:12px;font-weight:800;color:#c0392b;border:2px solid #c0392b;box-shadow:var(--sh)">📔<br>業務日誌</button>'
-    +'</div>'
-    +'<div class="sec-head">👤 利用者情報</div>'
-    +'<div style="padding:0 12px 8px">'+cards+'</div>';
-}
-
-function openHomeCareResident(rid){
-  trackRecentResident(rid);
-  S.currentRes=rid;
-  S.tlOffset=0;
-  S.currentService=null;
-  showScr('scr-detail');
-  renderDetail();
-  setTimeout(()=>openFacesheet(),250);
-}
 
 // ═══════════ NAVIGATION ═══════════
 function showScr(id){
@@ -3932,7 +3884,6 @@ function closeSvcSheet(){document.getElementById('svc-sheet').style.display='non
 // ═══════════ DASHBOARD ═══════════
 function renderDashboard(){
   renderQuickActions();
-  renderHomeCareView();
   renderBackupBanner();
   const now=new Date();
   document.getElementById('dash-date').textContent=
