@@ -3857,9 +3857,9 @@ function getRoleQuickActions(){
     {type:'schedule', label:'スケジュール',  sub:'予定・入力', ico:'📅', color:'#6a1b9a'},
   ];
   if(role==='doctor')return[
-    {type:'facesheet',label:'フェイスシート',sub:'利用者情報', ico:'🩺', color:'#c62828'},
-    {type:'handover', label:'申し送り',     sub:'確認・入力', ico:'📝', color:'#1565c0'},
-    {type:'schedule', label:'スケジュール',  sub:'来訪予定',   ico:'📅', color:'#2e7d32'},
+    {type:'vital_alert', label:'要注意バイタル', sub:'アラート確認', ico:'🚨', color:'#c62828'},
+    {type:'urgent_rec',  label:'緊急・重要記録', sub:'経時・申し送り',ico:'⚠️', color:'#e65100'},
+    {type:'handover',    label:'申し送り入力',   sub:'医師指示・記録',ico:'📝', color:'#1565c0'},
   ];
   return[
     {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
@@ -3881,7 +3881,7 @@ function renderQuickActions(){
 }
 
 function quickRecord(type, label, ico){
-  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents'};
+  const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents','vital_alert':'scr-residents','urgent_rec':'scr-handover-board'};
   if(specialNav[type]){showScr(specialNav[type]);return;}
   const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
   const recentIds=getRecentResidents();
@@ -3948,8 +3948,8 @@ function showScr(id){
   back.style.display=isHome?'none':'block';
   if(menuBtn)menuBtn.style.display=isHome?'':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
-  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-schedule':'bn-sch','scr-settings':'bn-set','scr-help':'bn-help','scr-proposal':'bn-prop','scr-diary':'bn-diary'};
-  if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
+  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set'};
+  if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
   const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
