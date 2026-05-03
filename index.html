@@ -4026,10 +4026,13 @@ function setFilter(f){
   });
   renderResList();
 }
+function hiraToKata(s){return s.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
 function renderResList(){
   const q=(document.getElementById('search-inp').value||'').toLowerCase();
+  const qk=hiraToKata(q);
   const res=getResidents().filter(r=>{
-    const matchQ=!q||r.name.toLowerCase().includes(q)||r.kana.toLowerCase().includes(q);
+    const kana=(r.kana||'').toLowerCase();
+    const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
     const matchF=S.filter==='all'||r.services.includes(S.filter);
     return matchQ&&matchF;
   }).sort((a,b)=>a.kana.localeCompare(b.kana,'ja'));
