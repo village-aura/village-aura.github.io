@@ -1240,10 +1240,13 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- 事業所入力シート -->
+  <div id="svc-backdrop" onclick="closeSvcSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299"></div>
   <div id="svc-sheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:300">
-    <div onclick="closeSvcSheet()" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:-1"></div>
     <div style="background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.15)">
-      <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:10px">🖊 事業所を選んで入力</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.07em">🖊 事業所を選んで入力</div>
+        <button onclick="closeSvcSheet()" style="background:var(--bg);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
         <button onclick="openSvcEntry('resident');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #3D7AB5;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
           <div style="font-size:20px;margin-bottom:4px">🏠</div>サ高住
@@ -4118,8 +4121,18 @@ function toggleMobileMenu(){
   }
 }
 function closeMobileMenu(){document.getElementById('mobile-menu').classList.remove('on');}
-function toggleSvcSheet(){const s=document.getElementById('svc-sheet');s.style.display=s.style.display==='none'?'block':'none';}
-function closeSvcSheet(){document.getElementById('svc-sheet').style.display='none';}
+function toggleSvcSheet(){
+  const s=document.getElementById('svc-sheet');
+  const b=document.getElementById('svc-backdrop');
+  const open=s.style.display==='none';
+  s.style.display=open?'block':'none';
+  if(b)b.style.display=open?'block':'none';
+}
+function closeSvcSheet(){
+  document.getElementById('svc-sheet').style.display='none';
+  const b=document.getElementById('svc-backdrop');
+  if(b)b.style.display='none';
+}
 
 // ═══════════ DASHBOARD ═══════════
 function getDoctorConfirmed(){return ls('doctor_confirmed')||{};}
