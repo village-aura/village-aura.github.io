@@ -374,6 +374,9 @@ a{color:var(--p);text-decoration:none}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
 
+/* diary split-pane (mobile: right panel hidden) */
+.diary-right{display:none}
+
 /* ── TABLET 768px ── */
 @media(min-width:768px){
   body{max-width:none}
@@ -383,6 +386,11 @@ a{color:var(--p);text-decoration:none}
   .inp-grid{grid-template-columns:repeat(6,1fr)}
   #scr-handover-board.on{padding:4px 0}
   #scr-handover-board .card{margin-bottom:0}
+  /* diary split layout */
+  #scr-diary{max-width:none;margin:0;padding-bottom:0}
+  .diary-split{display:flex;align-items:flex-start}
+  .diary-left{width:340px;flex-shrink:0}
+  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 116px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr)}
 }
 
 /* ── SCHEDULE ── */
@@ -449,7 +457,8 @@ a{color:var(--p);text-decoration:none}
   /* settings / import / diary / proposal */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
-  #scr-diary{max-width:800px;margin:0 auto}
+  #scr-diary{max-width:none;margin:0}
+  .diary-right{top:0;height:100vh}
   #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
@@ -1303,15 +1312,37 @@ a{color:var(--p);text-decoration:none}
       <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);flex:1;text-align:center"></span>
       <button onclick="changeDiaryDate(1)" id="diary-date-next" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">▶</button>
     </div>
-    <!-- Report cards -->
-    <div id="diary-report-cards" style="padding:12px"></div>
-    <!-- Visit record input (visit tab only) -->
-    <div id="diary-visit-section" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--card);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)">
-        <div style="font-size:13px;font-weight:700">📝 訪問記録入力</div>
-        <button onclick="openVisitReportModal()" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;touch-action:manipulation">＋ 追加</button>
+    <!-- Split container: left=list, right=inline preview (tablet only) -->
+    <div class="diary-split">
+      <!-- Left panel -->
+      <div class="diary-left">
+        <div id="diary-report-cards" style="padding:12px"></div>
+        <!-- Visit record input (visit tab only) -->
+        <div id="diary-visit-section" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--card);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)">
+            <div style="font-size:13px;font-weight:700">📝 訪問記録入力</div>
+            <button onclick="openVisitReportModal()" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;touch-action:manipulation">＋ 追加</button>
+          </div>
+          <div id="diary-visit-list" style="padding:10px 12px"></div>
+        </div>
       </div>
-      <div id="diary-visit-list" style="padding:10px 12px"></div>
+      <!-- Right panel: tablet inline preview -->
+      <div id="diary-right-panel" class="diary-right">
+        <div id="diary-right-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--sub);padding:24px;text-align:center">
+          <div style="font-size:48px">📊</div>
+          <div style="font-size:12px;line-height:1.8">帳票カードの<br>プレビューをタップすると<br>ここに表示されます</div>
+        </div>
+        <div id="diary-right-content" style="display:none;flex-direction:column;flex:1;min-height:0">
+          <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:6px;padding:8px 10px;flex-shrink:0">
+            <span id="diary-right-title" style="flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">帳票プレビュー</span>
+            <button onclick="rpRightZoom()" id="diary-right-zoom-btn" style="background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700;touch-action:manipulation">🔍縮</button>
+            <button onclick="printRightPanel()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;touch-action:manipulation">🖨</button>
+          </div>
+          <div id="diary-right-scroll" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0">
+            <iframe id="diary-right-iframe" scrolling="no" style="width:100%;border:none;background:#fff;display:block"></iframe>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1392,8 +1423,10 @@ a{color:var(--p);text-decoration:none}
   <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));flex-shrink:0">
     <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">← 戻る</button>
     <span id="rp-title" style="flex:1;font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">帳票プレビュー</span>
-    <button id="rp-zoom-btn" onclick="rpZoom()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
-    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button id="rp-zoom-btn" onclick="rpZoom()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;touch-action:manipulation">🔍縮</button>
+      <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation">🖨</button>
+    </div>
   </div>
   <div id="rp-scroll-wrap" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0;background:#fff">
     <iframe id="rp-iframe" scrolling="no" style="width:100%;border:none;background:#fff;display:block;min-height:100%"></iframe>
@@ -5228,12 +5261,17 @@ function previewReport(id){
     if(fn)html=fn(dateStr);
   }
   if(!html)return;
+  if(window.innerWidth>=768&&document.getElementById('diary-right-panel')){
+    showInRightPanel(html,(rdef.ico||'')+' '+rdef.title);
+    return;
+  }
   const modal=document.getElementById('modal-report-preview');
   const iframe=document.getElementById('rp-iframe');
   const title=document.getElementById('rp-title');
   if(!modal||!iframe)return;
   if(title)title.textContent=rdef.ico+' '+rdef.title;
   _rpZoom=1;
+  iframe.style.width='100%';
   iframe.srcdoc=html;
   iframe.onload=_rpAutoZoom;
   modal.style.display='flex';
@@ -5255,12 +5293,17 @@ function previewAllKojin(id){
 <style>${_PCSS()}.pb{page-break-after:always}</style></head><body>
 ${bodies}
 <button class="prbtn" onclick="window.print()">🖨 全員印刷（${ress.length}名）</button></body></html>`;
+  if(window.innerWidth>=768&&document.getElementById('diary-right-panel')){
+    showInRightPanel(combined,`👥 個人記録一括（${ress.length}名） ${yr}年${mo}月`);
+    return;
+  }
   const modal=document.getElementById('modal-report-preview');
   const iframe=document.getElementById('rp-iframe');
   const title=document.getElementById('rp-title');
   if(!modal||!iframe)return;
   if(title)title.textContent=`👥 個人記録一括（${ress.length}名） ${yr}年${mo}月`;
   _rpZoom=1;
+  iframe.style.width='100%';
   iframe.srcdoc=combined;
   iframe.onload=_rpAutoZoom;
   modal.style.display='flex';
@@ -5302,16 +5345,80 @@ function rpZoom(){
     if(!body)return;
     if(_rpZoom<1){
       _rpZoom=1;body.style.zoom=1;
+      f.style.width=d.documentElement.scrollWidth+'px';
       if(btn)btn.textContent='🔍縮';
     }else{
+      f.style.width='100%';
       const cw=d.documentElement.scrollWidth;
-      const fw=f.clientWidth||window.innerWidth;
+      const fw=(document.getElementById('rp-scroll-wrap')||f).clientWidth||window.innerWidth;
       _rpZoom=cw>fw+20?Math.floor(fw/cw*100)/100:0.6;
       body.style.zoom=_rpZoom;
       if(btn)btn.textContent='🔍標';
     }
     setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
+}
+function showInRightPanel(html,title){
+  const empty=document.getElementById('diary-right-empty');
+  const content=document.getElementById('diary-right-content');
+  const iframe=document.getElementById('diary-right-iframe');
+  const titleEl=document.getElementById('diary-right-title');
+  if(!iframe)return;
+  if(empty)empty.style.display='none';
+  if(content)content.style.display='flex';
+  if(titleEl)titleEl.textContent=title||'帳票プレビュー';
+  _rpRightZoom=1;
+  iframe.style.width='100%';
+  iframe.srcdoc=html;
+  iframe.onload=_rpRightAutoZoom;
+}
+let _rpRightZoom=1;
+function _rpRightAutoZoom(){
+  try{
+    const f=document.getElementById('diary-right-iframe');
+    if(!f||!f.contentDocument||!f.contentDocument.body)return;
+    const d=f.contentDocument;
+    const cw=d.documentElement.scrollWidth;
+    const fw=f.clientWidth||400;
+    if(cw>fw+20){
+      _rpRightZoom=Math.floor(fw/cw*100)/100;
+      d.body.style.zoom=_rpRightZoom;
+      f.style.width='100%';
+    }else{
+      _rpRightZoom=1;
+      f.style.width='100%';
+    }
+    const h=d.documentElement.scrollHeight||d.body.scrollHeight||400;
+    f.style.height=h+'px';
+  }catch(e){}
+}
+function rpRightZoom(){
+  const f=document.getElementById('diary-right-iframe');
+  const btn=document.getElementById('diary-right-zoom-btn');
+  if(!f)return;
+  try{
+    const d=f.contentDocument;
+    const body=d&&d.body;
+    if(!body)return;
+    if(_rpRightZoom<1){
+      _rpRightZoom=1;body.style.zoom=1;
+      f.style.width=d.documentElement.scrollWidth+'px';
+      if(btn)btn.textContent='🔍縮';
+    }else{
+      f.style.width='100%';
+      const cw=d.documentElement.scrollWidth;
+      const fw=f.clientWidth||400;
+      _rpRightZoom=cw>fw+20?Math.floor(fw/cw*100)/100:0.7;
+      body.style.zoom=_rpRightZoom;
+      if(btn)btn.textContent='🔍標';
+    }
+    const h=d.documentElement.scrollHeight||d.body.scrollHeight||400;
+    f.style.height=h+'px';
+  }catch(e){}
+}
+function printRightPanel(){
+  const f=document.getElementById('diary-right-iframe');
+  if(f&&f.contentWindow)f.contentWindow.print();
 }
 function closeReportPreview(){
   const m=document.getElementById('modal-report-preview');
