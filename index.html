@@ -2742,6 +2742,8 @@ const FB_CONFIG={
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
 const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports'];
+const FB_SYS_EMAIL='facility@village-aura.local';
+const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
 
@@ -2752,9 +2754,8 @@ let _aiKey='', _aiKeyUnsub=null;
     db.enablePersistence({synchronizeTabs:true}).catch(e=>{
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
     });
-    await firebase.auth().signInAnonymously();
-    fbReady=true;
-  }catch(e){console.warn('Firebase unavailable:',e);}
+    // 匿名サインインは使わない。ログイン成功後にsignInWithEmailAndPasswordを呼ぶ
+  }catch(e){console.warn('Firebase init error:',e);}
 })();
 
 function fsSet(key,value){
@@ -2931,6 +2932,14 @@ async function login(){
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
+  // Firebase Auth サインイン（匿名ではなくパスワード認証）
+  try{
+    await firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS);
+    fbReady=true;
+  }catch(e){
+    console.warn('Firebase Auth failed:',e);
+    toast('⚠️ ネットワーク未接続 - オフラインモードで動作します');
+  }
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
   startAIKeySync();
   setTimeout(showTutorial, 600);
@@ -2941,6 +2950,8 @@ function logout(){
   _doLogout();
 }
 function _doLogout(){
+  firebase.auth().signOut().catch(()=>{});
+  fbReady=false;
   clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
   aiHistory=[];
   const aiEl=document.getElementById('ai-messages');
@@ -3874,10 +3885,17 @@ function renderHistPanel(){
 }
 
 function addAuditLog(action,detail=''){
+  const entry={ts:new Date().toISOString(),user:S.user||'未ログイン',action,detail};
   const logs=ls('audit_log')||[];
-  logs.unshift({ts:new Date().toISOString(),user:S.user||'未ログイン',action,detail});
+  logs.unshift(entry);
   if(logs.length>500)logs.splice(500);
   lsSet('audit_log',logs);
+  if(fbReady&&db){
+    db.collection('va_audit').add({
+      ...entry,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(e=>console.warn('auditLog write:',e));
+  }
 }
 function renderAuditLog(){
   const el=document.getElementById('audit-log-list');if(!el)return;
