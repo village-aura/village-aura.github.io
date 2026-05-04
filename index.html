@@ -1240,7 +1240,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- 事業所入力シート -->
-  <div id="svc-backdrop" onclick="closeSvcSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299"></div>
+  <div id="svc-backdrop" onclick="closeSvcSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299;cursor:pointer;-webkit-tap-highlight-color:transparent"></div>
   <div id="svc-sheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:300">
     <div style="background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.15)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -1392,11 +1392,11 @@ a{color:var(--p);text-decoration:none}
   <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));flex-shrink:0">
     <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">← 戻る</button>
     <span id="rp-title" style="flex:1;font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">帳票プレビュー</span>
-    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨 印刷</button>
+    <button id="rp-zoom-btn" onclick="rpZoom()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
+    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
   </div>
-  <div style="position:relative;flex:1;min-height:0">
-    <iframe id="rp-iframe" scrolling="yes" style="width:100%;height:100%;border:none;background:#fff;display:block"></iframe>
-    <button id="rp-zoom-btn" onclick="rpZoom()" style="display:none;position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;background:rgba(28,35,64,.82);color:#fff;border:none;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.35);touch-action:manipulation;z-index:10">🔍縮</button>
+  <div id="rp-scroll-wrap" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0;background:#fff">
+    <iframe id="rp-iframe" scrolling="no" style="width:100%;border:none;background:#fff;display:block;min-height:100%"></iframe>
   </div>
 </div>
 
@@ -5266,21 +5266,30 @@ ${bodies}
   modal.style.display='flex';
 }
 let _rpZoom=1;
+function _rpSetIframeHeight(f){
+  try{
+    const h=f.contentDocument.documentElement.scrollHeight||f.contentDocument.body.scrollHeight||600;
+    f.style.height=h+'px';
+  }catch(e){}
+}
 function _rpAutoZoom(){
   try{
     const f=document.getElementById('rp-iframe');
     if(!f||!f.contentDocument||!f.contentDocument.body)return;
-    const cw=f.contentDocument.documentElement.scrollWidth;
-    const fw=f.clientWidth;
+    const d=f.contentDocument;
+    const cw=d.documentElement.scrollWidth;
+    const fw=f.clientWidth||window.innerWidth;
     const btn=document.getElementById('rp-zoom-btn');
     if(cw>fw+20){
       _rpZoom=Math.floor(fw/cw*100)/100;
-      f.contentDocument.body.style.zoom=_rpZoom;
-      if(btn){btn.textContent='🔍標準';btn.style.display='block';}
+      d.body.style.zoom=_rpZoom;
+      if(btn){btn.textContent='🔍縮';btn.style.display='inline-block';}
     }else{
       _rpZoom=1;
-      if(btn){btn.textContent='🔍縮小';btn.style.display='block';}
+      if(btn){btn.textContent='🔍縮';btn.style.display='inline-block';}
     }
+    // Expand iframe to full content height so outer div scrolls (iOS fix)
+    setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
 }
 function rpZoom(){
@@ -5288,18 +5297,20 @@ function rpZoom(){
   const btn=document.getElementById('rp-zoom-btn');
   if(!f)return;
   try{
-    const body=f.contentDocument&&f.contentDocument.body;
+    const d=f.contentDocument;
+    const body=d&&d.body;
     if(!body)return;
     if(_rpZoom<1){
       _rpZoom=1;body.style.zoom=1;
-      if(btn)btn.textContent='🔍縮小';
+      if(btn)btn.textContent='🔍縮';
     }else{
-      const cw=f.contentDocument.documentElement.scrollWidth;
-      const fw=f.clientWidth;
+      const cw=d.documentElement.scrollWidth;
+      const fw=f.clientWidth||window.innerWidth;
       _rpZoom=cw>fw+20?Math.floor(fw/cw*100)/100:0.6;
       body.style.zoom=_rpZoom;
-      if(btn)btn.textContent='🔍標準';
+      if(btn)btn.textContent='🔍標';
     }
+    setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
 }
 function closeReportPreview(){
