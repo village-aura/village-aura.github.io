@@ -2742,7 +2742,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings'];
 const FB_SYS_EMAIL='facility@village-aura.local';
 const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
 let db=null, fbReady=false, fbListeners=[];
@@ -2909,19 +2909,6 @@ async function login(){
       return;
     }
   }
-  // ── 端末制限チェック ──
-  const devId=getDeviceId();
-  registerDeviceIfNew();
-  const ds=getDeviceSettings();
-  if(ds.enabled){
-    const dev=ds.devices.find(d=>d.id===devId);
-    if(!dev||!dev.approved){
-      errEl.innerHTML='この端末は未承認です。管理者に承認を依頼してください。<br><span style="font-size:10px;opacity:.7">端末ID: '+devId+'</span>';
-      errEl.style.display='block';
-      addAuditLog('ログイン拒否（端末未承認）',inputId+' / '+devId);
-      return;
-    }
-  }
   const info=staffInfo;
   S.user=info.name;
   S.userRole=getStaffRole(staffKey);
@@ -2943,9 +2930,31 @@ async function login(){
       await firebase.auth().currentUser.getIdToken(true);
     }
     fbReady=true;
+    // Firestoreから端末設定・Wi-Fi設定を先に同期
+    for(const k of ['device_settings','wifi_settings']){
+      try{
+        const doc=await db.collection('va_data').doc(k).get();
+        if(doc.exists&&doc.data()?.data!==undefined)lsSet(k,doc.data().data);
+      }catch(e){}
+    }
   }catch(e){
     console.warn('Firebase Auth failed:',e);
     toast('⚠️ ネットワーク未接続 - オフラインモードで動作します');
+  }
+  // ── 端末制限チェック（Firestore同期後に実施）──
+  const devId=getDeviceId();
+  registerDeviceIfNew();
+  const ds=getDeviceSettings();
+  if(ds.enabled){
+    const dev=ds.devices.find(d=>d.id===devId);
+    if(!dev||!dev.approved){
+      firebase.auth().signOut().catch(()=>{});
+      fbReady=false;
+      errEl.innerHTML='この端末は未承認です。管理者に承認を依頼してください。<br><span style="font-size:10px;opacity:.7">端末ID: '+devId+'</span>';
+      errEl.style.display='block';
+      if(btnEl)btnEl.textContent='ログイン';
+      return;
+    }
   }
   addAuditLog('ログイン','ID: '+inputId);
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
@@ -3660,9 +3669,9 @@ function getDeviceId(){
   return id;
 }
 function getDeviceSettings(){return ls('device_settings')||{enabled:false,devices:[]};}
-function saveDeviceSettings(d){lsSet('device_settings',d);}
+function saveDeviceSettings(d){lsSet('device_settings',d);fsSet('device_settings',d);}
 function getWifiSettings(){return ls('wifi_settings')||{enabled:false,allowedIPs:[]};}
-function saveWifiSettings(d){lsSet('wifi_settings',d);}
+function saveWifiSettings(d){lsSet('wifi_settings',d);fsSet('wifi_settings',d);}
 
 async function fetchCurrentIP(){
   try{const r=await fetch('https://api.ipify.org?format=json');const d=await r.json();return d.ip;}
