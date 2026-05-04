@@ -921,11 +921,15 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── VITAL ALERT ─── -->
   <div id="scr-vital-alert" class="scr">
-    <div style="padding:14px 16px 8px">
+    <div style="padding:14px 16px 0">
       <div style="font-size:18px;font-weight:800;color:var(--ng);margin-bottom:2px">🚨 要注意バイタル</div>
-      <div style="font-size:12px;color:var(--sub)">基準値を外れた最新バイタルの利用者一覧</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:12px">基準値を外れた最新バイタルの利用者一覧</div>
+      <div style="display:flex;gap:8px;margin-bottom:0">
+        <button id="vatab-pending"   onclick="switchVaTab('pending')"   style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--ng);color:#fff;border:none">未確認 <span id="vatab-cnt"></span></button>
+        <button id="vatab-confirmed" onclick="switchVaTab('confirmed')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--bg);color:var(--ng);border:1.5px solid var(--ng)">確認済み</button>
+      </div>
     </div>
-    <div id="vital-alert-list" style="padding:0 12px 16px"></div>
+    <div id="vital-alert-list" style="padding:10px 12px 16px"></div>
   </div>
 
   <!-- ─── SETTINGS ─── -->
@@ -4208,6 +4212,24 @@ function renderUrgentRec(){
     listEl.innerHTML=html;
   }
 }
+function getVitalConfirmed(){return ls('vital_confirmed')||{};}
+function saveVitalConfirmed(d){lsSet('vital_confirmed',d);}
+function confirmVital(vitalId){
+  const d=getVitalConfirmed();
+  d[vitalId]={ts:new Date().toISOString(),by:S.user};
+  saveVitalConfirmed(d);
+  renderVitalAlert();
+  toast('確認済みにしました ✓');
+}
+let _vaTab='pending';
+function switchVaTab(tab){
+  _vaTab=tab;
+  ['pending','confirmed'].forEach(t=>{
+    const btn=document.getElementById('vatab-'+t);
+    if(btn){const active=t===tab;btn.style.background=active?'var(--ng)':'var(--bg)';btn.style.color=active?'#fff':'var(--ng)';btn.style.border=active?'none':'1.5px solid var(--ng)';}
+  });
+  renderVitalAlert();
+}
 function renderVitalAlert(){
   const listEl=document.getElementById('vital-alert-list');
   if(!listEl)return;
@@ -4216,52 +4238,81 @@ function renderVitalAlert(){
   const vKeys=['sys','dia','pulse','temp','spo2'];
   const vLabel={sys:'収縮期血圧',dia:'拡張期血圧',pulse:'脈拍',temp:'体温',spo2:'SpO2'};
   const vUnit={sys:'mmHg',dia:'mmHg',pulse:'回/分',temp:'℃',spo2:'%'};
+  const confirmed=getVitalConfirmed();
 
-  // 利用者ごとに最新バイタルを取得
   const latestVital={};
   recs.filter(r=>r.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts)).forEach(r=>{
     if(!latestVital[r.rid]) latestVital[r.rid]=r;
   });
 
-  // 異常値のある利用者を抽出・ソート（異常項目数 多い順 → 新しい順）
   const alertList=residents.map(res=>{
     const v=latestVital[res.id];
     if(!v) return null;
     const abnItems=vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!==''&&vAbnormal(k,v.data[k],res.id));
     if(!abnItems.length) return null;
-    return {res, v, abnItems, ts:new Date(v.ts)};
+    return {res,v,abnItems,ts:new Date(v.ts)};
   }).filter(Boolean).sort((a,b)=>b.abnItems.length-a.abnItems.length||b.ts-a.ts);
 
-  if(!alertList.length){
-    listEl.innerHTML='<div style="text-align:center;padding:40px 16px;color:var(--sub)">'
-      +'<div style="font-size:40px;margin-bottom:10px">✅</div>'
-      +'<div style="font-size:15px;font-weight:700">現在、要注意バイタルの利用者はいません</div></div>';
-    return;
-  }
+  const pending=alertList.filter(x=>!confirmed[x.v.id]);
+  const done=alertList.filter(x=>!!confirmed[x.v.id]).sort((a,b)=>new Date(confirmed[b.v.id].ts)-new Date(confirmed[a.v.id].ts));
+
+  const cntEl=document.getElementById('vatab-cnt');
+  if(cntEl)cntEl.textContent=pending.length?'('+pending.length+')':'';
 
   const todayStr=new Date().toDateString();
-  listEl.innerHTML=alertList.map(({res,v,abnItems,ts})=>{
-    const dateStr=ts.toDateString()===todayStr?'今日 '+ts.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
-      :ts.toLocaleDateString('ja-JP',{month:'short',day:'numeric'})+' '+ts.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
-    const vitalsHtml=vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!=='').map(k=>{
+  function fmtVTs(tsStr){const t=new Date(tsStr);return t.toDateString()===todayStr?'今日 '+t.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):t.toLocaleDateString('ja-JP',{month:'short',day:'numeric'})+' '+t.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});}
+  function mkVitalsHtml(v,res){
+    return vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!=='').map(k=>{
       const abn=vAbnormal(k,v.data[k],res.id);
-      const valStr=v.data[k]+(vUnit[k]||'');
-      return '<span style="display:inline-block;margin:2px 4px 2px 0;font-size:12px;'
-        +(abn?'color:#c62828;font-weight:800;background:#fff0f0;border:1px solid #ffcdd2;':'color:var(--tx);background:var(--bg);border:1px solid var(--bdr);')
-        +'border-radius:6px;padding:2px 7px">'+vLabel[k]+': '+valStr+'</span>';
+      return '<span style="display:inline-block;margin:2px 4px 2px 0;font-size:12px;'+(abn?'color:#c62828;font-weight:800;background:#fff0f0;border:1px solid #ffcdd2;':'color:var(--tx);background:var(--bg);border:1px solid var(--bdr);')+'border-radius:6px;padding:2px 7px">'+vLabel[k]+': '+v.data[k]+(vUnit[k]||'')+'</span>';
     }).join('');
-    return '<div onclick="openResident(\''+res.id+'\')" style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;border:2px solid '+(abnItems.length>=2?'#ffcdd2':'var(--bdr)')+';">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
-        +'<div style="width:36px;height:36px;border-radius:50%;background:#ffebee;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚨</div>'
-        +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:15px;font-weight:800">'+res.name+'<span style="font-size:11px;font-weight:400;color:var(--sub);margin-left:6px">'+(res.room?res.room+'号室':'')+'</span></div>'
-          +'<div style="font-size:11px;color:var(--sub)">異常 '+abnItems.length+'項目　'+(res.kana||'')+'</div>'
+  }
+
+  if(_vaTab==='pending'){
+    if(!pending.length){listEl.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub)"><div style="font-size:40px;margin-bottom:10px">✅</div><div style="font-size:15px;font-weight:700">未確認の要注意バイタルはありません</div></div>';return;}
+    listEl.innerHTML=pending.map(({res,v,abnItems})=>{
+      return '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:2px solid '+(abnItems.length>=2?'#ffcdd2':'var(--bdr)')+';">'
+        +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+          +'<div style="width:36px;height:36px;border-radius:50%;background:#ffebee;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚨</div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:15px;font-weight:800">'+res.name+'<span style="font-size:11px;font-weight:400;color:var(--sub);margin-left:6px">'+(res.room?res.room+'号室':'')+'</span></div>'
+            +'<div style="font-size:11px;color:var(--sub)">異常 '+abnItems.length+'項目　'+(res.kana||'')+'</div>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--sub);flex-shrink:0;text-align:right">'+fmtVTs(v.ts)+'</div>'
         +'</div>'
-        +'<div style="font-size:10px;color:var(--sub);flex-shrink:0;text-align:right">'+dateStr+'<br><span style="color:var(--ng);font-weight:700">›</span></div>'
-      +'</div>'
-      +'<div style="line-height:1.8">'+vitalsHtml+'</div>'
-    +'</div>';
-  }).join('');
+        +'<div style="line-height:1.8;margin-bottom:10px">'+mkVitalsHtml(v,res)+'</div>'
+        +'<div style="display:flex;gap:8px">'
+          +'<button onclick="confirmVital(''+v.id+'')" style="flex:1;padding:8px;border-radius:8px;background:var(--ng);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer">✓ 確認済みにする</button>'
+          +'<button onclick="openResident(''+res.id+'')" style="padding:8px 14px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bdr);font-size:13px;cursor:pointer">利用者を開く</button>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+  } else {
+    if(!done.length){listEl.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub)"><div style="font-size:40px;margin-bottom:10px">📋</div><div style="font-size:15px;font-weight:700">確認済みの要注意バイタルはありません</div></div>';return;}
+    const groups={};
+    done.forEach(x=>{
+      const c=confirmed[x.v.id];
+      const dKey=new Date(c.ts).toDateString();
+      if(!groups[dKey])groups[dKey]=[];
+      groups[dKey].push({...x,confirmedAt:c.ts,confirmedBy:c.by});
+    });
+    listEl.innerHTML=Object.keys(groups).map(dKey=>{
+      const dLabel=dKey===todayStr?'今日':new Date(dKey).toLocaleDateString('ja-JP',{month:'short',day:'numeric'});
+      return '<div style="margin-bottom:8px;font-size:11px;color:var(--sub);font-weight:700;padding:4px 0">'+dLabel+' 確認済み</div>'
+        +groups[dKey].map(({res,v,confirmedAt,confirmedBy})=>{
+          return '<div onclick="openResident(''+res.id+'')" style="opacity:.75;background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:1.5px solid var(--bdr);">'
+            +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
+              +'<div style="width:32px;height:32px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">✅</div>'
+              +'<div style="flex:1;min-width:0">'
+                +'<div style="font-size:14px;font-weight:800">'+res.name+'<span style="font-size:11px;font-weight:400;color:var(--sub);margin-left:6px">'+(res.room?res.room+'号室':'')+'</span></div>'
+                +'<div style="font-size:11px;color:var(--sub)">確認: '+fmtVTs(confirmedAt)+(confirmedBy?' ・ '+confirmedBy:'')+'</div>'
+              +'</div>'
+            +'</div>'
+            +'<div style="line-height:1.8">'+mkVitalsHtml(v,res)+'</div>'
+          +'</div>';
+        }).join('');
+    }).join('');
+  }
 }
 // ── 今月の目標 ──
 function getMonthlyGoals(){return ls('monthly_goals')||{};}
