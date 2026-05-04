@@ -7598,6 +7598,42 @@ function loadMayDemoData(){
       data:{tags:['経過観察'],priority:n.pri,content:n.note,handover:n.pri!=='normal'}});
   });
 
+  // ── 5/1 フルデモ（帳票プレビュー完全表示用） ──
+  // 日中特記（サ高住・小多機 業務日誌 ▌経時記録）
+  [
+    {rid:'r1',st:'s1',pri:'important',note:'朝バイタル：BP132/78、脈68、体温36.2℃。水分制限（1000ml/日）を本人に再説明し理解を得た。'},
+    {rid:'r4',st:'s2',pri:'normal',   note:'14時に訪問診療（木村医師）。BP128/80、現状維持。マグミット2錠/日継続。次回診察：6月1日予定。'},
+    {rid:'r6',st:'s4',pri:'normal',   note:'小多機デイ終了。リハビリ体操・折り紙に積極参加。全量摂取。笑顔で「楽しかった」との言葉あり。'},
+    {rid:'r8',st:'s1',pri:'important',note:'午前SpO2 93%。ベッドヘッドアップ・体位変換後94%に改善。主治医へ報告。酸素吸入は見合わせ継続観察。'},
+    {rid:'r2',st:'s2',pri:'normal',   note:'午後の血圧測定：154/90。降圧剤（アムロジピン）内服確認済み。夕方再測定で148/88に安定。'},
+    {rid:'r3',st:'s4',pri:'normal',   note:'デイ来所。送迎時ご本人より「先生とお話したい」と発言。次回訪問診療へ要望を申し伝える。'},
+  ].forEach(n=>{
+    recs.push({id:'md'+(seq++),type:'chrono',rid:n.rid,staffId:n.st,
+      ts:'2026-05-01T04:00:00.000Z',
+      data:{tags:['経過観察'],priority:n.pri,content:n.note,handover:n.pri!=='normal'}});
+  });
+  // 夜間バイタル（genYakin '2026-05-01': T21-T23Z = 表示21-23時、'2026-05-02' T00-T07Z = 表示00-07時）
+  [
+    {ts:'2026-05-01T21:30:00.000Z',rid:'r1', sys:130,dia:76,pulse:66,temp:36.1,spo2:97,note:'入眠中。問題なし。'},
+    {ts:'2026-05-01T22:15:00.000Z',rid:'r8', sys:158,dia:94,pulse:80,temp:36.4,spo2:93,note:'SpO2低下。体位変換実施。'},
+    {ts:'2026-05-01T23:00:00.000Z',rid:'r2', sys:152,dia:90,pulse:74,temp:36.3,spo2:95,note:'睡眠中。異常なし。'},
+    {ts:'2026-05-02T01:00:00.000Z',rid:'r4', sys:126,dia:78,pulse:70,temp:36.2,spo2:96,note:'排尿コール。トイレ介助後入眠。'},
+    {ts:'2026-05-02T03:00:00.000Z',rid:'r10',sys:136,dia:82,pulse:72,temp:36.3,spo2:95,note:'睡眠中。問題なし。'},
+    {ts:'2026-05-02T05:30:00.000Z',rid:'r8', sys:148,dia:88,pulse:78,temp:36.4,spo2:95,note:'起床。SpO2 95%に改善。'},
+  ].forEach(v=>{
+    recs.push({id:'md'+(seq++),type:'vital',rid:v.rid,staffId:'s1',ts:v.ts,
+      data:{sys:v.sys,dia:v.dia,pulse:v.pulse,temp:v.temp,spo2:v.spo2,cons:'alert',note:v.note}});
+  });
+  // 夜間特記（genYakin ▌夜間特記・経時記録）
+  recs.push({id:'md'+(seq++),type:'chrono',rid:'r8',staffId:'s1',
+    ts:'2026-05-01T22:20:00.000Z',
+    data:{tags:['夜間対応'],priority:'urgent',
+      content:'22:15 SpO2 93%確認。ヘッドアップ30°・体位変換実施。22:40に95%へ改善。30分毎に観察継続中。',handover:true}});
+  recs.push({id:'md'+(seq++),type:'chrono',rid:'r4',staffId:'s1',
+    ts:'2026-05-02T01:05:00.000Z',
+    data:{tags:['夜間対応'],priority:'normal',
+      content:'01:00 排尿コール。トイレ誘導・介助実施。転倒なし。そのまま入眠を確認。',handover:false}});
+
   // ── 出勤記録（attendance） ──
   // サ高住在籍確認（毎日）
   [['r1','09:00'],['r2','09:10'],['r4','09:05'],['r8','08:50'],['r10','09:15']].forEach(([rid,tf])=>{
