@@ -5450,40 +5450,92 @@ function genRiyohyo(year,month){
 function genShotGyomu(dateStr){
   const d=new Date(dateStr);
   const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
-  const residents=getResidents();
+  const allRes=getResidents();
   const records=getRecords().filter(r=>r.ts.startsWith(dateStr));
   const boardData=getBoardData();
   const attRecs=records.filter(r=>r.type==='attendance');
-  const commuteC=attRecs.filter(r=>r.data.service==='commute').length;
-  const visitC=attRecs.filter(r=>r.data.service==='visit').length;
-  const stayC=attRecs.filter(r=>r.data.service==='stay').length;
-  const vByR={};records.filter(r=>r.type==='vital').forEach(r=>{if(!vByR[r.rid])vByR[r.rid]=[];vByR[r.rid].push(r);});
-  const mByR={};records.filter(r=>r.type==='meal').forEach(r=>{if(!mByR[r.rid])mByR[r.rid]=[];mByR[r.rid].push(r);});
-  const resRows=residents.map((r,i)=>{
-    const mv=(vByR[r.id]||[])[0];
-    const ms=mByR[r.id]||[];
-    const bk=ms.find(m=>m.data.mtype==='breakfast');
-    const lk=ms.find(m=>m.data.mtype==='lunch');
-    const dk=ms.find(m=>m.data.mtype==='dinner');
-    const att=attRecs.find(a=>a.rid===r.id);
+  const visitReps=(getVisitReports()[dateStr]||[]);
+  const clabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||'');
+  // 通所・訪問・泊り を分離
+  const commuteAtts=attRecs.filter(a=>a.data.service==='commute');
+  const stayAtts=attRecs.filter(a=>a.data.service==='stay');
+  const commuteRes=commuteAtts.map(a=>({r:allRes.find(re=>re.id===a.rid),att:a})).filter(x=>x.r);
+  const stayRes=stayAtts.map(a=>({r:allRes.find(re=>re.id===a.rid),att:a})).filter(x=>x.r);
+  // 通所来所記録
+  const comRows=commuteRes.map(({r,att})=>`<tr>
+    <td>${r.name}　様</td>
+    <td style="text-align:center;width:12%">${att.data.timeFrom||''}</td>
+    <td style="text-align:center;width:12%">${att.data.timeTo||''}</td>
+    <td style="width:8%;text-align:center">${clabel(r.care)}</td>
+  </tr>`).join('')||`<tr><td colspan="4" style="text-align:center;color:#999">なし</td></tr>`;
+  // 訪問記録
+  const visitRows=visitReps.map(v=>`<tr>
+    <td>${v.resName||''}　様</td>
+    <td style="font-size:10px;text-align:center">${v.service||''}</td>
+    <td style="text-align:center;white-space:nowrap;width:10%">${v.timeFrom||''}</td>
+    <td style="text-align:center;white-space:nowrap;width:10%">${v.timeTo||''}</td>
+    <td>${v.staff||''}</td>
+  </tr>`).join('')||`<tr><td colspan="5" style="text-align:center;color:#999">なし</td></tr>`;
+  // 泊り利用者
+  const stayRows=stayRes.map(({r,att})=>`<tr>
+    <td>${r.name}　様</td>
+    <td style="text-align:center;width:13%">${att.data.timeFrom||''}</td>
+    <td style="text-align:center;width:13%">${att.data.timeTo||''}</td>
+    <td style="text-align:center;width:8%">□</td>
+    <td></td><td></td>
+  </tr>`).join('')||`<tr><td colspan="6" style="text-align:center;color:#999">なし</td></tr>`;
+  // 利用者個別記録（通所+泊り のバイタル・食事）
+  const vByR={};records.filter(r=>r.type==='vital').forEach(r=>{if(!vByR[r.rid])vByR[r.rid]=r;});
+  const mByR={};records.filter(r=>r.type==='meal').forEach(r=>{if(!mByR[r.rid])mByR[r.rid]={};mByR[r.rid][r.data.mtype]=r;});
+  const detailRes=[...commuteRes,...stayRes];
+  const detailRows=detailRes.length?detailRes.map(({r},i)=>{
+    const mv=vByR[r.id]; const ms=mByR[r.id]||{};
+    const lk=ms['lunch'], bk=ms['breakfast'], dk=ms['dinner'];
     return `<tr><td style="text-align:center">${i+1}</td><td>${r.name}様</td>
-      <td style="text-align:center">${att?att.data.timeFrom||'':''}</td><td style="text-align:center">${att?att.data.timeTo||'':''}</td>
-      <td style="text-align:center">${mv?mv.data.sys+'/'+mv.data.dia:''}</td><td style="text-align:center">${mv?mv.data.pulse:''}</td><td style="text-align:center">${mv?mv.data.temp:''}</td>
-      <td style="text-align:center">${bk?bk.data.staple:''}</td><td style="text-align:center">${lk?lk.data.staple:''}</td><td style="text-align:center">${dk?dk.data.staple:''}</td><td></td></tr>`;
-  }).join('');
+      <td style="text-align:center;font-size:10px">${clabel(r.care)}</td>
+      <td style="text-align:center">${mv?mv.data.sys+'/'+mv.data.dia:''}</td>
+      <td style="text-align:center">${mv?mv.data.pulse||'':''}</td>
+      <td style="text-align:center">${mv?mv.data.temp||'':''}</td>
+      <td style="text-align:center">${mv?mv.data.spo2||'':''}</td>
+      <td style="text-align:center">${bk?bk.data.staple:''}</td>
+      <td style="text-align:center">${lk?lk.data.staple:''}</td>
+      <td style="text-align:center">${dk?dk.data.staple:''}</td>
+      <td></td></tr>`;
+  }).join(''):`<tr><td colspan="11" style="text-align:center;color:#999">来所記録なし</td></tr>`;
+  // 経時記録
   const cRows=records.filter(r=>r.type==='chrono').map(r=>{
-    const res=residents.find(re=>re.id===r.rid);
+    const res=allRes.find(re=>re.id===r.rid);
     return `<tr><td style="text-align:center">${r.ts.slice(11,16)}</td><td>${res?res.name:''}</td><td>${(r.data.tags||[]).join(' ')}</td><td>${r.data.content||''}</td></tr>`;
   }).join('')||`<tr><td colspan="4" style="text-align:center;color:#999">なし</td></tr>`;
+  // 申し送り
   const shotE=(boardData.shot||[]);
-  const bRows=shotE.map(e=>{const rn=e.rid?getResidents().find(r=>r.id===e.rid)?.name||'':'全体';return`<tr><td>${rn}</td><td>${e.content||''}</td></tr>`;}).join('')||`<tr><td colspan="2" style="text-align:center;color:#999">なし</td></tr>`;
+  const bRows=shotE.map(e=>{const rn=e.rid?allRes.find(r=>r.id===e.rid)?.name||'':'全体';return`<tr><td>${rn}</td><td>${e.content||''}</td></tr>`;}).join('')||`<tr><td colspan="2" style="text-align:center;color:#999">なし</td></tr>`;
+  // 出勤者欄
+  const shiftH=['早出','日勤','夜勤','夜間対応'].map(s=>`<tr><td style="background:#f5f5f5;font-size:10px;text-align:center;width:15%">${s}</td><td></td></tr>`).join('');
+  const absentH=['看護師','有休','欠勤','遅刻'].map(s=>`<tr><td style="background:#f5f5f5;font-size:10px;text-align:center">${s}</td><td></td></tr>`).join('');
   return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>小多機 業務日誌</title><style>${_PCSS()}</style></head><body>
-<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">小規模多機能型居宅介護　業務日誌</span></div>
-<div style="display:flex;gap:20px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #ccc;font-size:11px">
-  <span>通い：<b>${commuteC+stayC}</b>名</span><span style="font-size:10px;color:#999">（デイ ${commuteC}・小多機 ${stayC}）</span><span>訪問：<b>${visitC}</b>名</span>
+<div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">小規模多機能型居宅介護　業務日誌</span><span class="hdr-date">記録者：　　　　</span></div>
+<div style="display:flex;gap:10px;margin-bottom:6px">
+  <div style="flex:2"><div class="sec" style="margin-top:0">▌勤務状況</div><table><tbody>${shiftH}</tbody></table></div>
+  <div style="flex:1"><div class="sec" style="margin-top:0">▌欠勤等</div><table><tbody>${absentH}</tbody></table></div>
+  <div style="flex:1;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;align-self:flex-start;margin-top:20px">
+    通い合計：<b>${commuteRes.length+stayRes.length}</b>名<br>訪問合計：<b>${visitReps.length}</b>名
+  </div>
 </div>
-<div class="sec">▌個別記録</div>
-<table><thead><tr><th style="width:4%"></th><th style="width:16%">氏名</th><th style="width:9%">来所</th><th style="width:9%">退所</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:6%">朝</th><th style="width:6%">昼</th><th style="width:6%">夕</th><th>特記</th></tr></thead><tbody>${resRows}</tbody></table>
+<div style="display:flex;gap:8px">
+  <div style="flex:1">
+    <div class="sec">▌通所　（${commuteRes.length}名）</div>
+    <table><thead><tr><th>氏名</th><th style="width:12%">来所</th><th style="width:12%">退所</th><th style="width:8%">介護度</th></tr></thead><tbody>${comRows}</tbody></table>
+  </div>
+  <div style="flex:1">
+    <div class="sec">▌訪問　（${visitReps.length}件）</div>
+    <table><thead><tr><th>氏名</th><th style="font-size:9px">種別</th><th style="width:10%">開始</th><th style="width:10%">終了</th><th>対応者</th></tr></thead><tbody>${visitRows}</tbody></table>
+  </div>
+</div>
+<div class="sec">▌泊り利用者　（${stayRes.length}名）</div>
+<table><thead><tr><th style="width:22%">氏名</th><th style="width:13%">退所時間</th><th style="width:13%">入所時間</th><th style="width:8%">入浴</th><th>担当者</th><th>特記</th></tr></thead><tbody>${stayRows}</tbody></table>
+<div class="sec">▌利用者記録（バイタル・食事）</div>
+<table><thead><tr><th style="width:4%"></th><th style="width:15%">氏名</th><th style="width:6%">介護度</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:7%">SpO₂</th><th style="width:5%">朝</th><th style="width:5%">昼</th><th style="width:5%">夕</th><th>様子・特記</th></tr></thead><tbody>${detailRows}</tbody></table>
 <div class="sec">▌経時記録</div>
 <table><thead><tr><th style="width:9%">時刻</th><th style="width:18%">利用者</th><th style="width:14%">種別</th><th>内容</th></tr></thead><tbody>${cRows}</tbody></table>
 <div class="sec">▌申し送り</div>
@@ -5501,21 +5553,23 @@ function genDayGyomu(dateStr){
   const dayRes=residents.filter(r=>attRecs.some(a=>a.rid===r.id));
   const vByR={};records.filter(r=>r.type==='vital').forEach(r=>{if(!vByR[r.rid])vByR[r.rid]=[];vByR[r.rid].push(r);});
   const mByR={};records.filter(r=>r.type==='meal').forEach(r=>{if(!mByR[r.rid])mByR[r.rid]=[];mByR[r.rid].push(r);});
+  const clabelD=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||'');
   const resRows=dayRes.length?dayRes.map((r,i)=>{
     const mv=(vByR[r.id]||[])[0];
     const lk=(mByR[r.id]||[]).find(m=>m.data.mtype==='lunch');
     const att=attRecs.find(a=>a.rid===r.id);
     return `<tr><td style="text-align:center">${i+1}</td><td>${r.name}様</td>
+      <td style="text-align:center;font-size:10px">${clabelD(r.care)}</td>
       <td style="text-align:center">${att?att.data.timeFrom||'':''}</td><td style="text-align:center">${att?att.data.timeTo||'':''}</td>
       <td style="text-align:center">${mv?mv.data.sys+'/'+mv.data.dia:''}</td><td style="text-align:center">${mv?mv.data.pulse:''}</td><td style="text-align:center">${mv?mv.data.temp:''}</td><td style="text-align:center">${mv?mv.data.spo2:''}</td>
       <td style="text-align:center">${lk?lk.data.staple+'割':''}</td><td style="text-align:center">${lk?lk.data.fluid||'':''}</td><td></td></tr>`;
-  }).join(''):`<tr><td colspan="11" style="text-align:center;color:#999">来所記録なし</td></tr>`;
+  }).join(''):`<tr><td colspan="12" style="text-align:center;color:#999">来所記録なし</td></tr>`;
   const dayE=(boardData.day||[]);
   const bRows=dayE.map(e=>{const rn=e.rid?getResidents().find(r=>r.id===e.rid)?.name||'':'全体';return`<tr><td>${rn}</td><td>${e.content||''}</td></tr>`;}).join('')||`<tr><td colspan="2" style="text-align:center;color:#999">なし</td></tr>`;
   return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>デイ 業務日誌</title><style>${_PCSS()}</style></head><body>
 <div class="hdr"><span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hdr-title">デイサービス　業務日誌</span><span class="hdr-date">利用者：<b>${dayRes.length}</b>名</span></div>
 <div class="sec">▌利用者記録</div>
-<table><thead><tr><th style="width:4%"></th><th style="width:17%">氏名</th><th style="width:9%">来所</th><th style="width:9%">退所</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:7%">SpO2</th><th style="width:6%">昼食</th><th style="width:7%">水分</th><th>特記</th></tr></thead><tbody>${resRows}</tbody></table>
+<table><thead><tr><th style="width:4%"></th><th style="width:14%">氏名</th><th style="width:6%">介護度</th><th style="width:8%">来所</th><th style="width:8%">退所</th><th style="width:11%">血圧</th><th style="width:6%">脈</th><th style="width:6%">体温</th><th style="width:7%">SpO₂</th><th style="width:6%">昼食</th><th style="width:7%">水分</th><th>様子・特記</th></tr></thead><tbody>${resRows}</tbody></table>
 <div class="sec">▌申し送り</div>
 <table><thead><tr><th style="width:20%">利用者</th><th>内容</th></tr></thead><tbody>${bRows}</tbody></table>
 <div class="sec">▌業務備考</div><div style="border:1px solid #555;min-height:60px;padding:6px"></div>
@@ -5569,18 +5623,19 @@ function genVisitGyomu(dateStr){
   const rowsHTML=rows.map((r,i)=>`<tr>
     <td style="text-align:center">${i+1}</td>
     <td>${r?r.resName+'　様':'　様'}</td>
-    <td style="text-align:center;font-size:10px;white-space:nowrap">${r?r.service||'':''}</td>
     <td style="text-align:center;white-space:nowrap">${r?(r.timeFrom||'')+'〜'+(r.timeTo||''):'〜'}</td>
+    <td style="font-size:10px;text-align:center;white-space:nowrap">${r?r.service||'':''}</td>
     <td>${r?r.content||'':''}</td>
-    <td>${r?r.staff||'':''}</td></tr>`).join('');
+    <td>${r?r.staff||'':''}</td>
+    <td></td></tr>`).join('');
   return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>業務日報（訪問介護）</title>
 <style>@page{size:A4 portrait;margin:12mm 10mm}body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:12px}
 .hd{display:flex;align-items:baseline;margin-bottom:10px}.hd-date{font-size:13px;white-space:nowrap}.hd-title{font-size:20px;font-weight:bold;margin:0 auto}
 table{width:100%;border-collapse:collapse}th{border:1px solid #333;padding:4px 5px;font-size:10px;background:#f5f5f5;text-align:center}td{border:1px solid #333;padding:2px 5px;font-size:11px;min-height:16px}
 @media print{.prbtn{display:none}}</style></head><body>
 <div class="hd"><span class="hd-date">令和${ry}年${mon}月${day}日（${wd}）</span><span class="hd-title">業務日報（訪問介護）</span></div>
-<table><thead><tr><th style="width:4%"></th><th style="width:15%">ご利用者様</th><th style="width:13%">サービス種別</th><th style="width:13%">訪問時間</th><th style="width:44%">業務内容</th><th style="width:11%">担当</th></tr></thead>
-<tbody>${rowsHTML}<tr><td style="writing-mode:vertical-rl;text-align:center;padding:4px">備考</td><td colspan="5" style="height:70px;vertical-align:top"></td></tr></tbody></table>
+<table><thead><tr><th style="width:4%"></th><th style="width:15%">ご利用者様</th><th style="width:13%">訪問時間</th><th style="width:11%">サービス種別</th><th style="width:37%">業務内容</th><th style="width:10%">担当</th><th style="width:10%">備考</th></tr></thead>
+<tbody>${rowsHTML}<tr><td colspan="7" style="height:50px;vertical-align:top;font-size:10px">備考：</td></tr></tbody></table>
 <button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
 }
 // ── 訪問介護記録（月次） ──
