@@ -460,8 +460,7 @@ a{color:var(--p);text-decoration:none}
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
   #scr-diary{max-width:none;margin:0;padding-bottom:0}
-  #diary-tab-bar,#diary-date-nav{width:340px}
-  .diary-right{position:fixed;left:580px;top:0;right:0;bottom:0;height:auto;z-index:10}
+  .diary-right{top:0;height:100vh}
   #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
@@ -5240,6 +5239,21 @@ function renderDiary(){
   if(el)el.innerHTML=rpts.map(_renderReportCard).join('');
   if(vs)vs.style.display=S_diary_tab==='visit'?'block':'none';
   if(S_diary_tab==='visit')_renderVisitList();
+  requestAnimationFrame(_fixDiaryRightDesktop);
+}
+function _fixDiaryRightDesktop(){
+  if(window.innerWidth<1024)return;
+  const dl=document.querySelector('.diary-left');
+  const dr=document.getElementById('diary-right-panel');
+  if(!dl||!dr)return;
+  const rect=dl.getBoundingClientRect();
+  dr.style.position='fixed';
+  dr.style.left=rect.right+'px';
+  dr.style.top='0';
+  dr.style.right='0';
+  dr.style.bottom='0';
+  dr.style.height='auto';
+  dr.style.zIndex='10';
 }
 function _renderReportCard(r){
   let extras='';
