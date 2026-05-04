@@ -4221,6 +4221,13 @@ function confirmVital(vitalId){
   renderVitalAlert();
   toast('確認済みにしました ✓');
 }
+function unconfirmVital(vitalId){
+  const d=getVitalConfirmed();
+  delete d[vitalId];
+  saveVitalConfirmed(d);
+  renderVitalAlert();
+  toast('未確認に戻しました');
+}
 let _vaTab='pending';
 function switchVaTab(tab){
   _vaTab=tab;
@@ -4300,7 +4307,7 @@ function renderVitalAlert(){
       const dLabel=dKey===todayStr?'今日':new Date(dKey).toLocaleDateString('ja-JP',{month:'short',day:'numeric'});
       return '<div style="margin-bottom:8px;font-size:11px;color:var(--sub);font-weight:700;padding:4px 0">'+dLabel+' 確認済み</div>'
         +groups[dKey].map(({res,v,confirmedAt,confirmedBy})=>{
-          return '<div onclick="openResident(\''+res.id+'\')" style="opacity:.75;background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:1.5px solid var(--bdr);">'
+          return '<div onclick="openResident(\''+res.id+'\')" style="opacity:.8;background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:1.5px solid var(--bdr);">'
             +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
               +'<div style="width:32px;height:32px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">✅</div>'
               +'<div style="flex:1;min-width:0">'
@@ -4308,7 +4315,10 @@ function renderVitalAlert(){
                 +'<div style="font-size:11px;color:var(--sub)">確認: '+fmtVTs(confirmedAt)+(confirmedBy?' ・ '+confirmedBy:'')+'</div>'
               +'</div>'
             +'</div>'
-            +'<div style="line-height:1.8">'+mkVitalsHtml(v,res)+'</div>'
+            +'<div style="line-height:1.8;margin-bottom:8px">'+mkVitalsHtml(v,res)+'</div>'
+            +'<div style="text-align:right">'
+              +'<button onclick="event.stopPropagation();unconfirmVital(\''+v.id+'\')" style="padding:5px 12px;border-radius:8px;background:var(--bg);color:var(--sub);border:1px solid var(--bdr);font-size:12px;cursor:pointer">↩ 未確認に戻す</button>'
+            +'</div>'
           +'</div>';
         }).join('');
     }).join('');
