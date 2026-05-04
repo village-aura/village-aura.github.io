@@ -459,8 +459,11 @@ a{color:var(--p);text-decoration:none}
   /* settings / import / diary / proposal */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
-  #scr-diary{max-width:none;margin:0}
-  .diary-right{top:0;height:100vh}
+  #scr-diary{max-width:none;margin:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
+  #scr-diary > div:not(.diary-split){flex-shrink:0}
+  .diary-split{flex:1;overflow:hidden;min-height:0}
+  .diary-left{overflow-y:auto;height:100%}
+  .diary-right{position:relative;top:auto;height:100%}
   #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
