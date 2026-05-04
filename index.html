@@ -1386,13 +1386,15 @@ a{color:var(--p);text-decoration:none}
 
 <!-- REPORT PREVIEW MODAL -->
 <div id="modal-report-preview" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column">
-  <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;flex-shrink:0">
-    <span id="rp-title" style="flex:1;font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">帳票プレビュー</span>
-    <button id="rp-zoom-btn" onclick="rpZoom()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
-    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
-    <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">✕</button>
+  <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));flex-shrink:0">
+    <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">← 戻る</button>
+    <span id="rp-title" style="flex:1;font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">帳票プレビュー</span>
+    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨 印刷</button>
   </div>
-  <iframe id="rp-iframe" style="flex:1;width:100%;border:none;background:#fff"></iframe>
+  <div style="position:relative;flex:1;min-height:0">
+    <iframe id="rp-iframe" scrolling="yes" style="width:100%;height:100%;border:none;background:#fff;display:block"></iframe>
+    <button id="rp-zoom-btn" onclick="rpZoom()" style="display:none;position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;background:rgba(28,35,64,.82);color:#fff;border:none;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.35);touch-action:manipulation;z-index:10">🔍縮</button>
+  </div>
 </div>
 
   <!-- PROPOSAL SCREEN -->
@@ -5257,11 +5259,14 @@ function _rpAutoZoom(){
     if(!f||!f.contentDocument||!f.contentDocument.body)return;
     const cw=f.contentDocument.documentElement.scrollWidth;
     const fw=f.clientWidth;
+    const btn=document.getElementById('rp-zoom-btn');
     if(cw>fw+20){
       _rpZoom=Math.floor(fw/cw*100)/100;
       f.contentDocument.body.style.zoom=_rpZoom;
-      const btn=document.getElementById('rp-zoom-btn');
-      if(btn)btn.textContent='🔍標';
+      if(btn){btn.textContent='🔍標準';btn.style.display='block';}
+    }else{
+      _rpZoom=1;
+      if(btn){btn.textContent='🔍縮小';btn.style.display='block';}
     }
   }catch(e){}
 }
@@ -5272,13 +5277,15 @@ function rpZoom(){
   try{
     const body=f.contentDocument&&f.contentDocument.body;
     if(!body)return;
-    if(_rpZoom<1){_rpZoom=1;body.style.zoom=1;if(btn)btn.textContent='🔍縮';}
-    else{
+    if(_rpZoom<1){
+      _rpZoom=1;body.style.zoom=1;
+      if(btn)btn.textContent='🔍縮小';
+    }else{
       const cw=f.contentDocument.documentElement.scrollWidth;
       const fw=f.clientWidth;
-      _rpZoom=cw>fw?Math.floor(fw/cw*100)/100:0.65;
+      _rpZoom=cw>fw+20?Math.floor(fw/cw*100)/100:0.6;
       body.style.zoom=_rpZoom;
-      if(btn)btn.textContent='🔍標';
+      if(btn)btn.textContent='🔍標準';
     }
   }catch(e){}
 }
