@@ -459,11 +459,10 @@ a{color:var(--p);text-decoration:none}
   /* settings / import / diary / proposal */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
-  #scr-diary{max-width:none;margin:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;padding-bottom:0}
-  #scr-diary > div:not(.diary-split){flex-shrink:0}
-  .diary-split{flex:1;overflow:hidden;min-height:0}
-  .diary-left{overflow-y:auto;height:100%}
-  .diary-right{position:relative;top:auto;height:100%}
+  #scr-diary{max-width:none;margin:0}
+  #diary-tab-bar{position:sticky;top:0;z-index:35;background:var(--card)}
+  #diary-date-nav{position:sticky;top:40px;z-index:35;background:var(--card)}
+  .diary-right{top:89px;height:calc(100vh - 89px)}
   #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
@@ -1304,7 +1303,7 @@ a{color:var(--p);text-decoration:none}
       <div style="font-size:12px;color:var(--sub)">日次記録・帳票プレビュー・印刷</div>
     </div>
     <!-- Service type tabs -->
-    <div style="display:flex;overflow-x:auto;border-bottom:2px solid var(--bdr);background:var(--card);-webkit-overflow-scrolling:touch">
+    <div id="diary-tab-bar" style="display:flex;overflow-x:auto;border-bottom:2px solid var(--bdr);background:var(--card);-webkit-overflow-scrolling:touch">
       <button id="dtab-sak"   class="dtab on"  onclick="setDiaryTab('sak')"   style="flex-shrink:0">🏠 サ高住</button>
       <button id="dtab-shot"  class="dtab"     onclick="setDiaryTab('shot')"  style="flex-shrink:0">🏡 小多機</button>
       <button id="dtab-day"   class="dtab"     onclick="setDiaryTab('day')"   style="flex-shrink:0">☀️ デイ</button>
@@ -1312,7 +1311,7 @@ a{color:var(--p);text-decoration:none}
       <button id="dtab-nursing" class="dtab"   onclick="setDiaryTab('nursing')" style="flex-shrink:0">💊 訪問看護</button>
     </div>
     <!-- Date navigation -->
-    <div style="display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
+    <div id="diary-date-nav" style="display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
       <button onclick="changeDiaryDate(-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">◀</button>
       <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);flex:1;text-align:center"></span>
       <button onclick="changeDiaryDate(1)" id="diary-date-next" style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center">▶</button>
