@@ -922,11 +922,11 @@ a{color:var(--p);text-decoration:none}
   <!-- ─── VITAL ALERT ─── -->
   <div id="scr-vital-alert" class="scr">
     <div style="padding:14px 16px 0">
-      <div style="font-size:18px;font-weight:800;color:var(--ng);margin-bottom:2px">🚨 要注意バイタル</div>
+      <div style="font-size:18px;font-weight:800;color:var(--warn);margin-bottom:2px">⚠️ 要注意バイタル</div>
       <div style="font-size:12px;color:var(--sub);margin-bottom:12px">基準値を外れた最新バイタルの利用者一覧</div>
       <div style="display:flex;gap:8px;margin-bottom:0">
-        <button id="vatab-pending"   onclick="switchVaTab('pending')"   style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--ng);color:#fff;border:none">未確認 <span id="vatab-cnt"></span></button>
-        <button id="vatab-confirmed" onclick="switchVaTab('confirmed')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--bg);color:var(--ng);border:1.5px solid var(--ng)">確認済み</button>
+        <button id="vatab-pending"   onclick="switchVaTab('pending')"   style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--warn);color:#fff;border:none">未確認 <span id="vatab-cnt"></span></button>
+        <button id="vatab-confirmed" onclick="switchVaTab('confirmed')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;background:var(--bg);color:var(--warn);border:1.5px solid var(--warn)">確認済み</button>
       </div>
     </div>
     <div id="vital-alert-list" style="padding:10px 12px 16px"></div>
@@ -4226,7 +4226,7 @@ function switchVaTab(tab){
   _vaTab=tab;
   ['pending','confirmed'].forEach(t=>{
     const btn=document.getElementById('vatab-'+t);
-    if(btn){const active=t===tab;btn.style.background=active?'var(--ng)':'var(--bg)';btn.style.color=active?'#fff':'var(--ng)';btn.style.border=active?'none':'1.5px solid var(--ng)';}
+    if(btn){const active=t===tab;btn.style.background=active?'var(--warn)':'var(--bg)';btn.style.color=active?'#fff':'var(--warn)';btn.style.border=active?'none':'1.5px solid var(--warn)';}
   });
   renderVitalAlert();
 }
@@ -4264,16 +4264,16 @@ function renderVitalAlert(){
   function mkVitalsHtml(v,res){
     return vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!=='').map(k=>{
       const abn=vAbnormal(k,v.data[k],res.id);
-      return '<span style="display:inline-block;margin:2px 4px 2px 0;font-size:12px;'+(abn?'color:#c62828;font-weight:800;background:#fff0f0;border:1px solid #ffcdd2;':'color:var(--tx);background:var(--bg);border:1px solid var(--bdr);')+'border-radius:6px;padding:2px 7px">'+vLabel[k]+': '+v.data[k]+(vUnit[k]||'')+'</span>';
+      return '<span style="display:inline-block;margin:2px 4px 2px 0;font-size:12px;'+(abn?'color:#b45309;font-weight:800;background:#fffbeb;border:1px solid #fcd34d;':'color:var(--tx);background:var(--bg);border:1px solid var(--bdr);')+'border-radius:6px;padding:2px 7px">'+vLabel[k]+': '+v.data[k]+(vUnit[k]||'')+'</span>';
     }).join('');
   }
 
   if(_vaTab==='pending'){
     if(!pending.length){listEl.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub)"><div style="font-size:40px;margin-bottom:10px">✅</div><div style="font-size:15px;font-weight:700">未確認の要注意バイタルはありません</div></div>';return;}
     listEl.innerHTML=pending.map(({res,v,abnItems})=>{
-      return '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:2px solid '+(abnItems.length>=2?'#ffcdd2':'var(--bdr)')+';">'
+      return '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:2px solid '+(abnItems.length>=2?'#fed7aa':'var(--bdr)')+';">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
-          +'<div style="width:36px;height:36px;border-radius:50%;background:#ffebee;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚨</div>'
+          +'<div style="width:36px;height:36px;border-radius:50%;background:#fff7ed;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚠️</div>'
           +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:15px;font-weight:800">'+res.name+'<span style="font-size:11px;font-weight:400;color:var(--sub);margin-left:6px">'+(res.room?res.room+'号室':'')+'</span></div>'
             +'<div style="font-size:11px;color:var(--sub)">異常 '+abnItems.length+'項目　'+(res.kana||'')+'</div>'
@@ -4282,8 +4282,8 @@ function renderVitalAlert(){
         +'</div>'
         +'<div style="line-height:1.8;margin-bottom:10px">'+mkVitalsHtml(v,res)+'</div>'
         +'<div style="display:flex;gap:8px">'
-          +'<button onclick="confirmVital(\''+v.id+'\')" style="flex:1;padding:8px;border-radius:8px;background:var(--ng);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer">✓ 確認済みにする</button>'
-          +'<button onclick="openResident(\''+res.id+'\')" style="padding:8px 14px;border-radius:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bdr);font-size:13px;cursor:pointer">利用者を開く</button>'
+          +'<button onclick="confirmVital(\''+v.id+'\')" style="flex:1;padding:8px;border-radius:8px;background:var(--ok);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer">✓ 確認済みにする</button>'
+          +'<button onclick="openResident(\''+res.id+'\')" style="padding:8px 14px;border-radius:8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:13px;cursor:pointer">利用者を開く</button>'
         +'</div>'
       +'</div>';
     }).join('');
