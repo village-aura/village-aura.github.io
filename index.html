@@ -1423,10 +1423,7 @@ a{color:var(--p);text-decoration:none}
   <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));flex-shrink:0">
     <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">← 戻る</button>
     <span id="rp-title" style="flex:1;font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">帳票プレビュー</span>
-    <div style="display:flex;gap:6px;flex-shrink:0">
-      <button id="rp-zoom-btn" onclick="rpZoom()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;touch-action:manipulation">🔍縮</button>
-      <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation">🖨</button>
-    </div>
+    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
   </div>
   <div id="rp-scroll-wrap" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0;background:#fff">
     <iframe id="rp-iframe" scrolling="no" style="width:100%;border:none;background:#fff;display:block;min-height:100%"></iframe>
@@ -5321,17 +5318,7 @@ function _rpAutoZoom(){
     if(!f||!f.contentDocument||!f.contentDocument.body)return;
     const d=f.contentDocument;
     const cw=d.documentElement.scrollWidth;
-    const fw=f.clientWidth||window.innerWidth;
-    const btn=document.getElementById('rp-zoom-btn');
-    if(cw>fw+20){
-      _rpZoom=Math.floor(fw/cw*100)/100;
-      d.body.style.zoom=_rpZoom;
-      if(btn){btn.textContent='🔍縮';btn.style.display='inline-block';}
-    }else{
-      _rpZoom=1;
-      if(btn){btn.textContent='🔍縮';btn.style.display='inline-block';}
-    }
-    // Expand iframe to full content height so outer div scrolls (iOS fix)
+    if(cw>100)f.style.width=cw+'px';
     setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
 }
