@@ -559,6 +559,14 @@ a{color:var(--p);text-decoration:none}
         </div>
         <span style="color:#E65100;font-size:16px">›</span>
       </div>
+      <div id="stool-alert-row" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #7b1fa2;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
+        <span style="font-size:18px">🚽</span>
+        <div style="flex:1">
+          <b id="stool-alert-count" style="display:block;font-size:13px;font-weight:700;color:#7b1fa2"></b>
+          <span id="stool-alert-names" style="font-size:11px;color:#6a1b9a"></span>
+        </div>
+        <span style="color:#7b1fa2;font-size:16px">›</span>
+      </div>
       <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #1565c0;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
         <span style="font-size:18px">🩺</span>
         <div style="flex:1">
@@ -653,6 +661,7 @@ a{color:var(--p);text-decoration:none}
     <div class="detail-content-grid">
     <div class="detail-col-left">
     <div class="summary-row" id="summary-row"></div>
+    <div id="stool-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#f3e5f5;border-left:4px solid #7b1fa2;border-radius:8px;font-size:12px;font-weight:700;color:#6a1b9a"></div>
     <div id="vital-time-bar" style="text-align:right;font-size:10px;color:var(--sub);padding:2px 14px 2px"></div>
     <div id="vital-graph-card" style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -1182,10 +1191,11 @@ a{color:var(--p);text-decoration:none}
             <i class="acc-arrow">›</i>
           </button>
           <div class="acc-body"><div class="acc-inner">
-            <div style="display:flex;gap:6px;margin-bottom:12px">
-              <button id="ptab-pending" onclick="switchProposalTab('pending')" style="flex:1;padding:8px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700">未審査 <span id="ptab-pending-cnt"></span></button>
-              <button id="ptab-approved" onclick="switchProposalTab('approved')" style="flex:1;padding:8px;background:var(--bg);color:var(--p);border-radius:8px;font-size:12px;font-weight:700;border:1px solid var(--bdr)">承認済</button>
-              <button id="ptab-rejected" onclick="switchProposalTab('rejected')" style="flex:1;padding:8px;background:var(--bg);color:var(--sub);border-radius:8px;font-size:12px;font-weight:700;border:1px solid var(--bdr)">却下</button>
+            <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap">
+              <button id="ptab-pending" onclick="switchProposalTab('pending')" style="flex:1;min-width:0;padding:7px 4px;background:var(--p);color:#fff;border-radius:8px;font-size:11px;font-weight:700">未審査 <span id="ptab-pending-cnt"></span></button>
+              <button id="ptab-in_progress" onclick="switchProposalTab('in_progress')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:#e65100;border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">修正中</button>
+              <button id="ptab-done" onclick="switchProposalTab('done')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:var(--ok);border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">実装済</button>
+              <button id="ptab-rejected" onclick="switchProposalTab('rejected')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:var(--sub);border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">却下</button>
             </div>
             <div id="proposal-list"></div>
           </div></div>
@@ -1443,10 +1453,11 @@ a{color:var(--p);text-decoration:none}
       <button onclick="openProposalForm()" style="width:100%;padding:13px;background:var(--p);color:#fff;border-radius:10px;font-size:15px;font-weight:700;margin-bottom:16px">＋ 新しい提案を送る</button>
       <div id="proposal-admin-scr" style="display:none">
         <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📋 提案管理 <span style="font-size:11px;font-weight:400">（管理者）</span></div>
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <button id="ptab2-pending" onclick="switchProposalTab2('pending')" style="flex:1;padding:8px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700">未審査 <span id="ptab2-pending-cnt"></span></button>
-          <button id="ptab2-approved" onclick="switchProposalTab2('approved')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:12px;font-weight:700">承認済</button>
-          <button id="ptab2-rejected" onclick="switchProposalTab2('rejected')" style="flex:1;padding:8px;background:#f0f4ff;color:var(--sub);border-radius:8px;font-size:12px;font-weight:700">却下</button>
+        <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">
+          <button id="ptab2-pending" onclick="switchProposalTab2('pending')" style="flex:1;min-width:0;padding:8px 4px;background:var(--p);color:#fff;border-radius:8px;font-size:11px;font-weight:700">未審査 <span id="ptab2-pending-cnt"></span></button>
+          <button id="ptab2-in_progress" onclick="switchProposalTab2('in_progress')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:#e65100;border-radius:8px;font-size:11px;font-weight:700">修正中</button>
+          <button id="ptab2-done" onclick="switchProposalTab2('done')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:var(--ok);border-radius:8px;font-size:11px;font-weight:700">実装済</button>
+          <button id="ptab2-rejected" onclick="switchProposalTab2('rejected')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:var(--sub);border-radius:8px;font-size:11px;font-weight:700">却下</button>
         </div>
         <div id="proposal-list2"></div>
       </div>
@@ -2825,6 +2836,7 @@ let S = {
   schedView: 'month', schedScope: 'all', schedRid: null,
   schedYear: _now.getFullYear(), schedMonth: _now.getMonth(), schedDay: _now.getDate(),
   currentService: null,
+  editRecId: null,
 };
 const _EK=['Va9k','Lp3x','Qm7j','Rw5t'].join('')+'_VillageAura';
 function _enc(str){
@@ -3377,10 +3389,14 @@ function submitProposal(){
 }
 function switchProposalTab(tab){
   currentProposalTab=tab;
-  ['pending','approved','rejected'].forEach(t=>{
+  ['pending','in_progress','done','rejected'].forEach(t=>{
     const btn=document.getElementById('ptab-'+t);
-    btn.style.background=t===tab?'var(--p)':'#f0f4ff';
-    btn.style.color=t===tab?'#fff':(t==='rejected'?'var(--sub)':'var(--p)');
+    if(!btn)return;
+    const isOn=t===tab;
+    const onColor={in_progress:'#e65100',done:'var(--ok)',rejected:'var(--sub)',pending:'#fff'}[t]||'#fff';
+    const offColor={in_progress:'#e65100',done:'var(--ok)',rejected:'var(--sub)',pending:'var(--p)'}[t]||'var(--p)';
+    btn.style.background=isOn?'var(--p)':'var(--bg)';
+    btn.style.color=isOn?onColor:offColor;
   });
   renderProposalList();
 }
@@ -3389,7 +3405,7 @@ function renderProposalList(){
   const pending=proposals.filter(p=>p.status==='pending');
   const el=document.getElementById('ptab-pending-cnt');
   if(el)el.textContent=pending.length?`(${pending.length})`:'';
-  const filtered=proposals.filter(p=>p.status===currentProposalTab);
+  const filtered=proposals.filter(p=>currentProposalTab==='done'?(p.status==='done'||p.status==='approved'):p.status===currentProposalTab);
   const list=document.getElementById('proposal-list');
   if(!list)return;
   if(!filtered.length){list.innerHTML=`<div style="color:var(--sub);font-size:13px;padding:8px 0">提案はありません</div>`;return;}
@@ -3424,10 +3440,21 @@ function openProposalDetail(id){
   `;
   const promptWrap=document.getElementById('pdetail-prompt-wrap');
   const actionsEl=document.getElementById('pdetail-actions');
-  if(p.status==='approved'){
+  if(p.status==='done'||p.status==='approved'){
     promptWrap.style.display='block';
     document.getElementById('pdetail-prompt').value=generateClaudePrompt(p);
     actionsEl.innerHTML='';
+  } else if(p.status==='in_progress'){
+    promptWrap.style.display='none';
+    actionsEl.innerHTML=`
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">管理者コメント（任意）</div>
+        <textarea id="padmin-comment" rows="2" placeholder="補足など…" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px"></textarea>
+        <div style="display:flex;gap:8px">
+          <button onclick="reviewProposal('${id}','done')" style="flex:1;padding:10px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✓ 実装済</button>
+          <button onclick="reviewProposal('${id}','rejected')" style="flex:1;padding:10px;background:var(--ng);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✗ 却下</button>
+        </div>
+      </div>`;
   } else if(p.status==='pending'){
     promptWrap.style.display='none';
     actionsEl.innerHTML=`
@@ -3435,7 +3462,7 @@ function openProposalDetail(id){
         <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">管理者コメント（任意）</div>
         <textarea id="padmin-comment" rows="2" placeholder="却下理由や補足など…" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px"></textarea>
         <div style="display:flex;gap:8px">
-          <button onclick="reviewProposal('${id}','approved')" style="flex:1;padding:10px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✓ 承認</button>
+          <button onclick="reviewProposal('${id}','in_progress')" style="flex:1;padding:10px;background:#e65100;color:#fff;border-radius:8px;font-size:14px;font-weight:700">🔧 修正中</button>
           <button onclick="reviewProposal('${id}','rejected')" style="flex:1;padding:10px;background:var(--ng);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✗ 却下</button>
         </div>
       </div>`;
@@ -3456,10 +3483,12 @@ function reviewProposal(id,status){
   p.reviewedAt=new Date().toISOString();
   saveProposals(proposals);
   closeModal('modal-proposal-detail');
-  addAuditLog('提案'+(status==='approved'?'承認':'却下'),p.title);
-  toast(status==='approved'?'承認しました ✓':'却下しました');
+  const auditLabel={in_progress:'修正中設定',done:'実装済',rejected:'却下'};
+  addAuditLog('提案'+(auditLabel[status]||status),p.title);
+  const toastMsg={in_progress:'修正中に設定しました 🔧',done:'実装済に設定しました ✓',rejected:'却下しました'};
+  toast(toastMsg[status]||'更新しました ✓');
   renderProposalList();
-  if(status==='approved'){
+  if(status==='done'){
     setTimeout(()=>openProposalDetail(id),300);
   }
 }
@@ -3977,8 +4006,8 @@ function renderMyProposalList(){
   if(!el)return;
   const mine=getProposals().filter(p=>p.by===S.user);
   if(!mine.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:8px 0">まだ提案はありません</div>';return;}
-  const statusLabel={pending:'審査中',approved:'承認済',rejected:'却下'};
-  const statusColor={pending:'#9ca3af',approved:'var(--ok)',rejected:'var(--ng)'};
+  const statusLabel={pending:'審査中',in_progress:'修正中',done:'実装済',approved:'実装済',rejected:'却下'};
+  const statusColor={pending:'#9ca3af',in_progress:'#e65100',done:'var(--ok)',approved:'var(--ok)',rejected:'var(--ng)'};
   el.innerHTML=mine.map(p=>`<div style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;background:#fff">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
       <span style="font-size:14px;font-weight:700">${p.title}</span>
@@ -3990,11 +4019,13 @@ function renderMyProposalList(){
 }
 function switchProposalTab2(tab){
   currentProposalTab2=tab;
-  ['pending','approved','rejected'].forEach(t=>{
+  ['pending','in_progress','done','rejected'].forEach(t=>{
     const btn=document.getElementById('ptab2-'+t);
     if(!btn)return;
-    btn.style.background=t===tab?'var(--p)':'#f0f4ff';
-    btn.style.color=t===tab?'#fff':(t==='rejected'?'var(--sub)':'var(--p)');
+    const isOn=t===tab;
+    const offColor={in_progress:'#e65100',done:'var(--ok)',rejected:'var(--sub)',pending:'var(--p)'}[t]||'var(--p)';
+    btn.style.background=isOn?'var(--p)':'#f0f4ff';
+    btn.style.color=isOn?'#fff':offColor;
   });
   renderProposalList2();
 }
@@ -4003,7 +4034,7 @@ function renderProposalList2(){
   const pending=proposals.filter(p=>p.status==='pending');
   const cntEl=document.getElementById('ptab2-pending-cnt');
   if(cntEl)cntEl.textContent=pending.length?`(${pending.length})`:'';
-  const filtered=proposals.filter(p=>p.status===currentProposalTab2);
+  const filtered=proposals.filter(p=>currentProposalTab2==='done'?(p.status==='done'||p.status==='approved'):p.status===currentProposalTab2);
   const list=document.getElementById('proposal-list2');
   if(!list)return;
   if(!filtered.length){list.innerHTML='<div style="color:var(--sub);font-size:13px;padding:8px 0">提案はありません</div>';return;}
@@ -4530,6 +4561,12 @@ function deleteMonthlyGoal(){
   toast('削除しました');
 }
 
+function getStoolDays(rid){
+  const recs=getRecords().filter(r=>r.rid===rid&&r.type==='excretion'&&(r.data.etype==='stool'||r.data.etype==='both')&&r.data.stool&&r.data.stool!=='');
+  if(!recs.length)return null;
+  const last=recs.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+  return Math.floor((Date.now()-new Date(last.ts).getTime())/(24*3600*1000));
+}
 function renderDashboard(){
   renderQuickActions();
   renderBackupBanner();
@@ -4574,6 +4611,19 @@ function renderDashboard(){
       if(previewEl)previewEl.textContent=(latest.content||'').substring(0,30)+((latest.content||'').length>30?'…':'');
     } else {
       doRow.style.display='none';
+    }
+  }
+  // 排便3日以上なし アラート
+  const stoolAlerts=res.filter(r=>{ const d=getStoolDays(r.id); return d===null||d>=3; });
+  const stoolRow=document.getElementById('stool-alert-row');
+  if(stoolRow){
+    if(stoolAlerts.length){
+      stoolRow.style.display='flex';
+      document.getElementById('stool-alert-count').textContent='排便3日以上なし：'+stoolAlerts.length+'名';
+      document.getElementById('stool-alert-names').textContent=stoolAlerts.slice(0,3).map(r=>r.name).join('・')+(stoolAlerts.length>3?'…':'');
+      stoolRow.onclick=()=>showScr('scr-residents');
+    } else {
+      stoolRow.style.display='none';
     }
   }
   // 要注目：準緊急以上の申し送り・経時記録（直近7日）
@@ -4841,6 +4891,14 @@ function renderDetail(){
       <div class="sum-lbl">%${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
     </div>
   `;
+  // 排便アラートチップ
+  const stoolDays=getStoolDays(r.id);
+  const stoolChip=document.getElementById('stool-alert-chip');
+  if(stoolChip){
+    if(stoolDays===null){stoolChip.style.display='block';stoolChip.textContent='🚽 排便記録なし（記録なし）';}
+    else if(stoolDays>=3){stoolChip.style.display='block';stoolChip.textContent=`🚽 最終排便：${stoolDays}日前（要確認）`;}
+    else{stoolChip.style.display='none';}
+  }
   // グラフ範囲切替ボタン
   const ranges=[{k:'today',l:'当日'},{k:'3days',l:'直近3日'},{k:'week',l:'1週間'}];
   document.getElementById('graph-range-bar').innerHTML=ranges.map(rv=>
@@ -4987,6 +5045,7 @@ function renderTimeline(){
     const roleKey=si?si.role:(r.staffRole||null);
     const rc=roleKey?ROLE_COLORS[roleKey]:null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
+    const canEdit=(r.type==='meal'||r.type==='excretion');
     html+=`<div class="tl-item">
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
@@ -4994,7 +5053,7 @@ function renderTimeline(){
         ${r.type==='vital'?vitalChips(r):`<div class="tl-val">${summarizeRecord(r)}</div>`}
         ${r.data.note||r.data.content?`<div class="tl-note">${(r.data.note||r.data.content||'').substring(0,60)}</div>`:''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
-        <div class="tl-staff">${badge}${staffName}</div>
+        <div class="tl-staff">${badge}${staffName}${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="margin-left:8px;background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️ 修正</button>`:''}</div>
       </div>
     </div>`;
   });
@@ -5060,6 +5119,35 @@ function closeModal(id,e){
   stopVoice();
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
   if(vsBtn){vsBtn.classList.remove('recording');vsBtn.textContent='🎤 音声で一括入力';}
+  if(id==='modal-meal'||id==='modal-excretion')S.editRecId=null;
+}
+function openEditRecord(id,type){
+  const rec=getRecords().find(r=>r.id===id);
+  if(!rec)return;
+  S.editRecId=id;
+  if(type==='meal'){
+    const d=rec.data;
+    const el=document.querySelector(`[name=meal-type][value="${d.mtype}"]`);
+    if(el)el.checked=true;
+    const stapleEl=document.getElementById('staple-sl');
+    const sideEl=document.getElementById('side-sl');
+    if(stapleEl){stapleEl.value=d.staple;document.getElementById('staple-lbl').textContent=d.staple+'割';}
+    if(sideEl){sideEl.value=d.side;document.getElementById('side-lbl').textContent=d.side+'割';}
+    document.getElementById('m-fluid').value=d.fluid||0;
+    document.getElementById('m-note').value=d.note||'';
+    openModal('modal-meal');
+  } else if(type==='excretion'){
+    const d=rec.data;
+    const et=document.querySelector(`[name=ex-type][value="${d.etype}"]`);
+    if(et)et.checked=true;
+    document.getElementById('ex-urine').value=d.urine||'';
+    document.getElementById('ex-stool').value=d.stool||'';
+    document.getElementById('ex-portable').checked=!!d.portable;
+    document.getElementById('ex-incontinent').checked=!!d.incon;
+    document.getElementById('ex-laxative').checked=!!d.lax;
+    document.getElementById('ex-note').value=d.note||'';
+    openModal('modal-excretion');
+  }
 }
 function saveRecord(type){
   let data={};
@@ -5134,11 +5222,22 @@ function saveRecord(type){
     return;
   }
   const recs=getRecords();
-  recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:getRecordTs(),data});
-  saveRecords(recs);
-  const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重'}[type]||type;
-  addAuditLog('記録保存',typeLabel+' / 利用者ID: '+S.currentRes);
-  toast('保存しました ✓');
+  if(S.editRecId&&(type==='meal'||type==='excretion')){
+    const idx=recs.findIndex(r=>r.id===S.editRecId);
+    if(idx>=0){recs[idx].data=data;recs[idx].editedBy=S.user||'──';recs[idx].editedAt=new Date().toISOString();}
+    S.editRecId=null;
+    saveRecords(recs);
+    const typeLabel={meal:'食事',excretion:'排泄'}[type]||type;
+    addAuditLog('記録修正',typeLabel+' / 利用者ID: '+S.currentRes);
+    toast('修正しました ✓');
+  } else {
+    S.editRecId=null;
+    recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:getRecordTs(),data});
+    saveRecords(recs);
+    const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重'}[type]||type;
+    addAuditLog('記録保存',typeLabel+' / 利用者ID: '+S.currentRes);
+    toast('保存しました ✓');
+  }
   renderDetail();
 }
 function addHandover(rid,content,cat='other',pri='normal'){
@@ -5239,21 +5338,30 @@ function renderDiary(){
   if(el)el.innerHTML=rpts.map(_renderReportCard).join('');
   if(vs)vs.style.display=S_diary_tab==='visit'?'block':'none';
   if(S_diary_tab==='visit')_renderVisitList();
-  requestAnimationFrame(_fixDiaryRightDesktop);
+  _fixDiaryDesktopLayout();
 }
-function _fixDiaryRightDesktop(){
-  if(window.innerWidth<1024)return;
+function _fixDiaryDesktopLayout(){
   const dl=document.querySelector('.diary-left');
+  const tab=document.getElementById('diary-tab-bar');
+  const nav=document.getElementById('diary-date-nav');
   const dr=document.getElementById('diary-right-panel');
-  if(!dl||!dr)return;
-  const rect=dl.getBoundingClientRect();
-  dr.style.position='fixed';
-  dr.style.left=rect.right+'px';
-  dr.style.top='0';
-  dr.style.right='0';
-  dr.style.bottom='0';
-  dr.style.height='auto';
-  dr.style.zIndex='10';
+  if(!dl||!tab||!nav||!dr)return;
+  if(window.innerWidth>=1024){
+    // デスクトップ：タブバーと日付ナビをdiary-leftの先頭に移動
+    if(tab.parentElement!==dl){
+      dl.insertBefore(nav,dl.firstChild);
+      dl.insertBefore(tab,dl.firstChild);
+    }
+    // diary-rightのインラインスタイルをリセットしCSSに従わせる
+    ['position','left','top','right','bottom','height','zIndex'].forEach(p=>dr.style.removeProperty(p));
+  }else{
+    // タブレット/モバイル：元の位置（diary-splitの前）に戻す
+    const split=document.querySelector('.diary-split');
+    if(split&&tab.parentElement===dl){
+      split.parentElement.insertBefore(nav,split);
+      split.parentElement.insertBefore(tab,split);
+    }
+  }
 }
 function _renderReportCard(r){
   let extras='';
