@@ -2931,9 +2931,12 @@ async function login(){
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
-  // Firebase Auth サインイン（匿名ではなくパスワード認証）→ 先に完了させてから監査ログを書く
+  // Firebase Auth サインイン → トークン確定を待ってからFirestoreを使う
   try{
     await firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS);
+    if(firebase.auth().currentUser){
+      await firebase.auth().currentUser.getIdToken(true);
+    }
     fbReady=true;
   }catch(e){
     console.warn('Firebase Auth failed:',e);
