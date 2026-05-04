@@ -1336,9 +1336,10 @@ a{color:var(--p);text-decoration:none}
         </div>
         <div id="diary-right-content" style="display:none;flex-direction:column;flex:1;min-height:0">
           <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:6px;padding:8px 10px;flex-shrink:0">
-            <span id="diary-right-title" style="flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">帳票プレビュー</span>
-            <button onclick="rpRightZoom()" id="diary-right-zoom-btn" style="background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700;touch-action:manipulation">🔍縮</button>
-            <button onclick="printRightPanel()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;touch-action:manipulation">🖨</button>
+            <button onclick="clearDiaryRightPanel()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:14px;font-weight:700;touch-action:manipulation;flex-shrink:0">←</button>
+            <span id="diary-right-title" style="flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">帳票プレビュー</span>
+            <button onclick="rpRightZoom()" id="diary-right-zoom-btn" style="background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
+            <button onclick="printRightPanel()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
           </div>
           <div id="diary-right-scroll" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0">
             <iframe id="diary-right-iframe" scrolling="no" style="width:100%;border:none;background:#fff;display:block"></iframe>
@@ -3677,6 +3678,20 @@ function getDeviceId(){
   if(!id){id='dev_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem('va_device_id',id);}
   return id;
 }
+function _autoDeviceLabel(){
+  const ua=navigator.userAgent;
+  let os='PC';
+  if(/iPad/.test(ua))os='iPad';
+  else if(/iPhone/.test(ua))os='iPhone';
+  else if(/Android.*Tablet|Tablet.*Android/.test(ua)||(/Android/.test(ua)&&!/Mobile/.test(ua)))os='Androidタブレット';
+  else if(/Android/.test(ua))os='Android';
+  else if(/Mac/.test(ua))os='Mac';
+  let br='';
+  if(/CriOS/.test(ua)||/Chrome/.test(ua))br='Chrome';
+  else if(/Safari/.test(ua))br='Safari';
+  else if(/Firefox/.test(ua))br='Firefox';
+  return os+(br?'('+br+'）':'');
+}
 function getDeviceSettings(){return ls('device_settings')||{enabled:false,devices:[]};}
 function saveDeviceSettings(d){lsSet('device_settings',d);fsSet('device_settings',d);}
 function getWifiSettings(){return ls('wifi_settings')||{enabled:false,allowedIPs:[]};}
@@ -3690,7 +3705,7 @@ function registerDeviceIfNew(label=''){
   const devId=getDeviceId();
   const s=getDeviceSettings();
   if(!s.devices.find(d=>d.id===devId)){
-    s.devices.push({id:devId,label:label||'未設定',approved:false,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
+    s.devices.push({id:devId,label:label||_autoDeviceLabel(),approved:false,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
     saveDeviceSettings(s);
   } else {
     s.devices.find(d=>d.id===devId).lastSeen=new Date().toISOString();
@@ -5389,6 +5404,12 @@ function rpZoom(){
     }
     setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
+}
+function clearDiaryRightPanel(){
+  const empty=document.getElementById('diary-right-empty');
+  const content=document.getElementById('diary-right-content');
+  if(empty)empty.style.display='flex';
+  if(content)content.style.display='none';
 }
 function showInRightPanel(html,title){
   const empty=document.getElementById('diary-right-empty');
