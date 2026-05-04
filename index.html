@@ -2686,7 +2686,7 @@ const STAFF_INFO = {
   s8:{name:'木村 誠司',role:'doctor',           loginId:'1008', pass:'aura01'},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
-function saveStaffSettings(d){lsSet('staff_settings',d);}
+function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
 function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key].role;}
@@ -2742,7 +2742,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules'];
 const FB_SYS_EMAIL='facility@village-aura.local';
 const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
 let db=null, fbReady=false, fbListeners=[];
@@ -2771,12 +2771,19 @@ function fsSet(key,value){
   }).catch(e=>console.warn('fsSet:',e));
 }
 
+function _distributeAggregated(key,data){
+  if(key==='face_sheets') Object.entries(data||{}).forEach(([rid,v])=>lsSet('fs_'+rid,v));
+  if(key==='visit_schedules') Object.entries(data||{}).forEach(([d,v])=>lsSet('visit_sched_'+d,v));
+}
 async function loadFromFirebase(){
   if(!fbReady)return;
   for(const key of FB_SYNC_KEYS){
     try{
       const doc=await db.collection('va_data').doc(key).get();
-      if(doc.exists&&doc.data()?.data!==undefined) lsSet(key,doc.data().data);
+      if(doc.exists&&doc.data()?.data!==undefined){
+        lsSet(key,doc.data().data);
+        _distributeAggregated(key,doc.data().data);
+      }
     }catch(e){console.warn('fbLoad:',key,e);}
   }
 }
@@ -2790,6 +2797,7 @@ function setupRealtimeSync(){
       if(!doc.exists||!doc.data()?.data)return;
       if(doc.metadata.hasPendingWrites)return; // 自分の書き込みは無視
       lsSet(key,doc.data().data);
+      _distributeAggregated(key,doc.data().data);
       if(key==='records'||key==='residents'){
         if(S.screen==='scr-dashboard')renderDashboard();
         if(S.screen==='scr-detail')renderDetail();
@@ -3064,7 +3072,7 @@ function showVRHistory(){
 }
 // ═══════════ TEMPLATES ═══════════
 function getTemplates(){return ls('record_templates')||[];}
-function saveTemplates(t){lsSet('record_templates',t);}
+function saveTemplates(t){lsSet('record_templates',t);fsSet('record_templates',t);}
 let _tplTarget='chrono';
 function openTemplatePicker(type){
   _tplTarget=type;
@@ -4201,7 +4209,7 @@ function closeSvcSheet(){
 
 // ═══════════ DASHBOARD ═══════════
 function getDoctorConfirmed(){return ls('doctor_confirmed')||{};}
-function saveDoctorConfirmed(d){lsSet('doctor_confirmed',d);}
+function saveDoctorConfirmed(d){lsSet('doctor_confirmed',d);fsSet('doctor_confirmed',d);}
 function confirmRecord(recId){
   const d=getDoctorConfirmed();
   d[recId]={ts:new Date().toISOString(),by:S.user};
@@ -4294,7 +4302,7 @@ function renderUrgentRec(){
   }
 }
 function getVitalConfirmed(){return ls('vital_confirmed')||{};}
-function saveVitalConfirmed(d){lsSet('vital_confirmed',d);}
+function saveVitalConfirmed(d){lsSet('vital_confirmed',d);fsSet('vital_confirmed',d);}
 function confirmVital(vitalId){
   const d=getVitalConfirmed();
   d[vitalId]={ts:new Date().toISOString(),by:S.user};
@@ -4407,7 +4415,7 @@ function renderVitalAlert(){
 }
 // ── 今月の目標 ──
 function getMonthlyGoals(){return ls('monthly_goals')||{};}
-function saveMonthlyGoals(g){lsSet('monthly_goals',g);}
+function saveMonthlyGoals(g){lsSet('monthly_goals',g);fsSet('monthly_goals',g);}
 function _mgKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 const MG_CAT_COLOR={'接遇':'#1565c0','安全':'#c62828','感染対策':'#2e7d32','ケアの質':'#6a1b9a','チームワーク':'#e65100','その他':'#546e7a'};
 const MG_DEFAULTS={
@@ -6264,7 +6272,7 @@ function addManualResident(){
   ['m-sei','m-mei','m-kana-sei','m-kana-mei','m-room','m-allergy'].forEach(id=>document.getElementById(id).value='');
 }
 function getCustomStaff(){return ls('custom_staff')||{};}
-function saveCustomStaff(s){lsSet('custom_staff',s);}
+function saveCustomStaff(s){lsSet('custom_staff',s);fsSet('custom_staff',s);}
 function getNextStaffLoginId(){
   const allIds=[
     ...Object.keys(STAFF_INFO).map(k=>parseInt(getStaffLoginId(k))||0),
@@ -6391,9 +6399,9 @@ function getBoardTrash(){
   const cutoff=Date.now()-30*24*3600*1000;
   return t.filter(x=>new Date(x.deletedAt).getTime()>cutoff);
 }
-function saveBoardTrash(t){lsSet('board_trash',t);}
+function saveBoardTrash(t){lsSet('board_trash',t);fsSet('board_trash',t);}
 function getDelLog(){return ls('board_del_log')||[];}
-function saveDelLog(l){lsSet('board_del_log',l);}
+function saveDelLog(l){lsSet('board_del_log',l);fsSet('board_del_log',l);}
 function moveToTrash(section,shift,entry){
   const trash=getBoardTrash();
   trash.unshift({id:'tr_'+Date.now(),section,shift,data:{...entry},
@@ -6893,6 +6901,16 @@ function renderDayView(){
 
 // ── 訪問介護予定 ──
 function getVisitSched(dateStr){return ls('visit_sched_'+dateStr)||INIT_VISIT_SCHED[dateStr]||[];}
+function _syncVisitSchedsToFirestore(){
+  if(!fbReady||!db)return;
+  const all={};
+  Object.keys(localStorage).forEach(k=>{
+    const plain=k.startsWith('e_visit_sched_')?k.slice(2):k.startsWith('visit_sched_')?k:null;
+    if(plain){const d=plain.slice('visit_sched_'.length);const v=ls('visit_sched_'+d);if(v&&v.length)all[d]=v;}
+  });
+  db.collection('va_data').doc('visit_schedules').set({data:all,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>console.warn('visit_schedules sync:',e));
+}
+function saveVisitSched(dateStr,visits){lsSet('visit_sched_'+dateStr,visits);_syncVisitSchedsToFirestore();}
 
 function renderVisitMonthCal(){
   const year=S.schedYear,month=S.schedMonth;
@@ -7048,7 +7066,7 @@ function saveVisitEntry(){
   if(idxStr==='') visits.push(entry);
   else visits[parseInt(idxStr)]=entry;
   visits.sort((a,b)=>a.staff<b.staff?-1:a.staff>b.staff?1:a.start<b.start?-1:1);
-  lsSet('visit_sched_'+dateStr,visits);
+  saveVisitSched(dateStr,visits);
   closeModal('modal-visit-entry');
   toast('保存しました ✓');
   renderSchedule();
@@ -7059,7 +7077,7 @@ function deleteVisitEntry(){
   const idx=parseInt(document.getElementById('ve-idx').value);
   const visits=getVisitSched(dateStr);
   visits.splice(idx,1);
-  lsSet('visit_sched_'+dateStr,visits);
+  saveVisitSched(dateStr,visits);
   closeModal('modal-visit-entry');
   toast('削除しました');
   renderSchedule();
@@ -7094,6 +7112,7 @@ function parseVisitCSV(text){
   });
   let total=0;
   Object.entries(byDate).forEach(([d,vs])=>{lsSet('visit_sched_'+d,vs);total+=vs.length;});
+  _syncVisitSchedsToFirestore();
   toast(`訪問介護予定 ${total}件（${Object.keys(byDate).length}日分）を読み込みました ✓`);
   renderSchedule();
 }
@@ -7408,7 +7427,16 @@ function getFacesheet(rid){
     pdf_name:d.pdf_name||'',pdf_date:d.pdf_date||'',
   };
 }
-function lsFsSet(rid,data){lsSet('fs_'+rid,data);}
+function _syncFaceSheetsToFirestore(){
+  if(!fbReady||!db)return;
+  const all={};
+  Object.keys(localStorage).forEach(k=>{
+    const plain=k.startsWith('e_fs_')?k.slice(2):k.startsWith('fs_')?k:null;
+    if(plain){const rid=plain.slice(3);const v=ls('fs_'+rid);if(v)all[rid]=v;}
+  });
+  db.collection('va_data').doc('face_sheets').set({data:all,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>console.warn('face_sheets sync:',e));
+}
+function lsFsSet(rid,data){lsSet('fs_'+rid,data);_syncFaceSheetsToFirestore();}
 
 function renderAdlOpts(elId,options,current,multi=false){
   const el=document.getElementById(elId);if(!el)return;
