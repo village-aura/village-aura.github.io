@@ -5271,6 +5271,7 @@ function previewReport(id){
   iframe.style.width='100%';
   iframe.srcdoc=html;
   iframe.onload=_rpAutoZoom;
+  _vpZoomAllow(true);
   modal.style.display='flex';
 }
 function previewAllKojin(id){
@@ -5303,6 +5304,7 @@ ${bodies}
   iframe.style.width='100%';
   iframe.srcdoc=combined;
   iframe.onload=_rpAutoZoom;
+  _vpZoomAllow(true);
   modal.style.display='flex';
 }
 let _rpZoom=1;
@@ -5317,7 +5319,8 @@ function _rpAutoZoom(){
     const f=document.getElementById('rp-iframe');
     if(!f||!f.contentDocument||!f.contentDocument.body)return;
     const d=f.contentDocument;
-    const cw=d.documentElement.scrollWidth;
+    d.body.style.overflow='visible';
+    const cw=d.body.scrollWidth||d.documentElement.scrollWidth;
     if(cw>100)f.style.width=cw+'px';
     setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
@@ -5365,17 +5368,17 @@ function _rpRightAutoZoom(){
     const f=document.getElementById('diary-right-iframe');
     if(!f||!f.contentDocument||!f.contentDocument.body)return;
     const d=f.contentDocument;
-    const cw=d.documentElement.scrollWidth;
+    d.body.style.overflow='visible';
+    const cw=d.body.scrollWidth||d.documentElement.scrollWidth;
     const fw=f.clientWidth||400;
     if(cw>fw+20){
       _rpRightZoom=Math.floor(fw/cw*100)/100;
       d.body.style.zoom=_rpRightZoom;
-      f.style.width='100%';
     }else{
       _rpRightZoom=1;
-      f.style.width='100%';
     }
-    const h=d.documentElement.scrollHeight||d.body.scrollHeight||400;
+    f.style.width='100%';
+    const h=d.body.scrollHeight||d.documentElement.scrollHeight||400;
     f.style.height=h+'px';
   }catch(e){}
 }
@@ -5389,11 +5392,11 @@ function rpRightZoom(){
     if(!body)return;
     if(_rpRightZoom<1){
       _rpRightZoom=1;body.style.zoom=1;
-      f.style.width=d.documentElement.scrollWidth+'px';
+      f.style.width=(body.scrollWidth||d.documentElement.scrollWidth)+'px';
       if(btn)btn.textContent='🔍縮';
     }else{
       f.style.width='100%';
-      const cw=d.documentElement.scrollWidth;
+      const cw=body.scrollWidth||d.documentElement.scrollWidth;
       const fw=f.clientWidth||400;
       _rpRightZoom=cw>fw+20?Math.floor(fw/cw*100)/100:0.7;
       body.style.zoom=_rpRightZoom;
@@ -5407,9 +5410,17 @@ function printRightPanel(){
   const f=document.getElementById('diary-right-iframe');
   if(f&&f.contentWindow)f.contentWindow.print();
 }
+function _vpZoomAllow(allow){
+  const m=document.querySelector('meta[name="viewport"]');
+  if(!m)return;
+  m.content=allow
+    ?'width=device-width,initial-scale=1,viewport-fit=cover'
+    :'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+}
 function closeReportPreview(){
   const m=document.getElementById('modal-report-preview');
   if(m)m.style.display='none';
+  _vpZoomAllow(false);
 }
 function printReportPreview(){
   const f=document.getElementById('rp-iframe');
@@ -5420,7 +5431,7 @@ function _reiwa(y){return y-2018;}
 function _wd(d){return['日','月','火','水','木','金','土'][d.getDay()];}
 function _PCSS(){
   return `@page{size:A4 portrait;margin:10mm 8mm}
-body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:11px;color:#111;overflow-x:auto;-webkit-overflow-scrolling:touch}
+body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:11px;color:#111;overflow:visible}
 table{width:100%;min-width:max-content;border-collapse:collapse}
 th,td{border:1px solid #555;padding:2px 4px;font-size:10px;vertical-align:middle}
 th{background:#e0e0e0;text-align:center;font-weight:bold}
