@@ -1387,9 +1387,10 @@ a{color:var(--p);text-decoration:none}
 <!-- REPORT PREVIEW MODAL -->
 <div id="modal-report-preview" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column">
   <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px;flex-shrink:0">
-    <span id="rp-title" style="flex:1;font-size:14px;font-weight:700">帳票プレビュー</span>
-    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;touch-action:manipulation">🖨 印刷</button>
-    <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation">✕</button>
+    <span id="rp-title" style="flex:1;font-size:14px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">帳票プレビュー</span>
+    <button id="rp-zoom-btn" onclick="rpZoom()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
+    <button onclick="printReportPreview()" style="background:#43a047;color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
+    <button onclick="closeReportPreview()" style="background:rgba(255,255,255,.18);color:#fff;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">✕</button>
   </div>
   <iframe id="rp-iframe" style="flex:1;width:100%;border:none;background:#fff"></iframe>
 </div>
@@ -5217,7 +5218,9 @@ function previewReport(id){
   const title=document.getElementById('rp-title');
   if(!modal||!iframe)return;
   if(title)title.textContent=rdef.ico+' '+rdef.title;
+  _rpZoom=1;
   iframe.srcdoc=html;
+  iframe.onload=_rpAutoZoom;
   modal.style.display='flex';
 }
 function previewAllKojin(id){
@@ -5242,8 +5245,42 @@ ${bodies}
   const title=document.getElementById('rp-title');
   if(!modal||!iframe)return;
   if(title)title.textContent=`👥 個人記録一括（${ress.length}名） ${yr}年${mo}月`;
+  _rpZoom=1;
   iframe.srcdoc=combined;
+  iframe.onload=_rpAutoZoom;
   modal.style.display='flex';
+}
+let _rpZoom=1;
+function _rpAutoZoom(){
+  try{
+    const f=document.getElementById('rp-iframe');
+    if(!f||!f.contentDocument||!f.contentDocument.body)return;
+    const cw=f.contentDocument.documentElement.scrollWidth;
+    const fw=f.clientWidth;
+    if(cw>fw+20){
+      _rpZoom=Math.floor(fw/cw*100)/100;
+      f.contentDocument.body.style.zoom=_rpZoom;
+      const btn=document.getElementById('rp-zoom-btn');
+      if(btn)btn.textContent='🔍標';
+    }
+  }catch(e){}
+}
+function rpZoom(){
+  const f=document.getElementById('rp-iframe');
+  const btn=document.getElementById('rp-zoom-btn');
+  if(!f)return;
+  try{
+    const body=f.contentDocument&&f.contentDocument.body;
+    if(!body)return;
+    if(_rpZoom<1){_rpZoom=1;body.style.zoom=1;if(btn)btn.textContent='🔍縮';}
+    else{
+      const cw=f.contentDocument.documentElement.scrollWidth;
+      const fw=f.clientWidth;
+      _rpZoom=cw>fw?Math.floor(fw/cw*100)/100:0.65;
+      body.style.zoom=_rpZoom;
+      if(btn)btn.textContent='🔍標';
+    }
+  }catch(e){}
 }
 function closeReportPreview(){
   const m=document.getElementById('modal-report-preview');
@@ -5258,8 +5295,8 @@ function _reiwa(y){return y-2018;}
 function _wd(d){return['日','月','火','水','木','金','土'][d.getDay()];}
 function _PCSS(){
   return `@page{size:A4 portrait;margin:10mm 8mm}
-body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:11px;color:#111}
-table{width:100%;border-collapse:collapse}
+body{font-family:"MS Gothic","Hiragino Kaku Gothic ProN",sans-serif;margin:0;font-size:11px;color:#111;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:max-content;border-collapse:collapse}
 th,td{border:1px solid #555;padding:2px 4px;font-size:10px;vertical-align:middle}
 th{background:#e0e0e0;text-align:center;font-weight:bold}
 .hdr{display:flex;align-items:baseline;margin-bottom:8px;border-bottom:2px solid #333;padding-bottom:4px;gap:12px}
