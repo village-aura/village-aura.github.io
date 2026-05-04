@@ -2925,14 +2925,13 @@ async function login(){
   document.getElementById('app').style.display='block';
   const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
   const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
-  addAuditLog('ログイン','ID: '+inputId);
   aiHistory=[];
   const aiEl=document.getElementById('ai-messages');
   if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
-  // Firebase Auth サインイン（匿名ではなくパスワード認証）
+  // Firebase Auth サインイン（匿名ではなくパスワード認証）→ 先に完了させてから監査ログを書く
   try{
     await firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS);
     fbReady=true;
@@ -2940,6 +2939,7 @@ async function login(){
     console.warn('Firebase Auth failed:',e);
     toast('⚠️ ネットワーク未接続 - オフラインモードで動作します');
   }
+  addAuditLog('ログイン','ID: '+inputId);
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
   startAIKeySync();
   setTimeout(showTutorial, 600);
