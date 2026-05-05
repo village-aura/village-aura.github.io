@@ -1358,7 +1358,8 @@ a{color:var(--p);text-decoration:none}
     <!-- Date navigation -->
     <div id="diary-date-nav" style="display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--bdr)">
       <button onclick="changeDiaryDate(-1)" style="height:32px;padding:0 10px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap">◀ 前日</button>
-      <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);flex:1;text-align:center"></span>
+      <span id="diary-date-label" style="font-size:12px;font-weight:700;color:var(--p);flex:1;text-align:center;cursor:pointer" onclick="document.getElementById('diary-date-input').showPicker?document.getElementById('diary-date-input').showPicker():document.getElementById('diary-date-input').click()"></span>
+      <input type="date" id="diary-date-input" onchange="jumpDiaryDate(this.value)" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
       <button onclick="changeDiaryDate(1)" id="diary-date-next" style="height:32px;padding:0 10px;border-radius:6px;border:1.5px solid var(--bdr);background:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap">次日 ▶</button>
     </div>
     <!-- Split container: left=list, right=inline preview (tablet only) -->
@@ -2658,8 +2659,167 @@ const INIT_RECORDS = [
   {id:'pv13',type:'vital',rid:'r1',staffId:'s1',ts:pastDay(7,'08:10'),data:{sys:135,dia:77,pulse:69,temp:36.2,spo2:98,cons:'alert',note:''}},
   {id:'pv14',type:'vital',rid:'r1',staffId:'s2',ts:pastDay(7,'18:00'),data:{sys:132,dia:75,pulse:68,temp:36.3,spo2:98,cons:'alert',note:''}},
 ];
-function today(time){const d=new Date();const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return d.toISOString();}
-function pastDay(ago,time){const d=new Date();d.setDate(d.getDate()-ago);const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return d.toISOString();}
+function _localDs(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function today(time){const d=new Date();const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return `${_localDs(d)}T${time}:00.000`;}
+function pastDay(ago,time){const d=new Date();d.setDate(d.getDate()-ago);const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return `${_localDs(d)}T${time}:00.000`;}
+
+// ═══════════ MARCH 2026 DEMO DATA ═══════════
+function _genMarchData(){
+  const recs=[];let n=100;
+  const ts=(date,time)=>`${date}T${time}:00.000`;
+  const nid=()=>`m${n++}`;
+  const vital=(rid,sid,date,time,sys,dia,pulse,temp,spo2,note='')=>({id:nid(),type:'vital',rid,staffId:sid,ts:ts(date,time),data:{sys,dia,pulse,temp,spo2,cons:'alert',note}});
+  const meal=(rid,sid,date,time,mtype,staple,side,fluid,note='')=>({id:nid(),type:'meal',rid,staffId:sid,ts:ts(date,time),data:{mtype,staple,side,fluid,note}});
+  const excr=(rid,sid,date,time)=>({id:nid(),type:'excretion',rid,staffId:sid,ts:ts(date,time),data:{etype:'both',urine:'normal',stool:'○',portable:false,incon:false,lax:false,note:''}});
+  const chrono=(rid,sid,date,time,tags,content,pri='normal',handover=false)=>({id:nid(),type:'chrono',rid,staffId:sid,ts:ts(date,time),data:{tags,priority:pri,content,handover}});
+  // ── r1 山田 花子 (care2, 水分制限1000ml/日) 毎日バイタル ──
+  [['2026-03-01',128,76,68,36.2,97,132,79,70,36.3,97,'',''],['2026-03-02',130,77,69,36.3,97,133,78,71,36.2,97,'',''],
+   ['2026-03-03',132,78,70,36.2,98,135,80,72,36.4,97,'',''],['2026-03-04',129,76,68,36.1,97,130,77,69,36.2,97,'',''],
+   ['2026-03-05',133,79,70,36.3,97,136,81,71,36.4,96,'',''],['2026-03-06',135,80,71,36.4,97,138,82,72,36.5,97,'',''],
+   ['2026-03-07',130,77,69,36.2,98,132,78,68,36.2,98,'',''],['2026-03-08',128,76,68,36.3,97,131,78,70,36.3,97,'',''],
+   ['2026-03-09',131,77,69,36.2,97,133,79,71,36.3,97,'',''],['2026-03-10',134,79,70,36.3,97,137,82,72,36.5,96,'','血圧やや高め'],
+   ['2026-03-11',136,81,71,36.4,97,140,83,73,36.5,96,'','血圧高め'],['2026-03-12',141,84,72,36.5,96,138,82,72,36.4,97,'血圧高め・医師報告',''],
+   ['2026-03-13',135,80,70,36.3,97,133,79,70,36.3,97,'',''],['2026-03-14',131,78,69,36.2,97,132,78,69,36.2,97,'',''],
+   ['2026-03-15',129,76,68,36.2,98,130,77,68,36.2,98,'',''],['2026-03-16',128,75,67,36.1,98,129,76,68,36.2,98,'',''],
+   ['2026-03-17',130,77,69,36.2,97,132,78,70,36.3,97,'',''],['2026-03-18',131,78,70,36.3,97,133,79,70,36.3,97,'',''],
+   ['2026-03-19',128,76,68,36.2,98,130,77,68,36.3,98,'',''],['2026-03-20',129,75,67,36.1,98,131,77,69,36.2,98,'','彼岸・ご家族来訪'],
+   ['2026-03-21',130,77,68,36.2,97,132,78,69,36.3,97,'',''],['2026-03-22',128,76,67,36.1,98,130,77,68,36.2,98,'',''],
+   ['2026-03-23',130,77,68,36.2,97,131,77,68,36.2,97,'',''],['2026-03-24',132,78,69,36.3,97,134,79,70,36.3,97,'',''],
+   ['2026-03-25',129,76,68,36.2,97,131,78,69,36.3,97,'',''],['2026-03-26',130,77,68,36.1,97,132,78,69,36.2,97,'',''],
+   ['2026-03-27',132,78,69,36.2,97,134,80,70,36.3,96,'','右膝浮腫あり'],['2026-03-28',134,80,70,36.3,96,136,81,71,36.4,96,'右膝浮腫続く',''],
+   ['2026-03-29',136,81,71,36.4,96,138,82,71,36.5,96,'膝浮腫・主治医報告予定',''],['2026-03-30',133,79,70,36.3,97,135,80,70,36.4,97,'',''],
+   ['2026-03-31',130,77,69,36.2,97,132,78,70,36.3,97,'',''],
+  ].forEach(([date,ms,md,mp,mt,msp,es,ed,ep,et,esp,nm,ne])=>{
+    recs.push(vital('r1','s1',date,'09:30',ms,md,mp,mt,msp,nm));
+    recs.push(vital('r1','s2',date,'17:15',es,ed,ep,et,esp,ne));
+  });
+  // r1 食事（隔日程度）
+  const mtime={breakfast:'08:00',lunch:'12:30',dinner:'18:00'};
+  [['2026-03-01','breakfast',8,8,200,''],['2026-03-01','lunch',9,9,250,''],['2026-03-01','dinner',8,7,200,''],
+   ['2026-03-03','breakfast',9,9,200,'食欲良好'],['2026-03-03','lunch',9,9,250,''],['2026-03-03','dinner',8,8,200,''],
+   ['2026-03-05','breakfast',7,7,200,'食欲やや低下'],['2026-03-05','lunch',8,8,250,''],['2026-03-05','dinner',7,6,200,''],
+   ['2026-03-07','breakfast',8,8,200,''],['2026-03-07','lunch',9,9,250,''],['2026-03-07','dinner',8,8,200,''],
+   ['2026-03-10','breakfast',9,9,200,'食欲良好'],['2026-03-10','lunch',9,9,250,''],['2026-03-10','dinner',8,8,200,''],
+   ['2026-03-12','breakfast',8,8,200,''],['2026-03-12','lunch',8,8,250,''],['2026-03-12','dinner',7,7,200,''],
+   ['2026-03-15','breakfast',9,9,200,'食欲良好'],['2026-03-15','lunch',9,9,250,''],['2026-03-15','dinner',9,8,200,''],
+   ['2026-03-17','breakfast',8,8,200,''],['2026-03-17','lunch',9,9,250,''],['2026-03-17','dinner',8,8,200,''],
+   ['2026-03-20','breakfast',8,8,200,''],['2026-03-20','lunch',9,9,250,''],['2026-03-20','dinner',8,8,200,''],
+   ['2026-03-22','breakfast',9,9,200,'食欲良好'],['2026-03-22','lunch',9,9,250,''],['2026-03-22','dinner',9,8,200,''],
+   ['2026-03-25','breakfast',8,8,200,''],['2026-03-25','lunch',9,9,250,''],['2026-03-25','dinner',8,8,200,''],
+   ['2026-03-28','breakfast',7,7,200,'食欲低下・膝痛'],['2026-03-28','lunch',8,8,250,''],['2026-03-28','dinner',7,6,200,''],
+   ['2026-03-31','breakfast',8,8,200,''],['2026-03-31','lunch',9,9,250,''],['2026-03-31','dinner',8,8,200,''],
+  ].forEach(([date,mtype,st,si,fl,note])=>recs.push(meal('r1','s2',date,mtime[mtype],mtype,st,si,fl,note)));
+  // r1 排泄（月水金）
+  ['2026-03-02','2026-03-04','2026-03-06','2026-03-09','2026-03-11','2026-03-13',
+   '2026-03-16','2026-03-18','2026-03-20','2026-03-23','2026-03-25','2026-03-27','2026-03-30']
+    .forEach(d=>recs.push(excr('r1','s2',d,'08:30')));
+  // r1 経時記録
+  recs.push(chrono('r1','s1','2026-03-12','10:00',['医療処置'],'血圧141/84。水分制限の遵守状況確認。本日の水分量700ml。様子見継続。','important',true));
+  recs.push(chrono('r1','s1','2026-03-20','14:00',['ご家族'],'長男（山田太郎様）来訪。お彼岸のお参りとともにケアプランについて確認。次回ケア会議5月予定。','normal',false));
+  recs.push(chrono('r1','s1','2026-03-27','11:00',['観察'],'右膝浮腫増悪傾向。スタッフ間で共有。主治医に電話報告・受診調整中。','important',true));
+  recs.push(chrono('r1','s1','2026-03-29','10:30',['医療処置'],'右膝浮腫継続。主治医より冷湿布指示。4/2整形外科受診予定。経過観察中。','important',true));
+  // ── r2 鈴木 一郎 (care3) バイタル・食事（月水金）──
+  [['2026-03-02',145,87,74,36.5,96,''],['2026-03-04',148,89,75,36.4,96,''],['2026-03-06',152,91,77,36.6,95,'血圧高め'],
+   ['2026-03-09',148,88,74,36.5,96,''],['2026-03-11',145,86,73,36.4,97,''],['2026-03-13',150,90,76,36.5,96,''],
+   ['2026-03-16',147,88,74,36.5,96,''],['2026-03-18',145,87,73,36.4,96,''],['2026-03-20',148,89,75,36.5,95,''],
+   ['2026-03-23',150,90,76,36.5,96,''],['2026-03-25',147,88,74,36.4,96,''],['2026-03-27',152,92,77,36.6,95,'血圧高め'],
+   ['2026-03-30',148,89,74,36.5,96,''],
+  ].forEach(([date,sys,dia,pulse,temp,spo2,note])=>recs.push(vital('r2','s1',date,'10:00',sys,dia,pulse,temp,spo2,note)));
+  ['2026-03-02','2026-03-04','2026-03-06','2026-03-09','2026-03-11','2026-03-13',
+   '2026-03-16','2026-03-18','2026-03-20','2026-03-23','2026-03-25','2026-03-27','2026-03-30']
+    .forEach(d=>recs.push(meal('r2','s2',d,'12:30','lunch',9,9,250,'デイ昼食')));
+  recs.push(chrono('r2','s5','2026-03-06','11:00',['観察'],'血圧152/91。降圧剤の服薬確認。塩分制限の指導実施。','important',true));
+  recs.push(chrono('r2','s5','2026-03-27','11:00',['医療処置'],'血圧再度高値152/92。かかりつけ医に連絡・薬の調整を検討中。','important',true));
+  // ── r4 田中 正男 (care4, ペニシリンアレルギー) バイタル（火木土）・排泄（月水金）──
+  [['2026-03-03',158,92,78,36.6,95,''],['2026-03-05',162,95,80,36.7,94,''],['2026-03-07',160,93,79,36.5,95,''],
+   ['2026-03-10',164,96,80,36.8,94,'血圧高値'],['2026-03-12',162,94,79,36.6,95,''],['2026-03-14',158,91,77,36.5,95,''],
+   ['2026-03-17',160,93,78,36.6,95,''],['2026-03-19',162,94,79,36.7,94,''],['2026-03-21',158,91,77,36.5,95,''],
+   ['2026-03-24',165,97,81,36.8,94,'血圧高め'],['2026-03-26',161,93,78,36.6,95,''],
+   ['2026-03-28',158,90,77,36.5,95,''],['2026-03-31',160,92,78,36.5,95,''],
+  ].forEach(([date,sys,dia,pulse,temp,spo2,note])=>recs.push(vital('r4','s1',date,'09:45',sys,dia,pulse,temp,spo2,note)));
+  ['2026-03-02','2026-03-04','2026-03-06','2026-03-09','2026-03-11','2026-03-13',
+   '2026-03-16','2026-03-18','2026-03-20','2026-03-23','2026-03-25','2026-03-27','2026-03-30']
+    .forEach(d=>recs.push(excr('r4','s2',d,'08:30')));
+  recs.push(chrono('r4','s8','2026-03-10','15:00',['医療処置'],'訪問診療実施。血圧164/96。降圧剤の調整を行った。次回4/7予定。','important',true));
+  recs.push(chrono('r4','s8','2026-03-24','15:00',['医療処置'],'訪問診療実施。血圧165/97。アムロジピン増量。経過観察継続。','important',true));
+  // ── r8 渡辺 ふみ (care5, 造影剤アレルギー) 毎日バイタル ──
+  [['2026-03-01',112,68,62,36.0,95,''],['2026-03-02',115,70,64,36.1,94,''],['2026-03-03',118,71,63,36.2,94,''],
+   ['2026-03-04',113,68,62,36.0,95,''],['2026-03-05',116,70,64,36.1,94,''],['2026-03-06',119,72,65,36.2,94,''],
+   ['2026-03-07',114,68,62,36.0,95,''],['2026-03-08',112,67,61,35.9,95,''],['2026-03-09',115,70,63,36.1,94,'下肢浮腫あり'],
+   ['2026-03-10',118,72,64,36.2,93,'下肢浮腫継続'],['2026-03-11',120,73,65,36.3,93,'浮腫増悪傾向'],
+   ['2026-03-12',122,74,66,36.4,93,'主治医報告済'],['2026-03-13',119,71,64,36.2,94,''],['2026-03-14',116,70,63,36.1,94,''],
+   ['2026-03-15',113,68,62,36.0,95,''],['2026-03-16',115,70,63,36.1,94,''],['2026-03-17',117,71,64,36.2,94,''],
+   ['2026-03-18',114,69,62,36.0,95,''],['2026-03-19',112,67,61,35.9,95,''],['2026-03-20',115,70,63,36.1,94,''],
+   ['2026-03-21',117,71,64,36.1,94,''],['2026-03-22',113,68,62,36.0,95,''],['2026-03-23',115,70,63,36.1,94,''],
+   ['2026-03-24',118,72,64,36.2,94,''],['2026-03-25',116,70,63,36.1,95,''],['2026-03-26',113,68,62,36.0,95,''],
+   ['2026-03-27',115,70,63,36.1,94,''],['2026-03-28',117,71,64,36.2,94,''],['2026-03-29',114,69,62,36.0,95,''],
+   ['2026-03-30',112,68,61,35.9,95,''],['2026-03-31',114,69,62,36.0,95,''],
+  ].forEach(([date,sys,dia,pulse,temp,spo2,note])=>recs.push(vital('r8','s1',date,'09:15',sys,dia,pulse,temp,spo2,note)));
+  recs.push(chrono('r8','s1','2026-03-09','10:00',['観察'],'両下肢浮腫認める。スタッフ間で情報共有。水分量確認と経過観察を継続。','important',true));
+  recs.push(chrono('r8','s1','2026-03-12','11:00',['医療処置'],'下肢浮腫増悪。主治医へ連絡、利尿剤の調整指示あり。15:00より服薬開始。','urgent',true));
+  recs.push(chrono('r8','s5','2026-03-14','10:30',['医療処置'],'訪問看護実施。浮腫軽減傾向。体重59.2kg（先週比-0.8kg）。引き続き経過観察。','normal',false));
+  recs.push(chrono('r8','s1','2026-03-20','11:00',['観察'],'浮腫ほぼ消失。体重59.0kg。引き続き水分管理継続。','normal',false));
+  recs.push(chrono('r8','s5','2026-03-28','10:00',['医療処置'],'訪問看護実施。状態安定。体重59.1kg。バイタル良好。','normal',false));
+  // ── r10 加藤 光子 (care3, こはる日和) バイタル（月水金）──
+  [['2026-03-02',135,82,70,36.3,96,''],['2026-03-04',138,84,72,36.4,96,''],['2026-03-06',140,85,73,36.5,96,''],
+   ['2026-03-09',136,83,71,36.3,96,''],['2026-03-11',138,84,72,36.4,96,''],['2026-03-13',142,86,73,36.5,95,'血圧やや高め'],
+   ['2026-03-16',138,83,71,36.3,96,''],['2026-03-18',136,82,70,36.2,96,''],['2026-03-20',140,85,72,36.4,96,''],
+   ['2026-03-23',137,83,71,36.3,96,''],['2026-03-25',135,81,70,36.2,97,''],
+   ['2026-03-27',138,83,71,36.3,96,''],['2026-03-30',136,82,70,36.2,96,''],
+  ].forEach(([date,sys,dia,pulse,temp,spo2,note])=>recs.push(vital('r10','s3',date,'10:15',sys,dia,pulse,temp,spo2,note)));
+  return recs;
+}
+const MARCH_RECORDS=_genMarchData();
+
+function _genMarchSchedules(){
+  const evs=[];let n=200;
+  const nid=()=>`ms${n++}`;
+  const ev=(rid,title,type,date,start,end,note='')=>({id:nid(),rid,title,type,date,start,end,note});
+  // r1 山田 花子: 入浴（月・木）、通院、ケアプラン会議、家族来訪
+  ['2026-03-02','2026-03-09','2026-03-16','2026-03-23','2026-03-30'].forEach(d=>evs.push(ev('r1','入浴','care',d,'14:00','15:00')));
+  ['2026-03-05','2026-03-12','2026-03-19','2026-03-26'].forEach(d=>evs.push(ev('r1','入浴','care',d,'14:00','15:00')));
+  evs.push(ev('r1','通院 整形外科','medical','2026-03-12','10:00','12:00','右膝 受診'));
+  evs.push(ev('r1','ケアプラン会議','other','2026-03-06','14:00','15:00','担当者会議'));
+  evs.push(ev('r1','家族来訪（お彼岸）','family','2026-03-20','14:00','16:00','長男 来訪'));
+  // r2 鈴木 一郎: デイサービス（月水金）、リハビリ（火）
+  ['2026-03-02','2026-03-04','2026-03-06','2026-03-09','2026-03-11','2026-03-13',
+   '2026-03-16','2026-03-18','2026-03-20','2026-03-23','2026-03-25','2026-03-27','2026-03-30']
+    .forEach(d=>evs.push(ev('r2','デイサービス','commute',d,'09:00','17:00')));
+  ['2026-03-03','2026-03-10','2026-03-17','2026-03-24','2026-03-31']
+    .forEach(d=>evs.push(ev('r2','リハビリ','rehab',d,'10:00','11:00')));
+  // r3 佐藤 幸子: デイサービス（火木）
+  ['2026-03-03','2026-03-05','2026-03-10','2026-03-12','2026-03-17','2026-03-19','2026-03-24','2026-03-26','2026-03-31']
+    .forEach(d=>evs.push(ev('r3','デイサービス','commute',d,'09:00','17:00')));
+  // r4 田中 正男: 入浴（火金）、訪問診療（3/10, 3/24）
+  ['2026-03-03','2026-03-06','2026-03-10','2026-03-13','2026-03-17','2026-03-20','2026-03-24','2026-03-27','2026-03-31']
+    .forEach(d=>evs.push(ev('r4','入浴','care',d,'14:00','15:00')));
+  evs.push(ev('r4','訪問診療','medical','2026-03-10','15:00','16:00','血圧管理・薬調整'));
+  evs.push(ev('r4','訪問診療','medical','2026-03-24','15:00','16:00','経過確認'));
+  // r5 中村 美子: デイサービス（月水）、訪問看護（木）
+  ['2026-03-02','2026-03-04','2026-03-09','2026-03-11','2026-03-16','2026-03-18','2026-03-23','2026-03-25','2026-03-30']
+    .forEach(d=>evs.push(ev('r5','デイサービス','commute',d,'09:00','17:00')));
+  ['2026-03-05','2026-03-12','2026-03-19','2026-03-26']
+    .forEach(d=>evs.push(ev('r5','訪問看護','medical',d,'10:00','10:30')));
+  // r7 伊藤 次郎: 訪問 身体介護（月木）
+  ['2026-03-02','2026-03-05','2026-03-09','2026-03-12','2026-03-16','2026-03-19','2026-03-23','2026-03-26','2026-03-30']
+    .forEach(d=>evs.push(ev('r7','訪問 身体介護','care',d,'08:30','09:30','起床・身支度介助')));
+  // r8 渡辺 ふみ: 訪問看護（月木）
+  ['2026-03-02','2026-03-05','2026-03-09','2026-03-12','2026-03-16','2026-03-19','2026-03-23','2026-03-26','2026-03-30']
+    .forEach(d=>evs.push(ev('r8','訪問看護','medical',d,'11:00','12:00')));
+  // r9 小林 幸夫: デイサービス（月水金）
+  ['2026-03-02','2026-03-04','2026-03-06','2026-03-09','2026-03-11','2026-03-13',
+   '2026-03-16','2026-03-18','2026-03-20','2026-03-23','2026-03-25','2026-03-27','2026-03-30']
+    .forEach(d=>evs.push(ev('r9','デイサービス','commute',d,'09:00','17:00')));
+  // r10 加藤 光子: 入浴（月水）
+  ['2026-03-02','2026-03-04','2026-03-09','2026-03-11','2026-03-16','2026-03-18','2026-03-23','2026-03-25','2026-03-30']
+    .forEach(d=>evs.push(ev('r10','入浴','care',d,'14:00','15:00')));
+  // 施設行事
+  evs.push(ev('','ひな祭り会','other','2026-03-03','14:00','15:30','施設全体行事'));
+  evs.push(ev('','誕生日会（3月）','other','2026-03-15','15:00','16:00','施設全体行事'));
+  evs.push(ev('','春分の日 お散歩会','other','2026-03-20','10:00','11:30','近隣公園 外出レク'));
+  return evs;
+}
+const MARCH_SCHEDULES=_genMarchSchedules();
 
 const INIT_SCHEDULES = [
   {id:'ev1',rid:'r1',title:'通院 整形外科',type:'medical',date:'2026-04-29',start:'10:00',end:'12:00',note:'右膝 受診'},
@@ -2899,7 +3059,7 @@ function lsSet(k,v){
   localStorage.setItem('e_'+k,_enc(JSON.stringify(v)));
 }
 function getResidents(){return ls('residents')||INIT_RESIDENTS}
-function getRecords(){return ls('records')||INIT_RECORDS}
+function getRecords(){return ls('records')||[...INIT_RECORDS,...MARCH_RECORDS]}
 function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
 function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
 function saveRecords(r){lsSet('records',r);fsSet('records',r);}
@@ -5389,12 +5549,20 @@ const DIARY_REPORTS={
   ],
 };
 function getDiaryDate(off=S_diary_offset){const d=new Date();d.setDate(d.getDate()+off);return d;}
-function getDiaryDateStr(off=S_diary_offset){const d=getDiaryDate(off);return d.toISOString().slice(0,10);}
+function getDiaryDateStr(off=S_diary_offset){return _localDs(getDiaryDate(off));}
 function getVisitReports(){return ls('visit_reports')||{};}
 function saveVisitReports(data){lsSet('visit_reports',data);fsSet('visit_reports',data);}
 function changeDiaryDate(delta){
   S_diary_offset+=delta;
   if(S_diary_offset>0)S_diary_offset=0;
+  renderDiary();
+}
+function jumpDiaryDate(dateStr){
+  if(!dateStr)return;
+  const target=new Date(dateStr+'T12:00:00');
+  const now=new Date();now.setHours(12,0,0,0);
+  const diff=Math.round((target-now)/86400000);
+  S_diary_offset=Math.min(0,diff);
   renderDiary();
 }
 function setDiaryTab(tab){
@@ -5409,7 +5577,9 @@ function renderDiary(){
   const WD=['日','月','火','水','木','金','土'];
   const label=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${WD[d.getDay()]}）`;
   const lbl=document.getElementById('diary-date-label');
-  if(lbl)lbl.textContent=label;
+  if(lbl)lbl.textContent=label+'  📅';
+  const dip=document.getElementById('diary-date-input');
+  if(dip)dip.value=getDiaryDateStr();
   const nxt=document.getElementById('diary-date-next');
   if(nxt){nxt.style.opacity=S_diary_offset===0?'.35':'1';nxt.style.pointerEvents=S_diary_offset===0?'none':'';}
   const el=document.getElementById('diary-report-cards');
@@ -6990,7 +7160,7 @@ function deleteDoctorOrder(idx){
 }
 
 // ═══════════ SCHEDULE ═══════════
-function getSchedules(){return ls('schedules')||INIT_SCHEDULES;}
+function getSchedules(){return ls('schedules')||[...INIT_SCHEDULES,...MARCH_SCHEDULES];}
 function saveSchedules(s){lsSet('schedules',s);fsSet('schedules',s);}
 function getProposals(){return ls('proposals')||[];}
 function saveProposals(p){lsSet('proposals',p);fsSet('proposals',p);}
@@ -8427,6 +8597,12 @@ const link=document.createElement('link');
 link.rel='manifest';link.href=murl;document.head.appendChild(link);
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+// 3月デモデータ追加に伴うlocalStorageリセット
+const _DEMO_DATA_VER='march2026v1';
+if(localStorage.getItem('_demo_data_ver')!==_DEMO_DATA_VER){
+  ['records','schedules'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
+  localStorage.setItem('_demo_data_ver',_DEMO_DATA_VER);
 }
 initDisplayPrefs();
 _startLockTimer();
