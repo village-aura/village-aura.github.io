@@ -567,7 +567,7 @@ a{color:var(--p);text-decoration:none}
   <!-- HEADER -->
   <header class="hd" id="hd">
     <button id="hd-menu" onclick="toggleMobileMenu()">☰</button>
-    <button id="hd-sb-toggle" onclick="toggleSidebar()" style="display:none;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;color:#fff;font-size:15px;font-weight:700;padding:5px 10px;flex-shrink:0">▶</button>
+    <button id="hd-sb-toggle" onclick="toggleSidebar()" style="display:none;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;color:#fff;font-weight:700;padding:5px 10px;flex-shrink:0;align-items:center;gap:5px;flex-direction:column;line-height:1.2"><span id="hd-sb-ico" style="font-size:15px">▶</span><span style="font-size:9px;font-weight:600;opacity:.85;letter-spacing:.03em">メニュー</span></button>
     <button class="hd-back" id="hd-back" onclick="goBack()" style="display:none">←</button>
     <div style="flex:1">
       <div class="hd-title" id="hd-title">ホーム</div>
@@ -4272,10 +4272,9 @@ function toggleMobileMenu(){
 function closeMobileMenu(){document.getElementById('mobile-menu').classList.remove('on');}
 function _syncSbBtns(closed){
   const t=document.getElementById('sb-toggle');
-  const h=document.getElementById('hd-sb-toggle');
+  const ico=document.getElementById('hd-sb-ico');
   if(t)t.textContent=closed?'▶':'◀';
-  if(h)h.textContent=closed?'▶':'◀';
-  // サイドバー内の閉じるボタンはテキスト変更不要（常に◀）
+  if(ico)ico.textContent=closed?'▶':'◀';
 }
 function toggleSidebar(){
   const closed=document.body.classList.toggle('sb-closed');
