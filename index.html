@@ -1333,6 +1333,9 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-handover-board')" id="bn-hb">
       <div class="bn-ico">📣</div><div class="bn-lbl">申し送り</div>
     </button>
+    <button class="bn" onclick="showScr('scr-schedule')" id="bn-sch">
+      <div class="bn-ico">📅</div><div class="bn-lbl">予定</div>
+    </button>
     <button class="bn" onclick="showScr('scr-settings')" id="bn-set">
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
     </button>
@@ -4265,7 +4268,7 @@ function showScr(id){
   back.style.display=isHome?'none':'block';
   if(menuBtn)menuBtn.style.display=isHome?'':'none';
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
-  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set'};
+  const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
   const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
