@@ -441,16 +441,18 @@ a{color:var(--p);text-decoration:none}
 /* ── DESKTOP 1024px ── */
 @media(min-width:1024px){
   body{background:#dde2ea}
-  /* オーバーレイモード: サイドバー出し入れ可・コンテンツ幅は変わらず */
+  /* プッシュモード: サイドバーがコンテンツを右にずらす */
   #sidebar{display:flex}
   body.sb-closed #sidebar{display:none}
-  body:not(.sb-closed) #sb-backdrop{display:block;top:56px} /* ヘッダー下のみカバー */
+  #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
+  body.sb-closed #main-content-wrap{margin-left:0}
+  #sb-backdrop{display:none!important}
   /* ヘッダーを表示してトグルを格納 */
   .hd{display:flex!important}
-  #hd-menu{display:none!important}      /* ハンバーガー不要 */
-  #hd-sb-toggle{display:flex!important} /* サイドバートグル */
-  #sb-close-btn{display:flex!important} /* サイドバー内の◀ボタン */
-  #sb-toggle{display:none!important}    /* フローティングボタン廃止 */
+  #hd-menu{display:none!important}
+  #hd-sb-toggle{display:flex!important}
+  #sb-close-btn{display:flex!important}
+  #sb-toggle{display:none!important}
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
 
@@ -4280,15 +4282,19 @@ function toggleSidebar(){
   _syncSbBtns(closed);
 }
 function _initSidebarState(){
-  // 全サイズで折り畳み状態からスタート
-  document.body.classList.add('sb-closed');
-  _syncSbBtns(true);
-}
-// 画面回転時はサイドバーを閉じる
-try{
-  window.matchMedia('(min-width:1024px)').addEventListener('change',()=>{
+  if(window.innerWidth >= 1024){
+    document.body.classList.remove('sb-closed');
+    _syncSbBtns(false);
+  } else {
     document.body.classList.add('sb-closed');
     _syncSbBtns(true);
+  }
+}
+// 画面回転時: 1024px+は開く、未満は閉じる
+try{
+  window.matchMedia('(min-width:1024px)').addEventListener('change',e=>{
+    if(e.matches){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
+    else { document.body.classList.add('sb-closed'); _syncSbBtns(true); }
   });
 }catch(e){}
 function toggleSvcSheet(){
