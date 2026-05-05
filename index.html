@@ -376,7 +376,7 @@ a{color:var(--p);text-decoration:none}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
 /* Sidebar collapse toggle button */
-#sb-toggle{display:none;position:fixed;left:240px;top:50vh;transform:translateY(-50%);width:20px;height:48px;z-index:210;background:var(--pd);color:#fff;font-size:13px;font-weight:700;border-radius:0 6px 6px 0;border:none;cursor:pointer;box-shadow:2px 2px 8px rgba(0,0,0,.25);transition:left .22s ease;align-items:center;justify-content:center}
+#sb-toggle{display:none;position:fixed;left:240px;top:50vh;transform:translateY(-50%);width:26px;height:56px;z-index:210;background:var(--pd);color:#fff;font-size:14px;font-weight:700;border-radius:0 8px 8px 0;border:none;cursor:pointer;box-shadow:3px 0 10px rgba(0,0,0,.3);transition:left .22s ease;align-items:center;justify-content:center}
 
 /* diary split-pane (mobile: right panel hidden) */
 .diary-right{display:none}
@@ -436,7 +436,7 @@ a{color:var(--p);text-decoration:none}
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
   #sb-toggle{display:flex}
-  body.sb-closed #sidebar{transform:translateX(-240px)}
+  body.sb-closed #sidebar{transform:translateX(-260px)}
   body.sb-closed #main-content-wrap{margin-left:0}
   body.sb-closed #sb-toggle{left:0}
   /* login */
@@ -3212,11 +3212,6 @@ function initDisplayPrefs(){
   const dmt=document.getElementById('dark-mode-toggle');
   if(dmt) dmt.checked=dark;
   setFontSize(localStorage.getItem('va_font')||'md');
-  if(localStorage.getItem('va_sb_closed')==='1'){
-    document.body.classList.add('sb-closed');
-    const btn=document.getElementById('sb-toggle');
-    if(btn)btn.textContent='▶';
-  }
 }
 // ═══════════ CSV EXPORT ═══════════
 function _csvDL(rows,fname){
@@ -4258,8 +4253,17 @@ function toggleSidebar(){
   const closed=document.body.classList.toggle('sb-closed');
   const btn=document.getElementById('sb-toggle');
   if(btn)btn.textContent=closed?'▶':'◀';
-  try{localStorage.setItem('va_sb_closed',closed?'1':'0')}catch(e){}
 }
+// 画面幅が1024px未満になったらサイドバー折り畳みを解除（縦回転対応）
+try{
+  window.matchMedia('(min-width:1024px)').addEventListener('change',e=>{
+    if(!e.matches){
+      document.body.classList.remove('sb-closed');
+      const btn=document.getElementById('sb-toggle');
+      if(btn)btn.textContent='◀';
+    }
+  });
+}catch(e){}
 function toggleSvcSheet(){
   const s=document.getElementById('svc-sheet');
   const b=document.getElementById('svc-backdrop');
