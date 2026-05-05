@@ -4281,6 +4281,11 @@ function showScr(id){
   if(id==='scr-vital-alert') renderVitalAlert();
   if(id==='scr-urgent-rec') renderUrgentRec();
   window.scrollTo(0,0);
+  // PC/タブレット: 業務日誌に入ったらサイドバーを格納、離れたら戻す
+  if(window.innerWidth >= 1024){
+    if(id==='scr-diary'){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
+    else if(S.prevScreen==='scr-diary'){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
+  }
 }
 function goBack(){showScr(S.prevScreen||'scr-dashboard');}
 function toggleMobileMenu(){
