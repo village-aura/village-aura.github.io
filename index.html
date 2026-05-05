@@ -402,12 +402,11 @@ a{color:var(--p);text-decoration:none}
   #sb-toggle{display:flex}
   #hd-sb-toggle{display:flex!important}
 }
-/* ── PORTRAIT OVERLAY (768〜1023px): display:noneで完全非表示（iOS Safariのtransformバグ対策）── */
+/* ── PORTRAIT OVERLAY (768〜1023px) ── */
 @media(min-width:768px) and (max-width:1023px){
   #sidebar{display:flex}
+  #sb-toggle{display:none}  /* 縦画面ではヘッダーの▶▶◀のみ使い、固定タブは非表示 */
   body.sb-closed #sidebar{display:none}
-  body.sb-closed #sb-toggle{display:none}  /* 閉時はヘッダーの▶のみ使う */
-  body:not(.sb-closed) #sb-toggle{left:240px}  /* 開時は右端に◀ */
   body:not(.sb-closed) #sb-backdrop{display:block}
 }
 
@@ -450,6 +449,7 @@ a{color:var(--p);text-decoration:none}
   .scr{padding-bottom:32px;min-height:100vh}
   body.sb-closed #sidebar{display:none;transform:translateX(-260px)}
   body.sb-closed #main-content-wrap{margin-left:0}
+  body.sb-closed #sb-toggle{left:0}
   #sb-backdrop{display:none!important}
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
