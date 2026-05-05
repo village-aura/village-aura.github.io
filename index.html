@@ -377,6 +377,8 @@ a{color:var(--p);text-decoration:none}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
 /* Sidebar collapse toggle button */
 #sb-toggle{display:none;position:fixed;left:240px;top:50vh;transform:translateY(-50%);width:26px;height:56px;z-index:210;background:var(--pd);color:#fff;font-size:14px;font-weight:700;border-radius:0 8px 8px 0;border:none;cursor:pointer;box-shadow:3px 0 10px rgba(0,0,0,.3);transition:left .22s ease;align-items:center;justify-content:center}
+/* Sidebar backdrop for overlay mode */
+#sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:195;cursor:pointer}
 
 /* diary split-pane (mobile: right panel hidden) */
 .diary-right{display:none}
@@ -394,7 +396,15 @@ a{color:var(--p);text-decoration:none}
   #scr-diary{max-width:none;margin:0;padding-bottom:0}
   .diary-split{display:flex;align-items:flex-start}
   .diary-left{width:340px;flex-shrink:0}
-  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 116px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr)}
+  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr)}
+  /* Sidebar available on all tablets as overlay */
+  #sidebar{display:flex}
+  .bnav{display:none!important}
+  #sb-toggle{display:flex}
+  #hd-sb-toggle{display:flex!important}
+  body.sb-closed #sidebar{transform:translateX(-260px)}
+  body.sb-closed #sb-toggle{left:0}
+  body:not(.sb-closed) #sb-backdrop{display:block}
 }
 
 /* ── SCHEDULE ── */
@@ -430,15 +440,11 @@ a{color:var(--p);text-decoration:none}
 /* ── DESKTOP 1024px ── */
 @media(min-width:1024px){
   body{background:#dde2ea}
-  #sidebar{display:flex}
   #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
   .hd{display:none}
-  .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
-  #sb-toggle{display:flex}
-  body.sb-closed #sidebar{transform:translateX(-260px)}
   body.sb-closed #main-content-wrap{margin-left:0}
-  body.sb-closed #sb-toggle{left:0}
+  #sb-backdrop{display:none!important}
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
   .login-card{min-width:340px}
@@ -541,6 +547,7 @@ a{color:var(--p);text-decoration:none}
       <button onclick="logout()" style="width:100%;padding:9px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2)">ログアウト</button>
     </div>
   </aside>
+  <div id="sb-backdrop" onclick="toggleSidebar()"></div>
   <button id="sb-toggle" onclick="toggleSidebar()" title="サイドバーを開閉">◀</button>
 
   <div id="main-content-wrap">
@@ -549,11 +556,12 @@ a{color:var(--p);text-decoration:none}
   <header class="hd" id="hd">
     <button id="hd-menu" onclick="toggleMobileMenu()">☰</button>
     <button class="hd-back" id="hd-back" onclick="goBack()" style="display:none">←</button>
-    <div>
+    <div style="flex:1">
       <div class="hd-title" id="hd-title">ホーム</div>
       <div class="hd-sub" id="hd-sub">メディケアビレッジかしわじま</div>
     </div>
     <div class="hd-badge" id="hd-badge" style="display:none"></div>
+    <button id="hd-sb-toggle" onclick="toggleSidebar()" style="display:none;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;color:#fff;font-size:15px;font-weight:700;padding:5px 10px;margin-left:8px;flex-shrink:0">▶</button>
   </header>
 
   <!-- ─── DASHBOARD ─── -->
@@ -3212,6 +3220,7 @@ function initDisplayPrefs(){
   const dmt=document.getElementById('dark-mode-toggle');
   if(dmt) dmt.checked=dark;
   setFontSize(localStorage.getItem('va_font')||'md');
+  _initSidebarState();
 }
 // ═══════════ CSV EXPORT ═══════════
 function _csvDL(rows,fname){
@@ -4249,19 +4258,30 @@ function toggleMobileMenu(){
   }
 }
 function closeMobileMenu(){document.getElementById('mobile-menu').classList.remove('on');}
+function _syncSbBtns(closed){
+  const t=document.getElementById('sb-toggle');
+  const h=document.getElementById('hd-sb-toggle');
+  if(t)t.textContent=closed?'▶':'◀';
+  if(h)h.textContent=closed?'▶':'◀';
+}
 function toggleSidebar(){
   const closed=document.body.classList.toggle('sb-closed');
-  const btn=document.getElementById('sb-toggle');
-  if(btn)btn.textContent=closed?'▶':'◀';
+  _syncSbBtns(closed);
 }
-// 画面幅が1024px未満になったらサイドバー折り畳みを解除（縦回転対応）
+function _initSidebarState(){
+  // 縦(< 1024px)は折り畳み状態でスタート、横(≥ 1024px)は開いた状態でスタート
+  const portrait=window.innerWidth < 1024;
+  if(portrait) document.body.classList.add('sb-closed');
+  else document.body.classList.remove('sb-closed');
+  _syncSbBtns(portrait);
+}
+// 画面回転・リサイズ時に自動調整
 try{
   window.matchMedia('(min-width:1024px)').addEventListener('change',e=>{
-    if(!e.matches){
-      document.body.classList.remove('sb-closed');
-      const btn=document.getElementById('sb-toggle');
-      if(btn)btn.textContent='◀';
-    }
+    const closed=!e.matches;
+    if(closed) document.body.classList.add('sb-closed');
+    else document.body.classList.remove('sb-closed');
+    _syncSbBtns(closed);
   });
 }catch(e){}
 function toggleSvcSheet(){
