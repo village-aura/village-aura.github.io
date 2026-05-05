@@ -397,7 +397,7 @@ a{color:var(--p);text-decoration:none}
   .diary-split{display:flex;align-items:flex-start}
   .diary-left{width:340px;flex-shrink:0;overflow:hidden;transition:width .28s ease}
   /* 縦(〜1023px): ヘッダー56px＋下バー60px = 116px。横(1024px+)は1024pxブロックで上書き */
-  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 116px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr);border-right:2px solid var(--bdr)}
+  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 116px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr);border-right:2px solid var(--bdr);margin-right:8px}
   /* ヘッダーの▶ボタン：縦画面のみ */
   #hd-sb-toggle{display:flex!important}
 }
@@ -1380,7 +1380,7 @@ a{color:var(--p);text-decoration:none}
         </div>
         <div id="diary-right-content" style="display:none;flex-direction:column;flex:1;min-height:0">
           <div style="background:#1c2340;color:#fff;display:flex;align-items:center;gap:6px;padding:8px 10px;flex-shrink:0">
-            <button onclick="clearDiaryRightPanel()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:14px;font-weight:700;touch-action:manipulation;flex-shrink:0">←</button>
+            <button id="diary-close-btn" onclick="clearDiaryRightPanel()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:13px;font-weight:700;touch-action:manipulation;flex-shrink:0">✕ 閉じる</button>
             <span id="diary-right-title" style="flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">帳票プレビュー</span>
             <button onclick="rpRightZoom()" id="diary-right-zoom-btn" style="background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
             <button onclick="printRightPanel()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
@@ -5597,14 +5597,21 @@ function rpZoom(){
     setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
 }
+function _setDiaryCloseBtn(expanded){
+  const btn=document.getElementById('diary-close-btn');
+  if(!btn)return;
+  btn.textContent=expanded?'← 戻る':'✕ 閉じる';
+}
 function expandDiaryRight(){
   const split=document.querySelector('.diary-split');
   if(split) split.classList.add('right-expanded');
+  _setDiaryCloseBtn(true);
 }
 function clearDiaryRightPanel(){
   const split=document.querySelector('.diary-split');
   if(split && split.classList.contains('right-expanded')){
-    split.classList.remove('right-expanded'); // 拡大中→縮小のみ、コンテンツ維持
+    split.classList.remove('right-expanded');
+    _setDiaryCloseBtn(false);
     return;
   }
   const empty=document.getElementById('diary-right-empty');
