@@ -395,12 +395,16 @@ a{color:var(--p);text-decoration:none}
   /* diary split layout */
   #scr-diary{max-width:none;margin:0;padding-bottom:0}
   .diary-split{display:flex;align-items:flex-start}
-  .diary-left{width:340px;flex-shrink:0}
+  .diary-left{width:340px;flex-shrink:0;overflow:hidden;transition:width .28s ease}
   /* 縦(〜1023px): ヘッダー56px＋下バー60px = 116px。横(1024px+)は1024pxブロックで上書き */
   .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 116px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr)}
   /* ヘッダーの▶ボタン：縦画面のみ */
   #hd-sb-toggle{display:flex!important}
 }
+/* プレビュー最大化 */
+.diary-split.right-expanded .diary-left{width:0!important;min-width:0}
+.diary-split.right-expanded #diary-expand-tap{display:none!important}
+
 /* ── PORTRAIT OVERLAY (768〜1023px 縦) ── */
 @media(min-width:768px) and (max-width:1023px){
   #sidebar{display:flex}
@@ -1381,7 +1385,8 @@ a{color:var(--p);text-decoration:none}
             <button onclick="rpRightZoom()" id="diary-right-zoom-btn" style="background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:700;touch-action:manipulation;flex-shrink:0">🔍縮</button>
             <button onclick="printRightPanel()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;touch-action:manipulation;flex-shrink:0">🖨</button>
           </div>
-          <div id="diary-right-scroll" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0">
+          <div id="diary-right-scroll" style="flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;min-height:0;position:relative">
+            <div id="diary-expand-tap" onclick="expandDiaryRight()" style="position:absolute;inset:0;z-index:5;cursor:zoom-in"></div>
             <iframe id="diary-right-iframe" scrolling="no" style="width:100%;border:none;background:#fff;display:block"></iframe>
           </div>
         </div>
@@ -5592,7 +5597,16 @@ function rpZoom(){
     setTimeout(()=>_rpSetIframeHeight(f),80);
   }catch(e){}
 }
+function expandDiaryRight(){
+  const split=document.querySelector('.diary-split');
+  if(split) split.classList.add('right-expanded');
+}
 function clearDiaryRightPanel(){
+  const split=document.querySelector('.diary-split');
+  if(split && split.classList.contains('right-expanded')){
+    split.classList.remove('right-expanded'); // 拡大中→縮小のみ、コンテンツ維持
+    return;
+  }
   const empty=document.getElementById('diary-right-empty');
   const content=document.getElementById('diary-right-content');
   if(empty)empty.style.display='flex';
