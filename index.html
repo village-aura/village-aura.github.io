@@ -401,11 +401,28 @@ a{color:var(--p);text-decoration:none}
   /* ヘッダーの▶ボタン：縦画面のみ */
   #hd-sb-toggle{display:flex!important}
 }
-/* ── PORTRAIT OVERLAY (768〜1023px) ── */
+/* ── PORTRAIT OVERLAY (768〜1023px 縦) ── */
 @media(min-width:768px) and (max-width:1023px){
   #sidebar{display:flex}
   body.sb-closed #sidebar{display:none}
   body:not(.sb-closed) #sb-backdrop{display:block}
+}
+/* ── TABLET LANDSCAPE (768〜1023px 横) ── PCと同じプッシュモード */
+@media(min-width:768px) and (max-width:1023px) and (orientation:landscape){
+  body:not(.sb-closed) #sb-backdrop{display:none!important}
+  #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
+  body.sb-closed #main-content-wrap{margin-left:0}
+  .hd{display:flex!important}
+  #hd-menu{display:none!important}
+  #hd-sb-toggle{display:flex!important}
+  #sb-close-btn{display:flex!important}
+  .bnav{display:none!important}
+  .diary-right{top:148px;height:calc(100vh - 148px)}
+  #diary-tab-bar{top:56px}
+  #diary-date-nav{top:98px}
+  .search-bar{top:56px}
+  .sch-bar{top:56px}
+  .detail-col-right{top:56px;height:calc(100vh - 56px)}
 }
 
 /* ── SCHEDULE ── */
@@ -4280,8 +4297,12 @@ function toggleSidebar(){
   const closed=document.body.classList.toggle('sb-closed');
   _syncSbBtns(closed);
 }
+function _isDesktopMode(){
+  // 1024px以上、またはタブレット横向き(768px+かつ横>縦)
+  return window.innerWidth >= 1024 || (window.innerWidth >= 768 && window.innerWidth > window.innerHeight);
+}
 function _initSidebarState(){
-  if(window.innerWidth >= 1024){
+  if(_isDesktopMode()){
     document.body.classList.remove('sb-closed');
     _syncSbBtns(false);
   } else {
@@ -4289,12 +4310,10 @@ function _initSidebarState(){
     _syncSbBtns(true);
   }
 }
-// 画面回転時: 1024px+は開く、未満は閉じる
+// 画面回転・リサイズ時に再判定
 try{
-  window.matchMedia('(min-width:1024px)').addEventListener('change',e=>{
-    if(e.matches){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
-    else { document.body.classList.add('sb-closed'); _syncSbBtns(true); }
-  });
+  window.matchMedia('(orientation:landscape)').addEventListener('change',()=>{ _initSidebarState(); });
+  window.matchMedia('(min-width:1024px)').addEventListener('change',()=>{ _initSidebarState(); });
 }catch(e){}
 function toggleSvcSheet(){
   const s=document.getElementById('svc-sheet');
