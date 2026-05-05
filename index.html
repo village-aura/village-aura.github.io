@@ -371,10 +371,12 @@ a{color:var(--p);text-decoration:none}
 .fs-view-tag{display:inline-block;background:var(--ps);color:var(--p);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px}
 
 /* ── SIDEBAR ── */
-#sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15);padding-top:env(safe-area-inset-top)}
+#sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15);padding-top:env(safe-area-inset-top);transition:transform .22s ease}
 .sbn{display:block;width:100%;padding:13px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:14px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
+/* Sidebar collapse toggle button */
+#sb-toggle{display:none;position:fixed;left:240px;top:50vh;transform:translateY(-50%);width:20px;height:48px;z-index:210;background:var(--pd);color:#fff;font-size:13px;font-weight:700;border-radius:0 6px 6px 0;border:none;cursor:pointer;box-shadow:2px 2px 8px rgba(0,0,0,.25);transition:left .22s ease;align-items:center;justify-content:center}
 
 /* diary split-pane (mobile: right panel hidden) */
 .diary-right{display:none}
@@ -429,10 +431,14 @@ a{color:var(--p);text-decoration:none}
 @media(min-width:1024px){
   body{background:#dde2ea}
   #sidebar{display:flex}
-  #main-content-wrap{margin-left:240px}
+  #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
   .hd{display:none}
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
+  #sb-toggle{display:flex}
+  body.sb-closed #sidebar{transform:translateX(-240px)}
+  body.sb-closed #main-content-wrap{margin-left:0}
+  body.sb-closed #sb-toggle{left:0}
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
   .login-card{min-width:340px}
@@ -535,6 +541,7 @@ a{color:var(--p);text-decoration:none}
       <button onclick="logout()" style="width:100%;padding:9px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2)">ログアウト</button>
     </div>
   </aside>
+  <button id="sb-toggle" onclick="toggleSidebar()" title="サイドバーを開閉">◀</button>
 
   <div id="main-content-wrap">
 
@@ -3205,6 +3212,11 @@ function initDisplayPrefs(){
   const dmt=document.getElementById('dark-mode-toggle');
   if(dmt) dmt.checked=dark;
   setFontSize(localStorage.getItem('va_font')||'md');
+  if(localStorage.getItem('va_sb_closed')==='1'){
+    document.body.classList.add('sb-closed');
+    const btn=document.getElementById('sb-toggle');
+    if(btn)btn.textContent='▶';
+  }
 }
 // ═══════════ CSV EXPORT ═══════════
 function _csvDL(rows,fname){
@@ -4242,6 +4254,12 @@ function toggleMobileMenu(){
   }
 }
 function closeMobileMenu(){document.getElementById('mobile-menu').classList.remove('on');}
+function toggleSidebar(){
+  const closed=document.body.classList.toggle('sb-closed');
+  const btn=document.getElementById('sb-toggle');
+  if(btn)btn.textContent=closed?'▶':'◀';
+  try{localStorage.setItem('va_sb_closed',closed?'1':'0')}catch(e){}
+}
 function toggleSvcSheet(){
   const s=document.getElementById('svc-sheet');
   const b=document.getElementById('svc-backdrop');
