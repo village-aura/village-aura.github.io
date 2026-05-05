@@ -459,11 +459,11 @@ a{color:var(--p);text-decoration:none}
   /* settings / import / diary / proposal */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
-  /* デスクトップ: #scr-diary自体をvhで固定し、sticky不要な独立スクロール構成にする */
-  #scr-diary{max-width:none;margin:0;padding-bottom:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .diary-split{flex:1;min-height:0;align-items:stretch}
-  .diary-left{height:100%;overflow-y:auto}
-  .diary-right{position:static;top:auto;height:100%;overflow:hidden}
+  /* デスクトップ: タブバー・日付ナビ・右パネルをそれぞれstickyで積み重ねる */
+  #scr-diary{max-width:none;margin:0;padding-bottom:0}
+  #diary-tab-bar{position:sticky;top:0;z-index:60}
+  #diary-date-nav{position:sticky;top:42px;z-index:60}
+  .diary-right{position:sticky;top:92px;height:calc(100vh - 92px)}
   #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
