@@ -3434,6 +3434,23 @@ function submitProposal(){
   closeModal('modal-proposal');
   addAuditLog('改善提案送信',title);
   toast('提案を送信しました ✓');
+  // メール通知（FormSubmit経由）
+  const cat=document.getElementById('prop-cat').value;
+  const pri=document.querySelector('input[name="prop-pri"]:checked').value;
+  fetch('https://formsubmit.co/ajax/inada.clinic.t@gmail.com',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:`【Village Aura 改善提案】${title}`,
+      _captcha:'false',
+      提案者: S.user||'──',
+      タイトル: title,
+      カテゴリ: cat,
+      優先度: pri,
+      詳細: detail||'（詳細なし）',
+      送信日時: new Date().toLocaleString('ja-JP')
+    })
+  }).catch(()=>{});
 }
 function switchProposalTab(tab){
   currentProposalTab=tab;
