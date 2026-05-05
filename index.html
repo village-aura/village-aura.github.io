@@ -375,8 +375,8 @@ a{color:var(--p);text-decoration:none}
 .sbn{display:block;width:100%;padding:13px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:14px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
-/* Sidebar collapse toggle button */
-#sb-toggle{display:none;position:fixed;left:240px;top:50vh;transform:translateY(-50%);width:26px;height:56px;z-index:210;background:var(--pd);color:#fff;font-size:14px;font-weight:700;border-radius:0 8px 8px 0;border:none;cursor:pointer;box-shadow:3px 0 10px rgba(0,0,0,.3);transition:left .22s ease;align-items:center;justify-content:center}
+/* Sidebar collapse toggle button – 左上固定 */
+#sb-toggle{display:none;position:fixed;left:0;top:0;width:44px;height:44px;z-index:210;background:var(--pd);color:#fff;font-size:22px;border:none;border-radius:0 0 10px 0;cursor:pointer;box-shadow:2px 2px 8px rgba(0,0,0,.25);align-items:center;justify-content:center}
 /* Sidebar backdrop for overlay mode */
 #sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:195;cursor:pointer}
 
@@ -441,15 +441,17 @@ a{color:var(--p);text-decoration:none}
 /* ── DESKTOP 1024px ── */
 @media(min-width:1024px){
   body{background:#dde2ea}
+  /* オーバーレイモード: サイドバー出し入れ可・コンテンツ幅は変わらず */
   #sidebar{display:flex}
-  #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
+  body.sb-closed #sidebar{display:none}
+  body:not(.sb-closed) #sb-backdrop{display:block}
   .hd{display:none}
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
-  #sb-toggle{display:none!important}    /* 横画面では固定タブ不使用 */
-  #hd-sb-toggle{display:none!important} /* ヘッダーボタンも横では不要 */
-  #sb-close-btn{display:none}           /* 横画面ではサイドバーを常時表示・閉じボタン不要 */
-  #sb-backdrop{display:none!important}
+  #sb-toggle{display:flex}              /* 左上トグルボタン */
+  #hd-sb-toggle{display:none!important} /* ヘッダー非表示のため不要 */
+  #sb-close-btn{display:none}
+
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
   .login-card{min-width:340px}
@@ -4276,19 +4278,15 @@ function toggleSidebar(){
   _syncSbBtns(closed);
 }
 function _initSidebarState(){
-  // 縦(< 1024px)は折り畳み状態でスタート、横(≥ 1024px)は開いた状態でスタート
-  const portrait=window.innerWidth < 1024;
-  if(portrait) document.body.classList.add('sb-closed');
-  else document.body.classList.remove('sb-closed');
-  _syncSbBtns(portrait);
+  // 全サイズで折り畳み状態からスタート
+  document.body.classList.add('sb-closed');
+  _syncSbBtns(true);
 }
-// 画面回転・リサイズ時に自動調整
+// 画面回転時はサイドバーを閉じる
 try{
-  window.matchMedia('(min-width:1024px)').addEventListener('change',e=>{
-    const closed=!e.matches;
-    if(closed) document.body.classList.add('sb-closed');
-    else document.body.classList.remove('sb-closed');
-    _syncSbBtns(closed);
+  window.matchMedia('(min-width:1024px)').addEventListener('change',()=>{
+    document.body.classList.add('sb-closed');
+    _syncSbBtns(true);
   });
 }catch(e){}
 function toggleSvcSheet(){
