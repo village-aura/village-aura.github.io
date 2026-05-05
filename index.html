@@ -444,13 +444,15 @@ a{color:var(--p);text-decoration:none}
   /* オーバーレイモード: サイドバー出し入れ可・コンテンツ幅は変わらず */
   #sidebar{display:flex}
   body.sb-closed #sidebar{display:none}
-  body:not(.sb-closed) #sb-backdrop{display:block}
-  .hd{display:none}
+  body:not(.sb-closed) #sb-backdrop{display:block;top:56px} /* ヘッダー下のみカバー */
+  /* ヘッダーを表示してトグルを格納 */
+  .hd{display:flex!important}
+  #hd-menu{display:none!important}      /* ハンバーガー不要 */
+  #hd-sb-toggle{display:flex!important} /* サイドバートグル */
+  #sb-close-btn{display:flex!important} /* サイドバー内の◀ボタン */
+  #sb-toggle{display:none!important}    /* フローティングボタン廃止 */
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
-  #sb-toggle{display:flex}              /* 左上トグルボタン */
-  #hd-sb-toggle{display:none!important} /* ヘッダー非表示のため不要 */
-  #sb-close-btn{display:none}
 
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
@@ -463,12 +465,12 @@ a{color:var(--p);text-decoration:none}
   .recent-list{padding:0}
   /* resident list */
   #scr-residents{padding:0}
-  .search-bar{top:0;padding:16px 16px 8px}
+  .search-bar{top:56px;padding:16px 16px 8px}
   .res-list{grid-template-columns:repeat(3,1fr);padding:0 16px 16px}
   /* detail 2-col */
   .detail-content-grid{display:grid;grid-template-columns:460px 1fr;align-items:start}
   .detail-col-left{border-right:1px solid var(--bdr)}
-  .detail-col-right{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--card)}
+  .detail-col-right{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--card)}
   .detail-col-right .timeline-sec{padding:12px 16px}
   .detail-col-right .timeline-sec h3{display:none}
   .summary-row{grid-template-columns:repeat(4,1fr)}
@@ -478,15 +480,15 @@ a{color:var(--p);text-decoration:none}
   /* settings / import / diary / proposal */
   #scr-settings{max-width:800px;margin:0 auto;padding-top:24px}
   #scr-import{max-width:900px;margin:0 auto;padding-top:8px}
-  /* デスクトップ: タブバー・日付ナビ・右パネルをそれぞれstickyで積み重ねる */
+  /* diary: ヘッダー56px + タブバー42px + 日付ナビ50px = 148px */
   #scr-diary{max-width:none;margin:0;padding-bottom:0}
-  #diary-tab-bar{position:sticky;top:0;z-index:60}
-  #diary-date-nav{position:sticky;top:42px;z-index:60}
-  .diary-right{position:sticky;top:92px;height:calc(100vh - 92px)}
+  #diary-tab-bar{position:sticky;top:56px;z-index:60}
+  #diary-date-nav{position:sticky;top:98px;z-index:60}
+  .diary-right{position:sticky;top:148px;height:calc(100vh - 148px)}
   #scr-proposal{max-width:800px;margin:0 auto}
   /* schedule */
   #scr-schedule{max-width:1200px;margin:0 auto;padding-bottom:16px}
-  .sch-bar{top:0}
+  .sch-bar{top:56px}
   .sch-fab{bottom:20px}
 }
 #preview-banner{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#b71c1c;color:#fff;padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;box-shadow:0 -2px 12px rgba(0,0,0,.3);display:none}
