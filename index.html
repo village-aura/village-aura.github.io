@@ -447,9 +447,11 @@ a{color:var(--p);text-decoration:none}
   #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
   .hd{display:none}
   .scr{padding-bottom:32px;min-height:100vh}
-  body.sb-closed #sidebar{display:none;transform:translateX(-260px)}
+  #sb-close-btn{display:flex}
+  body.sb-closed #sidebar{display:none}
   body.sb-closed #main-content-wrap{margin-left:0}
-  body.sb-closed #sb-toggle{left:0}
+  body.sb-closed #sb-toggle{left:0;top:14px;transform:none;border-radius:0 8px 8px 0}
+  body:not(.sb-closed) #sb-toggle{display:none}
   #sb-backdrop{display:none!important}
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
@@ -531,10 +533,11 @@ a{color:var(--p);text-decoration:none}
 
   <!-- SIDEBAR (desktop) -->
   <aside id="sidebar">
-    <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15)">
+    <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);position:relative">
       <img src="facility-logo.png" alt="Village Aura" style="max-height:44px;max-width:155px;object-fit:contain;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:5px 10px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;font-size:22px">🏥</div>
       <div style="font-size:13px;font-weight:800;margin-top:9px;letter-spacing:.14em;font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;opacity:.92;text-transform:uppercase;color:#fff">Village Aura</div>
       <div style="font-size:9px;opacity:.55;margin-top:2px;line-height:1.5">メディケアビレッジかしわじま<br>こはる日和</div>
+      <button id="sb-close-btn" onclick="toggleSidebar()" style="display:none;position:absolute;top:12px;right:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;color:#fff;font-size:13px;font-weight:700;padding:4px 8px;cursor:pointer">◀</button>
     </div>
     <nav style="flex:1;padding:8px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
@@ -4269,6 +4272,7 @@ function _syncSbBtns(closed){
   const h=document.getElementById('hd-sb-toggle');
   if(t)t.textContent=closed?'▶':'◀';
   if(h)h.textContent=closed?'▶':'◀';
+  // サイドバー内の閉じるボタンはテキスト変更不要（常に◀）
 }
 function toggleSidebar(){
   const closed=document.body.classList.toggle('sb-closed');
