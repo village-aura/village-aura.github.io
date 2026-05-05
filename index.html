@@ -396,16 +396,14 @@ a{color:var(--p);text-decoration:none}
   #scr-diary{max-width:none;margin:0;padding-bottom:0}
   .diary-split{display:flex;align-items:flex-start}
   .diary-left{width:340px;flex-shrink:0}
-  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 56px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr)}
-  /* Sidebar & toggle visible on all tablets */
-  .bnav{display:none!important}
-  #sb-toggle{display:flex}
+  /* 縦(〜1023px): ヘッダー56px＋下バー60px = 116px。横(1024px+)は1024pxブロックで上書き */
+  .diary-right{display:flex;flex-direction:column;position:sticky;top:56px;height:calc(100vh - 116px);min-width:0;flex:1;background:var(--bg);border-left:2px solid var(--bdr)}
+  /* ヘッダーの▶ボタン：縦画面のみ */
   #hd-sb-toggle{display:flex!important}
 }
 /* ── PORTRAIT OVERLAY (768〜1023px) ── */
 @media(min-width:768px) and (max-width:1023px){
   #sidebar{display:flex}
-  #sb-toggle{display:none}  /* 縦画面ではヘッダーの▶▶◀のみ使い、固定タブは非表示 */
   body.sb-closed #sidebar{display:none}
   body:not(.sb-closed) #sb-backdrop{display:block}
 }
@@ -446,12 +444,11 @@ a{color:var(--p);text-decoration:none}
   #sidebar{display:flex}
   #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
   .hd{display:none}
+  .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
-  #sb-close-btn{display:flex}
-  body.sb-closed #sidebar{display:none}
-  body.sb-closed #main-content-wrap{margin-left:0}
-  body.sb-closed #sb-toggle{left:0;top:14px;transform:none;border-radius:0 8px 8px 0}
-  body:not(.sb-closed) #sb-toggle{display:none}
+  #sb-toggle{display:none!important}    /* 横画面では固定タブ不使用 */
+  #hd-sb-toggle{display:none!important} /* ヘッダーボタンも横では不要 */
+  #sb-close-btn{display:none}           /* 横画面ではサイドバーを常時表示・閉じボタン不要 */
   #sb-backdrop{display:none!important}
   /* login */
   #scr-login .login-inner{flex-direction:row;gap:80px;align-items:center;justify-content:center;padding:0 60px}
