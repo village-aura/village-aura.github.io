@@ -986,6 +986,15 @@ a{color:var(--p);text-decoration:none}
     <div id="vital-alert-list" style="padding:10px 12px 16px"></div>
   </div>
 
+  <!-- ─── STOOL ALERT ─── -->
+  <div id="scr-stool-alert" class="scr">
+    <div style="padding:14px 16px 0">
+      <div style="font-size:18px;font-weight:800;color:#7b1fa2;margin-bottom:2px">🚽 排便未記録一覧</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:12px">排便記録が3日以上ない利用者</div>
+    </div>
+    <div id="stool-alert-list" style="padding:10px 12px 16px"></div>
+  </div>
+
   <!-- ─── SETTINGS ─── -->
   <div id="scr-settings" class="scr">
     <div class="acc-wrap">
@@ -2217,7 +2226,10 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div class="sheet-title" style="margin-bottom:0">📋 フェイスシート</div>
-      <div id="fs-res-name" style="font-size:12px;color:var(--sub)"></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="fs-res-name" style="font-size:12px;color:var(--sub)"></div>
+        <button onclick="closeModal('modal-facesheet')" style="display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">← 戻る</button>
+      </div>
     </div>
     <div class="tab-bar" style="margin:0 -20px 0">
       <button class="tab on" data-fstab="fst-contact" onclick="switchFsTab(this)">連絡先</button>
@@ -4419,7 +4431,8 @@ function showScr(id){
     'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
     'scr-diary':'業務日誌',
-    'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録'
+    'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
+    'scr-stool-alert':'排便未記録一覧'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -4444,6 +4457,7 @@ function showScr(id){
   if(id==='scr-proposal') renderProposalScr();
   if(id==='scr-vital-alert') renderVitalAlert();
   if(id==='scr-urgent-rec') renderUrgentRec();
+  if(id==='scr-stool-alert') renderStoolAlert();
   window.scrollTo(0,0);
   // タブレット縦: 全画面遷移でサイドバーを格納
   if(window.innerWidth >= 768 && window.innerWidth < 1024){
@@ -4611,6 +4625,38 @@ function unconfirmVital(vitalId){
   saveVitalConfirmed(d);
   renderVitalAlert();
   toast('未確認に戻しました');
+}
+function renderStoolAlert(){
+  const listEl=document.getElementById('stool-alert-list');
+  if(!listEl)return;
+  const residents=getResidents();
+  const CARE_LVL={care1:'要支援1',care2:'要支援2',care3:'要介護1',care4:'要介護2',care5:'要介護3',care6:'要介護4',care7:'要介護5'};
+  const alerts=residents.map(r=>{const d=getStoolDays(r.id);return{r,d};}).filter(({d})=>d===null||d>=3).sort((a,b)=>{if(a.d===null&&b.d===null)return 0;if(a.d===null)return-1;if(b.d===null)return-1;return b.d-a.d;});
+  if(!alerts.length){
+    listEl.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub)"><div style="font-size:40px;margin-bottom:10px">✅</div><div style="font-size:15px;font-weight:700">排便未記録の利用者はいません</div></div>';
+    return;
+  }
+  listEl.innerHTML=alerts.map(({r,d})=>{
+    const daysTxt=d===null?'記録なし':`${d}日前`;
+    const urgent=d===null||d>=5;
+    const borderColor=urgent?'#7b1fa2':'#ba68c8';
+    const bgBadge=urgent?'#f3e5f5':'#fce4ec';
+    const txtBadge=urgent?'#6a1b9a':'#ad1457';
+    return '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:2px solid '+borderColor+'">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+        +'<div style="width:36px;height:36px;border-radius:50%;background:#f3e5f5;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚽</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:15px;font-weight:800">'+r.name+'<span style="font-size:11px;font-weight:400;color:var(--sub);margin-left:6px">'+(r.room?r.room+'号室':'')+'</span></div>'
+          +'<div style="font-size:11px;color:var(--sub)">'+(CARE_LVL[r.care]||r.care)+'　'+(r.kana||'')+'</div>'
+        +'</div>'
+        +'<div style="background:'+bgBadge+';color:'+txtBadge+';font-size:12px;font-weight:800;padding:4px 10px;border-radius:20px;flex-shrink:0">最終：'+daysTxt+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px">'
+        +'<button onclick="openResidentDirect(\''+r.id+'\',\'excretion\')" style="flex:1;padding:9px;border-radius:8px;background:#7b1fa2;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">🖊 排泄を記録する</button>'
+        +'<button onclick="openResident(\''+r.id+'\')" style="padding:9px 14px;border-radius:8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:13px;cursor:pointer;touch-action:manipulation">詳細</button>'
+      +'</div>'
+    +'</div>';
+  }).join('');
 }
 let _vaTab='pending';
 function switchVaTab(tab){
@@ -4871,7 +4917,7 @@ function renderDashboard(){
       stoolRow.style.display='flex';
       document.getElementById('stool-alert-count').textContent='排便3日以上なし：'+stoolAlerts.length+'名';
       document.getElementById('stool-alert-names').textContent=stoolAlerts.slice(0,3).map(r=>r.name).join('・')+(stoolAlerts.length>3?'…':'');
-      stoolRow.onclick=()=>showScr('scr-residents');
+      stoolRow.onclick=()=>showScr('scr-stool-alert');
     } else {
       stoolRow.style.display='none';
     }
