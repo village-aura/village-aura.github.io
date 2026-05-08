@@ -5532,6 +5532,7 @@ function renderDetail(){
       ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}')" style="background:rgba(255,255,255,.9);color:#c62828;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">📝 医師指示</button>`:''}
       <button onclick="openFamilyReport()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📮 家族連絡帳</button>
       <button onclick="openResidentQR()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📲 QR</button>
+      <button onclick="toggleRepoNeeded('${r.id}')" style="background:${r.repoNeeded?'#fff':'rgba(255,255,255,.15)'};color:${r.repoNeeded?'#1565c0':'rgba(255,255,255,.7)'};border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;border:1.5px solid ${r.repoNeeded?'#fff':'rgba(255,255,255,.3)'}">🔄 体交${r.repoNeeded?'▶ON':'　OFF'}</button>
       <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">✏️ 編集</button>
       <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
     </div>
@@ -9208,6 +9209,16 @@ let _repoTimer=null;
 function getRepoTimes(){return ls('reposition_times')||{};}
 function saveRepoTimes(d){lsSet('reposition_times',d);}
 
+function toggleRepoNeeded(rid){
+  const res=getResidents();
+  const idx=res.findIndex(r=>r.id===rid);
+  if(idx<0)return;
+  res[idx].repoNeeded=!res[idx].repoNeeded;
+  saveResidents(res);
+  renderDetail();
+  renderDashboardRepo();
+  toast(res[idx].name+(res[idx].repoNeeded?' を体交タイマーに追加しました':' を体交タイマーから外しました'));
+}
 function markReposition(rid){
   const d=getRepoTimes();
   d[rid]=new Date().toISOString();
@@ -9227,7 +9238,7 @@ function renderDashboardRepo(){
   const listEl=document.getElementById('dash-repo-list');
   if(!sec||!listEl)return;
   const residents=getResidents();
-  const bedRes=residents.filter(r=>r.care==='care4'||r.care==='care5');
+  const bedRes=residents.filter(r=>r.repoNeeded);
   if(!bedRes.length){sec.style.display='none';return;}
   sec.style.display='block';
   const times=getRepoTimes();
