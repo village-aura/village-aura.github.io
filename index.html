@@ -1285,7 +1285,10 @@ a{color:var(--p);text-decoration:none}
           <div class="acc-body"><div class="acc-inner">
             <div id="admin-staff-list"></div>
             <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
-              <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📋 操作ログ</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.04em">📋 操作ログ</div>
+                <span style="font-size:10px;color:var(--sub)">過去7日間保管</span>
+              </div>
               <button id="audit-log-btn" onclick="toggleAuditLog()" style="width:100%;padding:10px;background:var(--bg);color:var(--p);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--p)">▼ ログを表示</button>
               <div id="audit-log-list" style="display:none;max-height:300px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;margin-top:8px;background:var(--card)"></div>
             </div>
@@ -4187,49 +4190,66 @@ function renderAdminStaffList(){
   const roleOptions=Object.entries(ROLE_COLORS).map(([r,v])=>
     '<option value="'+r+'">'+v.label+'</option>'
   ).join('');
-  list.innerHTML=Object.entries(STAFF_INFO).sort((a,b)=>{
+  const sorted=Object.entries(STAFF_INFO).sort((a,b)=>{
     const roleOrder={super_admin:0,doctor:1,facility_manager:2,nurse:3,care:4,home_care:5,medical_office:6};
     const ra=roleOrder[getStaffRole(a[0])]??9, rb=roleOrder[getStaffRole(b[0])]??9;
     if(ra!==rb) return ra-rb;
     return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
-  }).map(([key,info])=>{
+  });
+  list.innerHTML='<div style="display:flex;flex-direction:column;gap:4px">'
+    +sorted.map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
     const curPass=getStaffPass(key);
     const curLoginId=getStaffLoginId(key);
     const curRole=getStaffRole(key);
     const rc=ROLE_COLORS[curRole]||{bg:'#9ca3af',label:curRole};
-    return '<div style="border-bottom:1px solid var(--bdr);padding:12px 0">'
-      +'<div class="setting-item" style="padding:0;border:none">'
-        +'<span class="si-ico" style="font-size:18px">'+(disabled?'🔒':'👤')+'</span>'
-        +'<div class="si-body">'
-          +'<div class="si-name" style="font-size:14px">'+info.name+(isMe?' <span style="font-size:11px;color:var(--p)">(あなた)</span>':'')+'</div>'
-          +'<div class="si-desc">ID: <b>'+curLoginId+'</b>　<span class="staff-badge" style="background:'+rc.bg+'">'+rc.label+'</span>　'+(disabled?'<span style="color:var(--ng);font-weight:700">利用停止中</span>':'<span style="color:var(--ok)">有効</span>')+'</div>'
-        +'</div>'
-        +(isMe?'<span style="font-size:11px;color:var(--sub)">──</span>':'<label class="toggle"><input type="checkbox" '+(disabled?'':'checked')+' onchange="toggleStaffDisabled(\''+key+'\',!this.checked)"><span class="toggle-slider"></span></label>')
-      +'</div>'
-      +'<div style="margin-top:8px;display:flex;gap:8px;align-items:center">'
-        +'<div style="font-size:11px;color:var(--sub);white-space:nowrap">ロール:</div>'
-        +'<select id="adm-role-'+key+'" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb"'+(isMe?' disabled':'')+'>'+roleOptions+'</select>'
-        +'<button onclick="adminSetRole(\''+key+'\')" style="padding:7px 10px;background:#7c3aed;color:#fff;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap"'+(isMe?' disabled':'')+'>変更</button>'
-      +'</div>'
-      +'<div style="margin-top:6px;display:flex;gap:8px;align-items:center">'
-        +'<div style="font-size:11px;color:var(--sub);white-space:nowrap">ID:</div>'
-        +'<input type="text" id="adm-lid-'+key+'" value="'+curLoginId+'" placeholder="4桁ID" maxlength="8" inputmode="numeric" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb;width:80px">'
-        +'<button onclick="adminSetLoginId(\''+key+'\')" style="padding:7px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap">変更</button>'
-      +'</div>'
-      +'<div style="margin-top:6px;display:flex;gap:8px;align-items:center">'
-        +'<div style="font-size:11px;color:var(--sub);white-space:nowrap">PW:</div>'
-        +'<input type="text" id="adm-pw-'+key+'" value="'+curPass+'" placeholder="新しいパスワード" style="flex:1;padding:7px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:14px;background:#f8f9fb">'
-        +'<button onclick="adminSetPassword(\''+key+'\')" style="padding:7px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">変更</button>'
-      +'</div>'
-    +'</div>';
-  }).join('');
-  // select要素に現在のロールをセット
-  Object.keys(STAFF_INFO).forEach(key=>{
+    const editId='adm-edit-'+key;
+    return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
+        <span style="font-size:16px">${disabled?'🔒':'👤'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${info.name}${isMe?'<span style="font-size:10px;color:var(--p);margin-left:4px">(あなた)</span>':''}</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+            <span class="staff-badge" style="background:${rc.bg};font-size:9px">${rc.label}</span>
+            <span style="font-size:11px;color:var(--sub)">ID: ${curLoginId}</span>
+            <span style="font-size:10px;font-weight:700;color:${disabled?'var(--ng)':'var(--ok)'}">${disabled?'停止中':'有効'}</span>
+          </div>
+        </div>
+        ${isMe?'':'<label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" '+(disabled?'':'checked')+' onchange="toggleStaffDisabled(\''+key+'\',!this.checked)"><span class="toggle-slider"></span></label>'}
+        <span style="font-size:14px;color:var(--sub);transition:transform .2s" id="${editId}-arrow">›</span>
+      </div>
+      <div id="${editId}" style="display:none;padding:8px 10px 10px;border-top:1px solid var(--bdr);background:var(--card)">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ロール</span>
+          <select id="adm-role-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb"${isMe?' disabled':''}>${roleOptions}</select>
+          <button onclick="adminSetRole('${key}')" style="padding:6px 10px;background:#7c3aed;color:#fff;border-radius:7px;font-size:11px;font-weight:700"${isMe?' disabled':''}>変更</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ID</span>
+          <input type="text" id="adm-lid-${key}" value="${curLoginId}" maxlength="8" inputmode="numeric" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
+          <button onclick="adminSetLoginId('${key}')" style="padding:6px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">PW</span>
+          <input type="text" id="adm-pw-${key}" value="${curPass}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
+          <button onclick="adminSetPassword('${key}')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+  sorted.forEach(([key])=>{
     const sel=document.getElementById('adm-role-'+key);
     if(sel) sel.value=getStaffRole(key);
   });
+}
+function toggleAdmEdit(id){
+  const el=document.getElementById(id);
+  const arrow=document.getElementById(id+'-arrow');
+  if(!el)return;
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(arrow)arrow.style.transform=open?'rotate(90deg)':'';
 }
 function toggleStaffDisabled(key,disable){
   const settings=getStaffSettings();
@@ -4530,9 +4550,9 @@ function renderHistPanel(){
 
 function addAuditLog(action,detail=''){
   const entry={ts:new Date().toISOString(),user:S.user||'未ログイン',action,detail};
-  const logs=ls('audit_log')||[];
+  const cutoff=Date.now()-7*24*60*60*1000;
+  const logs=(ls('audit_log')||[]).filter(l=>new Date(l.ts).getTime()>cutoff);
   logs.unshift(entry);
-  if(logs.length>500)logs.splice(500);
   lsSet('audit_log',logs);
   if(fbReady&&db){
     db.collection('va_audit').add({
