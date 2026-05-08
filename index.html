@@ -579,6 +579,15 @@ a{color:var(--p);text-decoration:none}
 <!-- ═══════════ APP ═══════════ -->
 <div id="app" style="display:none">
 
+  <!-- アプリ更新バナー -->
+  <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+    <div style="font-size:13px;font-weight:700;line-height:1.4">🔄 アプリが更新されました<br><span style="font-size:11px;font-weight:400;opacity:.85">「更新する」をタップすると最新版が使えます</span></div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button onclick="forceReload()" style="background:#fff;color:#1565c0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;touch-action:manipulation">更新する</button>
+      <button onclick="document.getElementById('update-banner').style.display='none'" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;touch-action:manipulation">後で</button>
+    </div>
+  </div>
+
   <!-- SIDEBAR (desktop) -->
   <aside id="sidebar">
     <div style="padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);position:relative">
@@ -3425,6 +3434,7 @@ async function login(){
   showScr('scr-dashboard');
   renderDashboard();
   checkUrlHash();
+  startUpdateChecker();
   // Firebase Auth サインイン → トークン確定を待ってからFirestoreを使う
   try{
     await firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS);
@@ -4060,6 +4070,26 @@ function copyProposalPrompt(){
 function forceReload(){
   const base=location.href.split('?')[0].split('#')[0];
   location.href=base+'?_r='+Date.now();
+}
+let _initEtag=null;
+let _updateCheckTimer=null;
+async function checkForUpdates(){
+  try{
+    const url=location.href.split('?')[0].split('#')[0];
+    const r=await fetch(url,{method:'HEAD',cache:'no-store'});
+    const tag=r.headers.get('etag')||r.headers.get('last-modified')||'';
+    if(!tag)return;
+    if(!_initEtag){_initEtag=tag;return;}
+    if(tag!==_initEtag){
+      const b=document.getElementById('update-banner');
+      if(b)b.style.display='flex';
+    }
+  }catch(e){}
+}
+function startUpdateChecker(){
+  checkForUpdates();
+  if(_updateCheckTimer)clearInterval(_updateCheckTimer);
+  _updateCheckTimer=setInterval(checkForUpdates,5*60*1000);
 }
 function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
