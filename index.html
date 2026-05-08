@@ -1497,7 +1497,21 @@ a{color:var(--p);text-decoration:none}
     <button class="bn" onclick="showScr('scr-settings')" id="bn-set">
       <div class="bn-ico">⚙️</div><div class="bn-lbl">設定</div>
     </button>
+    <button class="bn" onclick="openAccountSwitch()" id="bn-acct" style="border-left:1px solid var(--bdr)">
+      <div class="bn-ico" style="font-size:16px;font-weight:800;line-height:22px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:64px" id="bn-acct-ico">👤</div>
+      <div class="bn-lbl" id="bn-acct-lbl">切替</div>
+    </button>
   </nav>
+
+  <!-- アカウント切り替えシート -->
+  <div id="acct-switch-backdrop" onclick="closeAccountSwitch()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:399;touch-action:manipulation"></div>
+  <div id="acct-switch-sheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:400;background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(56px + env(safe-area-inset-bottom));box-shadow:0 -4px 24px rgba(0,0,0,.18)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:800">👤 アカウント切り替え</div>
+      <button onclick="closeAccountSwitch()" style="background:var(--bg);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div id="acct-switch-body"></div>
+  </div>
 
   <!-- DIARY SCREEN -->
   <div id="scr-diary" class="scr">
@@ -3437,6 +3451,7 @@ async function login(){
   showScr('scr-dashboard');
   renderDashboard();
   checkUrlHash();
+  updateBnAcct();
   startUpdateChecker();
   // Firebase Auth サインイン → トークン確定を待ってからFirestoreを使う
   try{
@@ -9682,6 +9697,94 @@ if(localStorage.getItem('_demo_data_ver')!==_DEMO_DATA_VER){
 }
 initDisplayPrefs();
 _startLockTimer();
+function updateBnAcct(){
+  const ico=document.getElementById('bn-acct-ico');
+  const lbl=document.getElementById('bn-acct-lbl');
+  if(!ico||!S.user)return;
+  const short=S.user.split(' ')[0].substring(0,4);
+  ico.textContent=short;
+  if(lbl)lbl.textContent='切替';
+}
+function openAccountSwitch(){
+  const bd=document.getElementById('acct-switch-backdrop');
+  const sh=document.getElementById('acct-switch-sheet');
+  if(!sh)return;
+  bd.style.display='block';sh.style.display='block';
+  renderAccountSwitchList();
+}
+function closeAccountSwitch(){
+  document.getElementById('acct-switch-backdrop').style.display='none';
+  document.getElementById('acct-switch-sheet').style.display='none';
+}
+function renderAccountSwitchList(){
+  const body=document.getElementById('acct-switch-body');
+  if(!body)return;
+  const all={...STAFF_INFO,...getCustomStaff()};
+  const settings=getStaffSettings();
+  const sorted=Object.entries(all).filter(([k])=>!settings[k]?.disabled)
+    .sort((a,b)=>{
+      const o={super_admin:0,doctor:1,facility_manager:2,nurse:3,care:4,home_care:5,medical_office:6};
+      return (o[getStaffRole(a[0])]??9)-(o[getStaffRole(b[0])]??9);
+    });
+  body.innerHTML='<div style="display:flex;flex-direction:column;gap:4px;max-height:55vh;overflow-y:auto">'
+    +sorted.map(([key,info])=>{
+      const rc=ROLE_COLORS[getStaffRole(key)]||{bg:'#9ca3af',label:'?'};
+      const isMe=info.name===S.user;
+      return `<button onclick="selectSwitchUser('${key}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:2px solid ${isMe?'var(--p)':'var(--bdr)'};background:${isMe?'var(--ps)':'var(--bg)'};text-align:left;cursor:pointer;touch-action:manipulation">
+        <span style="font-size:20px">👤</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700">${info.name}${isMe?' <span style="font-size:10px;color:var(--p)">(現在)</span>':''}</div>
+          <span class="staff-badge" style="background:${rc.bg};font-size:9px">${rc.label}</span>
+        </div>
+        ${isMe?'<span style="color:var(--p);font-size:13px;font-weight:700">✓</span>':'<span style="color:var(--sub);font-size:14px">›</span>'}
+      </button>`;
+    }).join('')+'</div>';
+}
+function selectSwitchUser(key){
+  const all={...STAFF_INFO,...getCustomStaff()};
+  const info=all[key];if(!info)return;
+  const isMe=info.name===S.user;
+  if(isMe){closeAccountSwitch();return;}
+  const body=document.getElementById('acct-switch-body');
+  const rc=ROLE_COLORS[getStaffRole(key)]||{bg:'#9ca3af',label:'?'};
+  body.innerHTML=`
+    <div style="text-align:center;padding:8px 0 16px">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px">${info.name}</div>
+      <span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>
+    </div>
+    <input type="password" id="sw-pin" placeholder="パスワードを入力" inputmode="numeric"
+      style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:18px;text-align:center;letter-spacing:.2em;margin-bottom:8px;background:var(--card);color:var(--txt)"
+      onkeydown="if(event.key==='Enter')confirmAccountSwitch('${key}')">
+    <div id="sw-err" style="display:none;color:var(--ng);font-size:12px;text-align:center;margin-bottom:8px"></div>
+    <button onclick="confirmAccountSwitch('${key}')" style="width:100%;padding:12px;background:var(--p);color:#fff;border-radius:10px;font-size:15px;font-weight:800;margin-bottom:8px;touch-action:manipulation">切り替える</button>
+    <button onclick="renderAccountSwitchList()" style="width:100%;padding:10px;background:var(--bg);color:var(--sub);border-radius:10px;font-size:13px;font-weight:700">← 戻る</button>
+  `;
+  setTimeout(()=>document.getElementById('sw-pin')?.focus(),100);
+}
+function confirmAccountSwitch(key){
+  const pin=document.getElementById('sw-pin')?.value||'';
+  const errEl=document.getElementById('sw-err');
+  if(getStaffPass(key)!==pin){
+    errEl.textContent='パスワードが正しくありません';
+    errEl.style.display='block';
+    document.getElementById('sw-pin').value='';
+    return;
+  }
+  const all={...STAFF_INFO,...getCustomStaff()};
+  const info=all[key];
+  const prev=S.user;
+  S.user=info.name;
+  S.userRole=getStaffRole(key);
+  S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
+  const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
+  const mmU=document.getElementById('mm-user');if(mmU)mmU.textContent=S.user;
+  updateBnAcct();
+  addAuditLog('アカウント切り替え',prev+' → '+S.user);
+  closeAccountSwitch();
+  renderDashboard();
+  toast(S.user+' に切り替えました ✓');
+}
 function handleFsPhotoTap(){
   const wrap=document.getElementById('fs-photo-wrap');
   const img=wrap&&wrap.querySelector('img');
