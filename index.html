@@ -1127,6 +1127,16 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-settings" class="scr">
     <div class="acc-wrap">
 
+      <!-- ─── アプリ更新 ─── -->
+      <div style="background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:800">🔄 アプリを最新版に更新</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px">管理者から「更新してください」と連絡があった際にタップ</div>
+          <div id="app-ver-lbl" style="font-size:10px;color:var(--sub);margin-top:2px"></div>
+        </div>
+        <button onclick="forceReload()" style="flex-shrink:0;background:var(--p);color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:800;white-space:nowrap;touch-action:manipulation">更新する</button>
+      </div>
+
       <!-- ─── アカウント ─── -->
       <div class="acc-item open" id="acc-account">
         <button class="acc-hd" onclick="toggleAcc(this)">
@@ -4047,9 +4057,16 @@ function copyProposalPrompt(){
   });
 }
 
+function forceReload(){
+  const base=location.href.split('?')[0].split('#')[0];
+  location.href=base+'?_r='+Date.now();
+}
 function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
+  const verLbl=document.getElementById('app-ver-lbl');
+  if(verLbl){const t=new Date();verLbl.textContent='現在のキャッシュ取得日時: '+t.toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+
   const dmt=document.getElementById('dark-mode-toggle');
   if(dmt) dmt.checked=document.body.classList.contains('dark-mode');
   setFontSize(localStorage.getItem('va_font')||'md');
