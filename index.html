@@ -579,13 +579,10 @@ a{color:var(--p);text-decoration:none}
 <!-- ═══════════ APP ═══════════ -->
 <div id="app" style="display:none">
 
-  <!-- アプリ更新バナー -->
-  <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
-    <div style="font-size:13px;font-weight:700;line-height:1.4">🔄 アプリが更新されました<br><span style="font-size:11px;font-weight:400;opacity:.85">「更新する」をタップすると最新版が使えます</span></div>
-    <div style="display:flex;gap:8px;flex-shrink:0">
-      <button onclick="forceReload()" style="background:#fff;color:#1565c0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;touch-action:manipulation">更新する</button>
-      <button onclick="document.getElementById('update-banner').style.display='none'" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;touch-action:manipulation">後で</button>
-    </div>
+  <!-- アプリ更新バナー（自動リロードできない場合のフォールバック） -->
+  <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:10px 16px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+    <div style="font-size:13px;font-weight:700;line-height:1.4">🔄 アプリが更新されました<br><span style="font-size:11px;font-weight:400;opacity:.85">入力完了後に自動で再読み込みします</span></div>
+    <button onclick="forceReload()" style="background:#fff;color:#1565c0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;flex-shrink:0;touch-action:manipulation">今すぐ更新</button>
   </div>
 
   <!-- SIDEBAR (desktop) -->
@@ -4073,6 +4070,9 @@ function forceReload(){
 }
 let _initEtag=null;
 let _updateCheckTimer=null;
+let _pendingUpdate=false;
+function _isModalOpen(){return !!document.querySelector('.overlay.on');}
+function _doAutoReload(){forceReload();}
 async function checkForUpdates(){
   try{
     const url=location.href.split('?')[0].split('#')[0];
@@ -4081,8 +4081,9 @@ async function checkForUpdates(){
     if(!tag)return;
     if(!_initEtag){_initEtag=tag;return;}
     if(tag!==_initEtag){
-      const b=document.getElementById('update-banner');
-      if(b)b.style.display='flex';
+      _pendingUpdate=true;
+      if(!_isModalOpen()){_doAutoReload();}
+      else{const b=document.getElementById('update-banner');if(b)b.style.display='flex';}
     }
   }catch(e){}
 }
@@ -5791,6 +5792,7 @@ function closeModal(id,e){
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
   if(vsBtn){vsBtn.classList.remove('recording');vsBtn.textContent='🎤 音声で一括入力';}
   if(id==='modal-meal'||id==='modal-excretion')S.editRecId=null;
+  if(_pendingUpdate&&!_isModalOpen())setTimeout(_doAutoReload,300);
 }
 function openEditRecord(id,type){
   const rec=getRecords().find(r=>r.id===id);
