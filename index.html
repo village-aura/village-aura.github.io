@@ -609,7 +609,10 @@ a{color:var(--p);text-decoration:none}
     <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
       <div id="sb-user" style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.9">──</div>
       <div id="sb-time" style="font-size:10px;opacity:.6;margin-bottom:10px"></div>
-      <button onclick="logout()" style="width:100%;padding:9px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2)">ログアウト</button>
+      <div style="display:flex;gap:6px">
+        <button onclick="logout()" style="flex:1;padding:9px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.2)">ログアウト</button>
+        <button onclick="forceReload()" title="最新版に更新" style="padding:9px 10px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-size:15px;border:1px solid rgba(255,255,255,.2);flex-shrink:0">🔄</button>
+      </div>
     </div>
   </aside>
   <div id="sb-backdrop" onclick="toggleSidebar()"></div>
@@ -3555,10 +3558,12 @@ function _syncFsPhoto(photo){
   if(!wrap)return;
   if(photo){
     wrap.innerHTML=`<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    wrap.dataset.photo=photo;
     if(clr)clr.style.display='';
     if(hint)hint.innerHTML='タップで拡大<br>「変更」で写真を差し替え';
   }else{
     wrap.innerHTML='👤';
+    wrap.dataset.photo='';
     if(clr)clr.style.display='none';
     if(hint)hint.innerHTML='写真をタップして登録<br>カルテ上部の帯に表示されます';
   }
@@ -9719,58 +9724,40 @@ function closeAccountSwitch(){
 function renderAccountSwitchList(){
   const body=document.getElementById('acct-switch-body');
   if(!body)return;
+  // ID＋パスワード直接入力方式
+  body.innerHTML=`
+    <div style="font-size:12px;color:var(--sub);margin-bottom:10px">ログインIDとパスワードを入力してください</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <input type="text" id="sw-id" inputmode="numeric" placeholder="職員ID（例: 1001）"
+        style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:var(--card);color:var(--txt)"
+        onkeydown="if(event.key==='Enter')document.getElementById('sw-pass').focus()">
+      <input type="password" id="sw-pass" placeholder="パスワード"
+        style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:var(--card);color:var(--txt)"
+        onkeydown="if(event.key==='Enter')confirmAccountSwitch()">
+      <div id="sw-err" style="display:none;color:var(--ng);font-size:12px;text-align:center"></div>
+      <button onclick="confirmAccountSwitch()" style="width:100%;padding:12px;background:var(--p);color:#fff;border-radius:10px;font-size:15px;font-weight:800;touch-action:manipulation">切り替える</button>
+    </div>
+  `;
+  setTimeout(()=>document.getElementById('sw-id')?.focus(),100);
+}
+function confirmAccountSwitch(){
+  const inputId=(document.getElementById('sw-id')?.value||'').trim();
+  const inputPass=document.getElementById('sw-pass')?.value||'';
+  const errEl=document.getElementById('sw-err');
   const all={...STAFF_INFO,...getCustomStaff()};
   const settings=getStaffSettings();
-  const sorted=Object.entries(all).filter(([k])=>!settings[k]?.disabled)
-    .sort((a,b)=>{
-      const o={super_admin:0,doctor:1,facility_manager:2,nurse:3,care:4,home_care:5,medical_office:6};
-      return (o[getStaffRole(a[0])]??9)-(o[getStaffRole(b[0])]??9);
-    });
-  body.innerHTML='<div style="display:flex;flex-direction:column;gap:4px;max-height:55vh;overflow-y:auto">'
-    +sorted.map(([key,info])=>{
-      const rc=ROLE_COLORS[getStaffRole(key)]||{bg:'#9ca3af',label:'?'};
-      const isMe=info.name===S.user;
-      return `<button onclick="selectSwitchUser('${key}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:2px solid ${isMe?'var(--p)':'var(--bdr)'};background:${isMe?'var(--ps)':'var(--bg)'};text-align:left;cursor:pointer;touch-action:manipulation">
-        <span style="font-size:20px">👤</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700">${info.name}${isMe?' <span style="font-size:10px;color:var(--p)">(現在)</span>':''}</div>
-          <span class="staff-badge" style="background:${rc.bg};font-size:9px">${rc.label}</span>
-        </div>
-        ${isMe?'<span style="color:var(--p);font-size:13px;font-weight:700">✓</span>':'<span style="color:var(--sub);font-size:14px">›</span>'}
-      </button>`;
-    }).join('')+'</div>';
-}
-function selectSwitchUser(key){
-  const all={...STAFF_INFO,...getCustomStaff()};
-  const info=all[key];if(!info)return;
-  const isMe=info.name===S.user;
-  if(isMe){closeAccountSwitch();return;}
-  const body=document.getElementById('acct-switch-body');
-  const rc=ROLE_COLORS[getStaffRole(key)]||{bg:'#9ca3af',label:'?'};
-  body.innerHTML=`
-    <div style="text-align:center;padding:8px 0 16px">
-      <div style="font-size:16px;font-weight:800;margin-bottom:4px">${info.name}</div>
-      <span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>
-    </div>
-    <input type="password" id="sw-pin" placeholder="パスワードを入力" inputmode="numeric"
-      style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:18px;text-align:center;letter-spacing:.2em;margin-bottom:8px;background:var(--card);color:var(--txt)"
-      onkeydown="if(event.key==='Enter')confirmAccountSwitch('${key}')">
-    <div id="sw-err" style="display:none;color:var(--ng);font-size:12px;text-align:center;margin-bottom:8px"></div>
-    <button onclick="confirmAccountSwitch('${key}')" style="width:100%;padding:12px;background:var(--p);color:#fff;border-radius:10px;font-size:15px;font-weight:800;margin-bottom:8px;touch-action:manipulation">切り替える</button>
-    <button onclick="renderAccountSwitchList()" style="width:100%;padding:10px;background:var(--bg);color:var(--sub);border-radius:10px;font-size:13px;font-weight:700">← 戻る</button>
-  `;
-  setTimeout(()=>document.getElementById('sw-pin')?.focus(),100);
-}
-function confirmAccountSwitch(key){
-  const pin=document.getElementById('sw-pin')?.value||'';
-  const errEl=document.getElementById('sw-err');
-  if(getStaffPass(key)!==pin){
-    errEl.textContent='パスワードが正しくありません';
+  const key=Object.keys(all).find(k=>getStaffLoginId(k)===inputId);
+  if(!key||getStaffPass(key)!==inputPass){
+    errEl.textContent='職員IDまたはパスワードが正しくありません';
     errEl.style.display='block';
-    document.getElementById('sw-pin').value='';
+    document.getElementById('sw-pass').value='';
     return;
   }
-  const all={...STAFF_INFO,...getCustomStaff()};
+  if(settings[key]?.disabled){
+    errEl.textContent='このアカウントは利用停止中です';
+    errEl.style.display='block';
+    return;
+  }
   const info=all[key];
   const prev=S.user;
   S.user=info.name;
@@ -9787,8 +9774,8 @@ function confirmAccountSwitch(key){
 }
 function handleFsPhotoTap(){
   const wrap=document.getElementById('fs-photo-wrap');
-  const img=wrap&&wrap.querySelector('img');
-  if(img&&img.src){openPhotoZoom(img.src);}
+  const photo=wrap&&wrap.dataset.photo;
+  if(photo){openPhotoZoom(photo);}
   else{document.getElementById('fs-photo-input').click();}
 }
 function openPhotoZoom(src){
