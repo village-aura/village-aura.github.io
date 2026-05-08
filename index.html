@@ -581,7 +581,7 @@ a{color:var(--p);text-decoration:none}
 
   <!-- アプリ更新バナー（自動リロードできない場合のフォールバック） -->
   <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#1565c0,#1976d2);color:#fff;padding:10px 16px;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
-    <div style="font-size:13px;font-weight:700;line-height:1.4">🔄 アプリが更新されました<br><span style="font-size:11px;font-weight:400;opacity:.85">入力完了後に自動で再読み込みします</span></div>
+    <div style="font-size:13px;font-weight:700;line-height:1.4">🔄 アプリが更新されました<br><span style="font-size:11px;font-weight:400;opacity:.85">タップして最新版を読み込んでください</span></div>
     <button onclick="forceReload()" style="background:#fff;color:#1565c0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:800;flex-shrink:0;touch-action:manipulation">今すぐ更新</button>
   </div>
 
@@ -634,40 +634,62 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── DASHBOARD ─── -->
   <div id="scr-dashboard" class="scr on">
-    <div class="dash-date" id="dash-date"></div>
-    <!-- Section 1: ステータス -->
-    <div style="margin:4px 12px 0">
-      <div onclick="showScr('scr-residents');setFilter('all')" style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #E65100;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
-        <span style="font-size:18px">⚠️</span>
-        <div style="flex:1">
-          <b id="alert-count" style="display:block;font-size:13px;font-weight:700;color:#E65100">バイタル未記録：0名</b>
-          <span id="alert-names" style="font-size:11px;color:#BF360C"></span>
-        </div>
-        <span style="color:#E65100;font-size:16px">›</span>
+    <div class="dash-date" id="dash-date" style="display:flex;align-items:center;justify-content:space-between">
+      <span id="dash-date-text"></span>
+      <span id="dash-user-lbl" style="font-size:12px;font-weight:700;color:var(--sub);background:var(--card);padding:3px 10px;border-radius:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis"></span>
+    </div>
+    <!-- 統合アラートパネル -->
+    <div style="margin:4px 12px 6px">
+      <div id="dash-alerts-hd" onclick="toggleDashAlerts()" style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card);border-radius:10px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07)">
+        <span id="dash-alerts-hd-ico" style="font-size:16px">🔔</span>
+        <span id="dash-alerts-hd-txt" style="flex:1;font-size:13px;font-weight:700;color:var(--tx)">確認事項</span>
+        <span id="dash-alerts-badge" style="display:none;background:var(--ng);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px"></span>
+        <span id="dash-alerts-arrow" style="font-size:14px;color:var(--sub);transition:transform .2s">▼</span>
       </div>
-      <div id="stool-alert-row" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #7b1fa2;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
-        <span style="font-size:18px">🚽</span>
-        <div style="flex:1">
-          <b id="stool-alert-count" style="display:block;font-size:13px;font-weight:700;color:#7b1fa2"></b>
-          <span id="stool-alert-names" style="font-size:11px;color:#6a1b9a"></span>
+      <div id="dash-alerts-body" style="margin-top:4px">
+        <!-- 🚨 優先度1: アラート所見（バイタル異常・緊急申し送り） -->
+        <div id="dash-urgent-sec" style="display:none;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:4px">
+          <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
+          <div id="dash-urgent" style="padding:8px 10px"></div>
         </div>
-        <span style="color:#7b1fa2;font-size:16px">›</span>
-      </div>
-      <div id="incident-alert-row" onclick="showScr('scr-incidents')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid var(--ng);cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
-        <span style="font-size:18px">🚨</span>
-        <div style="flex:1">
-          <b id="incident-alert-count" style="display:block;font-size:13px;font-weight:700;color:var(--ng)"></b>
-          <span id="incident-alert-preview" style="font-size:11px;color:#b71c1c"></span>
+        <!-- 🚨 優先度2: インシデント -->
+        <div id="incident-alert-row" onclick="showScr('scr-incidents')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid var(--ng);cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
+          <span style="font-size:18px">🚨</span>
+          <div style="flex:1">
+            <b id="incident-alert-count" style="display:block;font-size:13px;font-weight:700;color:var(--ng)"></b>
+            <span id="incident-alert-preview" style="font-size:11px;color:#b71c1c"></span>
+          </div>
+          <span style="color:var(--ng);font-size:16px">›</span>
         </div>
-        <span style="color:var(--ng);font-size:16px">›</span>
-      </div>
-      <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #1565c0;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
-        <span style="font-size:18px">🩺</span>
-        <div style="flex:1">
-          <b id="doctor-order-count" style="display:block;font-size:13px;font-weight:700"></b>
-          <span id="doctor-order-preview" style="font-size:11px;color:var(--sub)"></span>
+        <!-- 🩺 優先度3: 医師指示 -->
+        <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #1565c0;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
+          <span style="font-size:18px">🩺</span>
+          <div style="flex:1">
+            <b id="doctor-order-count" style="display:block;font-size:13px;font-weight:700"></b>
+            <span id="doctor-order-preview" style="font-size:11px;color:var(--sub)"></span>
+          </div>
+          <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
         </div>
-        <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
+        <!-- ⚠️ 優先度4: バイタル未記録 -->
+        <div id="vital-unrecorded-row" onclick="showScr('scr-residents');setFilter('all')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #E65100;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
+          <span style="font-size:18px">⚠️</span>
+          <div style="flex:1">
+            <b id="alert-count" style="display:block;font-size:13px;font-weight:700;color:#E65100">バイタル未記録：0名</b>
+            <span id="alert-names" style="font-size:11px;color:#BF360C"></span>
+          </div>
+          <span style="color:#E65100;font-size:16px">›</span>
+        </div>
+        <!-- 🚽 優先度5: 排便3日以上なし -->
+        <div id="stool-alert-row" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #7b1fa2;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
+          <span style="font-size:18px">🚽</span>
+          <div style="flex:1">
+            <b id="stool-alert-count" style="display:block;font-size:13px;font-weight:700;color:#7b1fa2"></b>
+            <span id="stool-alert-names" style="font-size:11px;color:#6a1b9a"></span>
+          </div>
+          <span style="color:#7b1fa2;font-size:16px">›</span>
+        </div>
+        <!-- ✅ 問題なし表示 -->
+        <div id="dash-all-ok" style="display:none;padding:10px 13px;background:#e8f5e9;border-radius:10px;border-left:4px solid var(--ok);font-size:13px;font-weight:700;color:#2e7d32">✅ 現在確認が必要な事項はありません</div>
       </div>
     </div>
     <!-- 居宅職員ビュー -->
@@ -700,17 +722,17 @@ a{color:var(--p);text-decoration:none}
       <div>
         <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">📊 業務</div>
         <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
-          <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-            <span class="qi">📣</span><div class="ql">申し送り</div>
-          </button>
-          <button class="quick-btn" onclick="showScr('scr-rounds')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ok);align-items:center;text-align:center">
-            <span class="qi">✅</span><div class="ql">巡回チェック</div>
-          </button>
           <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
             <span class="qi">👤</span><div class="ql">利用者一覧<span id="q-count" style="display:none"></span></div>
           </button>
           <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
             <span class="qi">📅</span><div class="ql">予定表<span id="q-sched-today" style="display:none"></span></div>
+          </button>
+          <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
+            <span class="qi">📣</span><div class="ql">申し送り</div>
+          </button>
+          <button class="quick-btn" onclick="showScr('scr-rounds')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ok);align-items:center;text-align:center">
+            <span class="qi">✅</span><div class="ql">巡回チェック</div>
           </button>
         </div>
       </div>
@@ -750,11 +772,6 @@ a{color:var(--p);text-decoration:none}
         <span id="dash-fluid-target-lbl" style="font-size:10px;font-weight:400;color:var(--sub)">目標 1,500ml</span>
       </div>
       <div id="dash-fluid-list" style="background:var(--card);border-radius:10px;box-shadow:var(--sh);overflow:hidden"></div>
-    </div>
-    <!-- アラート所見 -->
-    <div id="dash-urgent-sec" style="display:none;margin:12px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">
-      <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
-      <div id="dash-urgent" style="padding:8px 10px"></div>
     </div>
     <div class="sec-head">📋 直近の記録</div>
     <div class="recent-list" id="recent-list"></div>
@@ -1108,6 +1125,13 @@ a{color:var(--p);text-decoration:none}
       <button class="rounds-shift-btn" id="rshift-noon" onclick="setRoundsShift('noon')">☀️ 昼</button>
       <button class="rounds-shift-btn" id="rshift-evening" onclick="setRoundsShift('evening')">🌆 夕</button>
       <button class="rounds-shift-btn" id="rshift-night" onclick="setRoundsShift('night')">🌙 深夜</button>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 12px 6px;flex-wrap:wrap">
+      <button class="chip on" id="rfc-all" onclick="setRoundsFacility('all')">全施設</button>
+      <button class="chip" id="rfc-resident" onclick="setRoundsFacility('resident')">居住</button>
+      <button class="chip" id="rfc-commute" onclick="setRoundsFacility('commute')">デイ</button>
+      <button class="chip" id="rfc-stay" onclick="setRoundsFacility('stay')">小多機</button>
+      <button class="chip" id="rfc-visit" onclick="setRoundsFacility('visit')">訪問</button>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0 14px 8px">
       <div id="rounds-progress-label" style="font-size:12px;font-weight:700;color:var(--sub)"></div>
@@ -4111,8 +4135,7 @@ async function checkForUpdates(){
     if(!_initEtag){_initEtag=tag;return;}
     if(tag!==_initEtag){
       _pendingUpdate=true;
-      if(!_isModalOpen()){_doAutoReload();}
-      else{const b=document.getElementById('update-banner');if(b)b.style.display='flex';}
+      const b=document.getElementById('update-banner');if(b)b.style.display='flex';
     }
   }catch(e){}
 }
@@ -5272,16 +5295,26 @@ function renderDashboard(){
   const qbReport=document.getElementById('qb-monthly-report');
   if(qbReport)qbReport.style.display=isAdmin()?'flex':'none';
   const now=new Date();
-  document.getElementById('dash-date').textContent=
-    now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  const dtEl=document.getElementById('dash-date-text');
+  if(dtEl)dtEl.textContent=now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  const ulEl=document.getElementById('dash-user-lbl');
+  if(ulEl)ulEl.textContent=S.user||'';
   const res=getResidents();
   document.getElementById('q-count').textContent=res.length+' 名';
   const recs=getRecords();
   const todayStr=now.toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
   const noVital=res.filter(r=>!vitalToday.has(r.id));
-  document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
-  document.getElementById('alert-names').textContent=noVital.slice(0,3).map(r=>r.name).join('・')+(noVital.length>3?'…':'');
+  const vurRow=document.getElementById('vital-unrecorded-row');
+  if(vurRow){
+    if(noVital.length){
+      vurRow.style.display='flex';
+      document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
+      document.getElementById('alert-names').textContent=noVital.slice(0,3).map(r=>r.name).join('・')+(noVital.length>3?'…':'');
+    } else {
+      vurRow.style.display='none';
+    }
+  }
   // 医師指示行
   const doctorOrders=getBoardData().doctor||[];
   const doRow=document.getElementById('doctor-order-row');
@@ -5396,6 +5429,8 @@ function renderDashboard(){
   } else {
     urgentSec.style.display='none';
   }
+  // アラートパネルヘッダーを更新
+  _updateDashAlertsHeader();
   // 直近の記録（全種類・最新5件）
   const recent=recs.slice().sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,5);
   const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐'};
@@ -5419,6 +5454,35 @@ function renderDashboard(){
     </div>`;
   }).join('')||'<div class="empty"><div class="e-ico">📋</div><p>今日の記録はまだありません</p></div>';
 }
+
+let _dashAlertsOpen=true;
+function toggleDashAlerts(){
+  _dashAlertsOpen=!_dashAlertsOpen;
+  const body=document.getElementById('dash-alerts-body');
+  const arrow=document.getElementById('dash-alerts-arrow');
+  if(body)body.style.display=_dashAlertsOpen?'block':'none';
+  if(arrow)arrow.style.transform=_dashAlertsOpen?'':'rotate(-90deg)';
+}
+function _updateDashAlertsHeader(){
+  const ids=['dash-urgent-sec','incident-alert-row','doctor-order-row','vital-unrecorded-row','stool-alert-row'];
+  const activeCount=ids.filter(id=>{const el=document.getElementById(id);return el&&el.style.display!=='none';}).length;
+  const hIco=document.getElementById('dash-alerts-hd-ico');
+  const hTxt=document.getElementById('dash-alerts-hd-txt');
+  const badge=document.getElementById('dash-alerts-badge');
+  const okRow=document.getElementById('dash-all-ok');
+  if(activeCount>0){
+    if(hIco)hIco.textContent='🔴';
+    if(hTxt){hTxt.textContent='確認事項';hTxt.style.color='var(--ng)';}
+    if(badge){badge.style.display='inline';badge.textContent=activeCount+'件';}
+    if(okRow)okRow.style.display='none';
+  } else {
+    if(hIco)hIco.textContent='✅';
+    if(hTxt){hTxt.textContent='問題ありません';hTxt.style.color='var(--ok)';}
+    if(badge)badge.style.display='none';
+    if(okRow)okRow.style.display='block';
+  }
+}
+
 const VITAL_BASE={sys:{min:90,max:140},dia:{min:40,max:85},pulse:{min:50,max:100},temp:{min:35.5,max:37.2},spo2:{min:95}};
 function getResVRanges(rid){
   if(!rid)return null;
@@ -5874,7 +5938,6 @@ function closeModal(id,e){
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
   if(vsBtn){vsBtn.classList.remove('recording');vsBtn.textContent='🎤 音声で一括入力';}
   if(id==='modal-meal'||id==='modal-excretion')S.editRecId=null;
-  if(_pendingUpdate&&!_isModalOpen())setTimeout(_doAutoReload,300);
 }
 function openEditRecord(id,type){
   const rec=getRecords().find(r=>r.id===id);
@@ -9176,6 +9239,7 @@ const ROUNDS_SHIFTS={
   night:  {label:'深夜',hours:'22:00〜6:00'},
 };
 let _roundsShift='morning';
+let _roundsFacility='all';
 
 function getRoundsData(){return ls('rounds_data')||{};}
 function saveRoundsData(d){lsSet('rounds_data',d);}
@@ -9190,12 +9254,22 @@ function setRoundsShift(shift){
   renderRoundsList();
 }
 
+function setRoundsFacility(fac){
+  _roundsFacility=fac;
+  ['all','resident','commute','stay','visit'].forEach(k=>{
+    const btn=document.getElementById('rfc-'+k);
+    if(btn)btn.classList.toggle('on',k===fac);
+  });
+  renderRoundsList();
+}
+
 function renderRoundsList(){
   const el=document.getElementById('rounds-list');if(!el)return;
   const data=getRoundsData();
   const key=_roundsKey();
   const checks=data[key]||{};
-  const residents=getResidents();
+  const allRes=getResidents();
+  const residents=_roundsFacility==='all'?allRes:allRes.filter(r=>r.svcType===_roundsFacility);
   let totalTasks=0,doneTasks=0;
   const html=residents.map(r=>{
     const rChecks=checks[r.id]||{};
