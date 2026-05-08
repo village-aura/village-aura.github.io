@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --p:#3D7AB5;--pd:#2d5e8e;--ps:#e8f0fb;
@@ -503,6 +504,46 @@ a{color:var(--p);text-decoration:none}
 .role-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .role-preview-btn{padding:12px 8px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;text-align:center;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
 .role-preview-btn .rpb-ico{font-size:20px}
+
+/* ── NEW FEATURES ── */
+/* Rounds checklist */
+.rounds-shift-btn{flex:1;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:700;border:2px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s;touch-action:manipulation}
+.rounds-shift-btn.on{border-color:var(--p);background:var(--ps);color:var(--p)}
+.rounds-res-card{background:var(--card);border-radius:12px;margin:0 12px 10px;box-shadow:var(--sh);overflow:hidden}
+.rounds-res-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bdr)}
+.rounds-check-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6}
+.rounds-check-row:last-child{border-bottom:none}
+.rounds-check-ico{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.rounds-done-bar{height:4px;background:#e0e0e0;border-radius:2px;margin:0 14px 0}
+.rounds-done-fill{height:100%;border-radius:2px;background:var(--ok);transition:width .3s}
+/* Reposition timer */
+.repo-card{background:var(--card);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh);margin-bottom:6px;cursor:pointer;touch-action:manipulation}
+.repo-timer{font-size:22px;font-weight:800;min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+.repo-timer.ok{color:var(--ok)}
+.repo-timer.warn{color:var(--warn)}
+.repo-timer.ng{color:var(--ng)}
+.repo-btn{padding:7px 14px;border-radius:8px;background:var(--p);color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;touch-action:manipulation}
+/* Fluid tracking */
+.fluid-card{background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh);margin-bottom:6px}
+.fluid-res-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.fluid-amount{font-size:11px;color:var(--sub);display:flex;justify-content:space-between;margin-bottom:3px}
+/* Incident */
+.inc-card{background:var(--card);border-radius:12px;margin:0 12px 8px;padding:12px 14px;box-shadow:var(--sh);border-left:4px solid var(--bdr)}
+.inc-card.high{border-left-color:var(--ng)}
+.inc-card.medium{border-left-color:var(--warn)}
+.inc-sev-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff;display:inline-block}
+/* Handover read ACK */
+.hb-read-row{display:flex;align-items:center;justify-content:space-between;padding:3px 6px 5px;border-top:1px solid #f3f4f6;margin-top:2px}
+.hb-read-btn{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;border:1.5px solid var(--ok);color:var(--ok);background:transparent;cursor:pointer;touch-action:manipulation}
+.hb-read-btn.done{background:#e8f5e9;border-color:var(--ok);color:var(--ok)}
+.hb-read-who{font-size:10px;color:var(--sub)}
+/* QR code */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px}
+/* Monthly report */
+.report-section{margin-bottom:16px}
+.report-section h3{font-size:13px;font-weight:700;color:var(--sub);border-bottom:1px solid var(--bdr);padding-bottom:4px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.report-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #f3f4f6}
+.report-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -553,6 +594,8 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
       <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
+      <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">✅　巡回チェック</button>
+      <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
@@ -600,6 +643,14 @@ a{color:var(--p);text-decoration:none}
           <span id="stool-alert-names" style="font-size:11px;color:#6a1b9a"></span>
         </div>
         <span style="color:#7b1fa2;font-size:16px">›</span>
+      </div>
+      <div id="incident-alert-row" onclick="showScr('scr-incidents')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid var(--ng);cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
+        <span style="font-size:18px">🚨</span>
+        <div style="flex:1">
+          <b id="incident-alert-count" style="display:block;font-size:13px;font-weight:700;color:var(--ng)"></b>
+          <span id="incident-alert-preview" style="font-size:11px;color:#b71c1c"></span>
+        </div>
+        <span style="color:var(--ng);font-size:16px">›</span>
       </div>
       <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #1565c0;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px">
         <span style="font-size:18px">🩺</span>
@@ -651,10 +702,39 @@ a{color:var(--p);text-decoration:none}
           <span class="qi">📋</span>
           <div class="ql">業務日誌</div>
         </button>
+        <button class="quick-btn" onclick="showScr('scr-rounds')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--ok);align-items:center;text-align:center">
+          <span class="qi">✅</span>
+          <div class="ql">巡回チェック</div>
+        </button>
+        <button class="quick-btn" onclick="showScr('scr-incidents')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--ng);align-items:center;text-align:center">
+          <span class="qi">🚨</span>
+          <div class="ql">インシデント</div>
+        </button>
+        <button class="quick-btn" onclick="openIncidentModal()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--warn);align-items:center;text-align:center">
+          <span class="qi">⚠️</span>
+          <div class="ql">ヒヤリハット</div>
+        </button>
+        <button id="qb-monthly-report" class="quick-btn" onclick="openMonthlyReport()" style="display:none;background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--p);align-items:center;text-align:center">
+          <span class="qi">📊</span>
+          <div class="ql">月次レポート</div>
+        </button>
       </div>
     </div>
     <!-- 今月の目標 -->
     <div id="monthly-goal-card" style="margin:0 12px 10px"></div>
+    <!-- 体位変換タイマー -->
+    <div id="dash-repo-sec" style="display:none;margin:0 12px 10px">
+      <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:6px 0 6px;display:flex;align-items:center;justify-content:space-between">
+        <span>🔄 体位変換タイマー</span>
+        <button onclick="showScr('scr-rounds')" style="font-size:11px;color:var(--p);background:none;border:none;font-weight:700">巡回へ ›</button>
+      </div>
+      <div id="dash-repo-list"></div>
+    </div>
+    <!-- 水分摂取集計 -->
+    <div id="dash-fluid-sec" style="display:none;margin:0 12px 10px">
+      <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:6px 0 6px">💧 本日の水分摂取</div>
+      <div id="dash-fluid-list"></div>
+    </div>
     <!-- アラート所見 -->
     <div id="dash-urgent-sec" style="display:none;margin:12px 12px 0;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)">
       <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
@@ -993,6 +1073,41 @@ a{color:var(--p);text-decoration:none}
       <div style="font-size:12px;color:var(--sub);margin-bottom:12px">排便記録が3日以上ない利用者</div>
     </div>
     <div id="stool-alert-list" style="padding:10px 12px 16px"></div>
+  </div>
+
+  <!-- ─── 巡回チェックリスト ─── -->
+  <div id="scr-rounds" class="scr">
+    <div style="padding:14px 16px 0">
+      <div style="font-size:18px;font-weight:800;margin-bottom:2px">✅ 巡回チェックリスト</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:10px">シフト別・利用者別ケア確認</div>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 12px 10px">
+      <button class="rounds-shift-btn" id="rshift-morning" onclick="setRoundsShift('morning')">🌅 朝</button>
+      <button class="rounds-shift-btn" id="rshift-noon" onclick="setRoundsShift('noon')">☀️ 昼</button>
+      <button class="rounds-shift-btn" id="rshift-evening" onclick="setRoundsShift('evening')">🌆 夕</button>
+      <button class="rounds-shift-btn" id="rshift-night" onclick="setRoundsShift('night')">🌙 深夜</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 14px 8px">
+      <div id="rounds-progress-label" style="font-size:12px;font-weight:700;color:var(--sub)"></div>
+      <button onclick="resetRoundsShift()" style="font-size:11px;color:var(--sub);background:none;border:none;font-weight:700">リセット</button>
+    </div>
+    <div id="rounds-list" style="padding:0 0 16px"></div>
+  </div>
+
+  <!-- ─── インシデント一覧 ─── -->
+  <div id="scr-incidents" class="scr">
+    <div style="padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--ng);margin-bottom:2px">🚨 インシデント・ヒヤリハット</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:10px">事故・ニアミス記録</div>
+      </div>
+      <button onclick="openIncidentModal()" style="background:var(--ng);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">＋ 報告</button>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 12px 10px">
+      <button id="intab-open" onclick="switchIncidentTab('open')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;background:var(--ng);color:#fff;border:none">未確認 <span id="intab-cnt"></span></button>
+      <button id="intab-reviewed" onclick="switchIncidentTab('reviewed')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr)">確認済</button>
+    </div>
+    <div id="incident-list" style="padding:0 0 16px"></div>
   </div>
 
   <!-- ─── SETTINGS ─── -->
@@ -1340,7 +1455,7 @@ a{color:var(--p);text-decoration:none}
       <div class="bn-ico">📝</div><div class="bn-lbl">記録入力</div>
     </button>
     <button class="bn" onclick="showScr('scr-handover-board')" id="bn-hb">
-      <div class="bn-ico">📣</div><div class="bn-lbl">申し送り</div>
+      <div class="bn-ico" style="position:relative;display:inline-block">📣<span id="hb-unread-badge" style="display:none;position:absolute;top:-4px;right:-6px;background:var(--ng);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;line-height:14px;text-align:center"></span></div><div class="bn-lbl">申し送り</div>
     </button>
     <button class="bn" onclick="showScr('scr-schedule')" id="bn-sch">
       <div class="bn-ico">📅</div><div class="bn-lbl">予定</div>
@@ -2220,6 +2335,117 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- INCIDENT REPORT MODAL -->
+<div class="overlay" id="modal-incident" onclick="closeModal('modal-incident',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <input type="hidden" id="inc-edit-id" value="">
+    <div class="sheet-title">🚨 インシデント・ヒヤリハット報告</div>
+    <div class="field"><label>種別</label>
+      <div class="cat-btn-group" id="inc-type-btns">
+        <button class="cat-btn on" data-val="near_miss" onclick="selectCatBtn(this,'inc-type')">⚠️ ヒヤリハット</button>
+        <button class="cat-btn" data-val="fall" onclick="selectCatBtn(this,'inc-type')">🚶 転倒・転落</button>
+        <button class="cat-btn" data-val="medication" onclick="selectCatBtn(this,'inc-type')">💊 与薬誤り</button>
+        <button class="cat-btn" data-val="injury" onclick="selectCatBtn(this,'inc-type')">🩹 受傷</button>
+        <button class="cat-btn" data-val="choking" onclick="selectCatBtn(this,'inc-type')">🍽️ 誤嚥・窒息</button>
+        <button class="cat-btn" data-val="other" onclick="selectCatBtn(this,'inc-type')">📝 その他</button>
+      </div>
+      <select id="inc-type" style="display:none">
+        <option value="near_miss">ヒヤリハット</option>
+        <option value="fall">転倒・転落</option>
+        <option value="medication">与薬誤り</option>
+        <option value="injury">受傷</option>
+        <option value="choking">誤嚥・窒息</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div class="field"><label>重大度</label>
+      <div class="radio-group">
+        <label><input type="radio" name="inc-sev" value="low" checked> 🟢 軽微</label>
+        <label><input type="radio" name="inc-sev" value="medium"> 🟡 中程度</label>
+        <label><input type="radio" name="inc-sev" value="high"> 🔴 重大</label>
+      </div>
+    </div>
+    <div class="field"><label>対象利用者</label>
+      <select id="inc-resident" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff"></select>
+    </div>
+    <div class="field"><label>発生場所</label>
+      <div class="cat-btn-group">
+        <button class="cat-btn on" data-val="room" onclick="selectCatBtn(this,'inc-location')">🛏️ 居室</button>
+        <button class="cat-btn" data-val="bathroom" onclick="selectCatBtn(this,'inc-location')">🚿 浴室</button>
+        <button class="cat-btn" data-val="toilet" onclick="selectCatBtn(this,'inc-location')">🚽 トイレ</button>
+        <button class="cat-btn" data-val="corridor" onclick="selectCatBtn(this,'inc-location')">🚶 廊下</button>
+        <button class="cat-btn" data-val="dining" onclick="selectCatBtn(this,'inc-location')">🍽️ 食堂</button>
+        <button class="cat-btn" data-val="other" onclick="selectCatBtn(this,'inc-location')">📍 その他</button>
+      </div>
+      <select id="inc-location" style="display:none">
+        <option value="room">居室</option><option value="bathroom">浴室</option><option value="toilet">トイレ</option>
+        <option value="corridor">廊下</option><option value="dining">食堂</option><option value="other">その他</option>
+      </select>
+    </div>
+    <div class="field"><label>詳細・対応内容</label>
+      <textarea id="inc-detail" placeholder="状況・原因・対処内容を記録..." rows="4"></textarea>
+    </div>
+    <div class="field"><label>立会者・同席スタッフ</label>
+      <input type="text" id="inc-witness" placeholder="田中 花子、山本 次郎...">
+    </div>
+    <button class="btn-primary" onclick="saveIncident()">保存・報告</button>
+    <button class="btn-cancel" onclick="closeModal('modal-incident')">キャンセル</button>
+  </div>
+</div>
+
+<!-- FAMILY REPORT MODAL -->
+<div class="overlay" id="modal-family-report" onclick="closeModal('modal-family-report',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="sheet-title" style="margin-bottom:0">📮 家族向け連絡帳</div>
+      <button onclick="copyFamilyReport()" style="background:var(--p);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer">📋 コピー</button>
+    </div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:12px" id="family-report-date"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <button onclick="regenerateFamilyReport()" style="font-size:12px;color:var(--p);background:var(--ps);border:1.5px solid var(--p);border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer">🔄 再生成</button>
+    </div>
+    <textarea id="family-report-text" rows="16" style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;line-height:1.8;resize:vertical;background:#fafafa"></textarea>
+    <button class="btn-cancel" onclick="closeModal('modal-family-report')" style="margin-top:10px">閉じる</button>
+  </div>
+</div>
+
+<!-- QR CODE MODAL -->
+<div class="overlay" id="modal-qrcode" onclick="closeModal('modal-qrcode',event)">
+  <div class="sheet" onclick="event.stopPropagation()" style="text-align:center">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="qr-modal-title">📲 QRコード</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:12px">スキャンして利用者カルテを直接開きます</div>
+    <div class="qr-wrap">
+      <div id="qr-canvas-wrap" style="background:#fff;padding:12px;border-radius:8px;border:1.5px solid var(--bdr);display:inline-block"></div>
+      <div id="qr-url-label" style="font-size:11px;color:var(--sub);word-break:break-all;max-width:280px;line-height:1.5"></div>
+    </div>
+    <button class="btn-cancel" onclick="closeModal('modal-qrcode')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
+<!-- MONTHLY REPORT MODAL -->
+<div class="sheet-modal-auto" id="modal-monthly-report">
+  <div class="modal-inner" style="max-width:500px;max-height:90vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:17px;font-weight:800">📊 月次レポート</div>
+      <button onclick="closeModal('modal-monthly-report')" style="font-size:20px;color:var(--sub);background:none;border:none;cursor:pointer">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
+      <select id="report-year" onchange="generateMonthlyReport()" style="padding:8px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff"></select>
+      <select id="report-month" onchange="generateMonthlyReport()" style="padding:8px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:#fff">
+        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+      </select>
+      <button onclick="printMonthlyReport()" style="background:var(--p);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer">🖨 印刷</button>
+    </div>
+    <div id="monthly-report-content"></div>
+  </div>
+</div>
+
 <!-- FACE SHEET -->
 <div class="overlay" id="modal-facesheet" onclick="closeModal('modal-facesheet',event)">
   <div class="sheet" style="max-height:96vh" onclick="event.stopPropagation()">
@@ -2975,7 +3201,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times'];
 const FB_SYS_EMAIL='facility@village-aura.local';
 const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
 let db=null, fbReady=false, fbListeners=[];
@@ -3165,6 +3391,7 @@ async function login(){
   resetLockTimer();
   showScr('scr-dashboard');
   renderDashboard();
+  checkUrlHash();
   // Firebase Auth サインイン → トークン確定を待ってからFirestoreを使う
   try{
     await firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS);
@@ -4482,7 +4709,8 @@ function showScr(id){
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
     'scr-diary':'業務日誌',
     'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
-    'scr-stool-alert':'排便未記録一覧'
+    'scr-stool-alert':'排便未記録一覧',
+    'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -4493,7 +4721,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -4508,6 +4736,9 @@ function showScr(id){
   if(id==='scr-vital-alert') renderVitalAlert();
   if(id==='scr-urgent-rec') renderUrgentRec();
   if(id==='scr-stool-alert') renderStoolAlert();
+  if(id==='scr-rounds'){const h=new Date().getHours();const sh=h>=6&&h<10?'morning':h>=10&&h<16?'noon':h>=16&&h<22?'evening':'night';setRoundsShift(sh);}
+  if(id==='scr-incidents') renderIncidentList();
+  if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // タブレット縦: 全画面遷移でサイドバーを格納
   if(window.innerWidth >= 768 && window.innerWidth < 1024){
@@ -4917,6 +5148,12 @@ function renderDashboard(){
   renderQuickActions();
   renderBackupBanner();
   renderMonthlyGoal();
+  renderDashboardRepo();
+  renderDashboardFluid();
+  renderDashboardIncident();
+  updateHandoverUnreadBadge();
+  const qbReport=document.getElementById('qb-monthly-report');
+  if(qbReport)qbReport.style.display=isAdmin()?'flex':'none';
   const now=new Date();
   document.getElementById('dash-date').textContent=
     now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
@@ -5202,6 +5439,8 @@ function renderDetail(){
       <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📅 予定</button>
       <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📋 フェイスシート</button>
       ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}')" style="background:rgba(255,255,255,.9);color:#c62828;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">📝 医師指示</button>`:''}
+      <button onclick="openFamilyReport()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📮 家族連絡帳</button>
+      <button onclick="openResidentQR()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📲 QR</button>
       <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">✏️ 編集</button>
       <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
     </div>
@@ -7102,6 +7341,11 @@ function renderBoardSection(elId,items,section){
       ?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="display:inline-flex;align-items:center;gap:2px;background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation">👤 ${_res.name}</button>`
       :'';
     const cid='hbc-'+section+'-'+idx;
+    const itemKey=(h.id||`${section}-${idx}`);
+    const reads=getHandoverReads()[itemKey]||[];
+    const alreadyRead=reads.includes(S.user);
+    const readLabel=alreadyRead?`✓ 既読 (${reads.length}名)`:`既読にする (${reads.length>0?reads.length:''})`;
+    const readTitle=reads.length?reads.join('、'):'';
     return `<div onclick="toggleHbEntry('${cid}')" style="${PRI_STYLE[h.pri]||PRI_STYLE.normal};border-radius:0 8px 8px 0;padding:6px 6px 6px 10px;margin-bottom:3px;cursor:pointer">
       <div style="display:flex;align-items:center;gap:5px;min-width:0">
         ${priTag}${resChip}
@@ -7113,6 +7357,10 @@ function renderBoardSection(elId,items,section){
         </div>
       </div>
       <div style="font-size:10px;color:#9ca3af;margin-top:2px;padding-left:1px">${roleTxt?roleTxt+' · ':''}${h.by||''}${editedMark}</div>
+      <div class="hb-read-row">
+        <button onclick="event.stopPropagation();markHandoverRead('${itemKey}')" class="hb-read-btn ${alreadyRead?'done':''}" title="${readTitle}">${readLabel}</button>
+        ${reads.length>0?`<span class="hb-read-who" title="${readTitle}">${reads.slice(0,2).map(n=>n.split(' ')[0]).join('・')}${reads.length>2?'他':''}が確認</span>`:''}
+      </div>
     </div>`;
   }).join(''):'<div style="color:#9ca3af;font-size:12px;padding:8px 2px 6px">申し送りはありません</div>';
 }
@@ -8699,6 +8947,564 @@ link.rel='manifest';link.href=murl;document.head.appendChild(link);
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
+// ═══════════ FEATURE 1: 巡回チェックリスト ═══════════
+const ROUNDS_TASKS=[
+  {key:'vital',   ico:'🌡️', lbl:'バイタル'},
+  {key:'meal',    ico:'🍚', lbl:'食事確認'},
+  {key:'toilet',  ico:'💧', lbl:'排泄'},
+  {key:'meds',    ico:'💊', lbl:'服薬'},
+  {key:'skin',    ico:'🔍', lbl:'皮膚確認'},
+  {key:'safety',  ico:'👁', lbl:'安全確認'},
+];
+const ROUNDS_SHIFTS={
+  morning:{label:'朝',hours:'6:00〜10:00'},
+  noon:   {label:'昼',hours:'10:00〜16:00'},
+  evening:{label:'夕',hours:'16:00〜22:00'},
+  night:  {label:'深夜',hours:'22:00〜6:00'},
+};
+let _roundsShift='morning';
+
+function getRoundsData(){return ls('rounds_data')||{};}
+function saveRoundsData(d){lsSet('rounds_data',d);}
+function _roundsKey(){return _localDs(new Date())+'_'+_roundsShift;}
+
+function setRoundsShift(shift){
+  _roundsShift=shift;
+  Object.keys(ROUNDS_SHIFTS).forEach(k=>{
+    const btn=document.getElementById('rshift-'+k);
+    if(btn){btn.classList.toggle('on',k===shift);}
+  });
+  renderRoundsList();
+}
+
+function renderRoundsList(){
+  const el=document.getElementById('rounds-list');if(!el)return;
+  const data=getRoundsData();
+  const key=_roundsKey();
+  const checks=data[key]||{};
+  const residents=getResidents();
+  let totalTasks=0,doneTasks=0;
+  const html=residents.map(r=>{
+    const rChecks=checks[r.id]||{};
+    const done=ROUNDS_TASKS.filter(t=>rChecks[t.key]).length;
+    totalTasks+=ROUNDS_TASKS.length;doneTasks+=done;
+    const pct=Math.round(done/ROUNDS_TASKS.length*100);
+    const barColor=pct===100?'var(--ok)':pct>=50?'var(--warn)':'var(--ng)';
+    return `<div class="rounds-res-card">
+      <div class="rounds-res-hd" onclick="toggleRoundsCard('rc-${r.id}')">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:14px;font-weight:700">${r.name}</span>
+          <span style="font-size:11px;color:var(--sub)">${r.room?r.room+'号室':''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:${pct===100?'var(--ok)':'var(--sub)'}">${done}/${ROUNDS_TASKS.length}</span>
+          <span style="font-size:16px">${pct===100?'✅':'▶'}</span>
+        </div>
+      </div>
+      <div style="padding:0 14px 4px"><div class="rounds-done-bar"><div class="rounds-done-fill" style="width:${pct}%;background:${barColor}"></div></div></div>
+      <div id="rc-${r.id}" style="display:${pct===100?'none':'block'}">
+        ${ROUNDS_TASKS.map(t=>{
+          const checked=!!rChecks[t.key];
+          return `<div class="rounds-check-row">
+            <span class="rounds-check-ico">${t.ico}</span>
+            <span style="flex:1;font-size:14px">${t.lbl}</span>
+            <button onclick="toggleRoundsCheck('${r.id}','${t.key}')" style="width:32px;height:32px;border-radius:8px;border:2px solid ${checked?'var(--ok)':'var(--bdr)'};background:${checked?'var(--ok)':'#fff'};color:${checked?'#fff':'var(--sub)'};font-size:16px;cursor:pointer;touch-action:manipulation;flex-shrink:0">${checked?'✓':''}</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=html;
+  const lblEl=document.getElementById('rounds-progress-label');
+  if(lblEl){
+    const pct=totalTasks?Math.round(doneTasks/totalTasks*100):0;
+    lblEl.textContent=`全体進捗: ${doneTasks}/${totalTasks} (${pct}%)`;
+  }
+}
+
+function toggleRoundsCard(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function toggleRoundsCheck(rid,taskKey){
+  const data=getRoundsData();
+  const key=_roundsKey();
+  if(!data[key])data[key]={};
+  if(!data[key][rid])data[key][rid]={};
+  data[key][rid][taskKey]=!data[key][rid][taskKey];
+  if(data[key][rid][taskKey]){
+    if(!data[key][rid]['_by'])data[key][rid]['_by']={};
+    data[key][rid]['_by'][taskKey]=S.user;
+  }
+  saveRoundsData(data);
+  renderRoundsList();
+  addAuditLog('巡回チェック',rid+':'+taskKey);
+}
+
+function resetRoundsShift(){
+  if(!confirm('このシフトのチェックをリセットしますか？'))return;
+  const data=getRoundsData();
+  delete data[_roundsKey()];
+  saveRoundsData(data);
+  renderRoundsList();
+}
+
+// ═══════════ FEATURE 2: 体位変換タイマー ═══════════
+const REPO_INTERVAL_MS=2*60*60*1000;
+let _repoTimer=null;
+
+function getRepoTimes(){return ls('reposition_times')||{};}
+function saveRepoTimes(d){lsSet('reposition_times',d);}
+
+function markReposition(rid){
+  const d=getRepoTimes();
+  d[rid]=new Date().toISOString();
+  saveRepoTimes(d);
+  renderDashboardRepo();
+  addAuditLog('体位変換',rid);
+  toast('体位変換を記録しました ✓');
+}
+
+function _repoElapsed(ts){
+  if(!ts)return null;
+  return Date.now()-new Date(ts).getTime();
+}
+
+function renderDashboardRepo(){
+  const sec=document.getElementById('dash-repo-sec');
+  const listEl=document.getElementById('dash-repo-list');
+  if(!sec||!listEl)return;
+  const residents=getResidents();
+  const bedRes=residents.filter(r=>r.care==='care4'||r.care==='care5');
+  if(!bedRes.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  const times=getRepoTimes();
+  listEl.innerHTML=bedRes.map(r=>{
+    const elapsed=_repoElapsed(times[r.id]);
+    const remain=elapsed!==null?Math.max(0,REPO_INTERVAL_MS-elapsed):null;
+    const mins=remain!==null?Math.floor(remain/60000):null;
+    const hrs=mins!==null?Math.floor(mins/60):null;
+    const minsLeft=mins!==null?mins%60:null;
+    const timeStr=mins!==null?(hrs>0?hrs+'h '+minsLeft+'m':minsLeft+'m'):'未実施';
+    const cls=mins===null?'ng':mins>60?'ok':mins>30?'warn':'ng';
+    const lastStr=times[r.id]?new Date(times[r.id]).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
+    return `<div class="repo-card" onclick="markReposition('${r.id}')">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700">${r.name}</div>
+        <div style="font-size:11px;color:var(--sub)">${r.room?r.room+'号室 · ':''} ${lastStr?'最終:'+lastStr:''}</div>
+      </div>
+      <div class="repo-timer ${cls}">${timeStr}</div>
+      <button onclick="event.stopPropagation();markReposition('${r.id}')" class="repo-btn">✓ 実施</button>
+    </div>`;
+  }).join('');
+}
+
+function startRepoTimer(){
+  if(_repoTimer)clearInterval(_repoTimer);
+  _repoTimer=setInterval(renderDashboardRepo,60000);
+}
+
+// ═══════════ FEATURE 3: 水分摂取リアルタイム集計 ═══════════
+function renderDashboardFluid(){
+  const sec=document.getElementById('dash-fluid-sec');
+  const listEl=document.getElementById('dash-fluid-list');
+  if(!sec||!listEl)return;
+  const residents=getResidents();
+  const recs=getRecords();
+  const todayStr=_localDs(new Date());
+  const TARGET=1500;
+  let hasData=false;
+  const html=residents.map(r=>{
+    const fluidRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts.startsWith(todayStr));
+    const total=fluidRecs.reduce((s,rc)=>s+(rc.data.fluid||0),0);
+    if(total===0)return '';
+    hasData=true;
+    const pct=Math.min(100,Math.round(total/TARGET*100));
+    const barColor=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--ng)';
+    return `<div class="fluid-card">
+      <div class="fluid-amount">
+        <span class="fluid-res-name">${r.name}</span>
+        <span style="font-size:13px;font-weight:700;color:${barColor}">${total}ml / ${TARGET}ml</span>
+      </div>
+      <div class="fluid-bar"><div class="fluid-fill" style="width:${pct}%;background:${barColor}"></div></div>
+    </div>`;
+  }).filter(Boolean).join('');
+  if(!hasData){sec.style.display='none';return;}
+  sec.style.display='block';
+  listEl.innerHTML=html;
+}
+
+// ═══════════ FEATURE 4: インシデント・ヒヤリハット ═══════════
+const INC_TYPE_LABEL={near_miss:'ヒヤリハット',fall:'転倒・転落',medication:'与薬誤り',injury:'受傷',choking:'誤嚥・窒息',other:'その他'};
+const INC_LOC_LABEL={room:'居室',bathroom:'浴室',toilet:'トイレ',corridor:'廊下',dining:'食堂',other:'その他'};
+const INC_SEV_COLOR={low:'#43a047',medium:'#FB8C00',high:'#e53935'};
+const INC_SEV_LABEL={low:'軽微',medium:'中程度',high:'重大'};
+let _incTab='open';
+
+function getIncidents(){return ls('incidents')||[];}
+function saveIncidents(d){lsSet('incidents',d);fsSet('incidents',d);}
+
+function openIncidentModal(editId=''){
+  document.getElementById('inc-edit-id').value=editId;
+  if(!editId){
+    document.querySelector('input[name="inc-sev"][value="low"]').checked=true;
+    document.getElementById('inc-detail').value='';
+    document.getElementById('inc-witness').value='';
+    document.querySelector('#inc-type-btns .cat-btn.on')?.classList.remove('on');
+    const firstBtn=document.querySelector('#inc-type-btns .cat-btn');
+    if(firstBtn)firstBtn.classList.add('on');
+    document.getElementById('inc-type').value='near_miss';
+  }
+  // populate residents
+  const sel=document.getElementById('inc-resident');
+  if(sel)sel.innerHTML='<option value="">施設共通</option>'+getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  if(S.currentRes&&sel)sel.value=S.currentRes;
+  document.getElementById('modal-incident').classList.add('on');
+}
+
+function saveIncident(){
+  const type=document.getElementById('inc-type').value;
+  const sev=document.querySelector('input[name="inc-sev"]:checked')?.value||'low';
+  const rid=document.getElementById('inc-resident').value;
+  const location=document.getElementById('inc-location').value;
+  const detail=document.getElementById('inc-detail').value.trim();
+  const witness=document.getElementById('inc-witness').value.trim();
+  if(!detail){toast('詳細を入力してください');return;}
+  const incidents=getIncidents();
+  const editId=document.getElementById('inc-edit-id').value;
+  if(editId){
+    const idx=incidents.findIndex(i=>i.id===editId);
+    if(idx>=0){incidents[idx]={...incidents[idx],type,sev,rid,location,detail,witness,updatedAt:new Date().toISOString()};}
+  } else {
+    incidents.unshift({id:'inc_'+Date.now(),type,sev,rid,location,detail,witness,by:S.user,ts:new Date().toISOString(),reviewed:false});
+  }
+  saveIncidents(incidents);
+  closeModal('modal-incident');
+  addAuditLog('インシデント報告',INC_TYPE_LABEL[type]+':'+detail.substring(0,30));
+  toast('インシデントを報告しました ✓');
+  renderDashboardIncident();
+  if(document.getElementById('scr-incidents').classList.contains('on'))renderIncidentList();
+}
+
+function switchIncidentTab(tab){
+  _incTab=tab;
+  const tabs={open:document.getElementById('intab-open'),reviewed:document.getElementById('intab-reviewed')};
+  Object.entries(tabs).forEach(([k,btn])=>{
+    if(!btn)return;
+    btn.style.background=k===tab?'var(--ng)':'var(--bg)';
+    btn.style.color=k===tab?'#fff':'var(--sub)';
+  });
+  renderIncidentList();
+}
+
+function renderIncidentList(){
+  const el=document.getElementById('incident-list');if(!el)return;
+  const incidents=getIncidents().filter(i=>_incTab==='open'?!i.reviewed:i.reviewed);
+  const cntEl=document.getElementById('intab-cnt');
+  if(cntEl)cntEl.textContent=getIncidents().filter(i=>!i.reviewed).length||'';
+  if(!incidents.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);font-size:14px">'+(_incTab==='open'?'未確認のインシデントはありません':'確認済みの記録はありません')+'</div>';return;
+  }
+  const residents=getResidents();
+  el.innerHTML=incidents.map(inc=>{
+    const res=inc.rid?residents.find(r=>r.id===inc.rid):null;
+    const d=new Date(inc.ts);
+    const dateStr=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="inc-card ${inc.sev}" onclick="openIncidentDetail('${inc.id}')">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <span class="inc-sev-badge" style="background:${INC_SEV_COLOR[inc.sev]}">${INC_SEV_LABEL[inc.sev]}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--txt)">${INC_TYPE_LABEL[inc.type]||inc.type}</span>
+        ${res?`<span style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;font-weight:700">${res.name}</span>`:''}
+        <span style="font-size:11px;color:var(--sub);margin-left:auto">${dateStr}</span>
+      </div>
+      <div style="font-size:13px;color:var(--txt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${inc.detail}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+        <span style="font-size:11px;color:var(--sub)">${inc.by} · ${INC_LOC_LABEL[inc.location]||''}</span>
+        ${!inc.reviewed&&isAdmin()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer">確認済にする</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openIncidentDetail(id){
+  const inc=getIncidents().find(i=>i.id===id);if(!inc)return;
+  const res=inc.rid?getResidents().find(r=>r.id===inc.rid):null;
+  const msg=`【${INC_TYPE_LABEL[inc.type]||inc.type}】${INC_SEV_LABEL[inc.sev]}\n`+
+    `日時: ${new Date(inc.ts).toLocaleString('ja-JP')}\n`+
+    `${res?'利用者: '+res.name+'\n':''}場所: ${INC_LOC_LABEL[inc.location]||''}\n`+
+    `報告者: ${inc.by}\n${inc.witness?'立会: '+inc.witness+'\n':''}\n`+
+    `内容:\n${inc.detail}`;
+  if(confirm(msg+'\n\n[OK]で確認済にする / [キャンセル]で編集')){
+    if(isAdmin())reviewIncident(id);
+  } else {
+    openIncidentModal(id);
+  }
+}
+
+function reviewIncident(id){
+  const incidents=getIncidents();
+  const idx=incidents.findIndex(i=>i.id===id);
+  if(idx<0)return;
+  incidents[idx].reviewed=true;
+  incidents[idx].reviewedBy=S.user;
+  incidents[idx].reviewedAt=new Date().toISOString();
+  saveIncidents(incidents);
+  renderIncidentList();
+  renderDashboardIncident();
+  toast('確認済みにしました ✓');
+}
+
+function renderDashboardIncident(){
+  const row=document.getElementById('incident-alert-row');
+  const cntEl=document.getElementById('incident-alert-count');
+  const prevEl=document.getElementById('incident-alert-preview');
+  if(!row)return;
+  const open=getIncidents().filter(i=>!i.reviewed);
+  if(open.length){
+    row.style.display='flex';
+    if(cntEl)cntEl.textContent='未確認インシデント：'+open.length+'件';
+    if(prevEl)prevEl.textContent=(open[0]?INC_TYPE_LABEL[open[0].type]+' – '+open[0].detail.substring(0,20):'');
+  } else {
+    row.style.display='none';
+  }
+}
+
+// ═══════════ FEATURE 6: 家族向け連絡帳自動生成 ═══════════
+function openFamilyReport(){
+  if(!S.currentRes){toast('利用者を選択してください');return;}
+  document.getElementById('family-report-date').textContent=
+    new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  regenerateFamilyReport();
+  document.getElementById('modal-family-report').classList.add('on');
+}
+
+function regenerateFamilyReport(){
+  const r=getResidents().find(x=>x.id===S.currentRes);if(!r)return;
+  const recs=getRecords();
+  const todayStr=_localDs(new Date());
+  const todayRecs=recs.filter(rc=>rc.rid===S.currentRes&&rc.ts.startsWith(todayStr));
+  const vitals=todayRecs.filter(rc=>rc.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const meals=todayRecs.filter(rc=>rc.type==='meal');
+  const chronos=todayRecs.filter(rc=>rc.type==='chrono');
+  const excretions=todayRecs.filter(rc=>rc.type==='excretion');
+  const latestV=vitals[0];
+  const now=new Date();
+  let txt=`${now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})}の連絡帳\n`;
+  txt+=`${r.name}様　より\n\n`;
+  if(latestV){
+    const d=latestV.data;
+    txt+=`■ バイタルサイン\n`;
+    txt+=`血圧${d.sys}/${d.dia}mmHg、脈拍${d.pulse}回/分、体温${d.temp}℃、SpO2 ${d.spo2}%\n`;
+    txt+=latestV.data.note?`（${latestV.data.note}）\n`:'';
+    txt+='\n';
+  }
+  if(meals.length){
+    txt+=`■ お食事\n`;
+    const mLabel={breakfast:'朝食',lunch:'昼食',dinner:'夕食'};
+    meals.forEach(m=>{
+      const s=Math.round((m.data.staple||0)*10);
+      const si=Math.round((m.data.side||0)*10);
+      const fl=m.data.fluid||0;
+      txt+=`${mLabel[m.data.mealType]||m.data.mealType}: 主食${s}%・副食${si}%・水分${fl}ml`;
+      if(m.data.note)txt+=`（${m.data.note}）`;
+      txt+='\n';
+    });
+    const totalFluid=meals.reduce((s,m)=>s+(m.data.fluid||0),0);
+    txt+=`本日の水分合計: ${totalFluid}ml\n\n`;
+  }
+  if(excretions.length){
+    txt+=`■ 排泄\n`;
+    excretions.forEach(e=>{
+      const d=e.data;
+      const t=new Date(e.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+      txt+=`${t} 排泄あり（${d.urine?'排尿':''}${d.stool?'・排便':''}）\n`;
+    });
+    txt+='\n';
+  }
+  if(chronos.length){
+    txt+=`■ 記録・特記事項\n`;
+    chronos.forEach(c=>{
+      const t=new Date(c.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+      txt+=`${t}: ${c.data.content||''}\n`;
+    });
+    txt+='\n';
+  }
+  txt+=`ご不明な点がございましたら、お気軽にご連絡ください。\nVillage Aura スタッフ一同`;
+  document.getElementById('family-report-text').value=txt;
+}
+
+function copyFamilyReport(){
+  const txt=document.getElementById('family-report-text').value;
+  navigator.clipboard.writeText(txt).then(()=>toast('コピーしました ✓')).catch(()=>{
+    document.getElementById('family-report-text').select();
+    document.execCommand('copy');
+    toast('コピーしました ✓');
+  });
+}
+
+// ═══════════ FEATURE 7: 申し送り読了確認 ═══════════
+function getHandoverReads(){return ls('handover_reads')||{};}
+function saveHandoverReads(d){lsSet('handover_reads',d);}
+
+function markHandoverRead(itemKey){
+  const data=getHandoverReads();
+  if(!data[itemKey])data[itemKey]=[];
+  if(!data[itemKey].includes(S.user)){
+    data[itemKey].push(S.user);
+    saveHandoverReads(data);
+    toast('既読にしました ✓');
+    renderHandoverBoard();
+    updateHandoverUnreadBadge();
+  }
+}
+
+function updateHandoverUnreadBadge(){
+  const badge=document.getElementById('hb-unread-badge');if(!badge)return;
+  const bd=getBoardData();
+  const allItems=[
+    ...bd.sak.am,...bd.sak.pm,...bd.doctor,...bd.nurse,...bd.shot,...bd.day,...bd.visit
+  ];
+  const reads=getHandoverReads();
+  const unread=allItems.filter(h=>{
+    if(!h||!h.content)return false;
+    const key=h.id||'unknown';
+    return !(reads[key]||[]).includes(S.user);
+  }).length;
+  if(unread>0){
+    badge.style.display='block';
+    badge.textContent=unread>9?'9+':unread;
+  } else {
+    badge.style.display='none';
+  }
+}
+
+// ═══════════ FEATURE 9: 月次レポート自動生成 ═══════════
+function openMonthlyReport(){
+  if(!isAdmin()){toast('管理者のみ利用できます');return;}
+  const now=new Date();
+  const yearSel=document.getElementById('report-year');
+  if(yearSel){
+    yearSel.innerHTML='';
+    for(let y=now.getFullYear()-1;y<=now.getFullYear()+1;y++){
+      yearSel.innerHTML+=`<option value="${y}"${y===now.getFullYear()?'selected':''}>${y}年</option>`;
+    }
+  }
+  const monthSel=document.getElementById('report-month');
+  if(monthSel)monthSel.value=now.getMonth()+1;
+  document.getElementById('modal-monthly-report').classList.add('on');
+  generateMonthlyReport();
+}
+
+function generateMonthlyReport(){
+  const el=document.getElementById('monthly-report-content');if(!el)return;
+  const year=parseInt(document.getElementById('report-year').value);
+  const month=parseInt(document.getElementById('report-month').value);
+  const prefix=`${year}-${String(month).padStart(2,'0')}`;
+  const recs=getRecords().filter(r=>r.ts.startsWith(prefix));
+  const residents=getResidents();
+  const incidents=getIncidents().filter(i=>i.ts.startsWith(prefix));
+  const handovers=[];
+  const bd=getBoardData();
+  // vital stats
+  const vitalRecs=recs.filter(r=>r.type==='vital');
+  const mealRecs=recs.filter(r=>r.type==='meal');
+  const excRecs=recs.filter(r=>r.type==='excretion');
+  const chronoRecs=recs.filter(r=>r.type==='chrono');
+  const careLabel=c=>({none:'自立',support1:'要支援1',support2:'要支援2',care1:'要介護1',care2:'要介護2',care3:'要介護3',care4:'要介護4',care5:'要介護5'}[c]||c);
+  // Per-resident vitals
+  const resRows=residents.map(r=>{
+    const rv=vitalRecs.filter(v=>v.rid===r.id);
+    if(!rv.length)return null;
+    const avgSys=Math.round(rv.reduce((s,v)=>s+(v.data.sys||0),0)/rv.length);
+    const avgDia=Math.round(rv.reduce((s,v)=>s+(v.data.dia||0),0)/rv.length);
+    const avgTemp=(rv.reduce((s,v)=>s+(v.data.temp||0),0)/rv.length).toFixed(1);
+    const avgPulse=Math.round(rv.reduce((s,v)=>s+(v.data.pulse||0),0)/rv.length);
+    const avgSpo2=Math.round(rv.reduce((s,v)=>s+(v.data.spo2||0),0)/rv.length);
+    return {name:r.name,care:careLabel(r.care),cnt:rv.length,avgSys,avgDia,avgTemp,avgPulse,avgSpo2};
+  }).filter(Boolean);
+  const incByType={};
+  incidents.forEach(i=>{incByType[i.type]=(incByType[i.type]||0)+1;});
+  el.innerHTML=`
+    <div class="report-section">
+      <h3>📊 サマリー（${year}年${month}月）</h3>
+      <div class="report-row"><span>記録総件数</span><b>${recs.length}件</b></div>
+      <div class="report-row"><span>バイタル記録</span><b>${vitalRecs.length}件</b></div>
+      <div class="report-row"><span>食事記録</span><b>${mealRecs.length}件</b></div>
+      <div class="report-row"><span>排泄記録</span><b>${excRecs.length}件</b></div>
+      <div class="report-row"><span>経時記録</span><b>${chronoRecs.length}件</b></div>
+      <div class="report-row"><span>インシデント</span><b style="color:${incidents.length?'var(--ng)':'var(--ok)'}">${incidents.length}件</b></div>
+    </div>
+    ${incidents.length?`<div class="report-section">
+      <h3>🚨 インシデント内訳</h3>
+      ${Object.entries(incByType).map(([t,c])=>`<div class="report-row"><span>${INC_TYPE_LABEL[t]||t}</span><b>${c}件</b></div>`).join('')}
+    </div>`:''}
+    <div class="report-section">
+      <h3>🌡️ 利用者別バイタル平均</h3>
+      ${resRows.length?resRows.map(r=>`
+        <div style="background:#f8f9fa;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;font-weight:700">${r.name}</span>
+            <span style="font-size:11px;color:var(--sub)">${r.care} · ${r.cnt}回</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:12px">
+            <div>血圧: <b>${r.avgSys}/${r.avgDia}</b></div>
+            <div>脈拍: <b>${r.avgPulse}</b></div>
+            <div>体温: <b>${r.avgTemp}℃</b></div>
+            <div>SpO2: <b>${r.avgSpo2}%</b></div>
+          </div>
+        </div>`).join(''):'<div style="color:var(--sub);font-size:13px;padding:8px">この月のバイタルデータはありません</div>'}
+    </div>
+  `;
+}
+
+function printMonthlyReport(){
+  const content=document.getElementById('monthly-report-content').innerHTML;
+  const year=document.getElementById('report-year').value;
+  const month=document.getElementById('report-month').value;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${year}年${month}月 月次レポート</title>
+  <style>body{font-family:-apple-system,sans-serif;max-width:600px;margin:40px auto;color:#1c2340}
+  h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:4px;margin-bottom:8px;margin-top:16px}
+  .report-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #f3f4f6}
+  </style></head><body><h1 style="font-size:18px;font-weight:800;margin-bottom:4px">月次レポート</h1>
+  <p style="font-size:12px;color:#6b7280;margin-bottom:20px">Village Aura · ${year}年${month}月</p>
+  ${content}<button onclick="window.print()" style="margin-top:24px;padding:10px 24px;background:#3D7AB5;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">🖨 印刷</button>
+  </body></html>`);
+  w.document.close();
+}
+
+// ═══════════ FEATURE 10: QRコードで利用者認識 ═══════════
+function openResidentQR(){
+  if(!S.currentRes)return;
+  const r=getResidents().find(x=>x.id===S.currentRes);if(!r)return;
+  document.getElementById('qr-modal-title').textContent='📲 '+r.name+' 様のQRコード';
+  const url='https://village-aura.github.io/#rid='+S.currentRes;
+  document.getElementById('qr-url-label').textContent=url;
+  const wrap=document.getElementById('qr-canvas-wrap');
+  wrap.innerHTML='';
+  try{
+    new QRCode(wrap,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){
+    wrap.innerHTML=`<div style="font-size:12px;color:var(--sub);padding:20px">QRコード生成エラー</div>`;
+  }
+  document.getElementById('modal-qrcode').classList.add('on');
+}
+
+function checkUrlHash(){
+  const hash=window.location.hash;
+  if(!hash)return;
+  const m=hash.match(/#rid=([a-zA-Z0-9_-]+)/);
+  if(!m)return;
+  const rid=m[1];
+  const res=getResidents().find(r=>r.id===rid);
+  if(!res)return;
+  setTimeout(()=>openResident(rid),500);
+}
+
+// Start reposition timer on load
+startRepoTimer();
+
 // 3月デモデータ追加に伴うlocalStorageリセット
 const _DEMO_DATA_VER='march2026v1';
 if(localStorage.getItem('_demo_data_ver')!==_DEMO_DATA_VER){
