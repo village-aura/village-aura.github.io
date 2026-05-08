@@ -3718,10 +3718,11 @@ function openProposalDetail(id){
   const actionsEl=document.getElementById('pdetail-actions');
   if(p.status==='done'||p.status==='approved'){
     promptWrap.style.display='block';
-    document.getElementById('pdetail-prompt').value=generateClaudePrompt(p);
+    document.getElementById('pdetail-prompt').value=generateClaudePrompt(p,'done');
     actionsEl.innerHTML='';
   } else if(p.status==='in_progress'){
-    promptWrap.style.display='none';
+    promptWrap.style.display='block';
+    document.getElementById('pdetail-prompt').value=generateClaudePrompt(p,'in_progress');
     actionsEl.innerHTML=`
       <div style="margin-top:12px">
         <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">管理者コメント（任意）</div>
@@ -3764,27 +3765,28 @@ function reviewProposal(id,status){
   const toastMsg={in_progress:'修正中に設定しました 🔧',done:'実装済に設定しました ✓',rejected:'却下しました'};
   toast(toastMsg[status]||'更新しました ✓');
   renderProposalList();
-  if(status==='done'){
+  if(status==='done'||status==='in_progress'){
     setTimeout(()=>openProposalDetail(id),300);
   }
 }
-function generateClaudePrompt(p){
+function generateClaudePrompt(p,phase='done'){
   const date=new Date(p.reviewedAt||p.submittedAt).toLocaleDateString('ja-JP');
+  const isInProgress=phase==='in_progress';
   return `【改善提案】${p.title}
 提案者: ${p.by}
 カテゴリ: ${PROP_CAT_LABEL[p.category]||p.category}
 優先度: ${p.priority==='high'?'高':p.priority==='medium'?'中':'低'}
-承認日: ${date}
-承認者: ${p.reviewedBy}
+${isInProgress?'修正開始日':'承認日'}: ${date}
+担当: ${p.reviewedBy||'──'}
 
 --- 提案内容 ---
 ${p.detail||'（詳細なし）'}
-${p.adminComment?`\n--- 管理者コメント ---\n${p.adminComment}`:''}
+${p.adminComment?`\n--- 管理者コメント・実装方針 ---\n${p.adminComment}`:''}
 
 --- 対象ファイル ---
-/Users/inadatakashi/Library/CloudStorage/Dropbox/040_Claude/009_施設カルテシステム/008_demo.html
+/Users/inadatakashi/Library/CloudStorage/Dropbox/040_Claude/006_施設カルテシステム/008_demo.html
 
-上記の改善提案をアプリに実装してください。`;
+上記の改善提案を Village Aura アプリに実装してください。実装後はGitHub Pages（village-aura/village-aura.github.io）へデプロイしてください。`;
 }
 function copyProposalPrompt(){
   const txt=document.getElementById('pdetail-prompt').value;
