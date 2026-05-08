@@ -590,12 +590,12 @@ a{color:var(--p);text-decoration:none}
     <nav style="flex:1;padding:8px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
-      <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
-      <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
-      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">✅　巡回チェック</button>
+      <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
+      <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
+      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
@@ -667,57 +667,61 @@ a{color:var(--p);text-decoration:none}
       <div class="sec-head-sm">⚡ クイック記録</div>
       <div class="qa-grid" id="qa-grid"></div>
     </div>
-    <!-- 統合グリッド 2行4列 -->
-    <div style="margin:8px 12px 10px">
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
-        <button class="quick-btn" onclick="openSvcEntry('resident')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #3D7AB5;align-items:center;text-align:center;touch-action:manipulation">
-          <span class="qi">🏠</span>
-          <div class="ql">サ高住</div>
-        </button>
-        <button class="quick-btn" onclick="openSvcEntry('stay')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #2e7d32;align-items:center;text-align:center;touch-action:manipulation">
-          <span class="qi">🏡</span>
-          <div class="ql">小多機</div>
-        </button>
-        <button class="quick-btn" onclick="openSvcEntry('commute')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #e65100;align-items:center;text-align:center;touch-action:manipulation">
-          <span class="qi">☀️</span>
-          <div class="ql">デイ</div>
-        </button>
-        <button class="quick-btn" onclick="openSvcEntry('visit')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;align-items:center;text-align:center;touch-action:manipulation">
-          <span class="qi">🚗</span>
-          <div class="ql">訪問介護</div>
-        </button>
-        <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-          <span class="qi">👤</span>
-          <div class="ql">利用者一覧<span id="q-count" style="display:none"></span></div>
-        </button>
-        <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-          <span class="qi">📅</span>
-          <div class="ql">予定表<span id="q-sched-today" style="display:none"></span></div>
-        </button>
-        <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-          <span class="qi">📣</span>
-          <div class="ql">申し送り</div>
-        </button>
-        <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-          <span class="qi">📋</span>
-          <div class="ql">業務日誌</div>
-        </button>
-        <button class="quick-btn" onclick="showScr('scr-rounds')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--ok);align-items:center;text-align:center">
-          <span class="qi">✅</span>
-          <div class="ql">巡回チェック</div>
-        </button>
-        <button class="quick-btn" onclick="showScr('scr-incidents')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--ng);align-items:center;text-align:center">
-          <span class="qi">🚨</span>
-          <div class="ql">インシデント</div>
-        </button>
-        <button class="quick-btn" onclick="openIncidentModal()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--warn);align-items:center;text-align:center">
-          <span class="qi">⚠️</span>
-          <div class="ql">ヒヤリハット</div>
-        </button>
-        <button id="qb-monthly-report" class="quick-btn" onclick="openMonthlyReport()" style="display:none;background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid var(--p);align-items:center;text-align:center">
-          <span class="qi">📊</span>
-          <div class="ql">月次レポート</div>
-        </button>
+    <!-- クイック記録グリッド（グループ分け） -->
+    <div style="margin:8px 12px 10px;display:flex;flex-direction:column;gap:10px">
+      <!-- 記録入力グループ -->
+      <div>
+        <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">🖊 記録入力</div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+          <button class="quick-btn" onclick="openSvcEntry('resident')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #3D7AB5;align-items:center;text-align:center;touch-action:manipulation">
+            <span class="qi">🏠</span><div class="ql">サ高住</div>
+          </button>
+          <button class="quick-btn" onclick="openSvcEntry('commute')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #e65100;align-items:center;text-align:center;touch-action:manipulation">
+            <span class="qi">☀️</span><div class="ql">デイ</div>
+          </button>
+          <button class="quick-btn" onclick="openSvcEntry('stay')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #2e7d32;align-items:center;text-align:center;touch-action:manipulation">
+            <span class="qi">🏡</span><div class="ql">小多機</div>
+          </button>
+          <button class="quick-btn" onclick="openSvcEntry('visit')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #6a1b9a;align-items:center;text-align:center;touch-action:manipulation">
+            <span class="qi">🚗</span><div class="ql">訪問介護</div>
+          </button>
+        </div>
+      </div>
+      <!-- 業務グループ -->
+      <div>
+        <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">📊 業務</div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+          <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
+            <span class="qi">📣</span><div class="ql">申し送り</div>
+          </button>
+          <button class="quick-btn" onclick="showScr('scr-rounds')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ok);align-items:center;text-align:center">
+            <span class="qi">✅</span><div class="ql">巡回チェック</div>
+          </button>
+          <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
+            <span class="qi">👤</span><div class="ql">利用者一覧<span id="q-count" style="display:none"></span></div>
+          </button>
+          <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
+            <span class="qi">📅</span><div class="ql">予定表<span id="q-sched-today" style="display:none"></span></div>
+          </button>
+        </div>
+      </div>
+      <!-- 管理グループ -->
+      <div>
+        <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">🗂 管理・その他</div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+          <button class="quick-btn" onclick="showScr('scr-incidents')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ng);align-items:center;text-align:center">
+            <span class="qi">🚨</span><div class="ql">インシデント</div>
+          </button>
+          <button class="quick-btn" onclick="openIncidentModal()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--warn);align-items:center;text-align:center">
+            <span class="qi">⚠️</span><div class="ql">ヒヤリハット</div>
+          </button>
+          <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
+            <span class="qi">📋</span><div class="ql">業務日誌</div>
+          </button>
+          <button id="qb-monthly-report" class="quick-btn" onclick="openMonthlyReport()" style="display:none;background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--p);align-items:center;text-align:center">
+            <span class="qi">📊</span><div class="ql">月次レポート</div>
+          </button>
+        </div>
       </div>
     </div>
     <!-- 今月の目標 -->
@@ -1404,9 +1408,11 @@ a{color:var(--p);text-decoration:none}
       <nav style="flex:1;padding:6px 0;overflow-y:auto">
         <button class="mmn" onclick="showScr('scr-dashboard');closeMobileMenu()">🏠 ホーム</button>
         <button class="mmn" onclick="showScr('scr-residents');closeMobileMenu()">👥 利用者一覧</button>
-        <button class="mmn" onclick="showScr('scr-schedule');closeMobileMenu()">📅 スケジュール</button>
         <button class="mmn" onclick="showScr('scr-handover-board');closeMobileMenu()">📣 申し送りボード</button>
+        <button class="mmn" onclick="showScr('scr-rounds');closeMobileMenu()">✅ 巡回チェック</button>
+        <button class="mmn" onclick="showScr('scr-schedule');closeMobileMenu()">📅 スケジュール</button>
         <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
+        <button class="mmn" onclick="showScr('scr-incidents');closeMobileMenu()">⚠️ インシデント</button>
         <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 データ登録</button>
         <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
         <button class="mmn" onclick="showScr('scr-settings');closeMobileMenu()">⚙️ 設定</button>
@@ -2041,6 +2047,13 @@ a{color:var(--p);text-decoration:none}
         <label><input type="radio" name="meal-type" value="dinner"> 夕食</label>
       </div>
     </div>
+    <div class="field" style="padding:6px 0">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="m-fluid-only" onchange="toggleFluidOnly(this.checked)" style="width:16px;height:16px;cursor:pointer">
+        <span>飲水のみ（食事なし）</span>
+      </label>
+    </div>
+    <div id="meal-food-fields">
     <div class="field"><label>主食摂取量：<span id="staple-lbl">8割</span></label>
       <div class="slider-wrap">
         <span>0</span>
@@ -2055,6 +2068,7 @@ a{color:var(--p);text-decoration:none}
         <input type="range" min="0" max="10" value="8" id="side-sl" oninput="document.getElementById('side-lbl').textContent=this.value+'割'">
         <span>10</span>
       </div>
+    </div>
     </div>
     <div class="field"><label>水分摂取量（ml）</label><input type="number" id="m-fluid" placeholder="200"></div>
     <div class="field"><label>コメント</label><textarea id="m-note" placeholder="食欲の様子など..."></textarea>
@@ -5307,7 +5321,7 @@ function summarizeRecord(r){
     const d=r.data;
     return 'BP:'+(d.sys&&d.dia?d.sys+'/'+d.dia:'─')+' P:'+(d.pulse||'─')+' T:'+(d.temp?d.temp+'℃':'─')+' SpO2:'+(d.spo2?d.spo2+'%':'─');
   }
-  if(r.type==='meal')return `${mealLabel(r.data.mtype)} 主:${r.data.staple}割 水:${r.data.fluid||0}ml`;
+  if(r.type==='meal')return r.data.fluidOnly?`${mealLabel(r.data.mtype)} 飲水のみ 水:${r.data.fluid||0}ml`:`${mealLabel(r.data.mtype)} 主:${r.data.staple}割 水:${r.data.fluid||0}ml`;
   if(r.type==='excretion')return `${r.data.etype==='urine'?'排尿':r.data.etype==='stool'?'排便':'排尿+排便'}`;
   if(r.type==='chrono')return (r.data.content||'').substring(0,30)+'...';
   if(r.type==='weight')return `${r.data.val}kg`;
@@ -5602,6 +5616,14 @@ function changeTlDate(delta){
   if(S.tlOffset>0) S.tlOffset=0;
   renderTimeline();
 }
+function deleteTimelineRecord(id){
+  if(!confirm('この記録を削除しますか？\nこの操作は元に戻せません。'))return;
+  const recs=getRecords().filter(r=>r.id!==id);
+  saveRecords(recs);
+  addAuditLog('記録削除',id);
+  renderTimeline();
+  toast('記録を削除しました');
+}
 function renderTimeline(){
   const targetDate=new Date();
   targetDate.setDate(targetDate.getDate()+S.tlOffset);
@@ -5641,7 +5663,7 @@ function renderTimeline(){
         ${r.type==='vital'?vitalChips(r):`<div class="tl-val">${summarizeRecord(r)}</div>`}
         ${r.data.note||r.data.content?`<div class="tl-note">${(r.data.note||r.data.content||'').substring(0,60)}</div>`:''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
-        <div class="tl-staff">${badge}${staffName}${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="margin-left:8px;background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️ 修正</button>`:''}</div>
+        <div class="tl-staff">${badge}${staffName}${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="margin-left:8px;background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️ 修正</button>`:''}<button onclick="deleteTimelineRecord('${r.id}')" style="margin-left:6px;background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑️ 削除</button></div>
       </div>
     </div>`;
   });
@@ -5662,6 +5684,10 @@ function openModal(id){
     document.getElementById('ho-content').value='';
     const normalEl=document.querySelector('[name=ho-pri][value="normal"]');
     if(normalEl)normalEl.checked=true;
+  }
+  if(id==='modal-meal'&&!S.editRecId){
+    const fo=document.getElementById('m-fluid-only');
+    if(fo){fo.checked=false;toggleFluidOnly(false);}
   }
   document.getElementById(id).classList.add('on');
   // 記録日時セレクターを注入（対象モーダルのみ）
@@ -5717,10 +5743,12 @@ function openEditRecord(id,type){
     const d=rec.data;
     const el=document.querySelector(`[name=meal-type][value="${d.mtype}"]`);
     if(el)el.checked=true;
+    const foEl=document.getElementById('m-fluid-only');
+    if(foEl){foEl.checked=!!d.fluidOnly;toggleFluidOnly(!!d.fluidOnly);}
     const stapleEl=document.getElementById('staple-sl');
     const sideEl=document.getElementById('side-sl');
-    if(stapleEl){stapleEl.value=d.staple;document.getElementById('staple-lbl').textContent=d.staple+'割';}
-    if(sideEl){sideEl.value=d.side;document.getElementById('side-lbl').textContent=d.side+'割';}
+    if(stapleEl){stapleEl.value=d.staple||0;document.getElementById('staple-lbl').textContent=(d.staple||0)+'割';}
+    if(sideEl){sideEl.value=d.side||0;document.getElementById('side-lbl').textContent=(d.side||0)+'割';}
     document.getElementById('m-fluid').value=d.fluid||0;
     document.getElementById('m-note').value=d.note||'';
     openModal('modal-meal');
@@ -5737,6 +5765,10 @@ function openEditRecord(id,type){
     openModal('modal-excretion');
   }
 }
+function toggleFluidOnly(checked){
+  const fields=document.getElementById('meal-food-fields');
+  if(fields)fields.style.display=checked?'none':'block';
+}
 function saveRecord(type){
   let data={};
   if(type==='vital'){
@@ -5748,9 +5780,11 @@ function saveRecord(type){
     if(!data.sys){toast('血圧を入力してください');return;}
     closeModal('modal-vital');
   }else if(type==='meal'){
+    const fluidOnly=document.getElementById('m-fluid-only')?.checked||false;
     data={mtype:document.querySelector('[name=meal-type]:checked')?.value||'breakfast',
-      staple:+document.getElementById('staple-sl').value,
-      side:+document.getElementById('side-sl').value,
+      fluidOnly,
+      staple:fluidOnly?0:+document.getElementById('staple-sl').value,
+      side:fluidOnly?0:+document.getElementById('side-sl').value,
       fluid:+document.getElementById('m-fluid').value||0,
       note:document.getElementById('m-note').value};
     closeModal('modal-meal');
