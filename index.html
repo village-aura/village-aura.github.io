@@ -3396,14 +3396,29 @@ const BTN_DEF = {
   visit_report:{ico:'🚗', lbl:'訪問介護記録',fn:'openVisitReportFromDetail()'},
 };
 const ROLE_COLORS = {
-  super_admin:     {bg:'#b71c1c',label:'全権管理者'},
-  doctor:          {bg:'#c62828',label:'医師'},
-  facility_manager:{bg:'#e65100',label:'事業所管理者'},
-  nurse:           {bg:'#00796b',label:'看護師'},
-  care:            {bg:'#1565c0',label:'介護職員'},
-  home_care:       {bg:'#2e7d32',label:'居宅職員'},
-  medical_office:  {bg:'#6a1b9a',label:'医療事務'},
+  super_admin:              {bg:'#b71c1c',label:'全権管理者'},
+  doctor:                   {bg:'#c62828',label:'医師'},
+  facility_manager:         {bg:'#e65100',label:'事業所管理者'},
+  facility_manager_resident:{bg:'#3D7AB5',label:'居住管理者'},
+  facility_manager_commute: {bg:'#e65100',label:'デイ管理者'},
+  facility_manager_stay:    {bg:'#2e7d32',label:'小多機管理者'},
+  facility_manager_visit:   {bg:'#6a1b9a',label:'訪問管理者'},
+  nurse:                    {bg:'#00796b',label:'看護師'},
+  care:                     {bg:'#1565c0',label:'介護職員'},
+  home_care:                {bg:'#2e7d32',label:'居宅職員'},
+  medical_office:           {bg:'#6a1b9a',label:'医療事務'},
 };
+function getRoleInfo(roleKey, staffKey){
+  if(roleKey==='facility_manager'&&staffKey){
+    const fac=getStaffSettings()[staffKey]?.managedFacility;
+    if(fac)return ROLE_COLORS['facility_manager_'+fac]||ROLE_COLORS.facility_manager;
+  }
+  return ROLE_COLORS[roleKey]||{bg:'#9ca3af',label:roleKey};
+}
+function getStaffKeyByName(name){
+  const all={...STAFF_INFO,...getCustomStaff()};
+  return Object.keys(all).find(k=>all[k].name===name)||null;
+}
 const EVENT_COLORS = {
   medical:'#c62828',commute:'#1565c0',care:'#00796b',
   family:'#6a1b9a',rehab:'#e65100',other:'#607d8b',
@@ -4323,10 +4338,11 @@ function renderRolePreviewGrid(){
   const grid=document.getElementById('role-preview-grid');
   if(!grid)return;
   const roles=[
-    {role:'nurse',      ico:'🩺', label:'看護師'},
-    {role:'care',       ico:'🤝', label:'介護職員'},
-    {role:'home_care',  ico:'🏠', label:'居宅職員'},
-    {role:'doctor',     ico:'👨‍⚕️', label:'医師'},
+    {role:'nurse',            ico:'🩺', label:'看護師'},
+    {role:'care',             ico:'🤝', label:'介護職員'},
+    {role:'home_care',        ico:'🏠', label:'居宅職員'},
+    {role:'doctor',           ico:'👨‍⚕️', label:'医師'},
+    {role:'facility_manager', ico:'🏢', label:'事業所管理者'},
   ];
   grid.innerHTML=roles.map(r=>{
     const col=(ROLE_COLORS[r.role]||{}).bg||'#555';
@@ -4396,7 +4412,7 @@ function renderAdminStaffList(){
     const curPass=getStaffPass(key);
     const curLoginId=getStaffLoginId(key);
     const curRole=getStaffRole(key);
-    const rc=ROLE_COLORS[curRole]||{bg:'#9ca3af',label:curRole};
+    const rc=getRoleInfo(curRole,key);
     const editId='adm-edit-'+key;
     return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
@@ -4405,7 +4421,6 @@ function renderAdminStaffList(){
           <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${info.name}${isMe?'<span style="font-size:10px;color:var(--p);margin-left:4px">(あなた)</span>':''}</div>
           <div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">
             <span class="staff-badge" style="background:${rc.bg};font-size:9px">${rc.label}</span>
-            ${curRole==='facility_manager'&&settings[key]?.managedFacility?`<span style="font-size:9px;font-weight:700;background:#fff3e0;color:#e65100;padding:1px 6px;border-radius:8px">${{resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'}[settings[key].managedFacility]}</span>`:''}
             <span style="font-size:11px;color:var(--sub)">ID: ${curLoginId}</span>
             <span style="font-size:10px;font-weight:700;color:${disabled?'var(--ng)':'var(--ok)'}">${disabled?'停止中':'有効'}</span>
           </div>
@@ -6039,7 +6054,7 @@ function renderTimeline(){
     const si=STAFF_INFO[r.staffId];
     const staffName=si?si.name:(S.user||'──');
     const roleKey=si?si.role:(r.staffRole||null);
-    const rc=roleKey?ROLE_COLORS[roleKey]:null;
+    const rc=roleKey?getRoleInfo(roleKey,r.staffId):null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
     const canEdit=(r.type==='meal'||r.type==='excretion');
     html+=`<div class="tl-item">
@@ -7749,7 +7764,8 @@ function renderBoardSection(elId,items,section){
   const countEl=document.getElementById(elId.replace('-list','-count'));
   if(countEl)countEl.textContent=(items&&items.length?items.length:0)+'件';
   el.innerHTML=items&&items.length?items.map((h,idx)=>{
-    const rc=h.staffRole?ROLE_COLORS[h.staffRole]:null;
+    const _sKey=h.by?getStaffKeyByName(h.by):null;
+    const rc=h.staffRole?getRoleInfo(h.staffRole,_sKey):null;
     const roleTxt=rc?rc.label:'';
     const editedMark=h.editedBy?'*':'';
     const _resById=h.rid?getResidents().find(r=>r.id===h.rid):null;
