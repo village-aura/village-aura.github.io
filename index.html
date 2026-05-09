@@ -1810,6 +1810,7 @@ a{color:var(--p);text-decoration:none}
         <button id="htab-handover" onclick="showHelpTab('handover')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📣<br>申し送り</button>
         <button id="htab-schedule" onclick="showHelpTab('schedule')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📅<br>予定</button>
         <button id="htab-diary" onclick="showHelpTab('diary')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📋<br>業務日誌</button>
+        <button id="htab-tasks" onclick="showHelpTab('tasks')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📌<br>タスク</button>
         <button id="htab-settings" onclick="showHelpTab('settings')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">⚙️<br>設定</button>
         <button id="htab-faq" onclick="showHelpTab('faq')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">❓<br>Q&amp;A</button>
         <button id="htab-ai" onclick="showHelpTab('ai')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🤖<br>AI FAQ</button>
@@ -1853,24 +1854,29 @@ a{color:var(--p);text-decoration:none}
             <div style="font-size:12px;opacity:.7">最初に表示されるダッシュボード</div>
           </div>
           <div class="man-section" style="margin-top:12px">
-            <div class="man-section-hd">🏢 事業所から入力（新機能）</div>
+            <div class="man-section-hd">ログイン者名の表示</div>
+            <div class="man-item">ダッシュボードヘッダー右端に <b>現在ログイン中の職員名</b> が表示されます</div>
+            <div class="man-item">端末を共有している場合に、誰のアカウントで操作中か一目で確認できます</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">🔔 確認事項（アコーディオン）</div>
+            <div class="man-item">ダッシュボード上部の「🔔 確認事項」パネルに要注意情報が集約されています</div>
+            <div class="man-item">パネルヘッダーをタップすると折りたたみ／展開できます。件数バッジで全体把握が可能です</div>
+            <div class="man-item" style="background:#fff8f0;border-radius:6px;padding:6px 10px;margin:4px 0">
+              優先順位：🌡️ バイタル異常 → 🚨 インシデント → 🩺 医師指示 → ⚠️ バイタル未記録 → 🚽 排便3日以上
+            </div>
+            <div class="man-item">いずれも該当なしの場合は「✅ 現在確認が必要な事項はありません」と表示されます</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">🏢 事業所から入力</div>
             <div class="man-item">ダッシュボード上部の紺色カードから <b>サ高住・小多機・デイ・訪問介護</b> を選んでタップ</div>
-            <div class="man-item">選択した事業所の利用者一覧が開き、そのままサービスが選択済みの状態で記録入力できます</div>
+            <div class="man-item">選択した事業所の利用者一覧が開き、サービス選択済みの状態で記録入力できます</div>
             <div class="man-item" style="background:#f0f9f6;border-radius:6px;padding:6px 10px;margin:4px 0">例：デイ出勤時 → 「☀️ デイ」タップ → 利用者選択 → バイタル・食事入力</div>
           </div>
           <div class="man-section">
-            <div class="man-section-hd">バイタル未記録アラート</div>
-            <div class="man-item">本日バイタルが未記録の利用者数を赤い数字で表示</div>
-            <div class="man-item">タップすると対象の利用者一覧にジャンプします</div>
-          </div>
-          <div class="man-section">
-            <div class="man-section-hd">重要・緊急の申し送り</div>
-            <div class="man-item">直近7日間の「重要」「緊急」申し送りを自動表示</div>
-            <div class="man-item">🚨 赤 = 緊急　⚠️ オレンジ = 重要</div>
-          </div>
-          <div class="man-section">
             <div class="man-section-hd">クイックアクセス</div>
-            <div class="man-item">利用者一覧 / スケジュール / 申し送りボード / 業務日誌 へのショートカット</div>
+            <div class="man-item">👥 利用者一覧 / 📅 予定表 / 📣 申し送り / 👁 巡回チェック へのショートカット</div>
+            <div class="man-item">巡回チェックでは 全施設 / 居住 / デイ / 小多機 / 訪問 でフィルタリングできます</div>
           </div>
         </div>
 
@@ -1884,6 +1890,13 @@ a{color:var(--p);text-decoration:none}
             <div class="man-section-hd">一覧の使い方</div>
             <div class="man-item">利用者はあいうえお順で表示。上部の検索バーで名前・かなで絞り込めます</div>
             <div class="man-item">カードをタップ → <b>詳細画面</b>へ移動</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">ステータスバッジ</div>
+            <div class="man-item">利用者カードに要注意バッジが自動表示されます</div>
+            <div class="man-item"><span style="background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">🌡️ バイタル未</span>　本日バイタルが未記録の利用者</div>
+            <div class="man-item"><span style="background:#f3e5f5;color:#7b1fa2;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">🚽 X日</span>　排便から3日以上経過（または排便記録なし）の利用者</div>
+            <div class="man-item">バッジは自動で更新されます。ダッシュボードの確認事項とも連動しています</div>
           </div>
           <div class="man-section">
             <div class="man-section-hd">今日のサービスを選択（新機能）</div>
@@ -2083,20 +2096,60 @@ a{color:var(--p);text-decoration:none}
           </div>
         </div>
 
+        <!-- tasks -->
+        <div id="hsec-tasks" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1a2744,#2d4a8a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">📌 タスク管理</div>
+            <div style="font-size:12px;opacity:.7">事業所・担当者別のタスク割り当てと進捗管理</div>
+          </div>
+          <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">タスクの追加</div>
+            <div class="man-item">右上の「＋ 追加」ボタンからタスクを登録します</div>
+            <div class="man-item">タイトル・事業所・担当者・期限・メモを設定できます</div>
+            <div class="man-item">タスクはFirebaseでリアルタイム同期され、全端末で共有されます</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">フィルター機能</div>
+            <div class="man-item"><b>事業所フィルター</b>：全施設 / 居住 / デイ / 小多機 / 訪問 で絞り込み</div>
+            <div class="man-item"><b>担当者フィルター</b>：登録スタッフ名で絞り込み</div>
+            <div class="man-item"><b>ステータスフィルター</b>：全て / 未完了 / 完了 で絞り込み</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">タスクの完了・削除</div>
+            <div class="man-item">タスクカードの「✓ 完了」ボタンをタップすると完了済みになります（取り消し可）</div>
+            <div class="man-item">削除は権限によって異なります：</div>
+            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">統括管理者：全タスクを削除可</div>
+            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">事業所管理者：担当事業所のタスク、または自分が作成したタスクのみ削除可</div>
+            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">一般スタッフ：削除不可</div>
+          </div>
+          <div class="man-section">
+            <div class="man-section-hd">事業所管理者のデフォルト表示</div>
+            <div class="man-item">事業所管理者でログインすると、担当事業所が自動的にフィルタリングされて表示されます</div>
+          </div>
+        </div>
+
         <!-- settings -->
         <div id="hsec-settings" class="help-sec" style="display:none">
           <div style="background:linear-gradient(135deg,#37474f,#546e7a);color:#fff;padding:18px 16px 14px">
             <div style="font-size:20px;margin-bottom:4px">⚙️ 設定・管理</div>
-            <div style="font-size:12px;opacity:.7">アカウント・セキュリティ設定</div>
+            <div style="font-size:12px;opacity:.7">アカウント・権限・セキュリティ設定</div>
           </div>
           <div class="man-section" style="margin-top:12px">
+            <div class="man-section-hd">権限の種類（3段階）</div>
+            <div class="man-item"><span style="background:#b71c1c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">統括管理者</span>　全機能・全データにアクセス可。スタッフ管理・設定変更など全権限を持つ</div>
+            <div class="man-item"><span style="background:#e65100;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">事業所管理者</span>　担当事業所のタスク管理・限定設定が可能。削除権限はなし</div>
+            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">サ高住管理者 / デイ管理者 / 小多機管理者 / 訪問管理者 / 居宅管理者</div>
+            <div class="man-item"><span style="background:#1565c0;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">一般スタッフ</span>　記録入力・閲覧のみ。設定変更・削除は不可</div>
+          </div>
+          <div class="man-section">
             <div class="man-section-hd">パスワード変更（全職員）</div>
             <div class="man-item">設定 → 「パスワード変更」：現在のPW確認後に新しいPWへ変更</div>
             <div class="man-item">英字と数字を含む6文字以上が必要</div>
           </div>
           <div class="man-section">
-            <div class="man-section-hd">管理者専用機能</div>
-            <div class="man-item"><b>職員アカウント管理</b>：有効化・停止・ID/PW変更</div>
+            <div class="man-section-hd">統括管理者 専用機能</div>
+            <div class="man-item"><b>職員アカウント管理</b>：有効化・停止・ID/PW変更・役職割り当て</div>
+            <div class="man-item"><b>事業所管理者の設定</b>：ロール選択後「担当事業所」を選んで「設定」ボタンで確定</div>
             <div class="man-item"><b>アクセス制限</b>：端末制限（登録端末のみ許可）・Wi-Fi制限（施設内のみ許可）</div>
             <div class="man-item"><b>アカウント別履歴</b>：職員ごとのログイン・操作履歴を閲覧</div>
             <div class="man-item"><b>データバックアップ</b>：全データをJSONでダウンロード。週1回の実施を推奨</div>
@@ -3989,9 +4042,11 @@ function initHelpScreen(){
 }
 // ═══════════ TUTORIAL ═══════════
 const TUT_STEPS=[
-  {ico:'🌟',title:'Village Aura へようこそ！',body:'介護記録・申し送り・帳票出力をスマホひとつで管理できます。\n初めての方向けに基本操作をご案内します。',tip:'初期パスワードは職員IDと同じです。ログイン後すぐに設定 → パスワード変更で変更してください'},
+  {ico:'🌟',title:'Village Aura へようこそ！',body:'介護記録・申し送り・タスク管理・帳票出力をスマホひとつで管理できます。\n初めての方向けに基本操作をご案内します。',tip:'初期パスワードは職員IDと同じです。ログイン後すぐに設定 → パスワード変更で変更してください'},
+  {ico:'🔔',title:'ダッシュボードで状況を一目把握',body:'ホーム画面の「確認事項」パネルに要注意情報が集約されています。\nバイタル異常 → インシデント → 医師指示 → バイタル未記録 → 排便状況の順で表示。\nヘッダー右端には現在ログイン中の職員名が表示されます。',tip:'利用者カードにも🌡️バイタル未・🚽排便X日のバッジが自動表示されます'},
   {ico:'🏢',title:'2つの入力ルート',body:'① ホームの「事業所から入力」カードで担当事業所をタップ→利用者を選択\n② 利用者一覧から直接利用者を選択',tip:'デイ出勤時は「☀️ デイ」をタップすれば利用者一覧にすぐアクセスできます'},
   {ico:'📋',title:'今日のサービスを選んで記録',body:'利用者詳細画面で「今日のサービス」を選択すると、そのサービス用の入力ボタンが表示されます。\n⚙ ボタンから利用サービスを登録・編集できます。',tip:'小多機は「通い・泊まり・訪問」を包括するサービスです'},
+  {ico:'📌',title:'タスク管理',body:'メニューの「📌 タスク」からスタッフへのタスク割り当てができます。\n事業所・担当者・ステータスでフィルタリング可能。\n完了したタスクはチェックして管理します。',tip:'事業所管理者は担当事業所のタスクが自動表示されます'},
   {ico:'📣',title:'2種類の申し送り',body:'・ボード申し送り：シフト間の当日引き継ぎ（申し送りボード）\n・カルテ申し送り：長期的な医療・ケア情報（利用者詳細）',tip:'利用者詳細 → 「今シフトの申し送り」で両方を一覧確認できます'},
   {ico:'📊',title:'業務日誌・帳票出力',body:'業務日誌タブ（☰ メニュー内）から事業所ごとに帳票をプレビュー・印刷できます。\n入力した記録が自動的に帳票に反映されます。',tip:'個人記録・訪問介護記録は利用者選択と月指定が必要です'},
   {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\nAI FAQにも質問できます（APIキー登録後）。'},
