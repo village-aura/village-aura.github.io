@@ -1239,62 +1239,6 @@ a{color:var(--p);text-decoration:none}
         </div>
       </div>
 
-      <!-- ─── 事業所管理者専用 ─── -->
-      <div class="acc-admin-wrap" id="acc-facmgr-wrap" style="display:none">
-        <div class="acc-section-label" id="facmgr-section-label">事業所管理</div>
-
-        <!-- タスク管理 -->
-        <div class="acc-item">
-          <button class="acc-hd" onclick="toggleAcc(this)">
-            <span class="acc-ico">📌</span>
-            <span class="acc-ttl">タスク管理</span>
-            <i class="acc-arrow">›</i>
-          </button>
-          <div class="acc-body"><div class="acc-inner">
-            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">担当事業所のタスクを追加・管理できます。</div>
-            <button onclick="showScr('scr-tasks')" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">📌 タスク管理を開く</button>
-          </div></div>
-        </div>
-
-        <!-- 月次レポート -->
-        <div class="acc-item">
-          <button class="acc-hd" onclick="toggleAcc(this)">
-            <span class="acc-ico">📊</span>
-            <span class="acc-ttl">月次レポート</span>
-            <i class="acc-arrow">›</i>
-          </button>
-          <div class="acc-body"><div class="acc-inner">
-            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">担当事業所の月次レポートを確認できます。</div>
-            <button onclick="openMonthlyReport()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">📊 月次レポートを開く</button>
-          </div></div>
-        </div>
-
-        <!-- 月次目標 -->
-        <div class="acc-item">
-          <button class="acc-hd" onclick="toggleAcc(this)">
-            <span class="acc-ico">🎯</span>
-            <span class="acc-ttl">今月の目標</span>
-            <i class="acc-arrow">›</i>
-          </button>
-          <div class="acc-body"><div class="acc-inner">
-            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">事業所の今月の目標を設定できます。</div>
-            <button onclick="openMonthlyGoal()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">🎯 目標を設定する</button>
-          </div></div>
-        </div>
-
-        <!-- 改善提案（事業所管理者は管理側も見られる） -->
-        <div class="acc-item">
-          <button class="acc-hd" onclick="toggleAcc(this)">
-            <span class="acc-ico">💡</span>
-            <span class="acc-ttl">改善提案</span>
-            <i class="acc-arrow">›</i>
-          </button>
-          <div class="acc-body"><div class="acc-inner">
-            <button onclick="showScr('scr-proposal')" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を確認・送る</button>
-          </div></div>
-        </div>
-      </div>
-
       <!-- ─── 管理者専用 ─── -->
       <div class="acc-admin-wrap" id="acc-admin-wrap">
         <div class="acc-section-label">統括管理者 / システム管理</div>
@@ -2117,14 +2061,7 @@ a{color:var(--p);text-decoration:none}
           <div class="man-section">
             <div class="man-section-hd">タスクの完了・削除</div>
             <div class="man-item">タスクカードの「✓ 完了」ボタンをタップすると完了済みになります（取り消し可）</div>
-            <div class="man-item">削除は権限によって異なります：</div>
-            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">統括管理者：全タスクを削除可</div>
-            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">事業所管理者：担当事業所のタスク、または自分が作成したタスクのみ削除可</div>
-            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">一般スタッフ：削除不可</div>
-          </div>
-          <div class="man-section">
-            <div class="man-section-hd">事業所管理者のデフォルト表示</div>
-            <div class="man-item">事業所管理者でログインすると、担当事業所が自動的にフィルタリングされて表示されます</div>
+            <div class="man-item">削除は <b>統括管理者のみ</b> 可能です。一般スタッフは削除できません</div>
           </div>
         </div>
 
@@ -2135,10 +2072,8 @@ a{color:var(--p);text-decoration:none}
             <div style="font-size:12px;opacity:.7">アカウント・権限・セキュリティ設定</div>
           </div>
           <div class="man-section" style="margin-top:12px">
-            <div class="man-section-hd">権限の種類（3段階）</div>
-            <div class="man-item"><span style="background:#b71c1c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">統括管理者</span>　全機能・全データにアクセス可。スタッフ管理・設定変更など全権限を持つ</div>
-            <div class="man-item"><span style="background:#e65100;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">事業所管理者</span>　担当事業所のタスク管理・限定設定が可能。削除権限はなし</div>
-            <div class="man-item" style="margin-left:12px;font-size:12px;color:var(--sub)">サ高住管理者 / デイ管理者 / 小多機管理者 / 訪問管理者 / 居宅管理者</div>
+            <div class="man-section-hd">権限の種類（2段階）</div>
+            <div class="man-item"><span style="background:#b71c1c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">統括管理者</span>　全機能・全データにアクセス可。スタッフ管理・設定変更・削除など全権限を持つ</div>
             <div class="man-item"><span style="background:#1565c0;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">一般スタッフ</span>　記録入力・閲覧のみ。設定変更・削除は不可</div>
           </div>
           <div class="man-section">
@@ -2149,7 +2084,6 @@ a{color:var(--p);text-decoration:none}
           <div class="man-section">
             <div class="man-section-hd">統括管理者 専用機能</div>
             <div class="man-item"><b>職員アカウント管理</b>：有効化・停止・ID/PW変更・役職割り当て</div>
-            <div class="man-item"><b>事業所管理者の設定</b>：ロール選択後「担当事業所」を選んで「設定」ボタンで確定</div>
             <div class="man-item"><b>アクセス制限</b>：端末制限（登録端末のみ許可）・Wi-Fi制限（施設内のみ許可）</div>
             <div class="man-item"><b>アカウント別履歴</b>：職員ごとのログイン・操作履歴を閲覧</div>
             <div class="man-item"><b>データバックアップ</b>：全データをJSONでダウンロード。週1回の実施を推奨</div>
@@ -3411,18 +3345,8 @@ function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
-function isFacilityAdmin(){return S.userRole==='facility_manager';}
-function getManagedFacility(){
-  if(!isFacilityAdmin())return null;
-  const all={...STAFF_INFO,...getCustomStaff()};
-  const key=Object.keys(all).find(k=>all[k].name===S.user);
-  if(!key)return null;
-  return getStaffSettings()[key]?.managedFacility||null;
-}
 function canDeleteTask(task){
-  if(isAdmin())return true;
-  if(isFacilityAdmin())return task.fac===getManagedFacility()||task.createdBy===S.user;
-  return false;
+  return isAdmin();
 }
 const SVC_META = {
   resident:{label:'🏠 サ高住', color:'#1565c0', section:'sak'},
@@ -3449,24 +3373,14 @@ const BTN_DEF = {
   visit_report:{ico:'🚗', lbl:'訪問介護記録',fn:'openVisitReportFromDetail()'},
 };
 const ROLE_COLORS = {
-  super_admin:              {bg:'#b71c1c',label:'統括管理者'},
-  doctor:                   {bg:'#c62828',label:'医師'},
-  facility_manager:         {bg:'#e65100',label:'事業所管理者'},
-  facility_manager_resident: {bg:'#3D7AB5',label:'サ高住管理者'},
-  facility_manager_commute:  {bg:'#e65100',label:'デイ管理者'},
-  facility_manager_stay:     {bg:'#2e7d32',label:'小多機管理者'},
-  facility_manager_visit:    {bg:'#6a1b9a',label:'訪問管理者'},
-  facility_manager_home_care:{bg:'#00796b',label:'居宅管理者'},
-  nurse:                    {bg:'#00796b',label:'看護師'},
-  care:                     {bg:'#1565c0',label:'介護職員'},
-  home_care:                {bg:'#2e7d32',label:'居宅職員'},
-  medical_office:           {bg:'#6a1b9a',label:'医療事務'},
+  super_admin:    {bg:'#b71c1c',label:'統括管理者'},
+  doctor:         {bg:'#c62828',label:'医師'},
+  nurse:          {bg:'#00796b',label:'看護師'},
+  care:           {bg:'#1565c0',label:'介護職員'},
+  home_care:      {bg:'#2e7d32',label:'居宅職員'},
+  medical_office: {bg:'#6a1b9a',label:'医療事務'},
 };
-function getRoleInfo(roleKey, staffKey){
-  if(roleKey==='facility_manager'&&staffKey){
-    const fac=getStaffSettings()[staffKey]?.managedFacility;
-    if(fac)return ROLE_COLORS['facility_manager_'+fac]||ROLE_COLORS.facility_manager;
-  }
+function getRoleInfo(roleKey){
   return ROLE_COLORS[roleKey]||{bg:'#9ca3af',label:roleKey};
 }
 function getStaffKeyByName(name){
@@ -4031,7 +3945,7 @@ function startAIKeySync(){
 // ═══════════ HELP / AI FAQ ═══════════
 const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
 主な機能：ログイン（職員ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
-職員ロール：全権管理者・事業所管理者・看護師・介護職員・医療事務・居宅職員。
+職員ロール：統括管理者・看護師・介護職員・医療事務・居宅職員。
 介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
 let aiHistory=[];
 function initHelpScreen(){
@@ -4046,7 +3960,7 @@ const TUT_STEPS=[
   {ico:'🔔',title:'ダッシュボードで状況を一目把握',body:'ホーム画面の「確認事項」パネルに要注意情報が集約されています。\nバイタル異常 → インシデント → 医師指示 → バイタル未記録 → 排便状況の順で表示。\nヘッダー右端には現在ログイン中の職員名が表示されます。',tip:'利用者カードにも🌡️バイタル未・🚽排便X日のバッジが自動表示されます'},
   {ico:'🏢',title:'2つの入力ルート',body:'① ホームの「事業所から入力」カードで担当事業所をタップ→利用者を選択\n② 利用者一覧から直接利用者を選択',tip:'デイ出勤時は「☀️ デイ」をタップすれば利用者一覧にすぐアクセスできます'},
   {ico:'📋',title:'今日のサービスを選んで記録',body:'利用者詳細画面で「今日のサービス」を選択すると、そのサービス用の入力ボタンが表示されます。\n⚙ ボタンから利用サービスを登録・編集できます。',tip:'小多機は「通い・泊まり・訪問」を包括するサービスです'},
-  {ico:'📌',title:'タスク管理',body:'メニューの「📌 タスク」からスタッフへのタスク割り当てができます。\n事業所・担当者・ステータスでフィルタリング可能。\n完了したタスクはチェックして管理します。',tip:'事業所管理者は担当事業所のタスクが自動表示されます'},
+  {ico:'📌',title:'タスク管理',body:'メニューの「📌 タスク」からスタッフへのタスク割り当てができます。\n事業所・担当者・ステータスでフィルタリング可能。\n完了したタスクはチェックして管理します。',tip:'タスクの削除は統括管理者のみ可能です'},
   {ico:'📣',title:'2種類の申し送り',body:'・ボード申し送り：シフト間の当日引き継ぎ（申し送りボード）\n・カルテ申し送り：長期的な医療・ケア情報（利用者詳細）',tip:'利用者詳細 → 「今シフトの申し送り」で両方を一覧確認できます'},
   {ico:'📊',title:'業務日誌・帳票出力',body:'業務日誌タブ（☰ メニュー内）から事業所ごとに帳票をプレビュー・印刷できます。\n入力した記録が自動的に帳票に反映されます。',tip:'個人記録・訪問介護記録は利用者選択と月指定が必要です'},
   {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\nAI FAQにも質問できます（APIキー登録後）。'},
@@ -4366,27 +4280,16 @@ function renderSettings(){
   if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminWrap=document.getElementById('acc-admin-wrap');
   const propUser=document.getElementById('acc-proposal-user');
-  const facMgrWrap=document.getElementById('acc-facmgr-wrap');
   if(isAdmin()){
     if(adminWrap) adminWrap.style.display='block';
     if(propUser) propUser.style.display='none';
-    if(facMgrWrap) facMgrWrap.style.display='none';
     renderAdminStaffList();
     renderAccessSettings();
     renderProposalList();
     renderHistoryViewer();
     renderRolePreviewGrid();
-  } else if(isFacilityAdmin()){
-    if(adminWrap) adminWrap.style.display='none';
-    if(propUser) propUser.style.display='none';
-    if(facMgrWrap){
-      facMgrWrap.style.display='block';
-      const lbl=document.getElementById('facmgr-section-label');
-      if(lbl){const fac=getManagedFacility();const facLabel={resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};lbl.textContent=(fac?facLabel[fac]+'事業所':'担当事業所')+'の管理';}
-    }
   } else {
     if(adminWrap) adminWrap.style.display='none';
-    if(facMgrWrap) facMgrWrap.style.display='none';
     if(propUser) propUser.style.display='block';
   }
 }
@@ -4394,11 +4297,11 @@ function renderRolePreviewGrid(){
   const grid=document.getElementById('role-preview-grid');
   if(!grid)return;
   const roles=[
-    {role:'nurse',            ico:'🩺', label:'看護師'},
-    {role:'care',             ico:'🤝', label:'介護職員'},
-    {role:'home_care',        ico:'🏠', label:'居宅職員'},
-    {role:'doctor',           ico:'👨‍⚕️', label:'医師'},
-    {role:'facility_manager', ico:'🏢', label:'事業所管理者'},
+    {role:'nurse',         ico:'🩺', label:'看護師'},
+    {role:'care',          ico:'🤝', label:'介護職員'},
+    {role:'home_care',     ico:'🏠', label:'居宅職員'},
+    {role:'doctor',        ico:'👨‍⚕️', label:'医師'},
+    {role:'medical_office',ico:'🏥', label:'医療事務'},
   ];
   grid.innerHTML=roles.map(r=>{
     const col=(ROLE_COLORS[r.role]||{}).bg||'#555';
@@ -4456,7 +4359,7 @@ function renderAdminStaffList(){
     '<option value="'+r+'">'+v.label+'</option>'
   ).join('');
   const sorted=Object.entries(STAFF_INFO).sort((a,b)=>{
-    const roleOrder={super_admin:0,doctor:1,facility_manager:2,nurse:3,care:4,home_care:5,medical_office:6};
+    const roleOrder={super_admin:0,doctor:1,nurse:2,care:3,home_care:4,medical_office:5};
     const ra=roleOrder[getStaffRole(a[0])]??9, rb=roleOrder[getStaffRole(b[0])]??9;
     if(ra!==rb) return ra-rb;
     return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
@@ -4468,7 +4371,7 @@ function renderAdminStaffList(){
     const curPass=getStaffPass(key);
     const curLoginId=getStaffLoginId(key);
     const curRole=getStaffRole(key);
-    const rc=getRoleInfo(curRole,key);
+    const rc=getRoleInfo(curRole);
     const editId='adm-edit-'+key;
     return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
@@ -4487,19 +4390,8 @@ function renderAdminStaffList(){
       <div id="${editId}" style="display:none;padding:8px 10px 10px;border-top:1px solid var(--bdr);background:var(--card)">
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ロール</span>
-          <select id="adm-role-${key}" onchange="document.getElementById('adm-fac-row-${key}').style.display=this.value==='facility_manager'?'flex':'none'" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb"${isMe?' disabled':''}>${roleOptions}</select>
+          <select id="adm-role-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb"${isMe?' disabled':''}>${roleOptions}</select>
           <button onclick="adminSetRole('${key}')" style="padding:6px 10px;background:#7c3aed;color:#fff;border-radius:7px;font-size:11px;font-weight:700"${isMe?' disabled':''}>変更</button>
-        </div>
-        <div id="adm-fac-row-${key}" style="display:${curRole==='facility_manager'?'flex':'none'};gap:6px;align-items:center;margin-bottom:6px">
-          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">事業所</span>
-          <select id="adm-fac-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb">
-            <option value="resident">サ高住</option>
-            <option value="commute">デイサービス</option>
-            <option value="stay">小規模多機能</option>
-            <option value="visit">訪問介護</option>
-            <option value="home_care">居宅介護支援</option>
-          </select>
-          <button onclick="adminSetFacility('${key}')" style="padding:6px 10px;background:#e65100;color:#fff;border-radius:7px;font-size:11px;font-weight:700">設定</button>
         </div>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ID</span>
@@ -4517,24 +4409,9 @@ function renderAdminStaffList(){
   sorted.forEach(([key])=>{
     const sel=document.getElementById('adm-role-'+key);
     if(sel) sel.value=getStaffRole(key);
-    const facSel=document.getElementById('adm-fac-'+key);
-    if(facSel){const mf=getStaffSettings()[key]?.managedFacility;if(mf)facSel.value=mf;}
   });
 }
-function adminSetFacility(key){
-  const sel=document.getElementById('adm-fac-'+key);
-  if(!sel)return;
-  const fac=sel.value;
-  const settings=getStaffSettings();
-  if(!settings[key]) settings[key]={};
-  settings[key].managedFacility=fac;
-  saveStaffSettings(settings);
-  const facLabel={resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
-  const name=(STAFF_INFO[key]||getCustomStaff()[key])?.name||key;
-  addAuditLog('担当事業所設定',name+' → '+facLabel[fac]);
-  const facLabel2={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護',home_care:'居宅'};
-  toast(name+' の担当事業所を「'+facLabel2[fac]+'」に設定しました ✓');
-}
+
 function toggleAdmEdit(id){
   const el=document.getElementById(id);
   const arrow=document.getElementById(id+'-arrow');
@@ -4583,7 +4460,6 @@ function adminSetRole(key){
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].role=newRole;
-  if(newRole!=='facility_manager') delete settings[key].managedFacility;
   saveStaffSettings(settings);
   renderAdminStaffList();
   const label=(ROLE_COLORS[newRole]||{label:newRole}).label;
@@ -5539,7 +5415,7 @@ function renderDashboard(){
   renderDashboardIncident();
   updateHandoverUnreadBadge();
   const qbReport=document.getElementById('qb-monthly-report');
-  if(qbReport)qbReport.style.display=(isAdmin()||isFacilityAdmin())?'flex':'none';
+  if(qbReport)qbReport.style.display=isAdmin()?'flex':'none';
   const pendingTasks=getTasks().filter(t=>!t.done);
   const tCnt=document.getElementById('q-task-cnt');
   if(tCnt){if(pendingTasks.length){tCnt.style.display='inline';tCnt.textContent=pendingTasks.length;}else{tCnt.style.display='none';}}
@@ -6112,7 +5988,7 @@ function renderTimeline(){
     const si=STAFF_INFO[r.staffId];
     const staffName=si?si.name:(S.user||'──');
     const roleKey=si?si.role:(r.staffRole||null);
-    const rc=roleKey?getRoleInfo(roleKey,r.staffId):null;
+    const rc=roleKey?getRoleInfo(roleKey):null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
     const canEdit=(r.type==='meal'||r.type==='excretion');
     html+=`<div class="tl-item">
@@ -7521,7 +7397,7 @@ function getNextStaffLoginId(){
   ];
   return String(Math.max(...allIds,1000)+1);
 }
-const ROLE_ORDER=['super_admin','facility_manager','nurse','care','medical_office','home_care'];
+const ROLE_ORDER=['super_admin','nurse','care','medical_office','home_care'];
 function renderStaffRoleDropdown(){
   const myLevel=ROLE_ORDER.indexOf(S.userRole??'home_care');
   const sel=document.getElementById('ms-role');
@@ -7823,7 +7699,7 @@ function renderBoardSection(elId,items,section){
   if(countEl)countEl.textContent=(items&&items.length?items.length:0)+'件';
   el.innerHTML=items&&items.length?items.map((h,idx)=>{
     const _sKey=h.by?getStaffKeyByName(h.by):null;
-    const rc=h.staffRole?getRoleInfo(h.staffRole,_sKey):null;
+    const rc=h.staffRole?getRoleInfo(h.staffRole):null;
     const roleTxt=rc?rc.label:'';
     const editedMark=h.editedBy?'*':'';
     const _resById=h.rid?getResidents().find(r=>r.id===h.rid):null;
@@ -9924,11 +9800,6 @@ function setTaskStaffFilter(name){
 }
 
 function renderTasksScr(){
-  // 事業所管理者はデフォルトで担当事業所にフィルター
-  if(isFacilityAdmin()&&_taskFilter.fac==='all'){
-    const mf=getManagedFacility();
-    if(mf) setTaskFilter('fac',mf);
-  }
   _buildTaskStaffFilter();
   renderTasksList();
 }
