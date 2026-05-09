@@ -1297,7 +1297,7 @@ a{color:var(--p);text-decoration:none}
 
       <!-- ─── 管理者専用 ─── -->
       <div class="acc-admin-wrap" id="acc-admin-wrap">
-        <div class="acc-section-label">管理者専用</div>
+        <div class="acc-section-label">統括管理者 / システム管理</div>
 
         <!-- セキュリティ -->
         <div class="acc-item" id="acc-security">
@@ -3399,10 +3399,11 @@ const ROLE_COLORS = {
   super_admin:              {bg:'#b71c1c',label:'統括管理者'},
   doctor:                   {bg:'#c62828',label:'医師'},
   facility_manager:         {bg:'#e65100',label:'事業所管理者'},
-  facility_manager_resident:{bg:'#3D7AB5',label:'サ高住管理者'},
-  facility_manager_commute: {bg:'#e65100',label:'デイ管理者'},
-  facility_manager_stay:    {bg:'#2e7d32',label:'小多機管理者'},
-  facility_manager_visit:   {bg:'#6a1b9a',label:'訪問管理者'},
+  facility_manager_resident: {bg:'#3D7AB5',label:'サ高住管理者'},
+  facility_manager_commute:  {bg:'#e65100',label:'デイ管理者'},
+  facility_manager_stay:     {bg:'#2e7d32',label:'小多機管理者'},
+  facility_manager_visit:    {bg:'#6a1b9a',label:'訪問管理者'},
+  facility_manager_home_care:{bg:'#00796b',label:'居宅管理者'},
   nurse:                    {bg:'#00796b',label:'看護師'},
   care:                     {bg:'#1565c0',label:'介護職員'},
   home_care:                {bg:'#2e7d32',label:'居宅職員'},
@@ -4437,10 +4438,11 @@ function renderAdminStaffList(){
         <div id="adm-fac-row-${key}" style="display:${curRole==='facility_manager'?'flex':'none'};gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">事業所</span>
           <select id="adm-fac-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb">
-            <option value="resident">居住（サ高住）</option>
+            <option value="resident">サ高住</option>
             <option value="commute">デイサービス</option>
             <option value="stay">小規模多機能</option>
             <option value="visit">訪問介護</option>
+            <option value="home_care">居宅介護支援</option>
           </select>
           <button onclick="adminSetFacility('${key}')" style="padding:6px 10px;background:#e65100;color:#fff;border-radius:7px;font-size:11px;font-weight:700">設定</button>
         </div>
@@ -4475,7 +4477,8 @@ function adminSetFacility(key){
   const facLabel={resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
   const name=(STAFF_INFO[key]||getCustomStaff()[key])?.name||key;
   addAuditLog('担当事業所設定',name+' → '+facLabel[fac]);
-  toast(name+' の担当事業所を「'+facLabel[fac]+'」に設定しました ✓');
+  const facLabel2={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護',home_care:'居宅'};
+  toast(name+' の担当事業所を「'+facLabel2[fac]+'」に設定しました ✓');
 }
 function toggleAdmEdit(id){
   const el=document.getElementById(id);
