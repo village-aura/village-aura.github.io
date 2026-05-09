@@ -601,6 +601,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
+      <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク管理</button>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
@@ -739,7 +740,10 @@ a{color:var(--p);text-decoration:none}
       <!-- 管理グループ -->
       <div>
         <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">🗂 管理・その他</div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">
+          <button class="quick-btn" onclick="showScr('scr-tasks')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--p);align-items:center;text-align:center">
+            <span class="qi">📌</span><div class="ql">タスク<span id="q-task-cnt" style="display:none;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;margin-left:3px;font-weight:800"></span></div>
+          </button>
           <button class="quick-btn" onclick="showScr('scr-incidents')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ng);align-items:center;text-align:center">
             <span class="qi">🚨</span><div class="ql">インシデント</div>
           </button>
@@ -1468,6 +1472,7 @@ a{color:var(--p);text-decoration:none}
         <button class="mmn" onclick="showScr('scr-schedule');closeMobileMenu()">📅 スケジュール</button>
         <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
         <button class="mmn" onclick="showScr('scr-incidents');closeMobileMenu()">⚠️ インシデント</button>
+        <button class="mmn" onclick="showScr('scr-tasks');closeMobileMenu()">📌 タスク管理</button>
         <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 データ登録</button>
         <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
         <button class="mmn" onclick="showScr('scr-settings');closeMobileMenu()">⚙️ 設定</button>
@@ -1704,6 +1709,34 @@ a{color:var(--p);text-decoration:none}
         <div id="proposal-mylist"></div>
       </div>
     </div>
+  </div>
+
+  <!-- ─── タスク管理 ─── -->
+  <div id="scr-tasks" class="scr">
+    <div style="padding:14px 16px 4px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:2px">📌 タスク管理</div>
+        <div style="font-size:12px;color:var(--sub)">事業所・日勤者別タスク割り当て</div>
+      </div>
+      <button onclick="openTaskModal()" style="background:var(--p);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">＋ 追加</button>
+    </div>
+    <!-- 事業所フィルター -->
+    <div style="display:flex;gap:6px;padding:8px 12px 4px;flex-wrap:wrap">
+      <button class="chip on" id="tf-fac-all" onclick="setTaskFilter('fac','all')">全施設</button>
+      <button class="chip" id="tf-fac-resident" onclick="setTaskFilter('fac','resident')">居住</button>
+      <button class="chip" id="tf-fac-commute" onclick="setTaskFilter('fac','commute')">デイ</button>
+      <button class="chip" id="tf-fac-stay" onclick="setTaskFilter('fac','stay')">小多機</button>
+      <button class="chip" id="tf-fac-visit" onclick="setTaskFilter('fac','visit')">訪問</button>
+    </div>
+    <!-- スタッフフィルター -->
+    <div id="task-staff-filter" style="display:flex;gap:6px;padding:4px 12px 4px;flex-wrap:wrap;overflow-x:auto"></div>
+    <!-- ステータスフィルター -->
+    <div style="display:flex;gap:6px;padding:4px 12px 10px">
+      <button class="chip on" id="tf-st-all" onclick="setTaskFilter('status','all')">全て</button>
+      <button class="chip" id="tf-st-pending" onclick="setTaskFilter('status','pending')">未完了</button>
+      <button class="chip" id="tf-st-done" onclick="setTaskFilter('status','done')">完了</button>
+    </div>
+    <div id="tasks-list" style="padding:0 12px 80px"></div>
   </div>
 
   <!-- HELP SCREEN -->
@@ -2875,6 +2908,37 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- TASK MODAL -->
+<div class="overlay" id="modal-task" onclick="closeModal('modal-task',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="task-modal-title">📌 タスクを追加</div>
+    <div class="field"><label>タイトル <span style="color:var(--ng)">*</span></label>
+      <input type="text" id="task-inp-title" placeholder="例：入浴介助、服薬確認" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--tx)">
+    </div>
+    <div class="field"><label>事業所</label>
+      <select id="task-inp-fac" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--tx)">
+        <option value="all">全施設共通</option>
+        <option value="resident">居住（サ高住）</option>
+        <option value="commute">デイサービス</option>
+        <option value="stay">小規模多機能</option>
+        <option value="visit">訪問介護</option>
+      </select>
+    </div>
+    <div class="field"><label>担当スタッフ</label>
+      <select id="task-inp-staff" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--tx)"></select>
+    </div>
+    <div class="field"><label>詳細メモ（任意）</label>
+      <textarea id="task-inp-detail" rows="3" placeholder="補足内容があれば入力" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--tx);resize:vertical"></textarea>
+    </div>
+    <input type="hidden" id="task-edit-id">
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-cancel" onclick="closeModal('modal-task')" style="flex:1">キャンセル</button>
+      <button onclick="saveTask()" style="flex:2;padding:12px;background:var(--p);color:#fff;border-radius:10px;font-size:15px;font-weight:700;border:none;cursor:pointer">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- MONTHLY GOAL EDIT -->
 <div class="overlay" id="modal-monthly-goal" onclick="closeModal('modal-monthly-goal',event)">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -3287,7 +3351,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data'];
 const FB_SYS_EMAIL='facility@village-aura.local';
 const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
 let db=null, fbReady=false, fbListeners=[];
@@ -4850,7 +4914,8 @@ function showScr(id){
     'scr-diary':'業務日誌',
     'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
     'scr-stool-alert':'排便未記録一覧',
-    'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット'
+    'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
+    'scr-tasks':'タスク管理'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -4861,7 +4926,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -4878,6 +4943,7 @@ function showScr(id){
   if(id==='scr-stool-alert') renderStoolAlert();
   if(id==='scr-rounds'){const h=new Date().getHours();const sh=h>=6&&h<10?'morning':h>=10&&h<16?'noon':h>=16&&h<22?'evening':'night';setRoundsShift(sh);}
   if(id==='scr-incidents') renderIncidentList();
+  if(id==='scr-tasks') renderTasksScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // タブレット縦: 全画面遷移でサイドバーを格納
@@ -5294,6 +5360,9 @@ function renderDashboard(){
   updateHandoverUnreadBadge();
   const qbReport=document.getElementById('qb-monthly-report');
   if(qbReport)qbReport.style.display=isAdmin()?'flex':'none';
+  const pendingTasks=getTasks().filter(t=>!t.done);
+  const tCnt=document.getElementById('q-task-cnt');
+  if(tCnt){if(pendingTasks.length){tCnt.style.display='inline';tCnt.textContent=pendingTasks.length;}else{tCnt.style.display='none';}}
   const now=new Date();
   const dtEl=document.getElementById('dash-date-text');
   if(dtEl)dtEl.textContent=now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
@@ -5559,13 +5628,19 @@ function renderResList(){
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
   document.getElementById('res-list').innerHTML=res.map(r=>{
     const ok=vitalToday.has(r.id);
+    const stoolDays=getStoolDays(r.id);
+    const stoolWarn=stoolDays===null||stoolDays>=3;
     const tags=r.services.map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
+    const badges=[];
+    if(!ok)badges.push('<span style="background:#fff3e0;color:#e65100;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #ffe0b2">🌡️ バイタル未</span>');
+    if(stoolWarn)badges.push(`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #e1bee7">🚽 ${stoolDays===null?'排便未記録':stoolDays+'日'}` + '</span>');
     return `<div class="res-card" onclick="openResident('${r.id}')">
       <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
         <div class="res-name">${r.name} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
         <div class="res-meta">${r.room?r.room+'号室・':''} ${careLabel(r.care)} | ${r.facility}</div>
         <div class="res-tags">${tags}<span class="tag tag-care">${careLabel(r.care)}</span></div>
+        ${badges.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">${badges.join('')}</div>`:''}
       </div>
       <div class="res-status">
         <div class="status-dot ${ok?'ok':'warn'}"></div>
@@ -9639,6 +9714,132 @@ function copyFamilyReport(){
     document.execCommand('copy');
     toast('コピーしました ✓');
   });
+}
+
+// ═══════════ FEATURE: タスク管理 ═══════════
+function getTasks(){return ls('tasks_data')||[];}
+function saveTasks(d){lsSet('tasks_data',d);fsSet('tasks_data',d);}
+
+let _taskFilter={fac:'all',status:'all',staff:'all'};
+
+function setTaskFilter(type,val){
+  _taskFilter[type]=val;
+  const prefix=type==='fac'?'tf-fac-':type==='status'?'tf-st-':'tf-stf-';
+  const options=type==='fac'?['all','resident','commute','stay','visit']:type==='status'?['all','pending','done']:null;
+  if(options)options.forEach(k=>{const b=document.getElementById(prefix+k);if(b)b.classList.toggle('on',k===val);});
+  renderTasksList();
+}
+
+function _buildTaskStaffFilter(){
+  const el=document.getElementById('task-staff-filter');if(!el)return;
+  const all={...STAFF_INFO,...getCustomStaff()};
+  const names=['all',...Object.values(all).filter(s=>!isStaffDisabled(Object.keys(all).find(k=>all[k]===s))).map(s=>s.name)];
+  el.innerHTML=names.map(n=>`<button class="chip ${n===_taskFilter.staff?'on':''}" onclick="setTaskStaffFilter('${n}')">${n==='all'?'全スタッフ':n}</button>`).join('');
+}
+function setTaskStaffFilter(name){
+  _taskFilter.staff=name;
+  _buildTaskStaffFilter();
+  renderTasksList();
+}
+
+function renderTasksScr(){
+  _buildTaskStaffFilter();
+  renderTasksList();
+}
+
+function renderTasksList(){
+  const el=document.getElementById('tasks-list');if(!el)return;
+  let tasks=getTasks();
+  if(_taskFilter.fac!=='all')tasks=tasks.filter(t=>t.fac==='all'||t.fac===_taskFilter.fac);
+  if(_taskFilter.staff!=='all')tasks=tasks.filter(t=>t.assignedTo===_taskFilter.staff);
+  if(_taskFilter.status==='pending')tasks=tasks.filter(t=>!t.done);
+  else if(_taskFilter.status==='done')tasks=tasks.filter(t=>t.done);
+  const pending=tasks.filter(t=>!t.done);
+  const done=tasks.filter(t=>t.done);
+  const facLabel={all:'全施設',resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
+  const renderCard=t=>`
+    <div style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,.07);display:flex;align-items:flex-start;gap:10px;border-left:4px solid ${t.done?'var(--ok)':'var(--p)'}">
+      <button onclick="toggleTaskDone('${t.id}')" style="width:28px;height:28px;border-radius:8px;border:2px solid ${t.done?'var(--ok)':'var(--bdr)'};background:${t.done?'var(--ok)':'var(--bg)'};color:${t.done?'#fff':'var(--sub)'};font-size:16px;cursor:pointer;flex-shrink:0;touch-action:manipulation">${t.done?'✓':''}</button>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;${t.done?'text-decoration:line-through;color:var(--sub)':''}">${t.title}</div>
+        ${t.detail?`<div style="font-size:12px;color:var(--sub);margin-top:3px">${t.detail}</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+          <span style="font-size:10px;color:var(--sub);background:var(--bg);padding:2px 7px;border-radius:8px">${facLabel[t.fac]||t.fac}</span>
+          ${t.assignedTo?`<span style="font-size:10px;color:var(--p);background:var(--ps);padding:2px 7px;border-radius:8px;font-weight:700">👤 ${t.assignedTo}</span>`:''}
+          <span style="font-size:10px;color:var(--sub)">${t.createdAt?new Date(t.createdAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>
+        </div>
+      </div>
+      <button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px;cursor:pointer;flex-shrink:0;touch-action:manipulation">🗑</button>
+    </div>`;
+  let html='';
+  if(pending.length){
+    html+=`<div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:6px 0 4px">📋 未完了 (${pending.length})</div>`;
+    html+=pending.map(renderCard).join('');
+  }
+  if(done.length){
+    html+=`<div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:10px 0 4px">✅ 完了済 (${done.length})</div>`;
+    html+=done.map(renderCard).join('');
+  }
+  if(!pending.length&&!done.length)html='<div class="empty"><div class="e-ico">📌</div><p>タスクはありません</p></div>';
+  el.innerHTML=html;
+}
+
+function openTaskModal(editId){
+  const all={...STAFF_INFO,...getCustomStaff()};
+  const names=Object.values(all).filter(s=>!s.disabled).map(s=>s.name);
+  document.getElementById('task-inp-staff').innerHTML=`<option value="">（未割り当て）</option>`+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+  if(editId){
+    const t=getTasks().find(x=>x.id===editId);if(!t)return;
+    document.getElementById('task-modal-title').textContent='📌 タスクを編集';
+    document.getElementById('task-inp-title').value=t.title||'';
+    document.getElementById('task-inp-fac').value=t.fac||'all';
+    document.getElementById('task-inp-staff').value=t.assignedTo||'';
+    document.getElementById('task-inp-detail').value=t.detail||'';
+    document.getElementById('task-edit-id').value=editId;
+  } else {
+    document.getElementById('task-modal-title').textContent='📌 タスクを追加';
+    document.getElementById('task-inp-title').value='';
+    document.getElementById('task-inp-fac').value=_taskFilter.fac!=='all'?_taskFilter.fac:'all';
+    document.getElementById('task-inp-staff').value=_taskFilter.staff!=='all'?_taskFilter.staff:'';
+    document.getElementById('task-inp-detail').value='';
+    document.getElementById('task-edit-id').value='';
+  }
+  openModal('modal-task');
+}
+
+function saveTask(){
+  const title=document.getElementById('task-inp-title').value.trim();
+  if(!title){toast('タイトルを入力してください');return;}
+  const tasks=getTasks();
+  const editId=document.getElementById('task-edit-id').value;
+  if(editId){
+    const idx=tasks.findIndex(t=>t.id===editId);
+    if(idx>=0){tasks[idx].title=title;tasks[idx].fac=document.getElementById('task-inp-fac').value;tasks[idx].assignedTo=document.getElementById('task-inp-staff').value;tasks[idx].detail=document.getElementById('task-inp-detail').value.trim();}
+  } else {
+    tasks.unshift({id:'task_'+Date.now(),title,fac:document.getElementById('task-inp-fac').value,assignedTo:document.getElementById('task-inp-staff').value,detail:document.getElementById('task-inp-detail').value.trim(),done:false,createdBy:S.user,createdAt:new Date().toISOString()});
+  }
+  saveTasks(tasks);
+  closeModal('modal-task');
+  renderTasksList();
+  toast(editId?'更新しました ✓':'タスクを追加しました ✓');
+}
+
+function toggleTaskDone(id){
+  const tasks=getTasks();
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  t.done=!t.done;
+  if(t.done){t.doneBy=S.user;t.doneAt=new Date().toISOString();}
+  else{delete t.doneBy;delete t.doneAt;}
+  saveTasks(tasks);
+  renderTasksList();
+  if(t.done)toast('完了にしました ✓');
+}
+
+function deleteTask(id){
+  if(!confirm('このタスクを削除しますか？'))return;
+  saveTasks(getTasks().filter(t=>t.id!==id));
+  renderTasksList();
+  toast('削除しました');
 }
 
 // ═══════════ FEATURE 7: 申し送り読了確認 ═══════════
