@@ -1239,6 +1239,62 @@ a{color:var(--p);text-decoration:none}
         </div>
       </div>
 
+      <!-- ─── 事業所管理者専用 ─── -->
+      <div class="acc-admin-wrap" id="acc-facmgr-wrap" style="display:none">
+        <div class="acc-section-label" id="facmgr-section-label">事業所管理</div>
+
+        <!-- タスク管理 -->
+        <div class="acc-item">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">📌</span>
+            <span class="acc-ttl">タスク管理</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">担当事業所のタスクを追加・管理できます。</div>
+            <button onclick="showScr('scr-tasks')" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">📌 タスク管理を開く</button>
+          </div></div>
+        </div>
+
+        <!-- 月次レポート -->
+        <div class="acc-item">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">📊</span>
+            <span class="acc-ttl">月次レポート</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">担当事業所の月次レポートを確認できます。</div>
+            <button onclick="openMonthlyReport()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">📊 月次レポートを開く</button>
+          </div></div>
+        </div>
+
+        <!-- 月次目標 -->
+        <div class="acc-item">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">🎯</span>
+            <span class="acc-ttl">今月の目標</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">事業所の今月の目標を設定できます。</div>
+            <button onclick="openMonthlyGoal()" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">🎯 目標を設定する</button>
+          </div></div>
+        </div>
+
+        <!-- 改善提案（事業所管理者は管理側も見られる） -->
+        <div class="acc-item">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">💡</span>
+            <span class="acc-ttl">改善提案</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <button onclick="showScr('scr-proposal')" style="width:100%;padding:11px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">💡 改善提案を確認・送る</button>
+          </div></div>
+        </div>
+      </div>
+
       <!-- ─── 管理者専用 ─── -->
       <div class="acc-admin-wrap" id="acc-admin-wrap">
         <div class="acc-section-label">管理者専用</div>
@@ -3302,6 +3358,19 @@ function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
+function isFacilityAdmin(){return S.userRole==='facility_manager';}
+function getManagedFacility(){
+  if(!isFacilityAdmin())return null;
+  const all={...STAFF_INFO,...getCustomStaff()};
+  const key=Object.keys(all).find(k=>all[k].name===S.user);
+  if(!key)return null;
+  return getStaffSettings()[key]?.managedFacility||null;
+}
+function canDeleteTask(task){
+  if(isAdmin())return true;
+  if(isFacilityAdmin())return task.fac===getManagedFacility()||task.createdBy===S.user;
+  return false;
+}
 const SVC_META = {
   resident:{label:'🏠 サ高住', color:'#1565c0', section:'sak'},
   commute: {label:'☀️ デイ',   color:'#f57c00', section:'day'},
@@ -4226,16 +4295,27 @@ function renderSettings(){
   if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminWrap=document.getElementById('acc-admin-wrap');
   const propUser=document.getElementById('acc-proposal-user');
+  const facMgrWrap=document.getElementById('acc-facmgr-wrap');
   if(isAdmin()){
     if(adminWrap) adminWrap.style.display='block';
     if(propUser) propUser.style.display='none';
+    if(facMgrWrap) facMgrWrap.style.display='none';
     renderAdminStaffList();
     renderAccessSettings();
     renderProposalList();
     renderHistoryViewer();
     renderRolePreviewGrid();
+  } else if(isFacilityAdmin()){
+    if(adminWrap) adminWrap.style.display='none';
+    if(propUser) propUser.style.display='none';
+    if(facMgrWrap){
+      facMgrWrap.style.display='block';
+      const lbl=document.getElementById('facmgr-section-label');
+      if(lbl){const fac=getManagedFacility();const facLabel={resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};lbl.textContent=(fac?facLabel[fac]+'事業所':'担当事業所')+'の管理';}
+    }
   } else {
     if(adminWrap) adminWrap.style.display='none';
+    if(facMgrWrap) facMgrWrap.style.display='none';
     if(propUser) propUser.style.display='block';
   }
 }
@@ -4323,8 +4403,9 @@ function renderAdminStaffList(){
         <span style="font-size:16px">${disabled?'🔒':'👤'}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${info.name}${isMe?'<span style="font-size:10px;color:var(--p);margin-left:4px">(あなた)</span>':''}</div>
-          <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+          <div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">
             <span class="staff-badge" style="background:${rc.bg};font-size:9px">${rc.label}</span>
+            ${curRole==='facility_manager'&&settings[key]?.managedFacility?`<span style="font-size:9px;font-weight:700;background:#fff3e0;color:#e65100;padding:1px 6px;border-radius:8px">${{resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'}[settings[key].managedFacility]}</span>`:''}
             <span style="font-size:11px;color:var(--sub)">ID: ${curLoginId}</span>
             <span style="font-size:10px;font-weight:700;color:${disabled?'var(--ng)':'var(--ok)'}">${disabled?'停止中':'有効'}</span>
           </div>
@@ -4335,8 +4416,18 @@ function renderAdminStaffList(){
       <div id="${editId}" style="display:none;padding:8px 10px 10px;border-top:1px solid var(--bdr);background:var(--card)">
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ロール</span>
-          <select id="adm-role-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb"${isMe?' disabled':''}>${roleOptions}</select>
+          <select id="adm-role-${key}" onchange="document.getElementById('adm-fac-row-${key}').style.display=this.value==='facility_manager'?'flex':'none'" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb"${isMe?' disabled':''}>${roleOptions}</select>
           <button onclick="adminSetRole('${key}')" style="padding:6px 10px;background:#7c3aed;color:#fff;border-radius:7px;font-size:11px;font-weight:700"${isMe?' disabled':''}>変更</button>
+        </div>
+        <div id="adm-fac-row-${key}" style="display:${curRole==='facility_manager'?'flex':'none'};gap:6px;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">事業所</span>
+          <select id="adm-fac-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb">
+            <option value="resident">居住（サ高住）</option>
+            <option value="commute">デイサービス</option>
+            <option value="stay">小規模多機能</option>
+            <option value="visit">訪問介護</option>
+          </select>
+          <button onclick="adminSetFacility('${key}')" style="padding:6px 10px;background:#e65100;color:#fff;border-radius:7px;font-size:11px;font-weight:700">設定</button>
         </div>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ID</span>
@@ -4354,7 +4445,22 @@ function renderAdminStaffList(){
   sorted.forEach(([key])=>{
     const sel=document.getElementById('adm-role-'+key);
     if(sel) sel.value=getStaffRole(key);
+    const facSel=document.getElementById('adm-fac-'+key);
+    if(facSel){const mf=getStaffSettings()[key]?.managedFacility;if(mf)facSel.value=mf;}
   });
+}
+function adminSetFacility(key){
+  const sel=document.getElementById('adm-fac-'+key);
+  if(!sel)return;
+  const fac=sel.value;
+  const settings=getStaffSettings();
+  if(!settings[key]) settings[key]={};
+  settings[key].managedFacility=fac;
+  saveStaffSettings(settings);
+  const facLabel={resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
+  const name=(STAFF_INFO[key]||getCustomStaff()[key])?.name||key;
+  addAuditLog('担当事業所設定',name+' → '+facLabel[fac]);
+  toast(name+' の担当事業所を「'+facLabel[fac]+'」に設定しました ✓');
 }
 function toggleAdmEdit(id){
   const el=document.getElementById(id);
@@ -4404,6 +4510,7 @@ function adminSetRole(key){
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].role=newRole;
+  if(newRole!=='facility_manager') delete settings[key].managedFacility;
   saveStaffSettings(settings);
   renderAdminStaffList();
   const label=(ROLE_COLORS[newRole]||{label:newRole}).label;
@@ -5359,7 +5466,7 @@ function renderDashboard(){
   renderDashboardIncident();
   updateHandoverUnreadBadge();
   const qbReport=document.getElementById('qb-monthly-report');
-  if(qbReport)qbReport.style.display=isAdmin()?'flex':'none';
+  if(qbReport)qbReport.style.display=(isAdmin()||isFacilityAdmin())?'flex':'none';
   const pendingTasks=getTasks().filter(t=>!t.done);
   const tCnt=document.getElementById('q-task-cnt');
   if(tCnt){if(pendingTasks.length){tCnt.style.display='inline';tCnt.textContent=pendingTasks.length;}else{tCnt.style.display='none';}}
@@ -9743,6 +9850,11 @@ function setTaskStaffFilter(name){
 }
 
 function renderTasksScr(){
+  // 事業所管理者はデフォルトで担当事業所にフィルター
+  if(isFacilityAdmin()&&_taskFilter.fac==='all'){
+    const mf=getManagedFacility();
+    if(mf) setTaskFilter('fac',mf);
+  }
   _buildTaskStaffFilter();
   renderTasksList();
 }
@@ -9769,7 +9881,7 @@ function renderTasksList(){
           <span style="font-size:10px;color:var(--sub)">${t.createdAt?new Date(t.createdAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>
         </div>
       </div>
-      <button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px;cursor:pointer;flex-shrink:0;touch-action:manipulation">🗑</button>
+      ${canDeleteTask(t)?`<button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px;cursor:pointer;flex-shrink:0;touch-action:manipulation">🗑</button>`:'<span style="width:26px;flex-shrink:0"></span>'}
     </div>`;
   let html='';
   if(pending.length){
