@@ -735,28 +735,34 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
 
-    <!-- 管理・その他（小さめ横並び） -->
-    <div style="margin:8px 12px 0;display:flex;gap:6px;flex-wrap:wrap">
-      <button onclick="showScr('scr-tasks')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
-        📌 タスク<span id="q-task-cnt" style="display:none;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;margin-left:2px;font-weight:800"></span>
-      </button>
-      <button onclick="showScr('scr-incidents')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
-        🚨 インシデント
-      </button>
-      <button onclick="openIncidentModal()" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
-        ⚠️ ヒヤリハット
-      </button>
-      <button onclick="showScr('scr-diary')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
-        📋 業務日誌
-      </button>
-      <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
-        📊 月次レポート
-      </button>
+    <!-- 管理 -->
+    <div style="margin:10px 12px 0">
+      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">管理</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="showScr('scr-tasks')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          📌 タスク<span id="q-task-cnt" style="display:none;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;margin-left:2px;font-weight:800"></span>
+        </button>
+        <button onclick="showScr('scr-incidents')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          🚨 インシデント
+        </button>
+        <button onclick="openIncidentModal()" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          ⚠️ ヒヤリハット
+        </button>
+        <button onclick="showScr('scr-diary')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          📋 業務日誌
+        </button>
+        <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          📊 月次レポート
+        </button>
+      </div>
     </div>
     <div class="qa-grid" id="qa-grid" style="margin:0 12px"></div>
 
+    <!-- 区切り -->
+    <div style="margin:20px 12px 0;height:1px;background:var(--bdr)"></div>
+
     <!-- 本日の記録状況 -->
-    <div style="margin:22px 12px 0">
+    <div style="margin:16px 12px 0">
       <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">本日の記録状況</div>
       <div style="background:var(--card);border-radius:10px;border:1.5px solid var(--bdr);padding:12px 14px;display:flex;flex-direction:column;gap:10px">
         <!-- バイタル完了率 -->
