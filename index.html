@@ -635,130 +635,126 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── DASHBOARD ─── -->
   <div id="scr-dashboard" class="scr on">
-    <div class="dash-date" id="dash-date" style="display:flex;align-items:center;justify-content:space-between">
-      <span id="dash-date-text"></span>
-      <span id="dash-user-lbl" style="font-size:12px;font-weight:700;color:var(--sub);background:var(--card);padding:3px 10px;border-radius:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis"></span>
+    <!-- 日付・ログインユーザー -->
+    <div class="dash-date" id="dash-date" style="display:flex;align-items:center;justify-content:space-between;padding-bottom:6px">
+      <span id="dash-date-text" style="font-size:13px;font-weight:700;color:var(--tx)"></span>
+      <span id="dash-user-lbl" style="font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis"></span>
     </div>
-    <!-- 統合アラートパネル -->
-    <div style="margin:4px 12px 6px">
-      <div id="dash-alerts-hd" onclick="toggleDashAlerts()" style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card);border-radius:10px;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07)">
-        <span id="dash-alerts-hd-ico" style="font-size:16px">🔔</span>
-        <span id="dash-alerts-hd-txt" style="flex:1;font-size:13px;font-weight:700;color:var(--tx)">確認事項</span>
-        <span id="dash-alerts-badge" style="display:none;background:var(--ng);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px"></span>
-        <span id="dash-alerts-arrow" style="font-size:14px;color:var(--sub);transition:transform .2s">▼</span>
+
+    <!-- ステータスバー（コンパクト） -->
+    <div style="margin:0 12px 10px">
+      <div id="dash-alerts-hd" onclick="toggleDashAlerts()" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border-radius:10px;cursor:pointer;border:1.5px solid var(--bdr);touch-action:manipulation">
+        <span id="dash-alerts-hd-ico" style="font-size:14px">✅</span>
+        <span id="dash-alerts-hd-txt" style="flex:1;font-size:12px;font-weight:700;color:var(--sub)">本日 異常なし</span>
+        <span id="dash-alerts-badge" style="display:none;background:var(--ng);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:20px;min-width:20px;text-align:center"></span>
+        <span id="dash-alerts-arrow" style="font-size:12px;color:var(--sub);transition:transform .25s">▾</span>
       </div>
-      <div id="dash-alerts-body" style="margin-top:4px">
-        <!-- 🚨 優先度1: アラート所見（バイタル異常・緊急申し送り） -->
-        <div id="dash-urgent-sec" style="display:none;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:4px">
-          <div style="background:linear-gradient(90deg,#b71c1c,#e53935);color:#fff;padding:9px 14px;font-size:12px;font-weight:800;letter-spacing:.06em;display:flex;align-items:center;gap:6px">🩺 アラート所見</div>
-          <div id="dash-urgent" style="padding:8px 10px"></div>
+      <!-- 展開パネル（軽量） -->
+      <div id="dash-alerts-body" style="display:none;margin-top:4px;background:var(--card);border-radius:10px;border:1.5px solid var(--bdr);overflow:hidden">
+        <!-- バイタル異常 -->
+        <div id="dash-urgent-sec" style="display:none">
+          <div style="padding:6px 12px 2px;font-size:10px;font-weight:800;color:var(--ng);letter-spacing:.06em;text-transform:uppercase">🩺 バイタル異常</div>
+          <div id="dash-urgent" style="padding:2px 12px 6px"></div>
         </div>
-        <!-- 🚨 優先度2: インシデント -->
-        <div id="incident-alert-row" onclick="showScr('scr-incidents')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid var(--ng);cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
-          <span style="font-size:18px">🚨</span>
+        <!-- インシデント -->
+        <div id="incident-alert-row" onclick="showScr('scr-incidents')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+          <span style="font-size:13px">🚨</span>
           <div style="flex:1">
-            <b id="incident-alert-count" style="display:block;font-size:13px;font-weight:700;color:var(--ng)"></b>
-            <span id="incident-alert-preview" style="font-size:11px;color:#b71c1c"></span>
+            <b id="incident-alert-count" style="font-size:12px;font-weight:700;color:var(--ng)"></b>
+            <span id="incident-alert-preview" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
-          <span style="color:var(--ng);font-size:16px">›</span>
+          <span style="color:var(--sub);font-size:14px">›</span>
         </div>
-        <!-- 🩺 優先度3: 医師指示 -->
-        <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #1565c0;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
-          <span style="font-size:18px">🩺</span>
+        <!-- 医師指示 -->
+        <div id="doctor-order-row" onclick="showScr('scr-handover-board')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+          <span style="font-size:13px">🩺</span>
           <div style="flex:1">
-            <b id="doctor-order-count" style="display:block;font-size:13px;font-weight:700"></b>
-            <span id="doctor-order-preview" style="font-size:11px;color:var(--sub)"></span>
+            <b id="doctor-order-count" style="font-size:12px;font-weight:700;color:#1565c0"></b>
+            <span id="doctor-order-preview" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
-          <span id="doctor-order-arrow" style="font-size:16px;color:var(--sub)">›</span>
+          <span id="doctor-order-arrow" style="color:var(--sub);font-size:14px">›</span>
         </div>
-        <!-- ⚠️ 優先度4: バイタル未記録 -->
-        <div id="vital-unrecorded-row" onclick="showScr('scr-residents');setFilter('all')" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #E65100;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
-          <span style="font-size:18px">⚠️</span>
+        <!-- バイタル未記録 -->
+        <div id="vital-unrecorded-row" onclick="showScr('scr-residents');setFilter('all')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+          <span style="font-size:13px">⚠️</span>
           <div style="flex:1">
-            <b id="alert-count" style="display:block;font-size:13px;font-weight:700;color:#E65100">バイタル未記録：0名</b>
-            <span id="alert-names" style="font-size:11px;color:#BF360C"></span>
+            <b id="alert-count" style="font-size:12px;font-weight:700;color:#E65100">バイタル未記録：0名</b>
+            <span id="alert-names" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
-          <span style="color:#E65100;font-size:16px">›</span>
+          <span style="color:var(--sub);font-size:14px">›</span>
         </div>
-        <!-- 🚽 優先度5: 排便3日以上なし -->
-        <div id="stool-alert-row" style="display:none;align-items:center;gap:10px;padding:11px 13px;background:var(--card);border-radius:10px;border-left:4px solid #7b1fa2;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:4px">
-          <span style="font-size:18px">🚽</span>
+        <!-- 排便 -->
+        <div id="stool-alert-row" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+          <span style="font-size:13px">🚽</span>
           <div style="flex:1">
-            <b id="stool-alert-count" style="display:block;font-size:13px;font-weight:700;color:#7b1fa2"></b>
-            <span id="stool-alert-names" style="font-size:11px;color:#6a1b9a"></span>
+            <b id="stool-alert-count" style="font-size:12px;font-weight:700;color:#7b1fa2"></b>
+            <span id="stool-alert-names" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
-          <span style="color:#7b1fa2;font-size:16px">›</span>
+          <span style="color:var(--sub);font-size:14px">›</span>
         </div>
-        <!-- ✅ 問題なし表示 -->
-        <div id="dash-all-ok" style="display:none;padding:10px 13px;background:#e8f5e9;border-radius:10px;border-left:4px solid var(--ok);font-size:13px;font-weight:700;color:#2e7d32">✅ 現在確認が必要な事項はありません</div>
+        <!-- 問題なし -->
+        <div id="dash-all-ok" style="display:none;padding:10px 12px;font-size:12px;color:var(--ok);font-weight:700">✅ 現在確認が必要な事項はありません</div>
       </div>
     </div>
-    <!-- 居宅職員ビュー -->
-    <!-- クイック記録 -->
+
+    <!-- 記録入力（事業所） -->
+    <div style="margin:0 12px 4px">
+      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">記録入力</div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+        <button onclick="openSvcEntry('resident')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #3D7AB5;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:20px">🏠</span><span style="font-size:10px;font-weight:700;color:var(--tx)">サ高住</span>
+        </button>
+        <button onclick="openSvcEntry('commute')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #e65100;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:20px">☀️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">デイ</span>
+        </button>
+        <button onclick="openSvcEntry('stay')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #2e7d32;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:20px">🏡</span><span style="font-size:10px;font-weight:700;color:var(--tx)">小多機</span>
+        </button>
+        <button onclick="openSvcEntry('visit')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #6a1b9a;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:20px">🚗</span><span style="font-size:10px;font-weight:700;color:var(--tx)">訪問介護</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 業務ショートカット -->
     <div style="margin:8px 12px 0">
-      <div class="sec-head-sm">⚡ クイック記録</div>
-      <div class="qa-grid" id="qa-grid"></div>
-    </div>
-    <!-- クイック記録グリッド（グループ分け） -->
-    <div style="margin:8px 12px 10px;display:flex;flex-direction:column;gap:10px">
-      <!-- 記録入力グループ -->
-      <div>
-        <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">🖊 記録入力</div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
-          <button class="quick-btn" onclick="openSvcEntry('resident')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #3D7AB5;align-items:center;text-align:center;touch-action:manipulation">
-            <span class="qi">🏠</span><div class="ql">サ高住</div>
-          </button>
-          <button class="quick-btn" onclick="openSvcEntry('commute')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #e65100;align-items:center;text-align:center;touch-action:manipulation">
-            <span class="qi">☀️</span><div class="ql">デイ</div>
-          </button>
-          <button class="quick-btn" onclick="openSvcEntry('stay')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #2e7d32;align-items:center;text-align:center;touch-action:manipulation">
-            <span class="qi">🏡</span><div class="ql">小多機</div>
-          </button>
-          <button class="quick-btn" onclick="openSvcEntry('visit')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid #6a1b9a;align-items:center;text-align:center;touch-action:manipulation">
-            <span class="qi">🚗</span><div class="ql">訪問介護</div>
-          </button>
-        </div>
-      </div>
-      <!-- 業務グループ -->
-      <div>
-        <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">📊 業務</div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
-          <button class="quick-btn" onclick="showScr('scr-residents')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-            <span class="qi">👤</span><div class="ql">利用者一覧<span id="q-count" style="display:none"></span></div>
-          </button>
-          <button class="quick-btn" onclick="showScr('scr-schedule')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-            <span class="qi">📅</span><div class="ql">予定表<span id="q-sched-today" style="display:none"></span></div>
-          </button>
-          <button class="quick-btn" onclick="showScr('scr-handover-board')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-            <span class="qi">📣</span><div class="ql">申し送り</div>
-          </button>
-          <button class="quick-btn" onclick="showScr('scr-rounds')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ok);align-items:center;text-align:center">
-            <span class="qi">✅</span><div class="ql">巡回チェック</div>
-          </button>
-        </div>
-      </div>
-      <!-- 管理グループ -->
-      <div>
-        <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.08em;padding:0 2px 5px">🗂 管理・その他</div>
-        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">
-          <button class="quick-btn" onclick="showScr('scr-tasks')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--p);align-items:center;text-align:center">
-            <span class="qi">📌</span><div class="ql">タスク<span id="q-task-cnt" style="display:none;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;margin-left:3px;font-weight:800"></span></div>
-          </button>
-          <button class="quick-btn" onclick="showScr('scr-incidents')" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--ng);align-items:center;text-align:center">
-            <span class="qi">🚨</span><div class="ql">インシデント</div>
-          </button>
-          <button class="quick-btn" onclick="openIncidentModal()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--warn);align-items:center;text-align:center">
-            <span class="qi">⚠️</span><div class="ql">ヒヤリハット</div>
-          </button>
-          <button class="quick-btn" onclick="showScr('scr-diary')" style="background:var(--card);border:1.5px solid var(--bdr);align-items:center;text-align:center">
-            <span class="qi">📋</span><div class="ql">業務日誌</div>
-          </button>
-          <button id="qb-monthly-report" class="quick-btn" onclick="openMonthlyReport()" style="display:none;background:var(--card);border:1.5px solid var(--bdr);border-top:3px solid var(--p);align-items:center;text-align:center">
-            <span class="qi">📊</span><div class="ql">月次レポート</div>
-          </button>
-        </div>
+      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">業務</div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+        <button onclick="showScr('scr-residents')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">👥</span><span style="font-size:10px;font-weight:700;color:var(--tx)">利用者<span id="q-count"></span></span>
+        </button>
+        <button onclick="showScr('scr-schedule')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">📅</span><span style="font-size:10px;font-weight:700;color:var(--tx)">予定表<span id="q-sched-today"></span></span>
+        </button>
+        <button onclick="showScr('scr-handover-board')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">📣</span><span style="font-size:10px;font-weight:700;color:var(--tx)">申し送り</span>
+        </button>
+        <button onclick="showScr('scr-rounds')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">✅</span><span style="font-size:10px;font-weight:700;color:var(--tx)">巡回</span>
+        </button>
       </div>
     </div>
+
+    <!-- 管理・その他（小さめ横並び） -->
+    <div style="margin:8px 12px 0;display:flex;gap:6px;flex-wrap:wrap">
+      <button onclick="showScr('scr-tasks')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+        📌 タスク<span id="q-task-cnt" style="display:none;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;margin-left:2px;font-weight:800"></span>
+      </button>
+      <button onclick="showScr('scr-incidents')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+        🚨 インシデント
+      </button>
+      <button onclick="openIncidentModal()" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+        ⚠️ ヒヤリハット
+      </button>
+      <button onclick="showScr('scr-diary')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+        📋 業務日誌
+      </button>
+      <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+        📊 月次レポート
+      </button>
+    </div>
+    <div style="margin:0 12px"></div>
+    <div class="qa-grid" id="qa-grid" style="margin:0 12px"></div>
     <!-- 今月の目標 -->
     <div id="monthly-goal-card" style="margin:0 12px 10px"></div>
     <!-- 体位変換タイマー -->
@@ -5682,29 +5678,32 @@ function renderDashboard(){
   }).join('')||'<div class="empty"><div class="e-ico">📋</div><p>今日の記録はまだありません</p></div>';
 }
 
-let _dashAlertsOpen=true;
+let _dashAlertsOpen=false;
 function toggleDashAlerts(){
   _dashAlertsOpen=!_dashAlertsOpen;
   const body=document.getElementById('dash-alerts-body');
   const arrow=document.getElementById('dash-alerts-arrow');
   if(body)body.style.display=_dashAlertsOpen?'block':'none';
-  if(arrow)arrow.style.transform=_dashAlertsOpen?'':'rotate(-90deg)';
+  if(arrow)arrow.style.transform=_dashAlertsOpen?'rotate(180deg)':'';
 }
 function _updateDashAlertsHeader(){
   const ids=['dash-urgent-sec','incident-alert-row','doctor-order-row','vital-unrecorded-row','stool-alert-row'];
   const activeCount=ids.filter(id=>{const el=document.getElementById(id);return el&&el.style.display!=='none';}).length;
+  const hd=document.getElementById('dash-alerts-hd');
   const hIco=document.getElementById('dash-alerts-hd-ico');
   const hTxt=document.getElementById('dash-alerts-hd-txt');
   const badge=document.getElementById('dash-alerts-badge');
   const okRow=document.getElementById('dash-all-ok');
   if(activeCount>0){
+    if(hd){hd.style.borderColor='#ffcdd2';hd.style.background='#fff8f8';}
     if(hIco)hIco.textContent='🔴';
-    if(hTxt){hTxt.textContent='確認事項';hTxt.style.color='var(--ng)';}
-    if(badge){badge.style.display='inline';badge.textContent=activeCount+'件';}
+    if(hTxt){hTxt.textContent='確認事項あり';hTxt.style.color='var(--ng)';hTxt.style.fontWeight='700';}
+    if(badge){badge.style.display='inline-block';badge.textContent=activeCount+'件';}
     if(okRow)okRow.style.display='none';
   } else {
+    if(hd){hd.style.borderColor='var(--bdr)';hd.style.background='var(--card)';}
     if(hIco)hIco.textContent='✅';
-    if(hTxt){hTxt.textContent='問題ありません';hTxt.style.color='var(--ok)';}
+    if(hTxt){hTxt.textContent='本日 異常なし';hTxt.style.color='var(--sub)';hTxt.style.fontWeight='600';}
     if(badge)badge.style.display='none';
     if(okRow)okRow.style.display='block';
   }
