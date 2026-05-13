@@ -3169,6 +3169,23 @@ a{color:var(--p);text-decoration:none}
     <div class="field"><label>特記事項</label>
       <textarea id="inf-notes" rows="3" placeholder="症状・対応状況・医師指示など..."></textarea>
     </div>
+    <div class="field">
+      <label>サービス別対応方針</label>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1.5px solid var(--bdr);border-radius:8px">
+        <table style="width:100%;border-collapse:collapse;min-width:420px">
+          <thead>
+            <tr style="background:var(--bg)">
+              <th style="text-align:left;padding:7px 8px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);white-space:nowrap">サービス</th>
+              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">該当者</th>
+              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">他入居者</th>
+              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">外部利用者</th>
+              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">確認</th>
+            </tr>
+          </thead>
+          <tbody id="inf-svc-tbody"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="field" id="inf-status-field" style="display:none">
       <label>ステータス</label>
       <div class="radio-group">
@@ -10168,6 +10185,25 @@ function saveInfectionData(d){lsSet('infection_data',d);fsSet('infection_data',d
 function getActiveInfections(){return getInfectionData().filter(x=>x.status==='active');}
 function canManageInfection(){return isAdmin()||isFacilityAdmin()||S.userRole==='doctor';}
 
+const INFECTION_SVC_ROWS=[
+  {key:'day_svc',     label:'デイサービス',         shortLabel:'デイ'},
+  {key:'small_day',   label:'小規模多機能（デイ）',  shortLabel:'小多機デイ'},
+  {key:'visit_svc',   label:'訪問サービス',          shortLabel:'訪問'},
+  {key:'common_area', label:'施設共用部への立ち入り', shortLabel:'共用部'},
+  {key:'meeting',     label:'面会・面談',            shortLabel:'面会'},
+  {key:'outing',      label:'外出',                 shortLabel:'外出'},
+];
+const INFECTION_SVC_OPT=['通常通り','利用不可','利用可','不可','面談室可','対象外','対応検討中'];
+const INFECTION_CFM_OPT=['確認未','対応中','済み'];
+const INFECTION_SVC_DEFAULT={
+  day_svc:    {target:'利用不可',other:'通常通り', external:'通常通り', confirmed:'済み'},
+  small_day:  {target:'利用可',  other:'通常通り', external:'通常通り', confirmed:'済み'},
+  visit_svc:  {target:'通常通り',other:'通常通り', external:'通常通り', confirmed:'確認未'},
+  common_area:{target:'利用不可',other:'通常通り', external:'通常通り', confirmed:'済み'},
+  meeting:    {target:'不可',    other:'面談室可',  external:'面談室可', confirmed:'確認未'},
+  outing:     {target:'不可',    other:'不可',      external:'対象外',  confirmed:'済み'},
+};
+
 let _infTab='active';
 function switchInfTab(tab){
   _infTab=tab;
@@ -10181,6 +10217,20 @@ function renderInfectionScr(){
   const addBtn=document.getElementById('inf-add-btn');
   if(addBtn)addBtn.style.display=canManageInfection()?'block':'none';
   switchInfTab(_infTab);
+}
+function _buildSvcTableHTML(sr){
+  const rows=INFECTION_SVC_ROWS.map(row=>{
+    const v=(sr&&sr[row.key])||(INFECTION_SVC_DEFAULT[row.key]||{});
+    const cfmColor=v.confirmed==='済み'?'#2e7d32':v.confirmed==='対応中'?'#e65100':'#9ca3af';
+    const cfmBg=v.confirmed==='済み'?'#e8f5e9':v.confirmed==='対応中'?'#fff3e0':'#f3f4f6';
+    const isNg=(v.target==='利用不可'||v.target==='不可');
+    return `<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:5px 7px;font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap">${row.label}</td><td style="padding:3px;text-align:center;font-size:10px;${isNg?'color:#e53935;font-weight:700':''}">${v.target||'─'}</td><td style="padding:3px;text-align:center;font-size:10px">${v.other||'─'}</td><td style="padding:3px;text-align:center;font-size:10px">${v.external||'─'}</td><td style="padding:3px;text-align:center"><span style="font-size:9px;background:${cfmBg};color:${cfmColor};border-radius:4px;padding:1px 6px;font-weight:700;white-space:nowrap">${v.confirmed||'確認未'}</span></td></tr>`;
+  }).join('');
+  const unconfirmed=INFECTION_SVC_ROWS.filter(row=>{const v=(sr&&sr[row.key])||INFECTION_SVC_DEFAULT[row.key]||{};return (v.confirmed||'確認未')==='確認未';});
+  const badge=unconfirmed.length
+    ?`<div style="margin-top:5px;font-size:10px;color:#e53935;font-weight:700">⚠️ 確認未: ${unconfirmed.map(r=>r.shortLabel).join('・')}</div>`
+    :`<div style="margin-top:5px;font-size:10px;color:#2e7d32;font-weight:700">✅ 全サービス確認済</div>`;
+  return `<div style="margin-top:8px;border-top:1px solid var(--bdr);padding-top:8px"><div style="font-size:10px;font-weight:800;color:var(--sub);margin-bottom:5px;letter-spacing:.04em">📋 サービス別対応方針</div><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="font-size:10px;border-collapse:collapse;min-width:300px;width:100%"><thead><tr style="background:var(--bg)"><th style="text-align:left;padding:5px 7px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--bdr);white-space:nowrap">サービス</th><th style="padding:5px 3px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap">該当者</th><th style="padding:5px 3px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap">他入居者</th><th style="padding:5px 3px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap">外部</th><th style="padding:5px 3px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap">確認</th></tr></thead><tbody>${rows}</tbody></table></div>${badge}</div>`;
 }
 function renderInfectionList(){
   const el=document.getElementById('infection-list');if(!el)return;
@@ -10206,6 +10256,7 @@ function renderInfectionList(){
           <button onclick="openInfectionModal(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#9ca3af">✏️</button>
           <button onclick="deleteInfection(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#e53935">🗑️</button>
         </div>`:'';
+    const svcHTML=_buildSvcTableHTML(entry.serviceResponse);
     return `<div style="border-left:3px solid ${borderColor};background:${bg};border-radius:0 10px 10px 0;padding:11px 12px;margin-bottom:8px;border:1px solid var(--bdr);border-left-width:3px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="flex:1;min-width:0">
@@ -10221,6 +10272,7 @@ function renderInfectionList(){
         </div>
         ${actBtns}
       </div>
+      ${svcHTML}
       <div style="font-size:10px;color:#9ca3af;margin-top:5px">${entry.createdBy||''}${entry.createdAt?' · 登録: '+new Date(entry.createdAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}</div>
     </div>`;
   }).join('');
@@ -10247,6 +10299,7 @@ function openInfectionModal(editIdx=-1){
     document.getElementById('inf-notes').value=entry.notes||'';
     const statusEl=document.querySelector(`input[name="inf-status"][value="${entry.status||'active'}"]`);
     if(statusEl)statusEl.checked=true;
+    _populateInfSvcTable(entry.serviceResponse||{});
   } else {
     if(editIdEl)editIdEl.value='';
     if(titleEl)titleEl.textContent='🦠 感染・隔離登録';
@@ -10260,8 +10313,24 @@ function openInfectionModal(editIdx=-1){
     document.getElementById('inf-notes').value='';
     const activeEl=document.querySelector('input[name="inf-status"][value="active"]');
     if(activeEl)activeEl.checked=true;
+    _populateInfSvcTable({});
   }
   document.getElementById('modal-infection').classList.add('on');
+}
+function _populateInfSvcTable(sr){
+  const tbody=document.getElementById('inf-svc-tbody');if(!tbody)return;
+  const mkSel=(key,field,opts)=>{
+    const cur=(sr[key]&&sr[key][field])||(INFECTION_SVC_DEFAULT[key]&&INFECTION_SVC_DEFAULT[key][field])||opts[0];
+    return `<select id="inf-svc-${key}-${field}" style="font-size:10px;padding:2px 3px;border:1px solid var(--bdr);border-radius:4px;width:76px">${opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}</select>`;
+  };
+  tbody.innerHTML=INFECTION_SVC_ROWS.map(row=>`
+    <tr style="border-bottom:1px solid var(--bdr)">
+      <td style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap">${row.label}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'target',INFECTION_SVC_OPT)}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'other',INFECTION_SVC_OPT)}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'external',INFECTION_SVC_OPT)}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'confirmed',INFECTION_CFM_OPT)}</td>
+    </tr>`).join('');
 }
 function saveInfection(){
   if(!canManageInfection()){toast('管理者・医師のみ登録できます');return;}
@@ -10278,11 +10347,20 @@ function saveInfection(){
   const notes=document.getElementById('inf-notes').value.trim();
   const statusEl=document.querySelector('input[name="inf-status"]:checked');
   const status=statusEl?statusEl.value:'active';
+  const serviceResponse={};
+  INFECTION_SVC_ROWS.forEach(row=>{
+    serviceResponse[row.key]={
+      target:   document.getElementById(`inf-svc-${row.key}-target`)?.value||'通常通り',
+      other:    document.getElementById(`inf-svc-${row.key}-other`)?.value||'通常通り',
+      external: document.getElementById(`inf-svc-${row.key}-external`)?.value||'通常通り',
+      confirmed:document.getElementById(`inf-svc-${row.key}-confirmed`)?.value||'確認未',
+    };
+  });
   if(editIdx>=0&&d[editIdx]){
-    d[editIdx]={...d[editIdx],rid,facility,disease,isolationType,startDate,endDate,notes,status,updatedBy:S.user||'──',updatedAt:new Date().toISOString()};
+    d[editIdx]={...d[editIdx],rid,facility,disease,isolationType,startDate,endDate,notes,status,serviceResponse,updatedBy:S.user||'──',updatedAt:new Date().toISOString()};
     toast('感染記録を更新しました ✓');
   } else {
-    d.unshift({id:Date.now().toString(),rid,facility,disease,isolationType,startDate,endDate,notes,status:'active',createdBy:S.user||'──',createdAt:new Date().toISOString(),updatedBy:null,updatedAt:null});
+    d.unshift({id:Date.now().toString(),rid,facility,disease,isolationType,startDate,endDate,notes,status:'active',serviceResponse,createdBy:S.user||'──',createdAt:new Date().toISOString(),updatedBy:null,updatedAt:null});
     toast('感染記録を登録しました ✓');
   }
   saveInfectionData(d);
