@@ -1189,7 +1189,7 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;color:#2e7d32">🦠 感染・隔離管理</div>
         <div style="font-size:11px;color:var(--sub);margin-top:2px">施設内感染・隔離状況の一覧と共有</div>
       </div>
-      <button onclick="openInfectionModal()" style="background:#2e7d32;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 追加</button>
+      <button id="inf-add-btn" onclick="openInfectionModal()" style="background:#2e7d32;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;display:none">＋ 追加</button>
     </div>
     <div style="display:flex;gap:6px;padding:10px 12px 6px">
       <button id="inf-tab-active" onclick="switchInfTab('active')" style="flex:1;padding:7px;font-size:12px;font-weight:700;background:#2e7d32;color:#fff;border:none;border-radius:8px;cursor:pointer;touch-action:manipulation">🔴 対応中</button>
@@ -10127,6 +10127,7 @@ function renderDashboardIncident(){
 function getInfectionData(){return ls('infection_data')||[];}
 function saveInfectionData(d){lsSet('infection_data',d);fsSet('infection_data',d);}
 function getActiveInfections(){return getInfectionData().filter(x=>x.status==='active');}
+function canManageInfection(){return isAdmin()||isFacilityAdmin()||S.userRole==='doctor';}
 
 let _infTab='active';
 function switchInfTab(tab){
@@ -10137,9 +10138,14 @@ function switchInfTab(tab){
   if(resolvedBtn){resolvedBtn.style.background=tab==='resolved'?'#2e7d32':'var(--bg)';resolvedBtn.style.color=tab==='resolved'?'#fff':'var(--sub)';resolvedBtn.style.border=tab==='resolved'?'none':'1.5px solid var(--bdr)';}
   renderInfectionList();
 }
-function renderInfectionScr(){switchInfTab(_infTab);}
+function renderInfectionScr(){
+  const addBtn=document.getElementById('inf-add-btn');
+  if(addBtn)addBtn.style.display=canManageInfection()?'block':'none';
+  switchInfTab(_infTab);
+}
 function renderInfectionList(){
   const el=document.getElementById('infection-list');if(!el)return;
+  const canManage=canManageInfection();
   const all=getInfectionData();
   const items=all.filter(x=>x.status===_infTab);
   if(!items.length){
@@ -10157,6 +10163,10 @@ function renderInfectionList(){
     const endTxt=endDate?endDate.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'まで':'終了日未定';
     const borderColor=isOverdue?'#e53935':daysLeft!==null&&daysLeft<=3?'#FB8C00':'#2e7d32';
     const bg=isOverdue?'#fff5f5':daysLeft!==null&&daysLeft<=3?'#fffbf2':'var(--card)';
+    const actBtns=canManage?`<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button onclick="openInfectionModal(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#9ca3af">✏️</button>
+          <button onclick="deleteInfection(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#e53935">🗑️</button>
+        </div>`:'';
     return `<div style="border-left:3px solid ${borderColor};background:${bg};border-radius:0 10px 10px 0;padding:11px 12px;margin-bottom:8px;border:1px solid var(--bdr);border-left-width:3px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="flex:1;min-width:0">
@@ -10170,16 +10180,14 @@ function renderInfectionList(){
           <div style="font-size:11px;color:var(--sub)">📅 ${entry.startDate?new Date(entry.startDate).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'開始':'─'} → ${endTxt}</div>
           ${entry.notes?`<div style="font-size:11px;color:var(--sub);margin-top:5px;border-top:1px solid var(--bdr);padding-top:5px;line-height:1.5">${entry.notes}</div>`:''}
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          <button onclick="openInfectionModal(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#9ca3af">✏️</button>
-          <button onclick="deleteInfection(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#e53935">🗑️</button>
-        </div>
+        ${actBtns}
       </div>
       <div style="font-size:10px;color:#9ca3af;margin-top:5px">${entry.createdBy||''}${entry.createdAt?' · 登録: '+new Date(entry.createdAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}</div>
     </div>`;
   }).join('');
 }
 function openInfectionModal(editIdx=-1){
+  if(!canManageInfection()){toast('管理者・医師のみ登録できます');return;}
   const editIdEl=document.getElementById('inf-edit-id');
   const titleEl=document.getElementById('inf-modal-title');
   const statusField=document.getElementById('inf-status-field');
@@ -10217,6 +10225,7 @@ function openInfectionModal(editIdx=-1){
   document.getElementById('modal-infection').classList.add('on');
 }
 function saveInfection(){
+  if(!canManageInfection()){toast('管理者・医師のみ登録できます');return;}
   const disease=document.getElementById('inf-disease').value.trim();
   if(!disease){toast('疾患名を入力してください');return;}
   const d=getInfectionData();
@@ -10243,6 +10252,7 @@ function saveInfection(){
   renderDashboardInfection();
 }
 function deleteInfection(idx){
+  if(!canManageInfection()){toast('管理者・医師のみ削除できます');return;}
   showDelConfirm('この感染記録を削除しますか？',()=>{
     const d=getInfectionData();d.splice(idx,1);saveInfectionData(d);
     renderInfectionList();renderDashboardInfection();
