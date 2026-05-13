@@ -3872,6 +3872,7 @@ function setupRealtimeSync(){
         if(S.screen==='scr-detail')renderDetail();
       }
       if(key==='schedules'&&S.screen==='scr-schedule')renderSchedule();
+      if(key==='infection_data'&&S.screen==='scr-infection')renderInfectionList();
     },e=>console.warn('fbSync:',key,e));
     fbListeners.push(unsub);
   });
