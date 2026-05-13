@@ -10186,22 +10186,27 @@ function getActiveInfections(){return getInfectionData().filter(x=>x.status==='a
 function canManageInfection(){return isAdmin()||isFacilityAdmin()||S.userRole==='doctor';}
 
 const INFECTION_SVC_ROWS=[
-  {key:'day_svc',     label:'デイサービス',         shortLabel:'デイ'},
-  {key:'small_day',   label:'小規模多機能（デイ）',  shortLabel:'小多機デイ'},
-  {key:'visit_svc',   label:'訪問サービス',          shortLabel:'訪問'},
-  {key:'common_area', label:'施設共用部への立ち入り', shortLabel:'共用部'},
-  {key:'meeting',     label:'面会・面談',            shortLabel:'面会'},
-  {key:'outing',      label:'外出',                 shortLabel:'外出'},
+  {key:'day_svc',     label:'デイサービス',         shortLabel:'デイ',
+    opts:{target:['利用不可','利用可'], other:['通常通り','利用不可'], external:['通常通り','利用不可']}},
+  {key:'small_day',   label:'小規模多機能（デイ）',  shortLabel:'小多機デイ',
+    opts:{target:['利用不可','利用可'], other:['通常通り','利用不可'], external:['通常通り','利用不可']}},
+  {key:'visit_svc',   label:'訪問サービス',          shortLabel:'訪問',
+    opts:{target:['利用不可','利用可'], other:['通常通り','利用不可'], external:['通常通り','利用不可']}},
+  {key:'common_area', label:'施設共用部への立ち入り', shortLabel:'共用部',
+    opts:{target:['利用不可','利用可'], other:['通常通り','利用不可'], external:['通常通り','利用不可']}},
+  {key:'meeting',     label:'面会・面談',            shortLabel:'面会',
+    opts:{target:['不可','リモートのみ'], other:['通常通り','面談室可','不可'], external:['通常通り','面談室可','不可']}},
+  {key:'outing',      label:'外出',                 shortLabel:'外出',
+    opts:{target:['不可'], other:['通常通り','不可'], external:['対象外']}},
 ];
-const INFECTION_SVC_OPT=['通常通り','利用不可','利用可','不可','面談室可','対象外','対応検討中'];
 const INFECTION_CFM_OPT=['確認未','対応中','済み'];
 const INFECTION_SVC_DEFAULT={
   day_svc:    {target:'利用不可',other:'通常通り', external:'通常通り', confirmed:'済み'},
   small_day:  {target:'利用可',  other:'通常通り', external:'通常通り', confirmed:'済み'},
-  visit_svc:  {target:'通常通り',other:'通常通り', external:'通常通り', confirmed:'確認未'},
+  visit_svc:  {target:'利用可',  other:'通常通り', external:'通常通り', confirmed:'確認未'},
   common_area:{target:'利用不可',other:'通常通り', external:'通常通り', confirmed:'済み'},
   meeting:    {target:'不可',    other:'面談室可',  external:'面談室可', confirmed:'確認未'},
-  outing:     {target:'不可',    other:'不可',      external:'対象外',  confirmed:'済み'},
+  outing:     {target:'不可',    other:'通常通り',  external:'対象外',  confirmed:'済み'},
 };
 
 let _infTab='active';
@@ -10321,14 +10326,15 @@ function _populateInfSvcTable(sr){
   const tbody=document.getElementById('inf-svc-tbody');if(!tbody)return;
   const mkSel=(key,field,opts)=>{
     const cur=(sr[key]&&sr[key][field])||(INFECTION_SVC_DEFAULT[key]&&INFECTION_SVC_DEFAULT[key][field])||opts[0];
-    return `<select id="inf-svc-${key}-${field}" style="font-size:10px;padding:2px 3px;border:1px solid var(--bdr);border-radius:4px;width:76px">${opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}</select>`;
+    const w=opts.length===1?'60px':'80px';
+    return `<select id="inf-svc-${key}-${field}" style="font-size:10px;padding:2px 3px;border:1px solid var(--bdr);border-radius:4px;width:${w}"${opts.length===1?' disabled':''}>${opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}</select>`;
   };
   tbody.innerHTML=INFECTION_SVC_ROWS.map(row=>`
     <tr style="border-bottom:1px solid var(--bdr)">
       <td style="padding:5px 8px;font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap">${row.label}</td>
-      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'target',INFECTION_SVC_OPT)}</td>
-      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'other',INFECTION_SVC_OPT)}</td>
-      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'external',INFECTION_SVC_OPT)}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'target',row.opts.target)}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'other',row.opts.other)}</td>
+      <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'external',row.opts.external)}</td>
       <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'confirmed',INFECTION_CFM_OPT)}</td>
     </tr>`).join('');
 }
