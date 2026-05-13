@@ -3176,10 +3176,10 @@ a{color:var(--p);text-decoration:none}
           <thead>
             <tr style="background:var(--bg)">
               <th style="text-align:left;padding:7px 8px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);white-space:nowrap">サービス</th>
-              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">該当者</th>
-              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">他入居者</th>
-              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">外部利用者</th>
-              <th style="padding:7px 4px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:700;color:var(--sub);text-align:center;white-space:nowrap">確認</th>
+              <th style="padding:5px 4px;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap"><div style="font-size:10px;font-weight:700;color:var(--sub);margin-bottom:3px">該当者</div><button onclick="infColOK('target')" style="font-size:9px;font-weight:700;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap">一括OK</button></th>
+              <th style="padding:5px 4px;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap"><div style="font-size:10px;font-weight:700;color:var(--sub);margin-bottom:3px">他入居者</div><button onclick="infColOK('other')" style="font-size:9px;font-weight:700;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap">一括OK</button></th>
+              <th style="padding:5px 4px;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap"><div style="font-size:10px;font-weight:700;color:var(--sub);margin-bottom:3px">外部利用者</div><button onclick="infColOK('external')" style="font-size:9px;font-weight:700;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap">一括OK</button></th>
+              <th style="padding:5px 4px;border-bottom:1px solid var(--bdr);text-align:center;white-space:nowrap"><div style="font-size:10px;font-weight:700;color:var(--sub);margin-bottom:3px">確認</div><button onclick="infColOK('confirmed')" style="font-size:9px;font-weight:700;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap">全済み</button></th>
             </tr>
           </thead>
           <tbody id="inf-svc-tbody"></tbody>
@@ -10337,6 +10337,17 @@ function _populateInfSvcTable(sr){
       <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'external',row.opts.external)}</td>
       <td style="padding:3px 2px;text-align:center">${mkSel(row.key,'confirmed',INFECTION_CFM_OPT)}</td>
     </tr>`).join('');
+}
+function infColOK(field){
+  const okPriority=['通常通り','利用可','リモートのみ'];
+  INFECTION_SVC_ROWS.forEach(row=>{
+    const sel=document.getElementById(`inf-svc-${row.key}-${field}`);
+    if(!sel||sel.disabled)return;
+    if(field==='confirmed'){sel.value='済み';return;}
+    const opts=row.opts[field]||[];
+    const okVal=okPriority.find(v=>opts.includes(v))||opts[0];
+    if(okVal)sel.value=okVal;
+  });
 }
 function saveInfection(){
   if(!canManageInfection()){toast('管理者・医師のみ登録できます');return;}
