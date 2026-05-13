@@ -1855,6 +1855,7 @@ a{color:var(--p);text-decoration:none}
         <button id="htab-settings" onclick="showHelpTab('settings')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">⚙️<br>設定</button>
         <button id="htab-faq" onclick="showHelpTab('faq')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">❓<br>Q&amp;A</button>
         <button id="htab-ai" onclick="showHelpTab('ai')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🤖<br>AI FAQ</button>
+        <button id="htab-updates" onclick="showHelpTab('updates')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4;position:relative">🆕<br>更新履歴<span id="updates-new-dot" style="display:none;position:absolute;top:6px;right:8px;width:6px;height:6px;background:#ff5252;border-radius:50%"></span></button>
       </div>
       <!-- 右コンテンツ -->
       <div style="flex:1;overflow-y:auto;padding-bottom:80px" id="help-right">
@@ -2231,6 +2232,126 @@ a{color:var(--p);text-decoration:none}
         </div>
 
         <!-- ai -->
+        <!-- updates -->
+        <div id="hsec-updates" class="help-sec" style="display:none">
+          <div style="background:linear-gradient(135deg,#1a2744,#2d4a8a);color:#fff;padding:18px 16px 14px">
+            <div style="font-size:20px;margin-bottom:4px">🆕 更新履歴</div>
+            <div style="font-size:12px;opacity:.7">Village Aura バージョン履歴</div>
+          </div>
+          <div style="padding:14px 16px 24px;display:flex;flex-direction:column;gap:0">
+
+            <!-- v1.5 -->
+            <div style="display:flex;gap:12px">
+              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--p);margin-top:3px;flex-shrink:0"></div>
+                <div style="width:2px;flex:1;background:var(--bdr);margin:4px 0"></div>
+              </div>
+              <div style="padding-bottom:18px;flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:800;color:var(--tx)">v1.5</span>
+                  <span style="font-size:10px;font-weight:700;background:var(--ps);color:var(--p);padding:2px 8px;border-radius:10px">最新</span>
+                  <span style="font-size:11px;color:var(--sub)">2026年5月</span>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:5px;letter-spacing:.04em">デザイン改善</div>
+                <ul style="font-size:12px;color:var(--tx);line-height:1.9;padding-left:16px;margin:0">
+                  <li>申し送りボード：重いカラーボックスを軽量カード＋カラーストライプに刷新</li>
+                  <li>ホーム画面：管理セクションにラベル追加・セクション間余白を最適化</li>
+                  <li>各画面のタブボタン非アクティブ色を統一</li>
+                  <li>業務日誌の日付ナビゲーションをダークモード対応</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- v1.4 -->
+            <div style="display:flex;gap:12px">
+              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--bdr);margin-top:3px;flex-shrink:0"></div>
+                <div style="width:2px;flex:1;background:var(--bdr);margin:4px 0"></div>
+              </div>
+              <div style="padding-bottom:18px;flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:800;color:var(--tx)">v1.4</span>
+                  <span style="font-size:11px;color:var(--sub)">2026年4〜5月</span>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:5px;letter-spacing:.04em">機能追加</div>
+                <ul style="font-size:12px;color:var(--tx);line-height:1.9;padding-left:16px;margin:0">
+                  <li>📌 タスク管理：事業所・担当者別タスク割り当て・フィルター</li>
+                  <li>権限ロール整理：各事業所管理者ロール（サ高住/デイ/小多機/訪問/居宅）</li>
+                  <li>ホーム確認事項：アコーディオン形式でデフォルト閉じに変更</li>
+                  <li>本日の記録状況ウィジェット：バイタル完了率・排便・インシデント一目表示</li>
+                  <li>利用者カードにバイタル未・排便Xdaysバッジを追加</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- v1.3 -->
+            <div style="display:flex;gap:12px">
+              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--bdr);margin-top:3px;flex-shrink:0"></div>
+                <div style="width:2px;flex:1;background:var(--bdr);margin:4px 0"></div>
+              </div>
+              <div style="padding-bottom:18px;flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:800;color:var(--tx)">v1.3</span>
+                  <span style="font-size:11px;color:var(--sub)">2026年3〜4月</span>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:5px;letter-spacing:.04em">申し送り・業務日誌</div>
+                <ul style="font-size:12px;color:var(--tx);line-height:1.9;padding-left:16px;margin:0">
+                  <li>申し送りボード：医師/看護師/サ高住（朝夕切替）/小多機/デイ/訪問</li>
+                  <li>業務日誌・帳票プレビュー・印刷機能</li>
+                  <li>月次レポート・今月の目標設定</li>
+                  <li>スケジュール管理・予定表</li>
+                  <li>インシデント・ヒヤリハット報告</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- v1.2 -->
+            <div style="display:flex;gap:12px">
+              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--bdr);margin-top:3px;flex-shrink:0"></div>
+                <div style="width:2px;flex:1;background:var(--bdr);margin:4px 0"></div>
+              </div>
+              <div style="padding-bottom:18px;flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:800;color:var(--tx)">v1.2</span>
+                  <span style="font-size:11px;color:var(--sub)">2026年2〜3月</span>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:5px;letter-spacing:.04em">記録・グラフ機能</div>
+                <ul style="font-size:12px;color:var(--tx);line-height:1.9;padding-left:16px;margin:0">
+                  <li>バイタル記録グラフ（血圧・脈拍・体温・SpO2）</li>
+                  <li>食事・水分・排泄・経時記録の入力</li>
+                  <li>巡回チェックリスト（シフト別・施設別）</li>
+                  <li>音声入力（Web Speech API）</li>
+                  <li>AI自動トリアージ（バイタル異常検知）</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- v1.1 -->
+            <div style="display:flex;gap:12px">
+              <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--bdr);margin-top:3px;flex-shrink:0"></div>
+              </div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:800;color:var(--tx)">v1.0〜1.1</span>
+                  <span style="font-size:11px;color:var(--sub)">2026年1〜2月</span>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:5px;letter-spacing:.04em">初回リリース</div>
+                <ul style="font-size:12px;color:var(--tx);line-height:1.9;padding-left:16px;margin:0">
+                  <li>利用者台帳・フェイスシート</li>
+                  <li>ログイン認証・権限管理・セキュリティ（端末制限・自動ロック）</li>
+                  <li>ダッシュボード・ヘルプ・チュートリアル</li>
+                  <li>Firebase同期・CSVインポート/エクスポート</li>
+                  <li>ダークモード・文字サイズ設定</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <div id="hsec-ai" class="help-sec" style="display:none;padding:0">
           <div id="ai-key-notice" class="ai-key-notice" style="display:none">
         🔑 AI FAQを使うにはAnthropicのAPIキーが必要です。<br>
