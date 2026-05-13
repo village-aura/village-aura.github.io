@@ -6268,25 +6268,39 @@ function renderDetail(){
   // ボード申し送り（今シフト）
   const bd=getBoardData();
   const _secDefs=[
-    {items:[...bd.sak.am,...bd.sak.pm],label:'🏠 サ高住'},
-    {items:bd.nurse,label:'👩‍⚕️ 看護師'},
-    {items:bd.shot,label:'🏡 小多機'},
-    {items:bd.day,label:'☀️ デイ'},
-    {items:bd.visit,label:'🚗 訪問介護'},
+    {items:bd.sak.am,  label:'🏠 サ高住（朝）', section:'sak', shift:'am'},
+    {items:bd.sak.pm,  label:'🏠 サ高住（夕）', section:'sak', shift:'pm'},
+    {items:bd.nurse,   label:'👩‍⚕️ 看護師',    section:'nurse'},
+    {items:bd.shot,    label:'🏡 小多機',       section:'shot'},
+    {items:bd.day,     label:'☀️ デイ',         section:'day'},
+    {items:bd.visit,   label:'🚗 訪問介護',     section:'visit'},
+    {items:bd.home_care,label:'🏠 居宅',        section:'home_care'},
   ];
   const boardItems=[];
-  _secDefs.forEach(sec=>sec.items.forEach(h=>{if(h.rid===S.currentRes)boardItems.push({...h,sectionLabel:sec.label});}));
+  _secDefs.forEach(sec=>(sec.items||[]).forEach((h,origIdx)=>{
+    if(h.rid===S.currentRes&&!isExpired(h))boardItems.push({...h,sectionLabel:sec.label,_sec:sec.section,_shift:sec.shift,_origIdx:origIdx});
+  }));
   const bha=document.getElementById('board-handover-area');
   if(bha)bha.innerHTML=boardItems.length?`
     <div style="padding:10px 14px 4px;font-size:11px;font-weight:700;color:#0891b2;letter-spacing:.05em">📣 今シフトの申し送り</div>
-    ${boardItems.map(h=>`
-      <div style="margin:0 12px 8px;padding:10px 12px;background:#f0fdff;border-left:3px solid #0891b2;border-radius:0 8px 8px 0">
-        <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:4px">${h.sectionLabel}${h.pri==='urgent'?' 🚨':h.pri==='important'?' ⚠️':''}</div>
-        <div style="font-size:13px;line-height:1.5">${h.content||''}</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:4px">${h.by} · ${h.time}</div>
-      </div>
-    `).join('')}
+    ${boardItems.map(h=>{
+      const canEdit=h.by===S.user||isAdmin();
+      const editBtn=canEdit?`<button onclick="editHandoverFromDetail('${h._sec}',${h._origIdx}${h._shift?`,'${h._shift}'`:''})" style="background:transparent;border:none;cursor:pointer;font-size:15px;padding:2px 4px;color:#9ca3af;flex-shrink:0;line-height:1">✏️</button>`:'';
+      return `<div style="margin:0 12px 8px;padding:10px 12px;background:#f0fdff;border-left:3px solid #0891b2;border-radius:0 8px 8px 0">
+        <div style="display:flex;align-items:flex-start;gap:6px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:4px">${h.sectionLabel}${h.pri==='urgent'?' 🚨':h.pri==='important'?' ⚠️':''}</div>
+            <div style="font-size:13px;line-height:1.5">${h.content||''}</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:4px">${h.by} · ${h.time}</div>
+          </div>
+          ${editBtn}
+        </div>
+      </div>`;
+    }).join('')}
   `:'';
+  // 今シフト申し送りの追加ボタン
+  const bhaAdd=document.getElementById('board-handover-add');
+  if(bhaAdd)bhaAdd.style.display=boardItems.length||true?'flex':'none';
   // 今日の日付チップ
   const chip=document.getElementById('record-date-chip');
   if(chip){const now=new Date();const WD=['日','月','火','水','木','金','土'];chip.textContent=`${now.getMonth()+1}月${now.getDate()}日（${WD[now.getDay()]}）`;}
@@ -8167,6 +8181,10 @@ function renderBoardSection(elId,items,section){
       </div>
     </div>`;
   }).join(''):'<div style="color:#9ca3af;font-size:12px;padding:8px 2px 6px">申し送りはありません</div>';
+}
+function editHandoverFromDetail(section,idx,sakShift){
+  if(section==='sak'&&sakShift)S_sak_shift=sakShift;
+  openBoardHandover(section,idx);
 }
 function openBoardHandover(section,editIdx=-1,presetRid=null){
   document.getElementById('board-ho-section').value=section;
