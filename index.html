@@ -692,6 +692,15 @@ a{color:var(--p);text-decoration:none}
           </div>
           <span style="color:var(--sub);font-size:14px">›</span>
         </div>
+        <!-- 感染・隔離 -->
+        <div id="infection-alert-row" onclick="showScr('scr-infection')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+          <span style="font-size:13px">🦠</span>
+          <div style="flex:1">
+            <b id="infection-alert-count" style="font-size:12px;font-weight:700;color:#2e7d32"></b>
+            <span id="infection-alert-preview" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
+          </div>
+          <span style="color:var(--sub);font-size:14px">›</span>
+        </div>
         <!-- 問題なし -->
         <div id="dash-all-ok" style="display:none;padding:10px 12px;font-size:12px;color:var(--ok);font-weight:700">✅ 現在確認が必要な事項はありません</div>
       </div>
@@ -750,6 +759,9 @@ a{color:var(--p);text-decoration:none}
         </button>
         <button onclick="showScr('scr-diary')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
           📋 業務日誌
+        </button>
+        <button onclick="showScr('scr-infection')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          🦠 感染管理<span id="q-infection-cnt" style="display:none;font-size:9px;background:#2e7d32;color:#fff;border-radius:8px;padding:1px 5px;margin-left:2px;font-weight:800"></span>
         </button>
         <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
           📊 月次レポート
@@ -1168,6 +1180,22 @@ a{color:var(--p);text-decoration:none}
       <div style="font-size:12px;color:var(--sub);margin-bottom:12px">排便記録が3日以上ない利用者</div>
     </div>
     <div id="stool-alert-list" style="padding:10px 12px 16px"></div>
+  </div>
+
+  <!-- ─── 感染・隔離管理 ─── -->
+  <div id="scr-infection" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#2e7d32">🦠 感染・隔離管理</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">施設内感染・隔離状況の一覧と共有</div>
+      </div>
+      <button onclick="openInfectionModal()" style="background:#2e7d32;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 追加</button>
+    </div>
+    <div style="display:flex;gap:6px;padding:10px 12px 6px">
+      <button id="inf-tab-active" onclick="switchInfTab('active')" style="flex:1;padding:7px;font-size:12px;font-weight:700;background:#2e7d32;color:#fff;border:none;border-radius:8px;cursor:pointer;touch-action:manipulation">🔴 対応中</button>
+      <button id="inf-tab-resolved" onclick="switchInfTab('resolved')" style="flex:1;padding:7px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);border-radius:8px;cursor:pointer;touch-action:manipulation">✅ 終了済</button>
+    </div>
+    <div id="infection-list" style="padding:4px 12px 16px"></div>
   </div>
 
   <!-- ─── 巡回チェックリスト ─── -->
@@ -3060,6 +3088,75 @@ a{color:var(--p);text-decoration:none}
         <iframe id="fs-pdf-iframe" style="width:100%;height:400px;border:1px solid var(--bdr);border-radius:8px;margin-top:6px"></iframe>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- INFECTION MODAL -->
+<div class="overlay" id="modal-infection" onclick="closeModal('modal-infection',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="inf-modal-title">🦠 感染・隔離登録</div>
+    <input type="hidden" id="inf-edit-id">
+    <div class="field"><label>利用者（任意）</label>
+      <select id="inf-resident"><option value="">施設全体・共通</option></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>該当施設</label>
+        <select id="inf-facility">
+          <option value="全体">全体</option>
+          <option value="サ高住">サ高住</option>
+          <option value="デイ">デイ</option>
+          <option value="小多機">小多機</option>
+          <option value="訪問介護">訪問介護</option>
+          <option value="居宅">居宅</option>
+        </select>
+      </div>
+      <div class="field"><label>隔離方法</label>
+        <select id="inf-isolation">
+          <option value="個室隔離">個室隔離</option>
+          <option value="居室待機">居室待機</option>
+          <option value="マスク着用・経過観察">マスク・経過観察</option>
+          <option value="コホーティング">コホーティング</option>
+          <option value="症状観察中">症状観察中</option>
+          <option value="なし（予防措置）">なし（予防措置）</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>疾患・感染症</label>
+      <input type="text" id="inf-disease" list="inf-disease-list" placeholder="例：インフルエンザA型、ノロウイルス...">
+      <datalist id="inf-disease-list">
+        <option value="インフルエンザA型">
+        <option value="インフルエンザB型">
+        <option value="ノロウイルス">
+        <option value="COVID-19">
+        <option value="MRSA">
+        <option value="疥癬">
+        <option value="RSウイルス">
+        <option value="アデノウイルス">
+        <option value="腸炎ビブリオ">
+        <option value="クロストリジウム（CD腸炎）">
+      </datalist>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label>開始日</label>
+        <input type="date" id="inf-start-date">
+      </div>
+      <div class="field"><label>終了予定日</label>
+        <input type="date" id="inf-end-date">
+      </div>
+    </div>
+    <div class="field"><label>特記事項</label>
+      <textarea id="inf-notes" rows="3" placeholder="症状・対応状況・医師指示など..."></textarea>
+    </div>
+    <div class="field" id="inf-status-field" style="display:none">
+      <label>ステータス</label>
+      <div class="radio-group">
+        <label><input type="radio" name="inf-status" value="active" checked> 🔴 対応中</label>
+        <label><input type="radio" name="inf-status" value="resolved"> ✅ 終了</label>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveInfection()">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-infection')">キャンセル</button>
   </div>
 </div>
 
@@ -5258,7 +5355,7 @@ function showScr(id){
     'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
     'scr-stool-alert':'排便未記録一覧',
     'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
-    'scr-tasks':'タスク管理'
+    'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -5287,6 +5384,7 @@ function showScr(id){
   if(id==='scr-rounds'){const h=new Date().getHours();const sh=h>=6&&h<10?'morning':h>=10&&h<16?'noon':h>=16&&h<22?'evening':'night';setRoundsShift(sh);}
   if(id==='scr-incidents') renderIncidentList();
   if(id==='scr-tasks') renderTasksScr();
+  if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // タブレット縦: 全画面遷移でサイドバーを格納
@@ -5700,6 +5798,7 @@ function renderDashboard(){
   renderDashboardRepo();
   renderDashboardFluid();
   renderDashboardIncident();
+  renderDashboardInfection();
   updateHandoverUnreadBadge();
   const qbReport=document.getElementById('qb-monthly-report');
   if(qbReport)qbReport.style.display=(isAdmin()||isFacilityAdmin())?'flex':'none';
@@ -5874,7 +5973,7 @@ function toggleDashAlerts(){
   if(arrow)arrow.style.transform=_dashAlertsOpen?'rotate(180deg)':'';
 }
 function _updateDashAlertsHeader(){
-  const ids=['dash-urgent-sec','incident-alert-row','doctor-order-row','vital-unrecorded-row','stool-alert-row'];
+  const ids=['dash-urgent-sec','incident-alert-row','doctor-order-row','vital-unrecorded-row','stool-alert-row','infection-alert-row'];
   const activeCount=ids.filter(id=>{const el=document.getElementById(id);return el&&el.style.display!=='none';}).length;
   const hd=document.getElementById('dash-alerts-hd');
   const hIco=document.getElementById('dash-alerts-hd-ico');
@@ -10022,6 +10121,154 @@ function renderDashboardIncident(){
   } else {
     row.style.display='none';
   }
+}
+
+// ─── INFECTION MANAGEMENT ───
+function getInfectionData(){return ls('infection_data')||[];}
+function saveInfectionData(d){lsSet('infection_data',d);fsSet('infection_data',d);}
+function getActiveInfections(){return getInfectionData().filter(x=>x.status==='active');}
+
+let _infTab='active';
+function switchInfTab(tab){
+  _infTab=tab;
+  const activeBtn=document.getElementById('inf-tab-active');
+  const resolvedBtn=document.getElementById('inf-tab-resolved');
+  if(activeBtn){activeBtn.style.background=tab==='active'?'#2e7d32':'var(--bg)';activeBtn.style.color=tab==='active'?'#fff':'var(--sub)';activeBtn.style.border=tab==='active'?'none':'1.5px solid var(--bdr)';}
+  if(resolvedBtn){resolvedBtn.style.background=tab==='resolved'?'#2e7d32':'var(--bg)';resolvedBtn.style.color=tab==='resolved'?'#fff':'var(--sub)';resolvedBtn.style.border=tab==='resolved'?'none':'1.5px solid var(--bdr)';}
+  renderInfectionList();
+}
+function renderInfectionScr(){switchInfTab(_infTab);}
+function renderInfectionList(){
+  const el=document.getElementById('infection-list');if(!el)return;
+  const all=getInfectionData();
+  const items=all.filter(x=>x.status===_infTab);
+  if(!items.length){
+    el.innerHTML=`<div style="text-align:center;padding:36px 16px;color:var(--sub)"><div style="font-size:36px;margin-bottom:10px">${_infTab==='active'?'🦠':'✅'}</div><div style="font-size:14px;font-weight:700">${_infTab==='active'?'現在 対応中の感染・隔離はありません':'終了済みの記録はありません'}</div></div>`;
+    return;
+  }
+  const today=new Date();
+  el.innerHTML=items.map(entry=>{
+    const origIdx=all.indexOf(entry);
+    const r=entry.rid?getResidents().find(x=>x.id===entry.rid):null;
+    const resName=r?r.name:'施設全体';
+    const endDate=entry.endDate?new Date(entry.endDate):null;
+    const isOverdue=endDate&&endDate<today&&entry.status==='active';
+    const daysLeft=endDate?Math.ceil((endDate-today)/(1000*60*60*24)):null;
+    const endTxt=endDate?endDate.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'まで':'終了日未定';
+    const borderColor=isOverdue?'#e53935':daysLeft!==null&&daysLeft<=3?'#FB8C00':'#2e7d32';
+    const bg=isOverdue?'#fff5f5':daysLeft!==null&&daysLeft<=3?'#fffbf2':'var(--card)';
+    return `<div style="border-left:3px solid ${borderColor};background:${bg};border-radius:0 10px 10px 0;padding:11px 12px;margin-bottom:8px;border:1px solid var(--bdr);border-left-width:3px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+            ${r?`<button onclick="openResident('${r.id}')" style="font-size:13px;font-weight:800;color:var(--p);background:#e8f0fb;border:1px solid var(--p);border-radius:10px;padding:2px 9px;cursor:pointer">👤 ${resName}</button>`:`<span style="font-size:13px;font-weight:800;color:var(--tx)">施設全体</span>`}
+            <span style="font-size:10px;font-weight:700;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 8px">${entry.facility||'全体'}</span>
+            ${isOverdue?'<span style="font-size:10px;font-weight:700;background:#ffebee;color:#e53935;border-radius:10px;padding:2px 8px">期限超過</span>':''}
+          </div>
+          <div style="font-size:15px;font-weight:800;color:${isOverdue?'#e53935':'var(--tx)'};margin-bottom:3px">🦠 ${entry.disease||'─'}</div>
+          <div style="font-size:12px;color:var(--sub);margin-bottom:2px">🔒 ${entry.isolationType||'─'}</div>
+          <div style="font-size:11px;color:var(--sub)">📅 ${entry.startDate?new Date(entry.startDate).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'開始':'─'} → ${endTxt}</div>
+          ${entry.notes?`<div style="font-size:11px;color:var(--sub);margin-top:5px;border-top:1px solid var(--bdr);padding-top:5px;line-height:1.5">${entry.notes}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button onclick="openInfectionModal(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#9ca3af">✏️</button>
+          <button onclick="deleteInfection(${origIdx})" style="background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px;color:#e53935">🗑️</button>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#9ca3af;margin-top:5px">${entry.createdBy||''}${entry.createdAt?' · 登録: '+new Date(entry.createdAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}</div>
+    </div>`;
+  }).join('');
+}
+function openInfectionModal(editIdx=-1){
+  const editIdEl=document.getElementById('inf-edit-id');
+  const titleEl=document.getElementById('inf-modal-title');
+  const statusField=document.getElementById('inf-status-field');
+  const sel=document.getElementById('inf-resident');
+  if(sel)sel.innerHTML='<option value="">施設全体・共通</option>'+getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  const today=new Date().toISOString().split('T')[0];
+  if(editIdx>=0){
+    const entry=getInfectionData()[editIdx];if(!entry)return;
+    if(editIdEl)editIdEl.value=editIdx;
+    if(titleEl)titleEl.textContent='✏️ 感染記録の編集';
+    if(statusField)statusField.style.display='block';
+    document.getElementById('inf-resident').value=entry.rid||'';
+    document.getElementById('inf-facility').value=entry.facility||'全体';
+    document.getElementById('inf-disease').value=entry.disease||'';
+    document.getElementById('inf-isolation').value=entry.isolationType||'個室隔離';
+    document.getElementById('inf-start-date').value=entry.startDate||today;
+    document.getElementById('inf-end-date').value=entry.endDate||'';
+    document.getElementById('inf-notes').value=entry.notes||'';
+    const statusEl=document.querySelector(`input[name="inf-status"][value="${entry.status||'active'}"]`);
+    if(statusEl)statusEl.checked=true;
+  } else {
+    if(editIdEl)editIdEl.value='';
+    if(titleEl)titleEl.textContent='🦠 感染・隔離登録';
+    if(statusField)statusField.style.display='none';
+    document.getElementById('inf-resident').value='';
+    document.getElementById('inf-facility').value='全体';
+    document.getElementById('inf-disease').value='';
+    document.getElementById('inf-isolation').value='個室隔離';
+    document.getElementById('inf-start-date').value=today;
+    document.getElementById('inf-end-date').value='';
+    document.getElementById('inf-notes').value='';
+    const activeEl=document.querySelector('input[name="inf-status"][value="active"]');
+    if(activeEl)activeEl.checked=true;
+  }
+  document.getElementById('modal-infection').classList.add('on');
+}
+function saveInfection(){
+  const disease=document.getElementById('inf-disease').value.trim();
+  if(!disease){toast('疾患名を入力してください');return;}
+  const d=getInfectionData();
+  const editIdxStr=document.getElementById('inf-edit-id').value;
+  const editIdx=editIdxStr!==''?parseInt(editIdxStr):-1;
+  const rid=document.getElementById('inf-resident').value;
+  const facility=document.getElementById('inf-facility').value;
+  const isolationType=document.getElementById('inf-isolation').value;
+  const startDate=document.getElementById('inf-start-date').value;
+  const endDate=document.getElementById('inf-end-date').value;
+  const notes=document.getElementById('inf-notes').value.trim();
+  const statusEl=document.querySelector('input[name="inf-status"]:checked');
+  const status=statusEl?statusEl.value:'active';
+  if(editIdx>=0&&d[editIdx]){
+    d[editIdx]={...d[editIdx],rid,facility,disease,isolationType,startDate,endDate,notes,status,updatedBy:S.user||'──',updatedAt:new Date().toISOString()};
+    toast('感染記録を更新しました ✓');
+  } else {
+    d.unshift({id:Date.now().toString(),rid,facility,disease,isolationType,startDate,endDate,notes,status:'active',createdBy:S.user||'──',createdAt:new Date().toISOString(),updatedBy:null,updatedAt:null});
+    toast('感染記録を登録しました ✓');
+  }
+  saveInfectionData(d);
+  closeModal('modal-infection');
+  if(S.screen==='scr-infection')renderInfectionScr();
+  renderDashboardInfection();
+}
+function deleteInfection(idx){
+  showDelConfirm('この感染記録を削除しますか？',()=>{
+    const d=getInfectionData();d.splice(idx,1);saveInfectionData(d);
+    renderInfectionList();renderDashboardInfection();
+  });
+}
+function renderDashboardInfection(){
+  const active=getActiveInfections();
+  const row=document.getElementById('infection-alert-row');
+  const count=document.getElementById('infection-alert-count');
+  const preview=document.getElementById('infection-alert-preview');
+  const badge=document.getElementById('q-infection-cnt');
+  if(row){
+    if(active.length>0){
+      row.style.display='flex';
+      if(count)count.textContent='感染・隔離 対応中：'+active.length+'件';
+      if(preview)preview.textContent=active.slice(0,2).map(x=>{
+        const r=x.rid?getResidents().find(res=>res.id===x.rid):null;
+        return (r?r.name:'全体')+'('+x.disease+')';
+      }).join('、')+(active.length>2?'…':'');
+      if(badge){badge.style.display='inline';badge.textContent=active.length;}
+    } else {
+      row.style.display='none';
+      if(badge)badge.style.display='none';
+    }
+  }
+  _updateDashAlertsHeader();
 }
 
 // ═══════════ FEATURE 6: 家族向け連絡帳自動生成 ═══════════
