@@ -4020,15 +4020,15 @@ async function login(){
     toast('⚠️ ネットワーク未接続 - オフラインモードで動作します');
   }
   // ── 端末制限チェック（Firestore同期後に実施）──
-  const devId=getDeviceId();
-  registerDeviceIfNew();
+  const canonicalId=registerDeviceIfNew();
+  const fp=computeFingerprint();
   const ds=getDeviceSettings();
   if(ds.enabled){
-    const dev=ds.devices.find(d=>d.id===devId);
+    const dev=ds.devices.find(d=>d.fingerprint===fp||d.id===canonicalId);
     if(!dev||!dev.approved){
       firebase.auth().signOut().catch(()=>{});
       fbReady=false;
-      errEl.innerHTML='この端末は未承認です。管理者に承認を依頼してください。<br><span style="font-size:10px;opacity:.7">端末ID: '+devId+'</span>';
+      errEl.innerHTML='この端末は未承認です。管理者に承認を依頼してください。<br><span style="font-size:10px;opacity:.7">端末ID: '+canonicalId+'</span>';
       errEl.style.display='block';
       if(btnEl)btnEl.textContent='ログイン';
       return;
@@ -4891,24 +4891,38 @@ function adminSetRole(key){
   toast(STAFF_INFO[key].name+' のロールを「'+label+'」に変更しました ✓');
 }
 // ── 端末管理・Wi-Fi制限 ──
+function computeFingerprint(){
+  const p=[
+    screen.width+'x'+screen.height,
+    (window.devicePixelRatio||1).toFixed(1),
+    navigator.hardwareConcurrency||0,
+    navigator.deviceMemory||0,
+    navigator.platform||'',
+    Intl.DateTimeFormat().resolvedOptions().timeZone||'',
+    navigator.maxTouchPoints||0
+  ].join('|');
+  let h=0;
+  for(let i=0;i<p.length;i++){h=Math.imul(31,h)+p.charCodeAt(i)|0;}
+  return 'fp'+(h>>>0).toString(36);
+}
 function getDeviceId(){
+  const fp=computeFingerprint();
+  const fpKey='va_devfp_'+fp;
+  const stored=localStorage.getItem(fpKey);
+  if(stored)return stored;
   let id=localStorage.getItem('va_device_id');
   if(!id){id='dev_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem('va_device_id',id);}
+  localStorage.setItem(fpKey,id);
   return id;
 }
 function _autoDeviceLabel(){
   const ua=navigator.userAgent;
-  let os='PC';
-  if(/iPad/.test(ua))os='iPad';
-  else if(/iPhone/.test(ua))os='iPhone';
-  else if(/Android.*Tablet|Tablet.*Android/.test(ua)||(/Android/.test(ua)&&!/Mobile/.test(ua)))os='Androidタブレット';
-  else if(/Android/.test(ua))os='Android';
-  else if(/Mac/.test(ua))os='Mac';
-  let br='';
-  if(/CriOS/.test(ua)||/Chrome/.test(ua))br='Chrome';
-  else if(/Safari/.test(ua))br='Safari';
-  else if(/Firefox/.test(ua))br='Firefox';
-  return os+(br?'('+br+'）':'');
+  if(/iPad/.test(ua))return 'iPad';
+  if(/iPhone/.test(ua))return 'iPhone';
+  if(/Android.*Tablet|Tablet.*Android/.test(ua)||(/Android/.test(ua)&&!/Mobile/.test(ua)))return 'Androidタブレット';
+  if(/Android/.test(ua))return 'Android';
+  if(/Mac/.test(ua))return 'Mac';
+  return 'PC';
 }
 function getDeviceSettings(){return ls('device_settings')||{enabled:false,devices:[]};}
 function saveDeviceSettings(d){lsSet('device_settings',d);fsSet('device_settings',d);}
@@ -4920,15 +4934,28 @@ async function fetchCurrentIP(){
   catch{return null;}
 }
 function registerDeviceIfNew(label=''){
+  const fp=computeFingerprint();
   const devId=getDeviceId();
   const s=getDeviceSettings();
-  if(!s.devices.find(d=>d.id===devId)){
-    s.devices.push({id:devId,label:label||_autoDeviceLabel(),approved:false,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
+  // 同一フィンガープリントの端末が既に存在する場合は重複登録しない
+  const existingByFp=s.devices.find(d=>d.fingerprint===fp);
+  if(existingByFp){
+    existingByFp.lastSeen=new Date().toISOString();
+    // このブラウザのlocalStorageを正規IDに統一
+    localStorage.setItem('va_device_id',existingByFp.id);
+    localStorage.setItem('va_devfp_'+fp,existingByFp.id);
     saveDeviceSettings(s);
-  } else {
-    s.devices.find(d=>d.id===devId).lastSeen=new Date().toISOString();
-    saveDeviceSettings(s);
+    return existingByFp.id;
   }
+  if(!s.devices.find(d=>d.id===devId)){
+    s.devices.push({id:devId,fingerprint:fp,label:label||_autoDeviceLabel(),approved:false,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
+  } else {
+    const dev=s.devices.find(d=>d.id===devId);
+    dev.lastSeen=new Date().toISOString();
+    if(!dev.fingerprint)dev.fingerprint=fp;
+  }
+  saveDeviceSettings(s);
+  return devId;
 }
 function approveDevice(devId){
   const s=getDeviceSettings();
@@ -4962,11 +4989,14 @@ function toggleDeviceRestriction(on){
   s.enabled=on;
   if(on){
     // 管理者の端末を自動承認
+    const fp=computeFingerprint();
     const devId=getDeviceId();
-    if(!s.devices.find(d=>d.id===devId)){
-      s.devices.push({id:devId,label:'管理者端末',approved:true,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
+    const existing=s.devices.find(d=>d.fingerprint===fp||d.id===devId);
+    if(!existing){
+      s.devices.push({id:devId,fingerprint:fp,label:'管理者端末',approved:true,firstSeen:new Date().toISOString(),lastSeen:new Date().toISOString()});
     } else {
-      s.devices.find(d=>d.id===devId).approved=true;
+      existing.approved=true;
+      if(!existing.fingerprint)existing.fingerprint=fp;
     }
   }
   saveDeviceSettings(s);
@@ -5027,7 +5057,7 @@ async function renderAccessSettings(){
   if(dl){
     if(!ds.devices.length){dl.innerHTML='<div style="font-size:12px;color:var(--sub);text-align:center;padding:8px">登録端末なし</div>';}
     else{
-      const myId=getDeviceId();
+      const myFp=computeFingerprint();
       dl.innerHTML=ds.devices.map(d=>`
         <div style="border-bottom:1px solid var(--bdr);padding:8px 0;last-child:border-none">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -5036,7 +5066,7 @@ async function renderAccessSettings(){
               style="flex:1;padding:5px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px;background:#fff">
             <button onclick="setDeviceLabel('${d.id}')" style="padding:5px 8px;background:#f0f4ff;color:var(--p);border-radius:6px;font-size:12px;font-weight:700">保存</button>
           </div>
-          <div style="font-size:10px;color:var(--sub);margin-bottom:6px">ID: ${d.id}${d.id===myId?' （この端末）':''}<br>初回: ${new Date(d.firstSeen).toLocaleDateString('ja-JP')}</div>
+          <div style="font-size:10px;color:var(--sub);margin-bottom:6px">${d.fingerprint===myFp?'<span style="color:var(--p);font-weight:700">📱 この端末</span> · ':''}初回: ${new Date(d.firstSeen).toLocaleDateString('ja-JP')} · 最終: ${new Date(d.lastSeen).toLocaleDateString('ja-JP')}</div>
           <div style="display:flex;gap:6px">
             ${!d.approved?`<button onclick="approveDevice('${d.id}')" style="flex:1;padding:6px;background:var(--ok);color:#fff;border-radius:6px;font-size:12px;font-weight:700">承認</button>`:'<span style="flex:1;text-align:center;font-size:12px;color:var(--ok);font-weight:700">承認済み</span>'}
             <button onclick="removeDevice('${d.id}')" style="padding:6px 10px;background:#fee;color:var(--ng);border-radius:6px;font-size:12px;font-weight:700">削除</button>
