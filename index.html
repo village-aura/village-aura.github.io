@@ -215,7 +215,7 @@ a{color:var(--p);text-decoration:none}
 .sum-val.warn{color:var(--warn)}
 .sum-val.ok{color:var(--ok)}
 .sum-lbl{font-size:10px;color:var(--sub);margin-top:2px}
-.handover-card{margin:6px 12px;background:#fff8e1;border:1.5px solid #FFD54F;border-radius:var(--r);padding:12px}
+.handover-card{margin:4px 12px;background:#fff8e1;border:1.5px solid #FFD54F;border-radius:var(--r);padding:7px 10px}
 .handover-tag{background:#FFD54F;color:#4a3900;font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;display:inline-block;margin-bottom:6px}
 .handover-text{font-size:13px;line-height:1.6}
 .handover-by{font-size:11px;color:var(--sub);margin-top:4px}
@@ -6275,13 +6275,13 @@ function renderDetail(){
     const canDel=h.by===S.user||isAdmin();
     const editedNote=h.editedBy?`<span style="color:#9ca3af;font-size:10px">（${h.editedBy}が${h.editedDate}に修正）</span>`:'';
     return `<div class="handover-card">
-      <span class="handover-tag">${h.pri==='urgent'?'🚨 緊急':h.pri==='important'?'⚠ 重要':'📌 申し送り'}</span>
-      <div class="handover-text">${h.content}</div>
-      <div class="handover-by">${h.by} · ${h.date} ${editedNote}</div>
-      <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
-        <button onclick="openEditHandover('${h.id}')" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️ 編集</button>
-        ${canDel?`<button onclick="deleteHandover('${h.id}')" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑 削除</button>`:''}
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span class="handover-tag" style="flex-shrink:0">${h.pri==='urgent'?'🚨 緊急':h.pri==='important'?'⚠ 重要':'📌'}</span>
+        <span style="font-size:10px;color:var(--sub);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.by} · ${h.date} ${editedNote}</span>
+        <button onclick="openEditHandover('${h.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;color:#9ca3af;flex-shrink:0;touch-action:manipulation">✏️</button>
+        ${canDel?`<button onclick="deleteHandover('${h.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;color:#fca5a5;flex-shrink:0;touch-action:manipulation">🗑</button>`:''}
       </div>
+      <div class="handover-text" style="margin-bottom:0">${h.content}</div>
     </div>`;
   }).join(''):'';
   // ボード申し送り（今シフト）
@@ -6305,12 +6305,14 @@ function renderDetail(){
     ${boardItems.map(h=>{
       const canEdit=h.by===S.user||isAdmin();
       const editBtn=canEdit?`<button onclick="editHandoverFromDetail('${h._sec}',${h._origIdx}${h._shift?`,'${h._shift}'`:''})" style="background:transparent;border:none;cursor:pointer;font-size:15px;padding:2px 4px;color:#9ca3af;flex-shrink:0;line-height:1">✏️</button>`:'';
-      return `<div style="margin:0 12px 8px;padding:10px 12px;background:#f0fdff;border-left:3px solid #0891b2;border-radius:0 8px 8px 0">
+      return `<div style="margin:0 12px 5px;padding:7px 10px;background:#f0fdff;border-left:3px solid #0891b2;border-radius:0 8px 8px 0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <span style="font-size:10px;color:#0891b2;font-weight:700;flex-shrink:0">${h.sectionLabel}${h.pri==='urgent'?' 🚨':h.pri==='important'?' ⚠️':''}</span>
+          <span style="font-size:10px;color:var(--sub);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.by} · ${h.time}</span>
+        </div>
         <div style="display:flex;align-items:flex-start;gap:6px">
           <div style="flex:1;min-width:0">
-            <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:4px">${h.sectionLabel}${h.pri==='urgent'?' 🚨':h.pri==='important'?' ⚠️':''}</div>
             <div style="font-size:13px;line-height:1.5">${h.content||''}</div>
-            <div style="font-size:11px;color:var(--sub);margin-top:4px">${h.by} · ${h.time}</div>
           </div>
           ${editBtn}
         </div>
@@ -10223,7 +10225,14 @@ function switchInfTab(tab){
 function renderInfectionScr(){
   const addBtn=document.getElementById('inf-add-btn');
   if(addBtn)addBtn.style.display=canManageInfection()?'block':'none';
-  switchInfTab(_infTab);
+  if(fbReady&&db){
+    db.collection('va_data').doc('infection_data').get().then(doc=>{
+      if(doc.exists&&doc.data()?.data!==undefined)lsSet('infection_data',doc.data().data);
+      switchInfTab(_infTab);
+    }).catch(()=>switchInfTab(_infTab));
+  } else {
+    switchInfTab(_infTab);
+  }
 }
 function _buildSvcTableHTML(sr){
   const rows=INFECTION_SVC_ROWS.map(row=>{
