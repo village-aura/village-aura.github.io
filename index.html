@@ -414,6 +414,18 @@ a{color:var(--p);text-decoration:none}
   body:not(.sb-closed) #sb-backdrop{display:block}
 }
 
+/* ── LANDSCAPE COMPACT（タブレット・大型スマホ横向き）── */
+@media(orientation:landscape) and (max-height:600px) and (min-width:600px){
+  body{height:100vh;min-height:0!important;overflow:hidden}
+  #main-content-wrap{height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  .hd{flex-shrink:0;padding-top:5px!important;padding-bottom:5px!important}
+  .scr.on{flex:1;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:50px!important}
+  .bnav{height:44px!important;padding-bottom:env(safe-area-inset-bottom)!important}
+  .bn{padding:3px 0 2px!important}
+  .bn-ico{font-size:18px!important}
+  .bn-lbl{font-size:8px!important;margin-top:0!important}
+}
+
 /* ── SCHEDULE ── */
 .sch-bar{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--card);border-bottom:1px solid var(--bdr);position:sticky;top:56px;z-index:40}
 .sch-toggle{padding:7px 12px;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;transition:all .15s}
@@ -4021,10 +4033,9 @@ async function login(){
   }
   // ── 端末制限チェック（Firestore同期後に実施）──
   const canonicalId=registerDeviceIfNew();
-  const fp=computeFingerprint();
   const ds=getDeviceSettings();
   if(ds.enabled){
-    const dev=ds.devices.find(d=>d.fingerprint===fp||d.id===canonicalId);
+    const dev=ds.devices.find(d=>d.id===canonicalId);
     if(!dev||!dev.approved){
       firebase.auth().signOut().catch(()=>{});
       fbReady=false;
