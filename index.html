@@ -31,6 +31,7 @@ body.font-lg{zoom:1.15}
 body.font-sm{zoom:0.88}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden;font-size:15px}
+@media(min-width:600px){body{max-width:none}}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
 input,select,textarea{font-family:inherit;font-size:16px}
 a{color:var(--p);text-decoration:none}
@@ -80,7 +81,7 @@ a{color:var(--p);text-decoration:none}
 .mmn{width:100%;padding:13px 18px;text-align:left;color:rgba(255,255,255,.85);font-size:14px;font-weight:600;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
 .mmn:active,.mmn:hover{background:rgba(255,255,255,.1);color:#fff}
 #hd-menu{font-size:24px;color:#fff;opacity:.85;padding:4px 10px;line-height:1}
-@media(min-width:600px){#hd-menu{display:none!important}}
+@media(min-width:768px){#hd-menu{display:none!important}}
 
 /* ── DIARY TABS ── */
 .dtab{padding:10px 18px;font-size:12px;font-weight:700;color:var(--sub);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;background:none}
