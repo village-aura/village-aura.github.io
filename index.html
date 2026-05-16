@@ -374,7 +374,8 @@ a{color:var(--p);text-decoration:none}
 
 /* ── SIDEBAR ── */
 #sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15);padding-top:env(safe-area-inset-top);transition:transform .22s ease}
-.sbn{display:block;width:100%;padding:13px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:14px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
+.sbn{display:block;width:100%;padding:10px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:13px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
+.sb-lbl{padding:12px 16px 3px;font-size:9px;font-weight:800;letter-spacing:.14em;color:rgba(255,255,255,.35);text-transform:uppercase;display:block}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
 /* Sidebar collapse toggle button – 左上固定 */
@@ -606,21 +607,24 @@ a{color:var(--p);text-decoration:none}
       <div style="font-size:9px;opacity:.55;margin-top:2px;line-height:1.5">メディケアビレッジかしわじま<br>こはる日和</div>
       <button id="sb-close-btn" onclick="toggleSidebar()" style="display:none;position:absolute;top:12px;right:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;color:#fff;font-size:13px;font-weight:700;padding:4px 8px;cursor:pointer">◀</button>
     </div>
-    <nav style="flex:1;padding:8px 0;overflow-y:auto">
+    <nav style="flex:1;padding:6px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
+      <span class="sb-lbl">業務記録</span>
       <button class="sbn" id="sbn-bulk-vital" onclick="showScr('scr-bulk-vital')">🌡️　一括バイタル</button>
       <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
       <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">🚌　送迎チェック</button>
-      <button class="sbn" id="sbn-shift-checklist" onclick="showScr('scr-shift-checklist')">✅　業務チェックリスト</button>
+      <button class="sbn" id="sbn-shift-checklist" onclick="showScr('scr-shift-checklist')">✅　チェックリスト</button>
       <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">👁　巡回チェック</button>
+      <span class="sb-lbl">管理</span>
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
-      <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク管理</button>
-      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
+      <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
+      <span class="sb-lbl">システム</span>
+      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
     </nav>
@@ -1967,20 +1971,17 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── 服薬チェック ─── -->
   <div id="scr-medication" class="scr">
-    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:#7b1fa2">💊 服薬チェック</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:2px">服薬確認・記録</div>
+    <div style="padding:12px 12px 6px;display:flex;align-items:center;gap:10px">
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:800;color:#7b1fa2">💊 服薬チェック</div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input type="date" id="med-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
-      </div>
+      <input type="date" id="med-date" style="padding:5px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:12px;background:var(--card)">
     </div>
-    <div style="padding:8px 12px 4px;display:flex;gap:6px">
-      <button id="med-slot-morning" onclick="setMedSlot('morning')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">朝</button>
-      <button id="med-slot-noon"    onclick="setMedSlot('noon')"    style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">昼</button>
-      <button id="med-slot-evening" onclick="setMedSlot('evening')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">夕</button>
-      <button id="med-slot-bedtime" onclick="setMedSlot('bedtime')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">眠前</button>
+    <div style="padding:0 12px 8px;display:flex;gap:5px">
+      <button id="med-slot-morning" onclick="setMedSlot('morning')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer;line-height:1.2">朝<br><span style="font-size:9px;opacity:.8">6〜9時</span></button>
+      <button id="med-slot-noon"    onclick="setMedSlot('noon')"    style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">昼<br><span style="font-size:9px">12〜13時</span></button>
+      <button id="med-slot-evening" onclick="setMedSlot('evening')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">夕<br><span style="font-size:9px">18〜19時</span></button>
+      <button id="med-slot-bedtime" onclick="setMedSlot('bedtime')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">眠前<br><span style="font-size:9px">21〜22時</span></button>
     </div>
     <div id="medication-list" style="padding:0 12px 80px"></div>
   </div>
@@ -4282,6 +4283,8 @@ function handleFsPhotoClear(){
   renderDetail();
   toast('写真を削除しました');
 }
+function toggleDetailMenu(e){e.stopPropagation();const m=document.getElementById('detail-more-menu');if(!m)return;const open=m.style.display==='block';m.style.display=open?'none':'block';if(!open){const h=()=>{m.style.display='none';document.removeEventListener('click',h);};setTimeout(()=>document.addEventListener('click',h),10);}}
+function closeDetailMenu(){const m=document.getElementById('detail-more-menu');if(m)m.style.display='none';}
 // ═══════════ VITAL RANGES ═══════════
 function openVitalRanges(){
   const r=getResidents().find(x=>x.id===S.currentRes);if(!r)return;
@@ -6391,15 +6394,18 @@ function renderDetail(){
       </div>
     </div>
     <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
-    <div style="display:flex;gap:5px;flex-wrap:wrap">
-      <button onclick="goToResidentSchedule()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📅 予定</button>
-      <button onclick="openFacesheet()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📋 フェイスシート</button>
-      ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}')" style="background:rgba(255,255,255,.9);color:#c62828;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800">📝 医師指示</button>`:''}
-      <button onclick="openFamilyReport()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📮 家族連絡帳</button>
-      <button onclick="openResidentQR()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">📲 QR</button>
-      <button onclick="toggleRepoNeeded('${r.id}')" style="background:${r.repoNeeded?'#fff':'rgba(255,255,255,.15)'};color:${r.repoNeeded?'#1565c0':'rgba(255,255,255,.7)'};border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;border:1.5px solid ${r.repoNeeded?'#fff':'rgba(255,255,255,.3)'}">🔄 体交${r.repoNeeded?'▶ON':'　OFF'}</button>
-      <button onclick="openEditResident()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">✏️ 編集</button>
-      <button onclick="openVitalRanges()" style="background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700">⚙️ 基準値${r.vitalRanges?'<span style="color:#ffd54f">※</span>':''}</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:7px 6px;font-size:12px;font-weight:800;border:none;cursor:pointer">📋 カルテ</button>
+      <button onclick="openEditResident()" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:7px 6px;font-size:12px;font-weight:700;border:none;cursor:pointer">✏️ 編集</button>
+      <button onclick="toggleRepoNeeded('${r.id}')" style="flex:1;background:${r.repoNeeded?'rgba(255,255,255,.9)':'rgba(255,255,255,.2)'};color:${r.repoNeeded?'#1565c0':'rgba(255,255,255,.7)'};border-radius:10px;padding:7px 6px;font-size:12px;font-weight:700;border:none;cursor:pointer">🔄 体交${r.repoNeeded?' ON':' OFF'}</button>
+      <button onclick="toggleDetailMenu(event)" id="detail-more-btn" style="width:36px;height:36px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;font-size:18px;font-weight:700;border:none;cursor:pointer;flex-shrink:0">⋯</button>
+    </div>
+    <div id="detail-more-menu" style="display:none;position:absolute;right:12px;top:calc(100% - 8px);background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:100;min-width:160px;overflow:hidden">
+      <button onclick="goToResidentSchedule();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:11px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">📅 スケジュール</button>
+      <button onclick="openFamilyReport();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:11px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">📮 家族連絡帳</button>
+      <button onclick="openResidentQR();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:11px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">📲 QR コード</button>
+      <button onclick="openVitalRanges();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:11px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;${S.userRole==='doctor'?'border-bottom:1px solid var(--bdr);':''}cursor:pointer">⚙️ バイタル基準値${r.vitalRanges?' ★':''}</button>
+      ${S.userRole==='doctor'?`<button onclick="openDoctorOrderFor('${r.name}');closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:11px 16px;font-size:13px;font-weight:700;color:#c62828;background:none;border:none;cursor:pointer">📝 医師指示</button>`:''}
     </div>
   `;
   // Summary
@@ -6511,12 +6517,13 @@ function renderDetail(){
   const svcSel=document.getElementById('service-selector');
   if(svcSel){
     const registeredSvcs=r.services||[];
-    svcSel.innerHTML=Object.entries(SVC_META).map(([svc,m])=>{
+    const activeSvcs=Object.entries(SVC_META).filter(([svc])=>registeredSvcs.includes(svc));
+    if(activeSvcs.length===1&&!S.currentService)selectService(activeSvcs[0][0]);
+    svcSel.innerHTML=activeSvcs.map(([svc,m])=>{
       const on=S.currentService===svc;
-      const registered=registeredSvcs.includes(svc);
-      return `<button onclick="selectService('${svc}')" style="padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s;opacity:${registered?'1':'.45'}">${m.label}</button>`;
+      return `<button onclick="selectService('${svc}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
     }).join('')
-    +`<button onclick="openSvcSetting()" style="padding:7px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid var(--bdr);background:#fff;color:var(--sub);transition:all .15s;margin-left:auto" title="利用サービスを編集">⚙</button>`;
+    +(isAdmin()||isFacilityAdmin()?`<button onclick="openSvcSetting()" style="padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid var(--bdr);background:#fff;color:var(--sub);transition:all .15s;margin-left:auto" title="利用サービスを編集">⚙</button>`:'');
   }
   const grid=document.getElementById('inp-grid');
   if(grid){
@@ -8388,33 +8395,45 @@ function renderMedication(){
   const checks=getMedicationChecks();
   const checkKey=today+'_'+_medSlot;
   const todayChecks=checks[checkKey]||{};
-  const res=getResidents();
+  const res=getResidents().filter(r=>r.services&&r.services.length);
   const list=document.getElementById('medication-list');if(!list)return;
   const rows=res.map(r=>{
     const meds=(medData[r.id]||[]).filter(m=>m.slots&&m.slots.includes(_medSlot));
-    if(!meds.length)return '';
     const chk=todayChecks[r.id]||{};
-    const allDone=meds.every(m=>chk[m.id]?.done);
-    return `<div style="background:var(--card);border-radius:10px;margin-bottom:8px;padding:10px 12px;box-shadow:var(--sh);border-left:3px solid ${allDone?'var(--ok)':'#e0e0e0'}">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:13px;font-weight:800">${r.name}</span>
-        <button onclick="openMedReg('${r.id}')" style="font-size:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--sub)">⚙️ 薬を編集</button>
+    const allDone=meds.length>0&&meds.every(m=>chk[m.id]?.done);
+    const borderColor=allDone?'var(--ok)':meds.length?'var(--bdr)':'#e8e8e8';
+    return `<div style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:10px 12px;box-shadow:var(--sh);border-left:3px solid ${borderColor}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${meds.length?'8px':'0'}">
+        <span style="font-size:13px;font-weight:800;flex:1">${r.name}${allDone?' <span style="font-size:10px;color:var(--ok);font-weight:700">✓ 完了</span>':''}</span>
+        <button onclick="openMedReg('${r.id}')" style="font-size:11px;background:var(--ps);border:1.5px solid var(--p);border-radius:8px;padding:3px 10px;cursor:pointer;color:var(--p);font-weight:700;flex-shrink:0">${meds.length?'💊 薬を管理':'＋ 薬を登録'}</button>
       </div>
-      ${meds.map(m=>{
+      ${meds.length?meds.map(m=>{
         const c=chk[m.id]||{};
-        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr)">
-          <button onclick="toggleMedCheck('${r.id}','${m.id}','${checkKey}')" style="flex-shrink:0;width:26px;height:26px;border-radius:6px;border:2px solid ${c.done?'var(--ok)':'var(--bdr)'};background:${c.done?'var(--ok)':'#fff'};color:#fff;font-size:14px;cursor:pointer;touch-action:manipulation">${c.done?'✓':''}</button>
+        const showFail=c.showFail||!!c.failNote;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--bdr)">
+          <button onclick="toggleMedCheck('${r.id}','${m.id}','${checkKey}')" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;border:2px solid ${c.done?'var(--ok)':'var(--bdr)'};background:${c.done?'var(--ok)':'#fff'};color:#fff;font-size:16px;cursor:pointer;touch-action:manipulation">${c.done?'✓':''}</button>
           <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:${c.done?'var(--sub)':'var(--tx)'}${c.done?';text-decoration:line-through':''}">${m.name}</div>
-            ${m.dose?`<div style="font-size:11px;color:var(--sub)">${m.dose}</div>`:''}
-            ${c.done?`<div style="font-size:10px;color:var(--ok)">${c.by||''} ${c.time||''}</div>`:''}
+            <div style="font-size:13px;font-weight:700;color:${c.done?'var(--sub)':'var(--txt)'}${c.done?';text-decoration:line-through':''}">${m.name}${m.dose?` <span style="font-size:11px;font-weight:400;color:var(--sub)">${m.dose}</span>`:''}</div>
+            ${c.done?`<div style="font-size:10px;color:var(--ok);margin-top:1px">${c.by||''} ${c.time||''}</div>`:''}
+            ${showFail&&!c.done?`<input type="text" placeholder="できなかった理由を入力" id="med-fail-${r.id}-${m.id}" value="${c.failNote||''}" style="margin-top:4px;width:100%;font-size:11px;padding:4px 8px;border:1px solid #f9a8a8;border-radius:6px;color:#c62828;box-sizing:border-box" onblur="saveMedFailNote('${r.id}','${m.id}','${checkKey}',this.value)">`:''}
           </div>
-          ${!c.done?`<div style="flex-shrink:0"><input type="text" placeholder="できなかった場合の理由" id="med-fail-${r.id}-${m.id}" value="${c.failNote||''}" style="font-size:10px;padding:3px 6px;border:1px solid var(--bdr);border-radius:4px;width:120px;color:#e53935" onblur="saveMedFailNote('${r.id}','${m.id}','${checkKey}',this.value)"></div>`:''}
+          ${!c.done?`<button onclick="toggleMedFail('${r.id}','${m.id}','${checkKey}')" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;border:1.5px solid ${showFail?'#e53935':'var(--bdr)'};background:${showFail?'#fee':'#fff'};color:${showFail?'#e53935':'var(--sub)'};font-size:13px;cursor:pointer;touch-action:manipulation" title="できなかった場合">×</button>`:''}
         </div>`;
-      }).join('')}
+      }).join(''):'<div style="font-size:11px;color:var(--sub);padding:2px 0">この時間帯の薬が未登録です</div>'}
     </div>`;
-  }).filter(Boolean).join('');
-  list.innerHTML=rows||`<div style="text-align:center;padding:40px;color:var(--sub)"><div style="font-size:32px;margin-bottom:8px">💊</div>${MED_SLOT_LABEL[_medSlot]}の服薬が登録されている利用者はいません<br><span style="font-size:11px">利用者詳細 → ⚙️ 薬を編集 から登録できます</span></div>`;
+  }).join('');
+  list.innerHTML=rows||'<div style="text-align:center;padding:40px;color:var(--sub)">利用者が登録されていません</div>';
+}
+function toggleMedFail(rid,mid,checkKey){
+  const checks=getMedicationChecks();
+  if(!checks[checkKey])checks[checkKey]={};
+  if(!checks[checkKey][rid])checks[checkKey][rid]={};
+  if(!checks[checkKey][rid][mid])checks[checkKey][rid][mid]={done:false};
+  checks[checkKey][rid][mid].showFail=!checks[checkKey][rid][mid].showFail;
+  saveMedicationChecks(checks);
+  renderMedication();
+  if(!checks[checkKey][rid][mid].showFail)return;
+  setTimeout(()=>{const el=document.getElementById(`med-fail-${rid}-${mid}`);if(el)el.focus();},50);
 }
 function toggleMedCheck(rid,mid,checkKey){
   const checks=getMedicationChecks();
