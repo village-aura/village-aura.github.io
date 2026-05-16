@@ -610,7 +610,11 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
-      <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">✅　巡回チェック</button>
+      <button class="sbn" id="sbn-bulk-vital" onclick="showScr('scr-bulk-vital')">🌡️　一括バイタル</button>
+      <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
+      <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">🚌　送迎チェック</button>
+      <button class="sbn" id="sbn-shift-checklist" onclick="showScr('scr-shift-checklist')">✅　業務チェックリスト</button>
+      <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">👁　巡回チェック</button>
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
@@ -1155,6 +1159,42 @@ a{color:var(--p);text-decoration:none}
           <span style="font-size:18px">⏩</span> あとで入力する（実務へ）
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ─── 入浴記録モーダル ─── -->
+  <div class="overlay" id="modal-bath" onclick="closeModal('modal-bath',event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🛁 入浴記録</div>
+      <div class="field-row">
+        <div class="field"><label>入浴日</label><input type="date" id="bath-date"></div>
+        <div class="field"><label>種別</label>
+          <select id="bath-type">
+            <option value="一般浴">一般浴</option>
+            <option value="機械浴">機械浴</option>
+            <option value="シャワー浴">シャワー浴</option>
+            <option value="清拭">清拭</option>
+            <option value="足浴">足浴</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>特記事項</label><textarea id="bath-notes" rows="2" placeholder="皮膚状態・注意点など"></textarea></div>
+      <button class="btn-primary" onclick="saveBathRecord()">保存</button>
+      <button class="btn-cancel" onclick="closeModal('modal-bath')">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ─── 服薬登録モーダル ─── -->
+  <div class="overlay" id="modal-med-reg" onclick="closeModal('modal-med-reg',event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">💊 服薬登録</div>
+      <div id="med-reg-res-name" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:12px"></div>
+      <div id="med-reg-list" style="margin-bottom:12px"></div>
+      <button onclick="addMedItem()" style="width:100%;padding:9px;background:var(--ps);color:var(--p);border-radius:8px;font-size:13px;font-weight:700;border:1.5px dashed var(--p);cursor:pointer;margin-bottom:8px">＋ 薬を追加</button>
+      <button class="btn-primary" onclick="saveMedReg()">保存</button>
+      <button class="btn-cancel" onclick="closeModal('modal-med-reg')">キャンセル</button>
     </div>
   </div>
 
@@ -1905,6 +1945,78 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" id="tf-st-done" onclick="setTaskFilter('status','done')">完了</button>
     </div>
     <div id="tasks-list" style="padding:0 12px 80px"></div>
+  </div>
+
+  <!-- ─── 一括バイタル入力 ─── -->
+  <div id="scr-bulk-vital" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--tx)">🌡️ 一括バイタル入力</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">全利用者のバイタルを一画面で入力</div>
+      </div>
+      <input type="date" id="bv-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+    </div>
+    <div style="padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="chip on" id="bv-f-all" onclick="setBvFilter('all')">全員</button>
+      <button class="chip" id="bv-f-resident" onclick="setBvFilter('resident')">サ高住</button>
+      <button class="chip" id="bv-f-commute" onclick="setBvFilter('commute')">デイ</button>
+      <button class="chip" id="bv-f-stay" onclick="setBvFilter('stay')">小多機</button>
+    </div>
+    <div id="bulk-vital-list" style="padding:0 12px 80px"></div>
+  </div>
+
+  <!-- ─── 服薬チェック ─── -->
+  <div id="scr-medication" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#7b1fa2">💊 服薬チェック</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">服薬確認・記録</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="date" id="med-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+      </div>
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px">
+      <button id="med-slot-morning" onclick="setMedSlot('morning')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">朝</button>
+      <button id="med-slot-noon"    onclick="setMedSlot('noon')"    style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">昼</button>
+      <button id="med-slot-evening" onclick="setMedSlot('evening')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">夕</button>
+      <button id="med-slot-bedtime" onclick="setMedSlot('bedtime')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">眠前</button>
+    </div>
+    <div id="medication-list" style="padding:0 12px 80px"></div>
+  </div>
+
+  <!-- ─── 送迎チェック ─── -->
+  <div id="scr-transport" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#1565c0">🚌 送迎チェック</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">デイ・小多機の送迎記録</div>
+      </div>
+      <input type="date" id="tr-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px">
+      <button id="tr-tab-out" onclick="setTrTab('out')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">🚌 出発</button>
+      <button id="tr-tab-in"  onclick="setTrTab('in')"  style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">🏠 帰宅</button>
+    </div>
+    <div id="transport-list" style="padding:0 12px 80px"></div>
+  </div>
+
+  <!-- ─── 業務チェックリスト ─── -->
+  <div id="scr-shift-checklist" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#e65100">✅ 業務チェックリスト</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">シフト別の業務確認</div>
+      </div>
+      <button id="cl-edit-btn" onclick="openChecklistEdit()" style="display:none;background:var(--bg);border:1.5px solid var(--bdr);color:var(--sub);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">⚙️ 編集</button>
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px">
+      <button id="cl-shift-early"   onclick="setClShift('early')"   style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">早番</button>
+      <button id="cl-shift-day"     onclick="setClShift('day')"     style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">日勤</button>
+      <button id="cl-shift-late"    onclick="setClShift('late')"    style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">遅番</button>
+      <button id="cl-shift-night"   onclick="setClShift('night')"   style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">夜勤</button>
+    </div>
+    <div id="checklist-body" style="padding:0 12px 80px"></div>
   </div>
 
   <!-- HELP SCREEN -->
@@ -3787,14 +3899,15 @@ const SVC_META = {
   nursing: {label:'💊 訪問看護',color:'#00796b', section:'nursing'},
 };
 const SVC_BTNS = {
-  resident:['vital','meal','excretion','chrono','weight','handover'],
-  commute: ['attendance','vital','meal','excretion','chrono','handover'],
-  stay:    ['attendance','vital','meal','excretion','chrono','weight','handover'],
+  resident:['vital','bath','meal','excretion','chrono','weight','handover'],
+  commute: ['attendance','vital','bath','meal','excretion','chrono','handover'],
+  stay:    ['attendance','vital','bath','meal','excretion','chrono','weight','handover'],
   visit:   ['visit_report','chrono','handover'],
   nursing: ['handover'],
 };
 const BTN_DEF = {
   vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openModal('modal-vital')"},
+  bath:        {ico:'🛁', lbl:'入浴記録',    fn:"openBathModal()"},
   meal:        {ico:'🍚', lbl:'食事・飲水',  fn:"openModal('modal-meal')"},
   excretion:   {ico:'💧', lbl:'排泄',        fn:"openModal('modal-excretion')"},
   chrono:      {ico:'📝', lbl:'経時記録',    fn:"openModal('modal-chrono')"},
@@ -3839,7 +3952,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data'];
+const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','shift_checklist'];
 const FB_SYS_EMAIL='facility@village-aura.local';
 const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
 let db=null, fbReady=false, fbListeners=[];
@@ -5456,7 +5569,9 @@ function showScr(id){
     'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
     'scr-stool-alert':'排便未記録一覧',
     'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
-    'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理'
+    'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理',
+    'scr-bulk-vital':'一括バイタル入力','scr-medication':'服薬チェック',
+    'scr-transport':'送迎チェック','scr-shift-checklist':'業務チェックリスト'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -5467,7 +5582,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-shift-checklist':'sbn-shift-checklist'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -5485,6 +5600,10 @@ function showScr(id){
   if(id==='scr-rounds'){const h=new Date().getHours();const sh=h>=6&&h<10?'morning':h>=10&&h<16?'noon':h>=16&&h<22?'evening':'night';setRoundsShift(sh);}
   if(id==='scr-incidents') renderIncidentList();
   if(id==='scr-tasks') renderTasksScr();
+  if(id==='scr-bulk-vital') renderBulkVital();
+  if(id==='scr-medication') renderMedication();
+  if(id==='scr-transport') renderTransport();
+  if(id==='scr-shift-checklist') renderShiftChecklist();
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
@@ -8163,6 +8282,351 @@ function showDelConfirm(msg,cb){
   _delCb=cb;
   el.style.display='block';
 }
+// ═══════════ 入浴記録 ═══════════
+function getBathRecords(){return ls('bath_records')||[];}
+function saveBathRecordsData(d){lsSet('bath_records',d);fsSet('bath_records',d);}
+function openBathModal(){
+  const d=new Date();
+  document.getElementById('bath-date').value=d.toISOString().slice(0,10);
+  document.getElementById('bath-type').value='一般浴';
+  document.getElementById('bath-notes').value='';
+  openModal('modal-bath');
+}
+function saveBathRecord(){
+  const rid=S.currentRes;if(!rid)return;
+  const d=getBathRecords();
+  d.push({id:'b'+Date.now(),rid,date:document.getElementById('bath-date').value,
+    type:document.getElementById('bath-type').value,
+    notes:document.getElementById('bath-notes').value.trim(),
+    by:S.user||'──',createdAt:new Date().toISOString()});
+  saveBathRecordsData(d);
+  closeModal('modal-bath');
+  toast('入浴記録を保存しました ✓');
+  renderTimeline();
+}
+function getLastBathDays(rid){
+  const recs=getBathRecords().filter(r=>r.rid===rid).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!recs.length)return null;
+  const last=new Date(recs[0].date);
+  return Math.floor((new Date()-last)/(86400000));
+}
+
+// ═══════════ 一括バイタル入力 ═══════════
+let _bvFilter='all';
+function setBvFilter(f){
+  _bvFilter=f;
+  ['all','resident','commute','stay'].forEach(k=>{
+    const b=document.getElementById('bv-f-'+k);
+    if(b){b.classList.toggle('on',k===f);}
+  });
+  renderBulkVital();
+}
+function renderBulkVital(){
+  const dateEl=document.getElementById('bv-date');
+  if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
+  const res=getResidents().filter(r=>_bvFilter==='all'||r.services.includes(_bvFilter));
+  const today=dateEl.value;
+  const recs=getRecords();
+  const list=document.getElementById('bulk-vital-list');if(!list)return;
+  if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
+  list.innerHTML=res.map(r=>{
+    const latest=recs.filter(rc=>rc.rid===r.id&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts))[0];
+    const v=latest?.data||{};
+    return `<div style="background:var(--card);border-radius:10px;margin-bottom:8px;padding:10px 12px;box-shadow:var(--sh)">
+      <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:8px">${r.name} <span style="font-size:11px;font-weight:400;color:var(--sub)">${r.facility}</span>${latest?'<span style="font-size:10px;color:var(--ok);font-weight:700;margin-left:6px">✓ 記録済</span>':''}</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+        <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center"></div>
+        <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">拡張期</div><input type="number" id="bv-dia-${r.id}" value="${v.dia||''}" placeholder="80" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center"></div>
+        <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">脈拍</div><input type="number" id="bv-pulse-${r.id}" value="${v.pulse||''}" placeholder="72" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center"></div>
+        <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">体温</div><input type="number" step="0.1" id="bv-temp-${r.id}" value="${v.temp||''}" placeholder="36.5" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center"></div>
+        <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">SpO2</div><input type="number" id="bv-spo2-${r.id}" value="${v.spo2||''}" placeholder="98" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button onclick="saveBulkVital('${r.id}')" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 18px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function saveBulkVital(rid){
+  const dateEl=document.getElementById('bv-date');
+  const sys=document.getElementById('bv-sys-'+rid)?.value;
+  const dia=document.getElementById('bv-dia-'+rid)?.value;
+  const pulse=document.getElementById('bv-pulse-'+rid)?.value;
+  const temp=document.getElementById('bv-temp-'+rid)?.value;
+  const spo2=document.getElementById('bv-spo2-'+rid)?.value;
+  if(!sys&&!dia&&!pulse&&!temp&&!spo2){toast('値を入力してください');return;}
+  const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
+  const recs=getRecords();
+  recs.push({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',
+    data:{sys:sys?Number(sys):null,dia:dia?Number(dia):null,pulse:pulse?Number(pulse):null,
+          temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null}});
+  saveRecords(recs);
+  toast('バイタルを保存しました ✓');
+  renderBulkVital();
+}
+
+// ═══════════ 服薬チェック ═══════════
+let _medSlot='morning';
+const MED_SLOT_LABEL={morning:'朝',noon:'昼',evening:'夕',bedtime:'眠前'};
+function getMedicationData(){return ls('medication_data')||{};}
+function saveMedicationData(d){lsSet('medication_data',d);fsSet('medication_data',d);}
+function getMedicationChecks(){return ls('medication_checks')||{};}
+function saveMedicationChecks(d){lsSet('medication_checks',d);fsSet('medication_checks',d);}
+function setMedSlot(slot){
+  _medSlot=slot;
+  ['morning','noon','evening','bedtime'].forEach(s=>{
+    const b=document.getElementById('med-slot-'+s);
+    if(b){b.style.background=s===slot?'var(--p)':'var(--bg)';b.style.color=s===slot?'#fff':'var(--sub)';b.style.border=s===slot?'none':'1.5px solid var(--bdr)';}
+  });
+  renderMedication();
+}
+function renderMedication(){
+  const dateEl=document.getElementById('med-date');
+  if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
+  const today=dateEl.value;
+  const medData=getMedicationData();
+  const checks=getMedicationChecks();
+  const checkKey=today+'_'+_medSlot;
+  const todayChecks=checks[checkKey]||{};
+  const res=getResidents();
+  const list=document.getElementById('medication-list');if(!list)return;
+  const rows=res.map(r=>{
+    const meds=(medData[r.id]||[]).filter(m=>m.slots&&m.slots.includes(_medSlot));
+    if(!meds.length)return '';
+    const chk=todayChecks[r.id]||{};
+    const allDone=meds.every(m=>chk[m.id]?.done);
+    return `<div style="background:var(--card);border-radius:10px;margin-bottom:8px;padding:10px 12px;box-shadow:var(--sh);border-left:3px solid ${allDone?'var(--ok)':'#e0e0e0'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:800">${r.name}</span>
+        <button onclick="openMedReg('${r.id}')" style="font-size:10px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--sub)">⚙️ 薬を編集</button>
+      </div>
+      ${meds.map(m=>{
+        const c=chk[m.id]||{};
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr)">
+          <button onclick="toggleMedCheck('${r.id}','${m.id}','${checkKey}')" style="flex-shrink:0;width:26px;height:26px;border-radius:6px;border:2px solid ${c.done?'var(--ok)':'var(--bdr)'};background:${c.done?'var(--ok)':'#fff'};color:#fff;font-size:14px;cursor:pointer;touch-action:manipulation">${c.done?'✓':''}</button>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:${c.done?'var(--sub)':'var(--tx)'}${c.done?';text-decoration:line-through':''}">${m.name}</div>
+            ${m.dose?`<div style="font-size:11px;color:var(--sub)">${m.dose}</div>`:''}
+            ${c.done?`<div style="font-size:10px;color:var(--ok)">${c.by||''} ${c.time||''}</div>`:''}
+          </div>
+          ${!c.done?`<div style="flex-shrink:0"><input type="text" placeholder="できなかった場合の理由" id="med-fail-${r.id}-${m.id}" value="${c.failNote||''}" style="font-size:10px;padding:3px 6px;border:1px solid var(--bdr);border-radius:4px;width:120px;color:#e53935" onblur="saveMedFailNote('${r.id}','${m.id}','${checkKey}',this.value)"></div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).filter(Boolean).join('');
+  list.innerHTML=rows||`<div style="text-align:center;padding:40px;color:var(--sub)"><div style="font-size:32px;margin-bottom:8px">💊</div>${MED_SLOT_LABEL[_medSlot]}の服薬が登録されている利用者はいません<br><span style="font-size:11px">利用者詳細 → ⚙️ 薬を編集 から登録できます</span></div>`;
+}
+function toggleMedCheck(rid,mid,checkKey){
+  const checks=getMedicationChecks();
+  if(!checks[checkKey])checks[checkKey]={};
+  if(!checks[checkKey][rid])checks[checkKey][rid]={};
+  const cur=checks[checkKey][rid][mid]||{};
+  if(cur.done){
+    checks[checkKey][rid][mid]={done:false};
+  } else {
+    const now=new Date();
+    checks[checkKey][rid][mid]={done:true,by:S.user||'──',time:now.toTimeString().slice(0,5),failNote:''};
+  }
+  saveMedicationChecks(checks);
+  renderMedication();
+}
+function saveMedFailNote(rid,mid,checkKey,note){
+  const checks=getMedicationChecks();
+  if(!checks[checkKey])checks[checkKey]={};
+  if(!checks[checkKey][rid])checks[checkKey][rid]={};
+  if(!checks[checkKey][rid][mid])checks[checkKey][rid][mid]={done:false};
+  checks[checkKey][rid][mid].failNote=note;
+  saveMedicationChecks(checks);
+}
+let _medRegRid=null;
+function openMedReg(rid){
+  _medRegRid=rid;
+  const r=getResidents().find(x=>x.id===rid);
+  const nameEl=document.getElementById('med-reg-res-name');
+  if(nameEl)nameEl.textContent=r?r.name+' 様の服薬一覧':'';
+  renderMedRegList();
+  openModal('modal-med-reg');
+}
+function renderMedRegList(){
+  const medData=getMedicationData();
+  const meds=medData[_medRegRid]||[];
+  const slotLabels={morning:'朝',noon:'昼',evening:'夕',bedtime:'眠前'};
+  const el=document.getElementById('med-reg-list');if(!el)return;
+  el.innerHTML=meds.map((m,i)=>`
+    <div style="background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:6px;border:1px solid var(--bdr)">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" value="${m.name}" placeholder="薬品名" oninput="updateMedItem(${i},'name',this.value)" style="flex:2;padding:5px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
+        <input type="text" value="${m.dose||''}" placeholder="用量" oninput="updateMedItem(${i},'dose',this.value)" style="flex:1;padding:5px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
+        <button onclick="removeMedItem(${i})" style="padding:5px 8px;background:#fee;color:var(--ng);border-radius:6px;border:none;cursor:pointer;font-size:12px">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${['morning','noon','evening','bedtime'].map(s=>`<label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer"><input type="checkbox" ${(m.slots||[]).includes(s)?'checked':''} onchange="toggleMedSlot(${i},'${s}',this.checked)">${slotLabels[s]}</label>`).join('')}
+      </div>
+    </div>`).join('')||'<div style="font-size:12px;color:var(--sub);text-align:center;padding:8px">まだ薬が登録されていません</div>';
+}
+let _medRegItems=[];
+function addMedItem(){
+  const medData=getMedicationData();
+  if(!medData[_medRegRid])medData[_medRegRid]=[];
+  medData[_medRegRid].push({id:'m'+Date.now(),name:'',dose:'',slots:['morning']});
+  saveMedicationData(medData);
+  renderMedRegList();
+}
+function updateMedItem(i,field,val){
+  const medData=getMedicationData();
+  if(medData[_medRegRid]&&medData[_medRegRid][i])medData[_medRegRid][i][field]=val;
+  saveMedicationData(medData);
+}
+function removeMedItem(i){
+  const medData=getMedicationData();
+  if(medData[_medRegRid])medData[_medRegRid].splice(i,1);
+  saveMedicationData(medData);
+  renderMedRegList();
+}
+function toggleMedSlot(i,slot,on){
+  const medData=getMedicationData();
+  if(!medData[_medRegRid]||!medData[_medRegRid][i])return;
+  const slots=medData[_medRegRid][i].slots||[];
+  if(on&&!slots.includes(slot))slots.push(slot);
+  if(!on)medData[_medRegRid][i].slots=slots.filter(s=>s!==slot);
+  else medData[_medRegRid][i].slots=slots;
+  saveMedicationData(medData);
+}
+function saveMedReg(){closeModal('modal-med-reg');toast('服薬情報を保存しました ✓');renderMedication();}
+
+// ═══════════ 送迎チェック ═══════════
+let _trTab='out';
+function getTransportRecords(){return ls('transport_records')||{};}
+function saveTransportRecords(d){lsSet('transport_records',d);fsSet('transport_records',d);}
+function setTrTab(tab){
+  _trTab=tab;
+  ['out','in'].forEach(t=>{
+    const b=document.getElementById('tr-tab-'+t);
+    if(b){b.style.background=t===tab?'var(--p)':'var(--bg)';b.style.color=t===tab?'#fff':'var(--sub)';b.style.border=t===tab?'none':'1.5px solid var(--bdr)';}
+  });
+  renderTransport();
+}
+function renderTransport(){
+  const dateEl=document.getElementById('tr-date');
+  if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
+  const today=dateEl.value;
+  const records=getTransportRecords();
+  const todayRecs=records[today]||{};
+  const res=getResidents().filter(r=>r.services.includes('commute')||r.services.includes('stay'));
+  const list=document.getElementById('transport-list');if(!list)return;
+  if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">デイ・小多機の利用者がいません</div>';return;}
+  list.innerHTML=res.map(r=>{
+    const rec=todayRecs[r.id]||{};
+    const done=_trTab==='out'?!!rec.departure:!!rec.arrival;
+    const timeVal=_trTab==='out'?rec.departure:rec.arrival;
+    return `<div style="background:var(--card);border-radius:10px;margin-bottom:8px;padding:10px 12px;box-shadow:var(--sh);border-left:3px solid ${done?'var(--ok)':'#e0e0e0'}">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:800">${r.name}</div>
+          <div style="font-size:11px;color:var(--sub)">${r.facility} ${r.services.includes('commute')?'デイ':'小多機'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${done?`<span style="font-size:12px;font-weight:700;color:var(--ok)">✓ ${timeVal}</span>`:''}
+          <button onclick="recordTransport('${r.id}','${today}')" style="background:${done?'#e8f5e9':'var(--p)'};color:${done?'#2e7d32':'#fff'};border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">${done?'取消':'記録'}</button>
+        </div>
+      </div>
+      ${rec.note!==undefined?`<div style="margin-top:6px"><input type="text" value="${rec.note||''}" placeholder="メモ" onblur="saveTransportNote('${r.id}','${today}',this.value)" style="width:100%;font-size:11px;padding:4px 8px;border:1px solid var(--bdr);border-radius:6px"></div>`:'<div style="margin-top:6px"><input type="text" placeholder="メモ（任意）" onblur="saveTransportNote(\'${r.id}\',\'${today}\',this.value)" style="width:100%;font-size:11px;padding:4px 8px;border:1px solid var(--bdr);border-radius:6px"></div>'}
+    </div>`;
+  }).join('');
+}
+function recordTransport(rid,date){
+  const records=getTransportRecords();
+  if(!records[date])records[date]={};
+  if(!records[date][rid])records[date][rid]={};
+  const now=new Date().toTimeString().slice(0,5);
+  if(_trTab==='out'){
+    records[date][rid].departure=records[date][rid].departure?null:now;
+  } else {
+    records[date][rid].arrival=records[date][rid].arrival?null:now;
+  }
+  records[date][rid].by=S.user||'──';
+  saveTransportRecords(records);
+  renderTransport();
+}
+function saveTransportNote(rid,date,note){
+  const records=getTransportRecords();
+  if(!records[date])records[date]={};
+  if(!records[date][rid])records[date][rid]={};
+  records[date][rid].note=note;
+  saveTransportRecords(records);
+}
+
+// ═══════════ 業務チェックリスト ═══════════
+let _clShift='early';
+const CL_SHIFT_LABEL={early:'早番',day:'日勤',late:'遅番',night:'夜勤'};
+function getShiftChecklist(){return ls('shift_checklist')||{templates:{},records:{}};}
+function saveShiftChecklist(d){lsSet('shift_checklist',d);fsSet('shift_checklist',d);}
+function setClShift(shift){
+  _clShift=shift;
+  ['early','day','late','night'].forEach(s=>{
+    const b=document.getElementById('cl-shift-'+s);
+    if(b){b.style.background=s===shift?'var(--p)':'var(--bg)';b.style.color=s===shift?'#fff':'var(--sub)';b.style.border=s===shift?'none':'1.5px solid var(--bdr)';}
+  });
+  renderShiftChecklist();
+}
+function renderShiftChecklist(){
+  const editBtn=document.getElementById('cl-edit-btn');
+  if(editBtn)editBtn.style.display=(isAdmin()||isFacilityAdmin())?'block':'none';
+  const cl=getShiftChecklist();
+  const templates=cl.templates[_clShift]||[];
+  const today=new Date().toISOString().slice(0,10);
+  const recKey=today+'_'+_clShift;
+  const rec=cl.records[recKey]||{};
+  const el=document.getElementById('checklist-body');if(!el)return;
+  if(!templates.length){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--sub)"><div style="font-size:32px;margin-bottom:8px">✅</div>${CL_SHIFT_LABEL[_clShift]}のチェックリストが未登録です${isAdmin()||isFacilityAdmin()?'<br><button onclick="openChecklistEdit()" style="margin-top:12px;background:var(--p);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">⚙️ 項目を追加する</button>':''}</div>`;
+    return;
+  }
+  const done=templates.filter(t=>rec[t.id]?.done).length;
+  el.innerHTML=`<div style="background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:10px;box-shadow:var(--sh)">
+    <div style="font-size:12px;color:var(--sub);margin-bottom:6px">${CL_SHIFT_LABEL[_clShift]} — ${today} — ${done}/${templates.length}完了</div>
+    <div style="height:6px;background:var(--bdr);border-radius:4px;overflow:hidden"><div style="height:100%;background:var(--ok);border-radius:4px;width:${templates.length?Math.round(done/templates.length*100):0}%;transition:width .3s"></div></div>
+  </div>`+templates.map(t=>{
+    const c=rec[t.id]||{};
+    return `<div onclick="toggleClItem('${t.id}','${recKey}')" style="background:var(--card);border-radius:10px;margin-bottom:6px;padding:12px 14px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;touch-action:manipulation;border-left:3px solid ${c.done?'var(--ok)':'var(--bdr)'}">
+      <div style="width:26px;height:26px;border-radius:8px;border:2px solid ${c.done?'var(--ok)':'var(--bdr)'};background:${c.done?'var(--ok)':'#fff'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0">${c.done?'✓':''}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:${c.done?'var(--sub)':'var(--tx)'}${c.done?';text-decoration:line-through':''}">${t.text}</div>
+        ${c.done?`<div style="font-size:10px;color:var(--sub)">${c.by||''} ${c.time||''}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleClItem(tid,recKey){
+  const cl=getShiftChecklist();
+  if(!cl.records[recKey])cl.records[recKey]={};
+  const cur=cl.records[recKey][tid]||{};
+  if(cur.done){
+    cl.records[recKey][tid]={done:false};
+  } else {
+    const now=new Date();
+    cl.records[recKey][tid]={done:true,by:S.user||'──',time:now.toTimeString().slice(0,5)};
+  }
+  saveShiftChecklist(cl);
+  renderShiftChecklist();
+}
+function openChecklistEdit(){
+  const cl=getShiftChecklist();
+  const templates=cl.templates[_clShift]||[];
+  const newItem=prompt(`${CL_SHIFT_LABEL[_clShift]}に追加する項目を入力:`);
+  if(!newItem||!newItem.trim())return;
+  if(!cl.templates[_clShift])cl.templates[_clShift]=[];
+  cl.templates[_clShift].push({id:'cl'+Date.now(),text:newItem.trim()});
+  saveShiftChecklist(cl);
+  renderShiftChecklist();
+}
+
+// ═══════════ 水分摂取アラート ═══════════
+function getFluidTarget(rid){
+  const r=getResidents().find(x=>x.id===rid);
+  return r?.fluidTarget||1500;
+}
+
 function closePostRegister(){
   document.getElementById('post-register-sheet').style.display='none';
 }
