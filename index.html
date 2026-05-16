@@ -5610,13 +5610,17 @@ function showScr(id){
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
-  // タブレット縦: 全画面遷移でサイドバーを格納
+  // サイドバー自動格納
+  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary'];
+  const isOps=OPS_SCREENS.includes(id);
+  const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(window.innerWidth >= 768 && window.innerWidth < 1024){
+    // タブレット縦: 全画面遷移で格納
     document.body.classList.add('sb-closed'); _syncSbBtns(true);
   } else if(window.innerWidth >= 1024){
-    // PC: 業務日誌のみ格納、離れたら復元
-    if(id==='scr-diary'){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
-    else if(S.prevScreen==='scr-diary'){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
+    // PC/横向きタブレット: 業務記録画面は格納、それ以外に戻ったら復元
+    if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
+    else if(wasOps){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
   }
 }
 function goBack(){showScr(S.prevScreen||'scr-dashboard');}
