@@ -1960,7 +1960,16 @@ a{color:var(--p);text-decoration:none}
       </div>
       <input type="date" id="bv-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
     </div>
-    <div style="padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap">
+    <div style="margin:6px 12px 0;padding:10px 14px;background:#f0f4ff;border-radius:10px;border:1px solid #c7d7f8">
+      <div style="font-size:11px;font-weight:800;color:var(--p);margin-bottom:6px;letter-spacing:.04em">🎤 話し方の例</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:12px;color:#374151">「<b>血圧130の80　脈72　体温36.5　SpO2 98</b>」</div>
+        <div style="font-size:12px;color:#374151">「<b>血圧135の85　脈68　体温36.8</b>」（測れた項目だけでもOK）</div>
+        <div style="font-size:12px;color:#374151">「<b>上が128　下が76　脈70　サチ97</b>」</div>
+      </div>
+      <div style="font-size:10px;color:var(--sub);margin-top:6px">🎤 ボタンを押して話し始め、終わったらもう一度押す。自動で保存されます。</div>
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="chip on" id="bv-f-all" onclick="setBvFilter('all')">全員</button>
       <button class="chip" id="bv-f-resident" onclick="setBvFilter('resident')">サ高住</button>
       <button class="chip" id="bv-f-commute" onclick="setBvFilter('commute')">デイ</button>
