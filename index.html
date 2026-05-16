@@ -225,7 +225,7 @@ a{color:var(--p);text-decoration:none}
 .inp-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .15s;cursor:pointer;touch-action:manipulation;width:100%;box-sizing:border-box}
 .inp-btn:hover,.inp-btn:active{border-color:var(--p);background:var(--ps)}
 .inp-btn .ib-ico{font-size:22px;flex-shrink:0;line-height:1}
-.inp-btn .ib-lbl{font-size:13px;font-weight:700;color:var(--txt);text-align:left}
+.inp-btn .ib-lbl{font-size:13px;font-weight:700;color:var(--txt);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timeline-sec{padding:0 12px;margin-top:4px}
 .timeline-sec h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0;text-transform:uppercase;letter-spacing:.04em}
 .tl-date{font-size:12px;font-weight:700;color:var(--sub);padding:4px 0 6px;border-bottom:1px solid var(--bdr);margin-bottom:8px}
@@ -295,8 +295,9 @@ a{color:var(--p);text-decoration:none}
 .modal-inner{background:var(--card);border-radius:16px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
 
 /* ── IMPORT SCREEN ── */
-.tab-bar{display:flex;border-bottom:2px solid var(--bdr);margin:0 12px}
-.tab{padding:12px 20px;font-size:14px;font-weight:700;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-bar{display:flex;border-bottom:2px solid var(--bdr);margin:0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:10px 16px;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;flex-shrink:0}
 .tab.on{color:var(--p);border-bottom-color:var(--p)}
 .tab-panel{display:none;padding:12px}
 .tab-panel.on{display:block}
@@ -2595,7 +2596,6 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🌡️ バイタル入力</div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-vital');showHelpTab('vital')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
     <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：血圧130の80 脈72 体温36.5 SpO2 98</span></button>
     <div class="field-row">
@@ -2627,7 +2627,6 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🍚 食事・飲水</div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-meal');showHelpTab('meal')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="meal-sub">利用者名 様</div>
     <button id="vs-btn-meal" class="btn-voice-smart" onclick="startVoiceSmart('meal')">🎤 音声で一括入力<span class="vs-ex">例：昼食 主食8割 副食7割 水分200</span></button>
     <div class="field"><label>食事区分</label>
@@ -2676,7 +2675,6 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">💧 排泄記録</div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-excretion');showHelpTab('excretion')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力<span class="vs-ex">例：排尿あり普通量 軟便あり</span></button>
     <div class="field"><label>種別</label>
       <div class="radio-group">
@@ -2711,7 +2709,6 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">📝 経時記録</div>
-    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">入力方法がわからない場合は <button onclick="closeModal('modal-chrono');showHelpTab('chrono')" style="color:var(--p);background:none;border:none;font-size:11px;cursor:pointer;text-decoration:underline;padding:0">📖 マニュアルを確認 →</button></div>
     <div class="sheet-sub" id="chrono-sub">利用者名 様</div>
     <div class="field"><label>カテゴリ（複数可）</label>
       <div class="tag-grid" id="chrono-tags">
@@ -2743,6 +2740,12 @@ a{color:var(--p);text-decoration:none}
       <button onclick="openTemplatePicker('chrono')" style="font-size:12px;color:var(--p);background:var(--ps);border-radius:6px;padding:4px 10px;margin-bottom:6px;font-weight:700">📋 テンプレートから入力</button>
       <textarea id="c-content" placeholder="自由記述..." rows="4" oninput="updateTriagePreview()"></textarea>
       <button class="btn-voice" id="voice-btn" onclick="startVoice('c-content',this)">🎤 タップして音声入力</button>
+      <div style="margin-top:6px;padding:8px 10px;background:#f0f4ff;border-radius:8px;border:1px solid #c7d7f8;font-size:11px;color:#444;line-height:1.7">
+        <span style="font-weight:800;color:var(--p)">🎤 話し方の例</span><br>
+        「午前10時 入浴介助実施。本人穏やかで問題なし」<br>
+        「血圧が高め 主治医に報告済み 経過観察中」<br>
+        「家族より電話あり 次回面会は来週の予定」
+      </div>
       <div id="c-triage-preview" class="triage-preview" style="display:none">
         <div style="font-size:11px;font-weight:700;color:var(--p);margin-bottom:6px">💡 AIが報告先を提案：</div>
         <div id="c-triage-badges" style="display:flex;flex-wrap:wrap;gap:2px"></div>
@@ -3086,6 +3089,8 @@ a{color:var(--p);text-decoration:none}
       <button class="tab" data-fstab="fst-medical" onclick="switchFsTab(this)">医療</button>
       <button class="tab" data-fstab="fst-economy" onclick="switchFsTab(this)">経済</button>
       <button class="tab" data-fstab="fst-file" onclick="switchFsTab(this)">書類</button>
+      <button class="tab" data-fstab="fst-schedule" onclick="switchFsTab(this)">予定</button>
+      <button class="tab" data-fstab="fst-edit" onclick="switchFsTab(this)">編集</button>
     </div>
 
     <!-- まとめて音声入力 -->
@@ -3263,6 +3268,20 @@ a{color:var(--p);text-decoration:none}
         <div class="fs-view-tag">プレビュー（このセッションのみ）</div>
         <iframe id="fs-pdf-iframe" style="width:100%;height:400px;border:1px solid var(--bdr);border-radius:8px;margin-top:6px"></iframe>
       </div>
+    <!-- 予定タブ -->
+    <div id="fst-schedule" class="tab-panel" style="padding-top:14px">
+      <div id="fst-schedule-body" style="font-size:13px;color:var(--sub);text-align:center;padding:20px">読み込み中...</div>
+    </div>
+    <!-- 編集タブ -->
+    <div id="fst-edit" class="tab-panel" style="padding-top:14px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="closeModal('modal-facesheet');setTimeout(openEditResident,200)" style="width:100%;padding:14px;background:var(--p);color:#fff;border-radius:12px;font-size:14px;font-weight:800;border:none;cursor:pointer;touch-action:manipulation">✏️ 利用者情報を編集</button>
+        <button onclick="closeModal('modal-facesheet');setTimeout(openVitalRanges,200)" style="width:100%;padding:14px;background:var(--bg);color:var(--txt);border-radius:12px;font-size:14px;font-weight:700;border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">⚙️ バイタル基準値を設定</button>
+        <button onclick="closeModal('modal-facesheet');setTimeout(openSvcSetting,200)" style="width:100%;padding:14px;background:var(--bg);color:var(--txt);border-radius:12px;font-size:14px;font-weight:700;border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">🏷️ 利用サービスを変更</button>
+        <button onclick="closeModal('modal-facesheet');setTimeout(openFamilyReport,200)" style="width:100%;padding:14px;background:var(--bg);color:var(--txt);border-radius:12px;font-size:14px;font-weight:700;border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">📮 家族連絡帳</button>
+        <button onclick="closeModal('modal-facesheet');setTimeout(openResidentQR,200)" style="width:100%;padding:14px;background:var(--bg);color:var(--txt);border-radius:12px;font-size:14px;font-weight:700;border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">📲 QR コード表示</button>
+      </div>
+    </div>
     </div>
   </div>
 </div>
@@ -6535,7 +6554,7 @@ function renderDetail(){
       const on=S.currentService===svc;
       return `<button onclick="selectService('${svc}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
     }).join('')
-    +(isAdmin()||isFacilityAdmin()?`<button onclick="openSvcSetting()" style="padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid var(--bdr);background:#fff;color:var(--sub);transition:all .15s;margin-left:auto" title="利用サービスを編集">⚙</button>`:'');
+    +(isAdmin()||isFacilityAdmin()?`<button onclick="openSvcSetting()" style="padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid var(--bdr);background:#fff;color:var(--sub);transition:all .15s;margin-left:auto;display:flex;align-items:center;gap:4px" title="この利用者が使うサービス（サ高住・デイ等）を設定します">⚙ <span style="font-size:10px">サービス設定</span></button>`:'');
   }
   const grid=document.getElementById('inp-grid');
   if(grid){
@@ -9886,6 +9905,34 @@ function switchFsTab(btn){
   btn.classList.add('on');
   document.querySelectorAll('#modal-facesheet .tab-panel').forEach(p=>p.classList.remove('on'));
   document.getElementById(btn.dataset.fstab).classList.add('on');
+  if(btn.dataset.fstab==='fst-schedule') renderFsSchedule();
+}
+function renderFsSchedule(){
+  const el=document.getElementById('fst-schedule-body');if(!el)return;
+  const rid=S.currentRes;
+  const schData=ls('schedules')||{};
+  const entries=[];
+  Object.entries(schData).forEach(([dateKey,dayEvs])=>{
+    (dayEvs||[]).forEach(ev=>{
+      if(ev.residentId===rid||ev.staffId===rid)entries.push({date:dateKey,...ev});
+    });
+  });
+  entries.sort((a,b)=>a.date.localeCompare(b.date));
+  const upcoming=entries.filter(e=>e.date>=new Date().toISOString().slice(0,10)).slice(0,20);
+  if(!upcoming.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--sub)">予定はありません</div>';return;}
+  el.innerHTML=upcoming.map(e=>{
+    const d=new Date(e.date);
+    const wday=['日','月','火','水','木','金','土'][d.getDay()];
+    const dateStr=`${d.getMonth()+1}/${d.getDate()}(${wday})`;
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr)">
+      <div style="flex-shrink:0;min-width:60px;font-size:12px;font-weight:700;color:var(--p)">${dateStr}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--txt)">${e.title||e.type||'予定'}</div>
+        ${e.time?`<div style="font-size:11px;color:var(--sub)">${e.time}</div>`:''}
+        ${e.note?`<div style="font-size:11px;color:var(--sub)">${e.note}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
 function saveFacesheetData(){
   const contacts=[...Array(3)].map((_,i)=>({
