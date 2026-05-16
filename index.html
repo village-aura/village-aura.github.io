@@ -842,7 +842,7 @@ a{color:var(--p);text-decoration:none}
     <div id="dash-fluid-sec" style="display:none;margin:10px 12px 0">
       <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between">
         <span>💧 本日の水分摂取</span>
-        <span id="dash-fluid-target-lbl" style="font-size:10px;font-weight:400;color:var(--sub)">目標 1,500ml</span>
+        <span id="dash-fluid-target-lbl" style="font-size:10px;font-weight:400;color:var(--sub)"></span>
       </div>
       <div id="dash-fluid-list" style="background:var(--card);border-radius:10px;border:1.5px solid var(--bdr);overflow:hidden"></div>
     </div>
@@ -10607,28 +10607,35 @@ function startRepoTimer(){
 function renderDashboardFluid(){
   const sec=document.getElementById('dash-fluid-sec');
   const listEl=document.getElementById('dash-fluid-list');
+  const lblEl=document.getElementById('dash-fluid-target-lbl');
   if(!sec||!listEl)return;
-  const residents=getResidents();
+  const residents=getResidents().filter(r=>r.services&&r.services.length);
+  if(!residents.length){sec.style.display='none';return;}
   const recs=getRecords();
   const todayStr=_localDs(new Date());
-  const TARGET=1500;
   const rows=residents.map(r=>{
+    const target=getFluidTarget(r.id);
     const total=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts.startsWith(todayStr))
       .reduce((s,rc)=>s+(rc.data.fluid||0),0);
-    return{r,total};
-  }).filter(x=>x.total>0);
-  if(!rows.length){sec.style.display='none';return;}
+    const pct=target>0?Math.min(100,Math.round(total/target*100)):100;
+    return{r,total,target,pct};
+  }).sort((a,b)=>a.pct-b.pct);
   sec.style.display='block';
-  const html=rows.map(({r,total},i)=>{
-    const pct=Math.min(100,Math.round(total/TARGET*100));
+  const alertCount=rows.filter(x=>x.pct<80).length;
+  if(lblEl)lblEl.innerHTML=alertCount>0
+    ?`<span style="color:var(--ng);font-weight:700">⚠ ${alertCount}名が目標未達</span>`
+    :`<span style="color:var(--ok);font-weight:700">全員 80%以上</span>`;
+  const html=rows.map(({r,total,target,pct},i)=>{
     const barColor=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--ng)';
+    const badge=pct<50?`<span style="font-size:9px;background:var(--ng);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px">要注意</span>`
+      :pct<80?`<span style="font-size:9px;background:var(--warn);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px">不足</span>`:'';
     const border=i>0?'border-top:1px solid var(--bdr)':'';
-    return `<div style="display:grid;grid-template-columns:80px 1fr 52px;align-items:center;gap:8px;padding:7px 12px;${border}">
-      <span style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</span>
+    return `<div style="display:grid;grid-template-columns:1fr 1fr 58px;align-items:center;gap:8px;padding:7px 12px;${border}">
+      <span style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}${badge}</span>
       <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">
         <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width .3s"></div>
       </div>
-      <span style="font-size:11px;font-weight:700;color:${barColor};text-align:right;white-space:nowrap">${total}ml</span>
+      <span style="font-size:11px;font-weight:700;color:${barColor};text-align:right;white-space:nowrap">${total}<span style="font-size:9px;font-weight:400;color:var(--sub)">/${target}ml</span></span>
     </div>`;
   }).join('');
   listEl.innerHTML=html;
