@@ -8468,8 +8468,9 @@ function renderMedication(){
     const allDone=meds.length>0&&meds.every(m=>chk[m.id]?.done);
     const borderColor=allDone?'var(--ok)':meds.length?'var(--bdr)':'#e8e8e8';
     return `<div style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:10px 12px;box-shadow:var(--sh);border-left:3px solid ${borderColor}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${meds.length?'8px':'0'}">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:${meds.length?'8px':'0'}">
         <span style="font-size:13px;font-weight:800;flex:1">${r.name}${allDone?' <span style="font-size:10px;color:var(--ok);font-weight:700">✓ 完了</span>':''}</span>
+        ${meds.length&&!allDone?`<button onclick="checkAllMeds('${r.id}','${checkKey}')" style="font-size:11px;background:#e8f5e9;border:1.5px solid var(--ok);border-radius:8px;padding:3px 10px;cursor:pointer;color:#2e7d32;font-weight:700;flex-shrink:0;touch-action:manipulation">✓ 全部飲めた</button>`:''}
         <button onclick="openMedReg('${r.id}')" style="font-size:11px;background:var(--ps);border:1.5px solid var(--p);border-radius:8px;padding:3px 10px;cursor:pointer;color:var(--p);font-weight:700;flex-shrink:0">${meds.length?'💊 薬を管理':'＋ 薬を登録'}</button>
       </div>
       ${meds.length?meds.map(m=>{
@@ -8499,6 +8500,22 @@ function toggleMedFail(rid,mid,checkKey){
   renderMedication();
   if(!checks[checkKey][rid][mid].showFail)return;
   setTimeout(()=>{const el=document.getElementById(`med-fail-${rid}-${mid}`);if(el)el.focus();},50);
+}
+function checkAllMeds(rid,checkKey){
+  const medData=getMedicationData();
+  const slotGroup=MED_SLOT_GROUP[_medSlot]||[_medSlot];
+  const meds=(medData[rid]||[]).filter(m=>m.slots&&m.slots.some(s=>slotGroup.includes(s)));
+  if(!meds.length)return;
+  const checks=getMedicationChecks();
+  if(!checks[checkKey])checks[checkKey]={};
+  if(!checks[checkKey][rid])checks[checkKey][rid]={};
+  const timeStr=new Date().toTimeString().slice(0,5);
+  meds.forEach(m=>{
+    if(!checks[checkKey][rid][m.id]?.done)
+      checks[checkKey][rid][m.id]={done:true,by:S.user||'──',time:timeStr,failNote:''};
+  });
+  saveMedicationChecks(checks);
+  renderMedication();
 }
 function toggleMedCheck(rid,mid,checkKey){
   const checks=getMedicationChecks();
