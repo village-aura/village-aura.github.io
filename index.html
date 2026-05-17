@@ -9244,11 +9244,13 @@ function renderMonthCal(){
     const isToday=dateStr===todayStr;
     const dayEvs=scheds.filter(ev=>ev.date===dateStr);
     const cls=['cal-cell',isToday?'today':'',dow===0?'csun':dow===6?'csat':''].filter(Boolean).join(' ');
+    const SHORT_TYPE={medical:'通院',commute:'デイ',care:'ケア',family:'面談',rehab:'リハ',other:'その他'};
     const evHtml=dayEvs.slice(0,3).map(ev=>{
       const ridx=allRes.findIndex(r=>r.id===ev.rid);
       const color=S.schedScope==='individual'?(EVENT_COLORS[ev.type]||EVENT_COLORS.other):(RES_PALETTE[ridx%RES_PALETTE.length]||'#607d8b');
+      const typePfx=S.schedScope==='individual'?(SHORT_TYPE[ev.type]||ev.type)+' ':'';
       const lbl=S.schedScope==='all'?((allRes[ridx]?.name.split(' ')[0]||'?')+' '+ev.title):ev.title;
-      return `<div class="cal-event" style="background:${color};color:#fff" title="${lbl}">${lbl}</div>`;
+      return `<div class="cal-event" style="background:${color};color:#fff" title="${typePfx}${lbl}">${typePfx}${lbl}</div>`;
     }).join('');
     const moreHtml=dayEvs.length>3?`<div class="cal-more">+${dayEvs.length-3}</div>`:'';
     html+=`<div class="${cls}" onclick="selectCalDay(${day})">
@@ -9259,13 +9261,21 @@ function renderMonthCal(){
   if(rem<7) for(let i=0;i<rem;i++) html+=`<div class="cal-cell empty"></div>`;
   html+=`</div></div>`;
 
-  // legend for all view
+  // legend
   if(S.schedScope==='all'){
     const seen=new Set(scheds.map(ev=>ev.rid));
     const legendItems=allRes.filter(r=>seen.has(r.id)).map((r,i)=>{
       const ridx=allRes.findIndex(x=>x.id===r.id);
       const color=RES_PALETTE[ridx%RES_PALETTE.length];
       return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;margin:3px 6px 3px 0"><span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></span>${r.name}</span>`;
+    }).join('');
+    if(legendItems) html+=`<div style="padding:6px 12px;border-top:1px solid var(--bdr);background:var(--card);line-height:1.8">${legendItems}</div>`;
+  } else {
+    const TYPE_LABEL={medical:'通院・医療',commute:'デイサービス',care:'ケア・入浴',family:'家族面談',rehab:'リハビリ',other:'その他'};
+    const usedTypes=[...new Set(scheds.map(ev=>ev.type))];
+    const legendItems=usedTypes.map(t=>{
+      const color=EVENT_COLORS[t]||EVENT_COLORS.other;
+      return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;margin:3px 6px 3px 0"><span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></span>${TYPE_LABEL[t]||t}</span>`;
     }).join('');
     if(legendItems) html+=`<div style="padding:6px 12px;border-top:1px solid var(--bdr);background:var(--card);line-height:1.8">${legendItems}</div>`;
   }
