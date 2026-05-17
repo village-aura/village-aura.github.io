@@ -6413,26 +6413,27 @@ function renderDetail(){
   const tempClass=latestVital?(vAbnormal('temp',latestVital.data.temp,r.id)?'warn':'ok'):'warn';
   const spo2Class=latestVital?(vAbnormal('spo2',latestVital.data.spo2,r.id)?'warn':'ok'):'warn';
   const vitalTime=latestVital?new Date(latestVital.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
+  const _sc='cursor:pointer;touch-action:manipulation;user-select:none';
   document.getElementById('summary-row').innerHTML=`
-    <div class="sum-card">
+    <div class="sum-card" onclick="openVitalFocused('v-sys')" style="${_sc}">
       <div style="font-size:10px;color:#3D7AB5;font-weight:700;margin-bottom:2px">💉 血圧</div>
       <div class="sum-val ${bpClass}" style="font-size:15px">${latestVital?latestVital.data.sys+'/'+latestVital.data.dia:'──'}</div>
-      <div class="sum-lbl">mmHg${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
+      <div class="sum-lbl">mmHg${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
     </div>
-    <div class="sum-card">
+    <div class="sum-card" onclick="openVitalFocused('v-pulse')" style="${_sc}">
       <div style="font-size:10px;color:#43a047;font-weight:700;margin-bottom:2px">💓 脈拍</div>
       <div class="sum-val ${pulseClass}" style="font-size:15px">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
-      <div class="sum-lbl">回/分${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
+      <div class="sum-lbl">回/分${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
     </div>
-    <div class="sum-card">
+    <div class="sum-card" onclick="openVitalFocused('v-temp')" style="${_sc}">
       <div style="font-size:10px;color:#e53935;font-weight:700;margin-bottom:2px">🌡️ 体温</div>
       <div class="sum-val ${tempClass}" style="font-size:15px">${latestVital&&latestVital.data.temp?latestVital.data.temp:'──'}</div>
-      <div class="sum-lbl">℃${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
+      <div class="sum-lbl">℃${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
     </div>
-    <div class="sum-card">
+    <div class="sum-card" onclick="openVitalFocused('v-spo2')" style="${_sc}">
       <div style="font-size:10px;color:#9c27b0;font-weight:700;margin-bottom:2px">🫁 SpO2</div>
       <div class="sum-val ${spo2Class}" style="font-size:15px">${latestVital&&latestVital.data.spo2?latestVital.data.spo2:'──'}</div>
-      <div class="sum-lbl">%${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}</div>
+      <div class="sum-lbl">%${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
     </div>
   `;
   // 排便アラートチップ
@@ -6552,6 +6553,17 @@ function switchDetailTab(tab){
   if(right)right.classList.toggle('dtab-hidden',tab==='input');
   const left=document.querySelector('.detail-col-left');
   if(left)left.style.display=tab==='timeline'?'none':'';
+}
+function openVitalFocused(focusField){
+  const recs=getRecords().filter(rc=>rc.rid===S.currentRes&&rc.type==='vital');
+  const todayStr=new Date().toDateString();
+  const latest=recs.filter(rc=>new Date(rc.ts).toDateString()===todayStr).sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+  if(latest){
+    const d=latest.data;
+    ['sys','dia','pulse','temp','spo2'].forEach(k=>{const el=document.getElementById('v-'+k);if(el)el.value=d[k]||'';});
+  }
+  openModal('modal-vital');
+  setTimeout(()=>{const el=document.getElementById(focusField);if(el){el.focus();el.select();}},180);
 }
 function selectService(svc){S.currentService=svc;renderDetail();}
 function openSvcSetting(){
