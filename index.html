@@ -5586,7 +5586,7 @@ function showScr(id){
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
