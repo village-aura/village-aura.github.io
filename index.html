@@ -222,7 +222,7 @@ a{color:var(--p);text-decoration:none}
 .input-section{padding:0 12px}
 .input-section h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0 6px;text-transform:uppercase;letter-spacing:.04em}
 .inp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.inp-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .15s;cursor:pointer;touch-action:manipulation;width:100%;box-sizing:border-box}
+.inp-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .15s;cursor:pointer;touch-action:manipulation;width:100%;box-sizing:border-box;min-width:0;overflow:hidden}
 .inp-btn:hover,.inp-btn:active{border-color:var(--p);background:var(--ps)}
 .inp-btn .ib-ico{font-size:22px;flex-shrink:0;line-height:1}
 .inp-btn .ib-lbl{font-size:13px;font-weight:700;color:var(--txt);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -398,7 +398,7 @@ a{color:var(--p);text-decoration:none}
   .quick-grid{grid-template-columns:repeat(4,1fr)}
   .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
   .res-list .res-card{margin-bottom:0}
-  .inp-grid{grid-template-columns:repeat(4,1fr)}
+  .inp-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
   #scr-handover-board.on{padding:4px 0}
   #scr-handover-board .card{margin-bottom:0}
   /* diary split layout */
@@ -4002,6 +4002,10 @@ function setupRealtimeSync(){
       }
       if(key==='schedules'&&S.screen==='scr-schedule')renderSchedule();
       if(key==='infection_data'&&S.screen==='scr-infection')renderInfectionList();
+      if((key==='medication_data'||key==='medication_checks')&&S.screen==='scr-medication')renderMedication();
+      if(key==='board_data2'&&S.screen==='scr-handover-board')renderHandoverBoard();
+      if(key==='tasks_data'&&S.screen==='scr-tasks')renderTasks&&renderTasks();
+      if(key==='bath_records'&&S.screen==='scr-detail')renderDetail();
     },e=>console.warn('fbSync:',key,e));
     fbListeners.push(unsub);
   });
@@ -8625,49 +8629,62 @@ function startVoiceMedName(i,btn){
   },400);
 }
 function openMedPhotoOCR(){document.getElementById('med-photo-input').click();}
+function _compressImage(file,maxPx,quality){
+  return new Promise(resolve=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const scale=Math.min(1,maxPx/Math.max(img.width,img.height));
+      const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg',quality).split(',')[1]);
+    };
+    img.src=url;
+  });
+}
 async function processMedPhoto(input){
   if(!input.files||!input.files[0])return;
   const status=document.getElementById('med-ocr-status');
   if(!_aiKey){toast('AIキー未設定。設定 → AI設定でGroqキーを入力してください');return;}
   const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=async function(e){
-    if(status){status.style.display='block';status.textContent='📷 薬手帳を解析中...';}
-    try{
-      const base64=e.target.result.split(',')[1];
-      const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-        method:'POST',
-        headers:{'Authorization':'Bearer '+_aiKey,'Content-Type':'application/json'},
-        body:JSON.stringify({
-          model:'meta-llama/llama-4-scout-17b-16e-instruct',
-          messages:[{role:'user',content:[
-            {type:'text',text:'この薬手帳または処方箋から薬品名と用法用量をすべて読み取り、以下のJSON配列のみ返してください（説明不要）：\n[{"name":"薬品名","dose":"1錠など","slots":["morning"]}]\nslots選択肢: wakeup(起床時)/morning_before(朝食前)/morning(朝食後)/noon_before(昼食前)/noon(昼食後)/evening_before(夕食前)/evening(夕食後)/bedtime(眠前)'},
-            {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64}}
-          ]}],
-          max_tokens:1000
-        })
-      });
-      const data=await res.json();
-      const text=data.choices?.[0]?.message?.content||'';
-      const match=text.match(/\[[\s\S]*?\]/);
-      if(!match)throw new Error('解析結果を取得できませんでした');
-      const parsed=JSON.parse(match[0]);
-      const medData=getMedicationData();
-      if(!medData[_medRegRid])medData[_medRegRid]=[];
-      parsed.forEach(item=>{
-        medData[_medRegRid].push({id:'m'+Date.now()+Math.floor(Math.random()*9999),name:item.name||'',dose:item.dose||'',slots:Array.isArray(item.slots)?item.slots:['morning']});
-      });
-      saveMedicationData(medData);
-      renderMedRegList();
-      if(status)status.style.display='none';
-      toast('💊 '+parsed.length+'件の薬を読み取りました ✓');
-    }catch(err){
-      if(status){status.textContent='⚠️ 読み取り失敗：'+err.message;}
-      setTimeout(()=>{if(status)status.style.display='none';},3000);
-    }
-    input.value='';
-  };
-  reader.readAsDataURL(file);
+  if(status){status.style.display='block';status.textContent='📷 画像を圧縮中...';}
+  try{
+    const base64=await _compressImage(file,1024,0.75);
+    if(status)status.textContent='📷 薬手帳を解析中...';
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+_aiKey,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'meta-llama/llama-4-scout-17b-16e-instruct',
+        messages:[{role:'user',content:[
+          {type:'text',text:'この薬手帳または処方箋から薬品名と用法用量をすべて読み取り、以下のJSON配列のみ返してください（前後の説明不要）：\n[{"name":"薬品名","dose":"1錠など","slots":["morning"]}]\nslots選択肢: wakeup(起床時)/morning_before(朝食前)/morning(朝食後)/noon_before(昼食前)/noon(昼食後)/evening_before(夕食前)/evening(夕食後)/bedtime(眠前)\n用法不明時はmorning。薬が見つからない場合は[]を返す。'},
+          {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64}}
+        ]}],
+        max_tokens:1000
+      })
+    });
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message||'APIエラー');
+    const text=data.choices?.[0]?.message?.content||'';
+    const match=text.match(/\[[\s\S]*\]/);
+    if(!match)throw new Error('薬情報が読み取れませんでした');
+    const parsed=JSON.parse(match[0]);
+    const medData=getMedicationData();
+    if(!medData[_medRegRid])medData[_medRegRid]=[];
+    parsed.forEach(item=>{
+      medData[_medRegRid].push({id:'m'+Date.now()+Math.floor(Math.random()*9999),name:item.name||'',dose:item.dose||'',slots:Array.isArray(item.slots)?item.slots:['morning']});
+    });
+    saveMedicationData(medData);
+    renderMedRegList();
+    if(status)status.style.display='none';
+    toast(parsed.length?'💊 '+parsed.length+'件の薬を読み取りました ✓':'薬情報が見つかりませんでした');
+  }catch(err){
+    if(status){status.textContent='⚠️ 読み取り失敗：'+err.message;}
+    setTimeout(()=>{if(status)status.style.display='none';},4000);
+  }
+  input.value='';
 }
 
 // ═══════════ 送迎チェック ═══════════
