@@ -225,7 +225,7 @@ a{color:var(--p);text-decoration:none}
 .inp-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .15s;cursor:pointer;touch-action:manipulation;width:100%;box-sizing:border-box;min-width:0;overflow:hidden}
 .inp-btn:hover,.inp-btn:active{border-color:var(--p);background:var(--ps)}
 .inp-btn .ib-ico{font-size:22px;flex-shrink:0;line-height:1}
-.inp-btn .ib-lbl{font-size:13px;font-weight:700;color:var(--txt);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inp-btn .ib-lbl{font-size:12px;font-weight:700;color:var(--txt);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timeline-sec{padding:0 12px;margin-top:4px}
 .timeline-sec h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0;text-transform:uppercase;letter-spacing:.04em}
 .detail-mobile-tabs{display:flex;background:var(--card);border-bottom:2px solid var(--bdr);position:sticky;top:56px;z-index:10}
@@ -3891,7 +3891,7 @@ const SVC_BTNS = {
 const BTN_DEF = {
   vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openModal('modal-vital')"},
   bath:        {ico:'🛁', lbl:'入浴記録',    fn:"openBathModal()"},
-  meal:        {ico:'🍚', lbl:'食事・飲水',  fn:"openModal('modal-meal')"},
+  meal:        {ico:'🍚', lbl:'飲水食事',  fn:"openModal('modal-meal')"},
   excretion:   {ico:'💧', lbl:'排泄',        fn:"openModal('modal-excretion')"},
   chrono:      {ico:'📝', lbl:'経時記録',    fn:"openModal('modal-chrono')"},
   weight:      {ico:'⚖️', lbl:'体重測定',    fn:"openModal('modal-weight')"},
