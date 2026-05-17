@@ -1055,10 +1055,14 @@ a{color:var(--p);text-decoration:none}
       <button id="hb-filter-urgent" class="hb-filter-btn" onclick="setHbFilter('urgent')">🚨 緊急</button>
       <button id="hb-filter-important" class="hb-filter-btn" onclick="setHbFilter('important')">⚠️ 重要</button>
       <button id="hb-filter-doctor" class="hb-filter-btn" onclick="setHbFilter('doctor')">🩺 医師</button>
+      <button id="hb-filter-facility_nurse" class="hb-filter-btn" onclick="setHbFilter('facility_nurse')">🏥 施設看護師</button>
+      <button id="hb-filter-clinic_nurse" class="hb-filter-btn" onclick="setHbFilter('clinic_nurse')">💉 医院看護師</button>
       <button id="hb-filter-nurse" class="hb-filter-btn" onclick="setHbFilter('nurse')">👩‍⚕️ 看護師</button>
       <button id="hb-filter-sak" class="hb-filter-btn" onclick="setHbFilter('sak')">🏠 サ高住</button>
       <button id="hb-filter-shot" class="hb-filter-btn" onclick="setHbFilter('shot')">🏡 小多機</button>
       <button id="hb-filter-day" class="hb-filter-btn" onclick="setHbFilter('day')">☀️ デイ</button>
+      <button id="hb-filter-visit" class="hb-filter-btn" onclick="setHbFilter('visit')">🚗 訪問介護</button>
+      <button id="hb-filter-home_care" class="hb-filter-btn" onclick="setHbFilter('home_care')">🏘️ 居宅</button>
     </div>
     <!-- 掲示板リスト -->
     <div id="hb-board-list" style="padding:0 12px 20px"></div>
@@ -1917,10 +1921,11 @@ a{color:var(--p);text-decoration:none}
       <input type="date" id="med-date" style="padding:5px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:12px;background:var(--card)">
     </div>
     <div style="padding:0 12px 8px;display:flex;gap:5px">
-      <button id="med-slot-morning" onclick="setMedSlot('morning')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer;line-height:1.2">朝<br><span style="font-size:9px;opacity:.8">6〜9時</span></button>
-      <button id="med-slot-noon"    onclick="setMedSlot('noon')"    style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">昼<br><span style="font-size:9px">12〜13時</span></button>
-      <button id="med-slot-evening" onclick="setMedSlot('evening')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">夕<br><span style="font-size:9px">18〜19時</span></button>
-      <button id="med-slot-bedtime" onclick="setMedSlot('bedtime')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">眠前<br><span style="font-size:9px">21〜22時</span></button>
+      <button id="med-slot-wakeup"  onclick="setMedSlot('wakeup')"  style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">起床時</button>
+      <button id="med-slot-morning" onclick="setMedSlot('morning')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer;line-height:1.2">朝<br><span style="font-size:9px;opacity:.8">食前/後</span></button>
+      <button id="med-slot-noon"    onclick="setMedSlot('noon')"    style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">昼<br><span style="font-size:9px">食前/後</span></button>
+      <button id="med-slot-evening" onclick="setMedSlot('evening')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">夕<br><span style="font-size:9px">食前/後</span></button>
+      <button id="med-slot-bedtime" onclick="setMedSlot('bedtime')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">眠前</button>
     </div>
     <div id="medication-list" style="padding:0 12px 80px"></div>
   </div>
@@ -3342,13 +3347,15 @@ a{color:var(--p);text-decoration:none}
     <input type="hidden" id="board-ho-edit-idx" value="-1">
     <div class="field" id="bho-section-field"><label>カテゴリ</label>
       <select id="bho-section-sel" onchange="document.getElementById('board-ho-section').value=this.value">
+        <option value="facility_nurse">🏥 施設看護師から</option>
+        <option value="clinic_nurse">💉 医院看護師から</option>
         <option value="nurse">👩‍⚕️ 看護師から</option>
         <option value="sak_am">🏠 サ高住から（朝）</option>
         <option value="sak_pm">🏠 サ高住から（夕）</option>
         <option value="shot">🏡 小多機から</option>
         <option value="day">☀️ デイから</option>
         <option value="visit">🚗 訪問介護から</option>
-        <option value="home_care">🏠 居宅から</option>
+        <option value="home_care">🏘️ 居宅から</option>
       </select>
     </div>
     <div class="field"><label>関連利用者（任意）</label>
@@ -5579,7 +5586,7 @@ function showScr(id){
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
@@ -8413,14 +8420,15 @@ function saveBulkVital(rid){
 
 // ═══════════ 服薬チェック ═══════════
 let _medSlot='morning';
-const MED_SLOT_LABEL={morning:'朝',noon:'昼',evening:'夕',bedtime:'眠前'};
+const MED_SLOT_LABEL={wakeup:'起床時',morning_before:'朝食前',morning:'朝食後',noon_before:'昼食前',noon:'昼食後',evening_before:'夕食前',evening:'夕食後',bedtime:'眠前'};
+const MED_SLOT_GROUP={wakeup:['wakeup'],morning:['morning_before','morning'],noon:['noon_before','noon'],evening:['evening_before','evening'],bedtime:['bedtime']};
 function getMedicationData(){return ls('medication_data')||{};}
 function saveMedicationData(d){lsSet('medication_data',d);fsSet('medication_data',d);}
 function getMedicationChecks(){return ls('medication_checks')||{};}
 function saveMedicationChecks(d){lsSet('medication_checks',d);fsSet('medication_checks',d);}
 function setMedSlot(slot){
   _medSlot=slot;
-  ['morning','noon','evening','bedtime'].forEach(s=>{
+  ['wakeup','morning','noon','evening','bedtime'].forEach(s=>{
     const b=document.getElementById('med-slot-'+s);
     if(b){b.style.background=s===slot?'var(--p)':'var(--bg)';b.style.color=s===slot?'#fff':'var(--sub)';b.style.border=s===slot?'none':'1.5px solid var(--bdr)';}
   });
@@ -8437,7 +8445,8 @@ function renderMedication(){
   const res=getResidents().filter(r=>r.services&&r.services.length);
   const list=document.getElementById('medication-list');if(!list)return;
   const rows=res.map(r=>{
-    const meds=(medData[r.id]||[]).filter(m=>m.slots&&m.slots.includes(_medSlot));
+    const slotGroup=MED_SLOT_GROUP[_medSlot]||[_medSlot];
+    const meds=(medData[r.id]||[]).filter(m=>m.slots&&m.slots.some(s=>slotGroup.includes(s)));
     const chk=todayChecks[r.id]||{};
     const allDone=meds.length>0&&meds.every(m=>chk[m.id]?.done);
     const borderColor=allDone?'var(--ok)':meds.length?'var(--bdr)':'#e8e8e8';
@@ -8509,11 +8518,12 @@ const MED_DOSE_OPTIONS=['1錠','2錠','3錠','0.5錠','1包','2包','1カプセ�
 function renderMedRegList(){
   const medData=getMedicationData();
   const meds=medData[_medRegRid]||[];
-  const slotLabels={morning:'朝',noon:'昼',evening:'夕',bedtime:'眠前'};
   const el=document.getElementById('med-reg-list');if(!el)return;
   el.innerHTML=meds.map((m,i)=>{
     const doseIsCustom=m.dose&&!MED_DOSE_OPTIONS.slice(0,-1).includes(m.dose);
     const selVal=doseIsCustom?'その他':m.dose||'';
+    const slots=m.slots||[];
+    const allSlots=['wakeup','morning_before','morning','noon_before','noon','evening_before','evening','bedtime'];
     return `<div style="background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
         <input type="text" value="${m.name}" placeholder="薬品名（例：アムロジピン）" oninput="updateMedItem(${i},'name',this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
@@ -8526,11 +8536,11 @@ function renderMedRegList(){
         </select>
         ${(selVal==='その他'||doseIsCustom)?`<input type="text" value="${doseIsCustom?m.dose:''}" placeholder="自由入力" oninput="updateMedItem(${i},'dose',this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">`:''}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${['morning','noon','evening','bedtime'].map(s=>`
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;background:${(m.slots||[]).includes(s)?'var(--p)':'var(--card)'};color:${(m.slots||[]).includes(s)?'#fff':'var(--sub)'};padding:5px 12px;border-radius:20px;border:1.5px solid ${(m.slots||[]).includes(s)?'var(--p)':'var(--bdr)'}">
-            <input type="checkbox" ${(m.slots||[]).includes(s)?'checked':''} onchange="toggleMedSlot(${i},'${s}',this.checked)" style="display:none">${slotLabels[s]}
-          </label>`).join('')}
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${allSlots.map(s=>{
+          const on=slots.includes(s);
+          return `<label style="font-size:12px;cursor:pointer;background:${on?'var(--p)':'var(--card)'};color:${on?'#fff':'var(--sub)'};padding:4px 10px;border-radius:20px;border:1.5px solid ${on?'var(--p)':'var(--bdr)'};touch-action:manipulation;display:inline-block"><input type="checkbox" ${on?'checked':''} onchange="toggleMedSlot(${i},'${s}',this.checked)" style="display:none">${MED_SLOT_LABEL[s]}</label>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('')||'<div style="font-size:12px;color:var(--sub);text-align:center;padding:12px">まだ薬が登録されていません</div>';
@@ -8725,8 +8735,8 @@ function getBoardData(){
   const d=ls('board_data2')||{};
   return {
     sak:{am:d.sak?.am||[],pm:d.sak?.pm||[]},
-    doctor:d.doctor||[],nurse:d.nurse||[],
-    shot:d.shot||[],day:d.day||[],visit:d.visit||[],home_care:d.home_care||[]
+    doctor:d.doctor||[],facility_nurse:d.facility_nurse||[],clinic_nurse:d.clinic_nurse||[],
+    nurse:d.nurse||[],shot:d.shot||[],day:d.day||[],visit:d.visit||[],home_care:d.home_care||[]
   };
 }
 function saveBoardData(d){lsSet('board_data2',d);fsSet('board_data2',d);}
@@ -8784,12 +8794,14 @@ function formatExpiry(expiresAt){
 let _hbFilter='all';
 const HB_SEC_INFO={
   doctor:{label:'医師',emoji:'🩺',bg:'#fce4ec',tc:'#c62828'},
+  facility_nurse:{label:'施設看護師',emoji:'🏥',bg:'#e8f5e9',tc:'#1b5e20'},
+  clinic_nurse:{label:'医院看護師',emoji:'💉',bg:'#e3f2fd',tc:'#0d47a1'},
   nurse:{label:'看護師',emoji:'👩‍⚕️',bg:'#e8f5e9',tc:'#2e7d32'},
   sak:{label:'サ高住',emoji:'🏠',bg:'#e3f2fd',tc:'#1565c0'},
   shot:{label:'小多機',emoji:'🏡',bg:'#f3e5f5',tc:'#7b1fa2'},
   day:{label:'デイ',emoji:'☀️',bg:'#fff8e1',tc:'#f57f17'},
   visit:{label:'訪問介護',emoji:'🚗',bg:'#e8f5e9',tc:'#388e3c'},
-  home_care:{label:'居宅',emoji:'🏠',bg:'#fce4ec',tc:'#ad1457'},
+  home_care:{label:'居宅',emoji:'🏘️',bg:'#fce4ec',tc:'#ad1457'},
 };
 function setHbFilter(f){
   _hbFilter=f;
@@ -8803,10 +8815,10 @@ function renderHbList(){
   let all=[];
   (d.doctor||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'doctor',_shift:null,_origIdx:i});});
   ['am','pm'].forEach(sh=>{(d.sak?.[sh]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'sak',_shift:sh,_origIdx:i});});});
-  ['nurse','shot','day','visit','home_care'].forEach(sec=>{(d[sec]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:sec,_shift:null,_origIdx:i});});});
+  ['facility_nurse','clinic_nurse','nurse','shot','day','visit','home_care'].forEach(sec=>{(d[sec]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:sec,_shift:null,_origIdx:i});});});
   if(_hbFilter==='urgent') all=all.filter(h=>h.pri==='urgent');
   else if(_hbFilter==='important') all=all.filter(h=>h.pri==='important');
-  else if(['doctor','nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
+  else if(['doctor','facility_nurse','clinic_nurse','nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
   const priOrder={urgent:0,important:1,normal:2};
   all.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
   if(!all.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">申し送りはありません</div>';return;}
@@ -10458,6 +10470,18 @@ function loadMayDemoData(){
     visit:[
       {id:'bs14',content:'伊藤様：起床介助後に排便あり。訪問時は腹部状態と排便記録を確認すること。',pri:'normal',rid:'r7',by:'山本 次郎',time:'09:30'},
       {id:'bs15',content:'中村様：本日の訪問看護あり（15:30〜）。服薬確認と血圧測定を必ず実施。',pri:'important',rid:'r5',by:'中村 由美',time:'09:00'},
+    ],
+    home_care:[
+      {id:'bs16',content:'佐々木様：今週は自宅での転倒リスクが高い。玄関マットを撤去するよう家族に説明済み。訪問時に確認すること。',pri:'important',rid:'r3',by:'田中 花子',time:'10:00'},
+      {id:'bs17',content:'居宅の新利用者についてのサービス計画は来週の担当者会議で確認します。',pri:'normal',rid:'',by:'鈴木 健太',time:'08:30'},
+    ],
+    facility_nurse:[
+      {id:'bs18',content:'山田様：褥瘡処置を朝・夕に実施中。創部の回復経過は良好。引き続き除圧の声かけを。',pri:'important',rid:'r1',by:'田中 花子',time:'07:00'},
+      {id:'bs19',content:'渡辺様：夜間の酸素投与継続中（2L/min）。SpO2 95%以上を維持できています。',pri:'normal',rid:'r8',by:'中村 由美',time:'07:15'},
+    ],
+    clinic_nurse:[
+      {id:'bs20',content:'高橋様：本日の受診あり（内科 10:00〜）。採血結果を主治医に持参すること。',pri:'important',rid:'r6',by:'中村 由美',time:'09:00'},
+      {id:'bs21',content:'鈴木様：先週の血液検査結果が届きました。HbA1c 7.2% → 担当医からの指示はしばらく現状維持。',pri:'normal',rid:'r2',by:'田中 花子',time:'09:30'},
     ],
   };
   if(!ls('board_data2')){lsSet('board_data2',demoBoard);}
