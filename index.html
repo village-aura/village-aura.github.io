@@ -253,10 +253,11 @@ a{color:var(--p);text-decoration:none}
 .sheet-sub{font-size:13px;color:var(--sub);margin-bottom:18px}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:#fff;color:var(--txt)}
+.field input,.field select,.field textarea{width:100%;min-width:0;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:#fff;color:var(--txt)}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--p)}
 .field textarea{resize:vertical;min-height:80px;line-height:1.6}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-row>.field{min-width:0}
 .radio-group{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .radio-group label{display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700;padding:9px 6px;border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .radio-group input[type=radio]{display:none}
@@ -497,7 +498,7 @@ a{color:var(--p);text-decoration:none}
   .detail-mobile-tabs{display:none}
   .detail-col-right.dtab-hidden{display:block!important}
   .detail-content-grid{display:grid;grid-template-columns:460px 1fr;align-items:start}
-  .detail-col-left{border-right:1px solid var(--bdr)}
+  .detail-col-left{border-right:1px solid var(--bdr);overflow:hidden;min-width:0}
   .detail-col-right{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--card)}
   .detail-col-right .timeline-sec{padding:12px 16px}
   .detail-col-right .timeline-sec h3{display:none}
