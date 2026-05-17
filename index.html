@@ -497,7 +497,7 @@ a{color:var(--p);text-decoration:none}
   /* detail 2-col */
   .detail-mobile-tabs{display:none}
   .detail-col-right.dtab-hidden{display:block!important}
-  .detail-content-grid{display:grid;grid-template-columns:460px 1fr;align-items:start}
+  .detail-content-grid{display:grid;grid-template-columns:520px 1fr;align-items:start}
   .detail-col-left{border-right:1px solid var(--bdr);overflow:hidden;min-width:0}
   .detail-col-right{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--card)}
   .detail-col-right .timeline-sec{padding:12px 16px}
@@ -4004,8 +4004,15 @@ function setupRealtimeSync(){
       if(key==='infection_data'&&S.screen==='scr-infection')renderInfectionList();
       if((key==='medication_data'||key==='medication_checks')&&S.screen==='scr-medication')renderMedication();
       if(key==='board_data2'&&S.screen==='scr-handover-board')renderHandoverBoard();
-      if(key==='tasks_data'&&S.screen==='scr-tasks')renderTasks&&renderTasks();
+      if(key==='tasks_data'&&S.screen==='scr-tasks')renderTasksList();
       if(key==='bath_records'&&S.screen==='scr-detail')renderDetail();
+      if(key==='rounds_data'&&S.screen==='scr-rounds')renderRoundsList();
+      if(key==='reposition_times'&&S.screen==='scr-dashboard')renderDashboard();
+      if(key==='transport_records'&&S.screen==='scr-transport')renderTransport();
+      if(key==='shift_checklist'&&S.screen==='scr-shift-checklist')renderShiftChecklist();
+      if(key==='monthly_goals'&&S.screen==='scr-dashboard')renderDashboard();
+      if(key==='incidents'&&S.screen==='scr-incidents')renderIncidentList();
+      if(key==='proposals'&&S.screen==='scr-proposal')renderProposalScr();
     },e=>console.warn('fbSync:',key,e));
     fbListeners.push(unsub);
   });
@@ -10661,7 +10668,7 @@ let _roundsShift='morning';
 let _roundsFacility='all';
 
 function getRoundsData(){return ls('rounds_data')||{};}
-function saveRoundsData(d){lsSet('rounds_data',d);}
+function saveRoundsData(d){lsSet('rounds_data',d);fsSet('rounds_data',d);}
 function _roundsKey(){return _localDs(new Date())+'_'+_roundsShift;}
 
 function setRoundsShift(shift){
@@ -10761,7 +10768,7 @@ const REPO_INTERVAL_MS=2*60*60*1000;
 let _repoTimer=null;
 
 function getRepoTimes(){return ls('reposition_times')||{};}
-function saveRepoTimes(d){lsSet('reposition_times',d);}
+function saveRepoTimes(d){lsSet('reposition_times',d);fsSet('reposition_times',d);}
 
 function toggleRepoNeeded(rid){
   const res=getResidents();
@@ -11442,7 +11449,7 @@ function deleteTask(id){
 
 // ═══════════ FEATURE 7: 申し送り読了確認 ═══════════
 function getHandoverReads(){return ls('handover_reads')||{};}
-function saveHandoverReads(d){lsSet('handover_reads',d);}
+function saveHandoverReads(d){lsSet('handover_reads',d);fsSet('handover_reads',d);}
 
 function markHandoverRead(itemKey){
   const data=getHandoverReads();
