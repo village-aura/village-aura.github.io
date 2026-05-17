@@ -228,6 +228,10 @@ a{color:var(--p);text-decoration:none}
 .inp-btn .ib-lbl{font-size:13px;font-weight:700;color:var(--txt);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .timeline-sec{padding:0 12px;margin-top:4px}
 .timeline-sec h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0;text-transform:uppercase;letter-spacing:.04em}
+.detail-mobile-tabs{display:flex;background:var(--card);border-bottom:2px solid var(--bdr);position:sticky;top:56px;z-index:10}
+.detail-tab-btn{flex:1;padding:11px 8px;font-size:13px;font-weight:700;border:none;background:none;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;touch-action:manipulation}
+.detail-tab-btn.on{color:var(--p);border-bottom-color:var(--p)}
+.detail-col-right.dtab-hidden{display:none}
 .tl-date{font-size:12px;font-weight:700;color:var(--sub);padding:4px 0 6px;border-bottom:1px solid var(--bdr);margin-bottom:8px}
 .tl-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start}
 .tl-left{width:38px;flex-shrink:0;text-align:center}
@@ -490,6 +494,8 @@ a{color:var(--p);text-decoration:none}
   .search-bar{top:56px;padding:16px 16px 8px}
   .res-list{grid-template-columns:repeat(3,1fr);padding:0 16px 16px}
   /* detail 2-col */
+  .detail-mobile-tabs{display:none}
+  .detail-col-right.dtab-hidden{display:block!important}
   .detail-content-grid{display:grid;grid-template-columns:460px 1fr;align-items:start}
   .detail-col-left{border-right:1px solid var(--bdr)}
   .detail-col-right{position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--card)}
@@ -878,6 +884,10 @@ a{color:var(--p);text-decoration:none}
   <!-- ─── RESIDENT DETAIL ─── -->
   <div id="scr-detail" class="scr">
     <div class="detail-hero" id="detail-hero"></div>
+    <div class="detail-mobile-tabs">
+      <button class="detail-tab-btn on" id="dtab-input" onclick="switchDetailTab('input')">📝 記録入力</button>
+      <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
+    </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
     <div id="handover-area"></div>
@@ -6336,6 +6346,7 @@ function openResident(id){
   S.tlOffset=0;
   S.currentService=null;
   showScr('scr-detail');
+  switchDetailTab('input');
   renderDetail();
 }
 function renderDetail(){
@@ -6516,6 +6527,14 @@ function renderDetail(){
   }
   // Timeline
   renderTimeline();
+}
+function switchDetailTab(tab){
+  document.getElementById('dtab-input').classList.toggle('on',tab==='input');
+  document.getElementById('dtab-timeline').classList.toggle('on',tab==='timeline');
+  const right=document.querySelector('.detail-col-right');
+  if(right)right.classList.toggle('dtab-hidden',tab==='input');
+  const left=document.querySelector('.detail-col-left');
+  if(left)left.style.display=tab==='timeline'?'none':'';
 }
 function selectService(svc){S.currentService=svc;renderDetail();}
 function openSvcSetting(){
