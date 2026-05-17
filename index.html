@@ -4791,8 +4791,8 @@ function renderSettings(){
   const dmt=document.getElementById('dark-mode-toggle');
   if(dmt) dmt.checked=document.body.classList.contains('dark-mode');
   setFontSize(localStorage.getItem('va_font')||'md');
-  ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('pw-err').style.display='none';
+  ['pw-cur','pw-new','pw-new2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pwErr=document.getElementById('pw-err');if(pwErr)pwErr.style.display='none';
   const key=_aiKey||'';
   const inp=document.getElementById('ai-api-key-input');
   const sts=document.getElementById('ai-key-status');
