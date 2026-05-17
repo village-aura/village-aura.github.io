@@ -735,6 +735,9 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
 
+    <!-- 今月の目標 -->
+    <div id="monthly-goal-card" style="margin:8px 12px 0"></div>
+
     <!-- 記録入力（事業所） -->
     <div style="margin:0 12px 4px">
       <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">記録入力</div>
@@ -837,9 +840,6 @@ a{color:var(--p);text-decoration:none}
         </div>
       </div>
     </div>
-
-    <!-- 今月の目標 -->
-    <div id="monthly-goal-card" style="margin:12px 12px 0"></div>
 
     <!-- 体位変換タイマー -->
     <div id="dash-repo-sec" style="display:none;margin:10px 12px 0">
@@ -1066,7 +1066,6 @@ a{color:var(--p);text-decoration:none}
       <button id="hb-filter-important" class="hb-filter-btn" onclick="setHbFilter('important')">⚠️ 重要</button>
       <button id="hb-filter-doctor" class="hb-filter-btn" onclick="setHbFilter('doctor')">🩺 医師</button>
       <button id="hb-filter-facility_nurse" class="hb-filter-btn" onclick="setHbFilter('facility_nurse')">🏥 施設看護師</button>
-      <button id="hb-filter-nurse" class="hb-filter-btn" onclick="setHbFilter('nurse')">👩‍⚕️ 看護師</button>
       <button id="hb-filter-sak" class="hb-filter-btn" onclick="setHbFilter('sak')">🏠 サ高住</button>
       <button id="hb-filter-shot" class="hb-filter-btn" onclick="setHbFilter('shot')">🏡 小多機</button>
       <button id="hb-filter-day" class="hb-filter-btn" onclick="setHbFilter('day')">☀️ デイ</button>
@@ -1137,7 +1136,12 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
       <div class="sheet-title">💊 服薬登録</div>
-      <div id="med-reg-res-name" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:12px"></div>
+      <div id="med-reg-res-name" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="openMedPhotoOCR()" style="flex:1;padding:10px;background:#e8f5e9;color:#2e7d32;border-radius:10px;font-size:13px;font-weight:700;border:1.5px solid #a5d6a7;cursor:pointer;touch-action:manipulation">📷 薬手帳・処方箋を読み取る</button>
+      </div>
+      <input type="file" id="med-photo-input" accept="image/*" capture="environment" style="display:none" onchange="processMedPhoto(this)">
+      <div id="med-ocr-status" style="display:none;padding:10px 12px;background:#fff8e1;border-radius:8px;font-size:12px;color:#f57f17;font-weight:700;margin-bottom:10px;text-align:center">📷 解析中...</div>
       <div id="med-reg-list" style="margin-bottom:12px"></div>
       <button onclick="addMedItem()" style="width:100%;padding:9px;background:var(--ps);color:var(--p);border-radius:8px;font-size:13px;font-weight:700;border:1.5px dashed var(--p);cursor:pointer;margin-bottom:8px">＋ 薬を追加</button>
       <button class="btn-primary" onclick="saveMedReg()">保存</button>
@@ -3352,7 +3356,6 @@ a{color:var(--p);text-decoration:none}
     <div class="field" id="bho-section-field"><label>カテゴリ</label>
       <select id="bho-section-sel" onchange="document.getElementById('board-ho-section').value=this.value">
         <option value="facility_nurse">🏥 施設看護師から</option>
-        <option value="nurse">👩‍⚕️ 看護師から</option>
         <option value="sak_am">🏠 サ高住から（朝）</option>
         <option value="sak_pm">🏠 サ高住から（夕）</option>
         <option value="shot">🏡 小多機から</option>
@@ -6370,13 +6373,16 @@ function renderDetail(){
       </div>
     </div>
     <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
-    <div style="display:flex;gap:6px;align-items:center">
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
       <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;border:none;cursor:pointer">👤 利用者情報詳細</button>
       <button onclick="toggleDetailMenu(event)" id="detail-more-btn" style="width:40px;height:36px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;font-size:20px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;letter-spacing:-.05em">⋯</button>
     </div>
+    <div style="display:flex;gap:5px">
+      <button onclick="goToResidentSchedule()" style="flex:1;background:rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:7px 4px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.3);cursor:pointer;touch-action:manipulation">📅 スケジュール</button>
+      <button onclick="openSvcSetting()" style="flex:1;background:rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:7px 4px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.3);cursor:pointer;touch-action:manipulation">🏷️ サービス設定</button>
+      <button onclick="openFamilyReport()" style="flex:1;background:rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:7px 4px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.3);cursor:pointer;touch-action:manipulation">📮 家族連絡帳</button>
+    </div>
     <div id="detail-more-menu" style="display:none;position:absolute;right:12px;top:calc(100% - 8px);background:#fff;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:100;min-width:180px;overflow:hidden">
-      <button onclick="goToResidentSchedule();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">📅 スケジュール</button>
-      <button onclick="openFamilyReport();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">📮 家族連絡帳</button>
       <button onclick="openVitalRanges();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">⚙️ バイタル基準値${r.vitalRanges?' ★':''}</button>
       <button onclick="toggleRepoNeeded('${r.id}');closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:${r.repoNeeded?'var(--p)':'var(--txt)'};background:${r.repoNeeded?'var(--ps)':'none'};border:none;border-bottom:1px solid var(--bdr);cursor:pointer">🔄 体交${r.repoNeeded?' ON ●':' OFF'}</button>
       <button onclick="openResidentQR();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;${S.userRole==='doctor'?'border-bottom:1px solid var(--bdr);':''}cursor:pointer">📲 QR コード</button>
@@ -6497,8 +6503,7 @@ function renderDetail(){
     svcSel.innerHTML=activeSvcs.map(([svc,m])=>{
       const on=S.currentService===svc;
       return `<button onclick="selectService('${svc}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
-    }).join('')
-    +(isAdmin()||isFacilityAdmin()?`<button onclick="openSvcSetting()" style="padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid var(--bdr);background:#fff;color:var(--sub);transition:all .15s;margin-left:auto;display:flex;align-items:center;gap:4px" title="この利用者が使うサービス（サ高住・デイ等）を設定します">⚙ <span style="font-size:10px">サービス設定</span></button>`:'');
+    }).join('');
   }
   const grid=document.getElementById('inp-grid');
   if(grid){
@@ -8538,7 +8543,8 @@ function renderMedRegList(){
     const allSlots=['wakeup','morning_before','morning','noon_before','noon','evening_before','evening','bedtime'];
     return `<div style="background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
-        <input type="text" value="${m.name}" placeholder="薬品名（例：アムロジピン）" oninput="updateMedItem(${i},'name',this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
+        <input type="text" id="med-name-${i}" value="${m.name}" placeholder="薬品名（例：アムロジピン）" oninput="updateMedItem(${i},'name',this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
+        <button onclick="startVoiceMedName(${i},this)" style="flex-shrink:0;padding:6px 10px;background:var(--ps);color:var(--p);border-radius:6px;border:1.5px solid var(--p);cursor:pointer;font-size:15px;touch-action:manipulation">🎤</button>
         <button onclick="removeMedItem(${i})" style="flex-shrink:0;padding:6px 10px;background:#fee;color:var(--ng);border-radius:6px;border:none;cursor:pointer;font-size:13px">✕</button>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
@@ -8591,6 +8597,60 @@ function toggleMedSlot(i,slot,on){
   saveMedicationData(medData);
 }
 function saveMedReg(){closeModal('modal-med-reg');toast('服薬情報を保存しました ✓');renderMedication();}
+function startVoiceMedName(i,btn){
+  const id='med-name-'+i;
+  startVoice(id,btn);
+  const poll=setInterval(()=>{
+    const el=document.getElementById(id);
+    if(!el){clearInterval(poll);return;}
+    if(!_voiceActive){updateMedItem(i,'name',el.value);clearInterval(poll);}
+  },400);
+}
+function openMedPhotoOCR(){document.getElementById('med-photo-input').click();}
+async function processMedPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const status=document.getElementById('med-ocr-status');
+  if(!_aiKey){toast('AIキー未設定。設定 → AI設定でGroqキーを入力してください');return;}
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    if(status){status.style.display='block';status.textContent='📷 薬手帳を解析中...';}
+    try{
+      const base64=e.target.result.split(',')[1];
+      const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+_aiKey,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'meta-llama/llama-4-scout-17b-16e-instruct',
+          messages:[{role:'user',content:[
+            {type:'text',text:'この薬手帳または処方箋から薬品名と用法用量をすべて読み取り、以下のJSON配列のみ返してください（説明不要）：\n[{"name":"薬品名","dose":"1錠など","slots":["morning"]}]\nslots選択肢: wakeup(起床時)/morning_before(朝食前)/morning(朝食後)/noon_before(昼食前)/noon(昼食後)/evening_before(夕食前)/evening(夕食後)/bedtime(眠前)'},
+            {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64}}
+          ]}],
+          max_tokens:1000
+        })
+      });
+      const data=await res.json();
+      const text=data.choices?.[0]?.message?.content||'';
+      const match=text.match(/\[[\s\S]*?\]/);
+      if(!match)throw new Error('解析結果を取得できませんでした');
+      const parsed=JSON.parse(match[0]);
+      const medData=getMedicationData();
+      if(!medData[_medRegRid])medData[_medRegRid]=[];
+      parsed.forEach(item=>{
+        medData[_medRegRid].push({id:'m'+Date.now()+Math.floor(Math.random()*9999),name:item.name||'',dose:item.dose||'',slots:Array.isArray(item.slots)?item.slots:['morning']});
+      });
+      saveMedicationData(medData);
+      renderMedRegList();
+      if(status)status.style.display='none';
+      toast('💊 '+parsed.length+'件の薬を読み取りました ✓');
+    }catch(err){
+      if(status){status.textContent='⚠️ 読み取り失敗：'+err.message;}
+      setTimeout(()=>{if(status)status.style.display='none';},3000);
+    }
+    input.value='';
+  };
+  reader.readAsDataURL(file);
+}
 
 // ═══════════ 送迎チェック ═══════════
 let _trTab='out';
@@ -8807,7 +8867,6 @@ let _hbFilter='all';
 const HB_SEC_INFO={
   doctor:{label:'医師',emoji:'🩺',bg:'#fce4ec',tc:'#c62828'},
   facility_nurse:{label:'施設看護師',emoji:'🏥',bg:'#e8f5e9',tc:'#1b5e20'},
-  nurse:{label:'看護師',emoji:'👩‍⚕️',bg:'#e8f5e9',tc:'#2e7d32'},
   sak:{label:'サ高住',emoji:'🏠',bg:'#e3f2fd',tc:'#1565c0'},
   shot:{label:'小多機',emoji:'🏡',bg:'#f3e5f5',tc:'#7b1fa2'},
   day:{label:'デイ',emoji:'☀️',bg:'#fff8e1',tc:'#f57f17'},
@@ -8826,10 +8885,10 @@ function renderHbList(){
   let all=[];
   (d.doctor||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'doctor',_shift:null,_origIdx:i});});
   ['am','pm'].forEach(sh=>{(d.sak?.[sh]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'sak',_shift:sh,_origIdx:i});});});
-  ['facility_nurse','nurse','shot','day','visit','home_care'].forEach(sec=>{(d[sec]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:sec,_shift:null,_origIdx:i});});});
+  ['facility_nurse','shot','day','visit','home_care'].forEach(sec=>{(d[sec]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:sec,_shift:null,_origIdx:i});});});
   if(_hbFilter==='urgent') all=all.filter(h=>h.pri==='urgent');
   else if(_hbFilter==='important') all=all.filter(h=>h.pri==='important');
-  else if(['doctor','facility_nurse','nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
+  else if(['doctor','facility_nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
   const priOrder={urgent:0,important:1,normal:2};
   all.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
   if(!all.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">申し送りはありません</div>';return;}
