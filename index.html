@@ -4833,8 +4833,12 @@ function renderSettings(){
     renderAdminStaffList();
     renderAccessSettings();
     renderProposalList();
-    renderHistoryViewer();
     renderRolePreviewGrid();
+    if(Date.now()-_lastAuditFetch>30000){
+      fetchAndMergeAuditLogs(()=>renderHistoryViewer());
+    } else {
+      renderHistoryViewer();
+    }
   } else if(isFacilityAdmin()){
     if(adminWrap) adminWrap.style.display='none';
     if(propUser) propUser.style.display='none';
@@ -5238,6 +5242,7 @@ async function renderAccessSettings(){
 // ═══════════ HISTORY VIEWER ═══════════
 let histSelectedUser='__all__';
 let histSelectedCat='all';
+let _lastAuditFetch=0;
 
 const HIST_CAT_DEF=[
   {key:'login',   label:'ログイン', color:'#1565c0',
@@ -5323,6 +5328,23 @@ function addAuditLog(action,detail=''){
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     }).catch(e=>console.warn('auditLog write:',e));
   }
+}
+function fetchAndMergeAuditLogs(callback){
+  if(!fbReady||!db){if(callback)callback();return;}
+  const cutoff=new Date(Date.now()-7*24*60*60*1000);
+  db.collection('va_audit').where('createdAt','>',cutoff).orderBy('createdAt','desc').limit(500)
+    .get().then(snap=>{
+      const remote=[];
+      snap.forEach(doc=>{const d=doc.data();if(d.ts)remote.push({ts:d.ts,user:d.user,action:d.action,detail:d.detail||''});});
+      const local=ls('audit_log')||[];
+      const seen=new Set(local.map(l=>l.ts+'|'+l.user+'|'+l.action));
+      const merged=[...local];
+      remote.forEach(r=>{if(!seen.has(r.ts+'|'+r.user+'|'+r.action))merged.push(r);});
+      merged.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+      lsSet('audit_log',merged.slice(0,500));
+      _lastAuditFetch=Date.now();
+      if(callback)callback();
+    }).catch(e=>{console.warn('fetchAuditLogs:',e);if(callback)callback();});
 }
 function renderAuditLog(){
   const el=document.getElementById('audit-log-list');if(!el)return;
@@ -5415,7 +5437,10 @@ function toggleAuditLog(){
   const hidden=el.style.display==='none';
   el.style.display=hidden?'block':'none';
   document.getElementById('audit-log-btn').textContent=hidden?'▲ 閉じる':'▼ ログを表示';
-  if(hidden)renderAuditLog();
+  if(hidden){
+    el.innerHTML='<div style="padding:12px;text-align:center;color:var(--sub);font-size:12px">🔄 読み込み中...</div>';
+    fetchAndMergeAuditLogs(()=>renderAuditLog());
+  }
 }
 // ── データエクスポート ──
 function exportData(){
