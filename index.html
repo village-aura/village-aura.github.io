@@ -1066,7 +1066,8 @@ a{color:var(--p);text-decoration:none}
       <button id="hb-filter-all" class="hb-filter-btn on" onclick="setHbFilter('all')">すべて</button>
       <button id="hb-filter-urgent" class="hb-filter-btn" onclick="setHbFilter('urgent')">🚨 緊急</button>
       <button id="hb-filter-important" class="hb-filter-btn" onclick="setHbFilter('important')">⚠️ 重要</button>
-      <button id="hb-filter-doctor" class="hb-filter-btn" onclick="setHbFilter('doctor')">🩺 医師</button>
+      <button id="hb-filter-doctor" class="hb-filter-btn" onclick="setHbFilter('doctor')">🩺 医師から</button>
+      <button id="hb-filter-doctor_to" class="hb-filter-btn" onclick="setHbFilter('doctor_to')">📤 医師へ</button>
       <button id="hb-filter-facility_nurse" class="hb-filter-btn" onclick="setHbFilter('facility_nurse')">🏥 施設看護師</button>
       <button id="hb-filter-sak" class="hb-filter-btn" onclick="setHbFilter('sak')">🏠 サ高住</button>
       <button id="hb-filter-shot" class="hb-filter-btn" onclick="setHbFilter('shot')">🏡 小多機</button>
@@ -1277,7 +1278,7 @@ a{color:var(--p);text-decoration:none}
       </div>
       <div style="display:flex;gap:6px">
         <button id="drtab-vital"    onclick="switchDrTab('vital')"    style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:#c62828;color:#fff;border:none;cursor:pointer;touch-action:manipulation">📊 バイタル</button>
-        <button id="drtab-order"    onclick="switchDrTab('order')"    style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">🩺 医師指示</button>
+        <button id="drtab-order"    onclick="switchDrTab('order')"    style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">📣 申し送り</button>
         <button id="drtab-incident" onclick="switchDrTab('incident')" style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">⚠️ インシデント</button>
       </div>
     </div>
@@ -3378,6 +3379,7 @@ a{color:var(--p);text-decoration:none}
     <input type="hidden" id="board-ho-edit-idx" value="-1">
     <div class="field" id="bho-section-field"><label>カテゴリ</label>
       <select id="bho-section-sel" onchange="document.getElementById('board-ho-section').value=this.value">
+        <option value="doctor_to">📤 医師へ</option>
         <option value="facility_nurse">🏥 施設看護師から</option>
         <option value="sak_am">🏠 サ高住から（朝）</option>
         <option value="sak_pm">🏠 サ高住から（夕）</option>
@@ -4037,8 +4039,8 @@ function setupRealtimeSync(){
       if(key==='proposals'&&S.screen==='scr-proposal')renderProposalScr();
       if(S.screen==='scr-doctor'){
         if(key==='records'||key==='vital_confirmed')renderDrVitalPane();
-        if(key==='board_data2')renderDrOrderPane();
-        if(key==='incidents')renderDrIncidentPane();
+        if(key==='board_data2'){if(_drTab==='order')renderDrOrderPane();}
+        if(key==='incidents'&&_drTab==='incident')renderDrIncidentPane();
       }
     },e=>console.warn('fbSync:',key,e));
     fbListeners.push(unsub);
@@ -5942,27 +5944,64 @@ function renderDrVitalPane(){
 }
 function renderDrOrderPane(){
   const el=document.getElementById('dr-order-pane');if(!el)return;
-  const orders=getBoardData().doctor||[];
+  const bd=getBoardData();
+  const orders=bd.doctor||[];
+  const toItems=bd.doctor_to||[];
   const priLabel={normal:'通常',important:'重要',urgent:'緊急'};
   const priColor={normal:'#6b7280',important:'#e65100',urgent:'#c62828'};
-  el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-    <button onclick="openDoctorOrderFor('')" style="background:#c62828;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 医師指示を追加</button>
-  </div>`+(orders.length?orders.map((o,i)=>{
-    const borderStyle={urgent:'2px solid #ef4444',important:'1.5px solid #f97316',normal:'1.5px solid var(--bdr)'}[o.pri||'normal'];
-    return `<div style="background:var(--card);border:${borderStyle};border-radius:12px;padding:12px 14px;margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
-        <span style="font-size:11px;font-weight:800;color:${priColor[o.pri||'normal']};background:${priColor[o.pri||'normal']}18;border-radius:5px;padding:2px 8px">${priLabel[o.pri||'normal']}</span>
-        ${o.resident?`<span style="font-size:11px;background:#e8f0fb;color:#1565c0;border-radius:5px;padding:2px 8px;font-weight:700">👤 ${o.resident}</span>`:''}
+  function orderCard(o,i){
+    const borderStyle={urgent:'2px solid #ef4444',important:'1.5px solid #f97316',normal:'1.5px solid #fca5a5'}[o.pri||'normal'];
+    return `<div style="background:#fff7f7;border:${borderStyle};border-radius:12px;padding:11px 13px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+        <span style="font-size:10px;font-weight:800;color:${priColor[o.pri||'normal']};background:${priColor[o.pri||'normal']}18;border-radius:5px;padding:2px 7px">${priLabel[o.pri||'normal']}</span>
+        ${o.resident?`<span style="font-size:10px;background:#e8f0fb;color:#1565c0;border-radius:5px;padding:2px 7px;font-weight:700">👤 ${o.resident}</span>`:''}
         <span style="font-size:10px;color:var(--sub);margin-left:auto">${o.doctor||'──'} ${o.time||''}</span>
       </div>
-      <div style="font-size:14px;font-weight:600;line-height:1.6;white-space:pre-wrap;margin-bottom:6px">${o.content}</div>
+      <div style="font-size:13px;font-weight:600;line-height:1.6;white-space:pre-wrap;margin-bottom:5px">${o.content}</div>
       ${o.editedBy?`<div style="font-size:10px;color:var(--sub)">編集: ${o.editedBy} ${o.editedTime||''}</div>`:''}
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <button onclick="editDoctorOrder(${i})" style="padding:5px 12px;border-radius:7px;background:var(--bg);color:var(--sub);border:1px solid var(--bdr);font-size:11px;cursor:pointer;touch-action:manipulation">✏️ 編集</button>
-        <button onclick="deleteDoctorOrderDr(${i})" style="padding:5px 12px;border-radius:7px;background:#fef2f2;color:#c62828;border:1px solid #fca5a5;font-size:11px;cursor:pointer;touch-action:manipulation">🗑 削除</button>
+      <div style="display:flex;gap:5px;margin-top:7px">
+        <button onclick="editDoctorOrder(${i})" style="padding:4px 10px;border-radius:7px;background:var(--bg);color:var(--sub);border:1px solid var(--bdr);font-size:11px;cursor:pointer;touch-action:manipulation">✏️ 編集</button>
+        <button onclick="deleteDoctorOrderDr(${i})" style="padding:4px 10px;border-radius:7px;background:#fef2f2;color:#c62828;border:1px solid #fca5a5;font-size:11px;cursor:pointer;touch-action:manipulation">🗑 削除</button>
       </div>
     </div>`;
-  }).join(''):'<div style="text-align:center;padding:40px 16px;color:var(--sub)"><div style="font-size:36px;margin-bottom:8px">📋</div>現在の医師指示はありません</div>');
+  }
+  function toCard(h,i){
+    const borderStyle={urgent:'2px solid #ef4444',important:'1.5px solid #f97316',normal:'1.5px solid #93c5fd'}[h.pri||'normal'];
+    const res=h.rid?getResidents().find(r=>r.id===h.rid):null;
+    const isRead=!!(h.readBy);
+    return `<div style="background:${isRead?'var(--card)':'#f0f6ff'};border:${borderStyle};border-radius:12px;padding:11px 13px;margin-bottom:7px;opacity:${isRead?'.75':'1'}">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+        <span style="font-size:10px;font-weight:800;color:${priColor[h.pri||'normal']};background:${priColor[h.pri||'normal']}18;border-radius:5px;padding:2px 7px">${priLabel[h.pri||'normal']}</span>
+        ${res?`<span style="font-size:10px;background:#e8f0fb;color:#1565c0;border-radius:5px;padding:2px 7px;font-weight:700">👤 ${res.name}</span>`:''}
+        ${isRead?`<span style="font-size:10px;color:var(--ok);font-weight:700">✓ 既読</span>`:'<span style="font-size:10px;color:#1565c0;font-weight:700">●未読</span>'}
+        <span style="font-size:10px;color:var(--sub);margin-left:auto">${h.by||'──'} ${h.time||''}</span>
+      </div>
+      <div style="font-size:13px;line-height:1.6;white-space:pre-wrap;margin-bottom:5px">${h.content}</div>
+      ${isRead?`<div style="font-size:10px;color:var(--sub)">既読: ${h.readBy} ${h.readTime||''}</div>`:
+        `<button onclick="markDoctorToRead(${i})" style="padding:4px 10px;border-radius:7px;background:#1565c0;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">✓ 既読にする</button>`}
+    </div>`;
+  }
+  el.innerHTML=
+    `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #fca5a5">
+      <div style="font-size:13px;font-weight:800;color:#c62828">🩺 医師から（スタッフへ）</div>
+      <button onclick="openDoctorOrderFor('')" style="background:#c62828;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 追加</button>
+    </div>`
+    +(orders.length?orders.map((o,i)=>orderCard(o,i)).join(''):'<div style="text-align:center;padding:20px;color:var(--sub);font-size:12px">医師からの申し送りはありません</div>')
+    +`<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px;padding-bottom:6px;border-bottom:2px solid #93c5fd">
+      <div style="font-size:13px;font-weight:800;color:#1565c0">📤 医師へ（スタッフから）</div>
+      <button onclick="openBoardHandover('doctor_to')" style="background:#1565c0;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 送る</button>
+    </div>`
+    +(toItems.length?toItems.map((h,i)=>toCard(h,i)).join(''):'<div style="text-align:center;padding:20px;color:var(--sub);font-size:12px">スタッフからの連絡はありません</div>');
+}
+function markDoctorToRead(idx){
+  const d=getBoardData();
+  if(!d.doctor_to[idx])return;
+  d.doctor_to[idx].readBy=S.user;
+  d.doctor_to[idx].readTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  saveBoardData(d);
+  renderDrOrderPane();
+  renderHandoverBoard();
+  toast('既読にしました ✓');
 }
 function deleteDoctorOrderDr(idx){
   if(!isAdmin()){toast('全権管理者のみ削除できます');return;}
@@ -9058,7 +9097,7 @@ function getBoardData(){
   const d=ls('board_data2')||{};
   return {
     sak:{am:d.sak?.am||[],pm:d.sak?.pm||[]},
-    doctor:d.doctor||[],facility_nurse:d.facility_nurse||[],
+    doctor:d.doctor||[],doctor_to:d.doctor_to||[],facility_nurse:d.facility_nurse||[],
     nurse:d.nurse||[],shot:d.shot||[],day:d.day||[],visit:d.visit||[],home_care:d.home_care||[]
   };
 }
@@ -9116,7 +9155,8 @@ function formatExpiry(expiresAt){
 // ── 掲示板スタイル申し送りボード ──
 let _hbFilter='all';
 const HB_SEC_INFO={
-  doctor:{label:'医師',emoji:'🩺',bg:'#fce4ec',tc:'#c62828'},
+  doctor:{label:'医師から',emoji:'🩺',bg:'#fce4ec',tc:'#c62828'},
+  doctor_to:{label:'医師へ',emoji:'📤',bg:'#e8f0fb',tc:'#1565c0'},
   facility_nurse:{label:'施設看護師',emoji:'🏥',bg:'#e8f5e9',tc:'#1b5e20'},
   sak:{label:'サ高住',emoji:'🏠',bg:'#e3f2fd',tc:'#1565c0'},
   shot:{label:'小多機',emoji:'🏡',bg:'#f3e5f5',tc:'#7b1fa2'},
@@ -9135,11 +9175,12 @@ function renderHbList(){
   const d=getBoardData();
   let all=[];
   (d.doctor||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'doctor',_shift:null,_origIdx:i});});
+  (d.doctor_to||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'doctor_to',_shift:null,_origIdx:i});});
   ['am','pm'].forEach(sh=>{(d.sak?.[sh]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:'sak',_shift:sh,_origIdx:i});});});
   ['facility_nurse','shot','day','visit','home_care'].forEach(sec=>{(d[sec]||[]).forEach((h,i)=>{if(!isExpired(h))all.push({...h,_sec:sec,_shift:null,_origIdx:i});});});
   if(_hbFilter==='urgent') all=all.filter(h=>h.pri==='urgent');
   else if(_hbFilter==='important') all=all.filter(h=>h.pri==='important');
-  else if(['doctor','facility_nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
+  else if(['doctor','doctor_to','facility_nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
   const priOrder={urgent:0,important:1,normal:2};
   all.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
   if(!all.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">申し送りはありません</div>';return;}
@@ -9156,10 +9197,11 @@ function renderHbList(){
     const expiryTxt=formatExpiry(h.expiresAt);
     const expiryColor=h.expiresAt&&(new Date(h.expiresAt)-new Date())<3*60*60*1000?'#e53935':'var(--sub)';
     const editedMark=h.editedBy?'（編集済）':'';
-    const editBtn=h._sec!=='doctor'
+    const isDoctorOrder=h._sec==='doctor';
+    const editBtn=!isDoctorOrder
       ?`<button onclick="event.stopPropagation();editBoardItem('${h._sec}','${h._shift||''}',${h._origIdx})" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:var(--sub);touch-action:manipulation">✏️</button>`
       :(isAdmin()?`<button onclick="event.stopPropagation();editDoctorOrder(${h._origIdx})" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:var(--sub);touch-action:manipulation">✏️</button>`:'');
-    const delBtn=canDelete?(h._sec!=='doctor'
+    const delBtn=canDelete?(!isDoctorOrder
       ?`<button onclick="event.stopPropagation();deleteBoardHandover('${h._sec}',${h._origIdx},'${h._shift||''}')" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`
       :`<button onclick="event.stopPropagation();deleteDoctorOrder(${h._origIdx})" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`):'';
     return `<div class="hb-card ${priClass}">
@@ -9251,6 +9293,7 @@ function saveBoardHandover(){
   saveBoardData(d);
   closeModal('modal-board-ho');
   renderHandoverBoard();
+  if(S.screen==='scr-doctor'&&_drTab==='order') renderDrOrderPane();
 }
 function deleteBoardHandover(section,idx,shift=''){
   const sakShift=shift||(section==='sak'?S_sak_shift:'');
