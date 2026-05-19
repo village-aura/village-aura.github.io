@@ -5935,6 +5935,7 @@ function renderDrVitalPane(){
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           ${abnItems.length&&!isConf?`<button onclick="confirmVital('${v.id}')" style="padding:5px 10px;border-radius:7px;background:var(--ok);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">✓ 確認</button>`:''}
+          <button onclick="openDoctorOrderFor('${res.name}')" style="padding:5px 10px;border-radius:7px;background:#fef2f2;color:#c62828;border:1.5px solid #fca5a5;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">📝 指示</button>
           <button onclick="openResident('${res.id}')" style="padding:5px 10px;border-radius:7px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:11px;cursor:pointer;touch-action:manipulation">詳細</button>
         </div>
       </div>
