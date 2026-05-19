@@ -1653,6 +1653,7 @@ a{color:var(--p);text-decoration:none}
         <button class="mmn" onclick="showScr('scr-tasks');closeMobileMenu()">📌 タスク管理</button>
         <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 データ登録</button>
         <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
+        <button class="mmn" id="mmn-doctor" onclick="showScr('scr-doctor');closeMobileMenu()" style="display:none">🩺 医師ページ</button>
         <button class="mmn" onclick="showScr('scr-settings');closeMobileMenu()">⚙️ 設定</button>
         <button class="mmn" onclick="showScr('scr-help');closeMobileMenu()">📖 ヘルプ</button>
       </nav>
@@ -5870,8 +5871,11 @@ function switchVaTab(tab){
 // ═══════════ 医師ページ ═══════════
 function isDoctor(){return S.userRole==='doctor'||isAdmin();}
 function updateDoctorNav(){
-  const btn=document.getElementById('sbn-doctor');
-  if(btn) btn.style.display=isDoctor()?'':'none';
+  const show=isDoctor()?'':'none';
+  const sbn=document.getElementById('sbn-doctor');
+  if(sbn) sbn.style.display=show;
+  const mmn=document.getElementById('mmn-doctor');
+  if(mmn) mmn.style.display=show;
 }
 let _drTab='vital';
 function switchDrTab(tab){
