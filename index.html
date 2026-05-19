@@ -635,6 +635,7 @@ a{color:var(--p);text-decoration:none}
       <span class="sb-lbl">システム</span>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
+      <button class="sbn" id="sbn-doctor" onclick="showScr('scr-doctor')" style="display:none;color:#c62828;font-weight:800">🩺　医師ページ</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
     </nav>
     <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
@@ -1262,6 +1263,27 @@ a{color:var(--p);text-decoration:none}
       <button id="intab-reviewed" onclick="switchIncidentTab('reviewed')" style="flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr)">確認済</button>
     </div>
     <div id="incident-list" style="padding:0 0 16px"></div>
+  </div>
+
+  <!-- ─── 医師ページ ─── -->
+  <div id="scr-doctor" class="scr">
+    <div style="padding:14px 16px 8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-size:26px">🩺</span>
+        <div>
+          <div style="font-size:19px;font-weight:800;color:#c62828">医師ページ</div>
+          <div style="font-size:11px;color:var(--sub)">全権管理者・医師専用</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button id="drtab-vital"    onclick="switchDrTab('vital')"    style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:#c62828;color:#fff;border:none;cursor:pointer;touch-action:manipulation">📊 バイタル</button>
+        <button id="drtab-order"    onclick="switchDrTab('order')"    style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">🩺 医師指示</button>
+        <button id="drtab-incident" onclick="switchDrTab('incident')" style="flex:1;padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">⚠️ インシデント</button>
+      </div>
+    </div>
+    <div id="dr-vital-pane"    style="padding:6px 12px 24px"></div>
+    <div id="dr-order-pane"    style="padding:6px 12px 24px;display:none"></div>
+    <div id="dr-incident-pane" style="padding:6px 12px 24px;display:none"></div>
   </div>
 
   <!-- ─── SETTINGS ─── -->
@@ -4013,6 +4035,11 @@ function setupRealtimeSync(){
       if(key==='monthly_goals'&&S.screen==='scr-dashboard')renderDashboard();
       if(key==='incidents'&&S.screen==='scr-incidents')renderIncidentList();
       if(key==='proposals'&&S.screen==='scr-proposal')renderProposalScr();
+      if(S.screen==='scr-doctor'){
+        if(key==='records'||key==='vital_confirmed')renderDrVitalPane();
+        if(key==='board_data2')renderDrOrderPane();
+        if(key==='incidents')renderDrIncidentPane();
+      }
     },e=>console.warn('fbSync:',key,e));
     fbListeners.push(unsub);
   });
@@ -4135,6 +4162,7 @@ async function login(){
   const aiEl=document.getElementById('ai-messages');
   if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   resetLockTimer();
+  updateDoctorNav();
   showScr('scr-dashboard');
   renderDashboard();
   checkUrlHash();
@@ -5592,7 +5620,8 @@ function showScr(id){
     'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
     'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理',
     'scr-bulk-vital':'一括バイタル入力','scr-medication':'服薬チェック',
-    'scr-transport':'送迎チェック','scr-shift-checklist':'業務チェックリスト'
+    'scr-transport':'送迎チェック','scr-shift-checklist':'業務チェックリスト',
+    'scr-doctor':'医師ページ'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -5603,7 +5632,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-shift-checklist':'sbn-shift-checklist'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-shift-checklist':'sbn-shift-checklist','scr-doctor':'sbn-doctor'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -5620,6 +5649,7 @@ function showScr(id){
   if(id==='scr-stool-alert') renderStoolAlert();
   if(id==='scr-rounds'){const h=new Date().getHours();const sh=h>=6&&h<10?'morning':h>=10&&h<16?'noon':h>=16&&h<22?'evening':'night';setRoundsShift(sh);}
   if(id==='scr-incidents') renderIncidentList();
+  if(id==='scr-doctor') renderDoctorPage();
   if(id==='scr-tasks') renderTasksScr();
   if(id==='scr-bulk-vital') renderBulkVital();
   if(id==='scr-medication') renderMedication();
@@ -5629,7 +5659,7 @@ function showScr(id){
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
@@ -5784,6 +5814,7 @@ function confirmVital(vitalId){
   d[vitalId]={ts:new Date().toISOString(),by:S.user};
   saveVitalConfirmed(d);
   renderVitalAlert();
+  if(S.screen==='scr-doctor') renderDrVitalPane();
   toast('確認済みにしました ✓');
 }
 function unconfirmVital(vitalId){
@@ -5834,6 +5865,147 @@ function switchVaTab(tab){
   });
   renderVitalAlert();
 }
+// ═══════════ 医師ページ ═══════════
+function isDoctor(){return S.userRole==='doctor'||isAdmin();}
+function updateDoctorNav(){
+  const btn=document.getElementById('sbn-doctor');
+  if(btn) btn.style.display=isDoctor()?'':'none';
+}
+let _drTab='vital';
+function switchDrTab(tab){
+  _drTab=tab;
+  ['vital','order','incident'].forEach(t=>{
+    const btn=document.getElementById('drtab-'+t);
+    const pane=document.getElementById('dr-'+t+'-pane');
+    const on=t===tab;
+    if(btn){btn.style.background=on?'#c62828':'var(--bg)';btn.style.color=on?'#fff':'var(--sub)';btn.style.border=on?'none':'1.5px solid var(--bdr)';}
+    if(pane)pane.style.display=on?'block':'none';
+  });
+  if(tab==='vital') renderDrVitalPane();
+  else if(tab==='order') renderDrOrderPane();
+  else renderDrIncidentPane();
+}
+function renderDoctorPage(){
+  if(!isDoctor()){toast('権限がありません');showScr('scr-dashboard');return;}
+  switchDrTab(_drTab);
+}
+function renderDrVitalPane(){
+  const el=document.getElementById('dr-vital-pane');if(!el)return;
+  const residents=getResidents();
+  const recs=getRecords();
+  const confirmed=getVitalConfirmed();
+  const todayStr=new Date().toDateString();
+  const vKeys=['sys','dia','pulse','temp','spo2'];
+  const vLabel={sys:'血圧収',dia:'血圧拡',pulse:'脈拍',temp:'体温',spo2:'SpO2'};
+  const vUnit={sys:'',dia:'',pulse:'',temp:'℃',spo2:'%'};
+  const latestVital={};
+  recs.filter(r=>r.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts)).forEach(r=>{if(!latestVital[r.rid])latestVital[r.rid]=r;});
+  const todayVital={};
+  recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).sort((a,b)=>new Date(b.ts)-new Date(a.ts)).forEach(r=>{if(!todayVital[r.rid])todayVital[r.rid]=r;});
+  function mkRow(v,res){
+    if(!v)return '<span style="color:var(--sub);font-size:12px">本日未測定</span>';
+    return vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!=='').map(k=>{
+      const abn=vAbnormal(k,v.data[k],res.id);
+      return '<span style="display:inline-block;margin:2px 3px 2px 0;font-size:11px;padding:2px 6px;border-radius:6px;'+(abn?'color:#b45309;font-weight:800;background:#fffbeb;border:1px solid #fcd34d':'color:var(--tx);background:var(--bg);border:1px solid var(--bdr)')+'">'+vLabel[k]+': '+v.data[k]+vUnit[k]+'</span>';
+    }).join('');
+  }
+  const items=residents.map(res=>{
+    const today=todayVital[res.id];
+    const v=today||latestVital[res.id];
+    const abnItems=v?vKeys.filter(k=>v.data[k]!==undefined&&v.data[k]!==''&&vAbnormal(k,v.data[k],res.id)):[];
+    const isConf=v?!!confirmed[v.id]:false;
+    const isToday=!!today;
+    const pri=!v?3:(!isToday?2.5:abnItems.length&&!isConf?0:abnItems.length&&isConf?1:2);
+    return {res,v,today,isToday,abnItems,isConf,pri};
+  }).sort((a,b)=>a.pri-b.pri||a.res.name.localeCompare(b.res.name,'ja'));
+  el.innerHTML='<div style="font-size:11px;color:var(--sub);margin-bottom:8px">※ 赤枠＝要注意未確認 / 緑枠＝確認済 / 灰枠＝正常・未測定</div>'+
+  items.map(({res,v,today,isToday,abnItems,isConf})=>{
+    const border=abnItems.length&&!isConf?'2px solid #f87171':abnItems.length&&isConf?'1.5px solid #86efac':'1.5px solid var(--bdr)';
+    const bg=abnItems.length&&!isConf?'#fff7f7':abnItems.length&&isConf?'#f0fdf4':'var(--card)';
+    const vts=v?new Date(v.ts):null;
+    const tsLabel=v?(vts.toDateString()===todayStr?'今日 '+vts.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):vts.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+' '+vts.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})):'──';
+    return `<div style="background:${bg};border:${border};border-radius:12px;padding:11px 13px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <div style="flex:1;min-width:0">
+          <span style="font-size:14px;font-weight:800">${res.name}</span>
+          <span style="font-size:11px;color:var(--sub);margin-left:5px">${res.room?res.room+'号室':''}</span>
+          <span style="font-size:10px;color:var(--sub);margin-left:4px">${tsLabel}${!isToday&&v?' 🔴本日未測定':''}</span>
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          ${abnItems.length&&!isConf?`<button onclick="confirmVital('${v.id}')" style="padding:5px 10px;border-radius:7px;background:var(--ok);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">✓ 確認</button>`:''}
+          <button onclick="openResident('${res.id}')" style="padding:5px 10px;border-radius:7px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:11px;cursor:pointer;touch-action:manipulation">詳細</button>
+        </div>
+      </div>
+      <div style="line-height:2">${mkRow(v,res)}</div>
+    </div>`;
+  }).join('');
+}
+function renderDrOrderPane(){
+  const el=document.getElementById('dr-order-pane');if(!el)return;
+  const orders=getBoardData().doctor||[];
+  const priLabel={normal:'通常',important:'重要',urgent:'緊急'};
+  const priColor={normal:'#6b7280',important:'#e65100',urgent:'#c62828'};
+  el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button onclick="openDoctorOrderFor('')" style="background:#c62828;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 医師指示を追加</button>
+  </div>`+(orders.length?orders.map((o,i)=>{
+    const borderStyle={urgent:'2px solid #ef4444',important:'1.5px solid #f97316',normal:'1.5px solid var(--bdr)'}[o.pri||'normal'];
+    return `<div style="background:var(--card);border:${borderStyle};border-radius:12px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:800;color:${priColor[o.pri||'normal']};background:${priColor[o.pri||'normal']}18;border-radius:5px;padding:2px 8px">${priLabel[o.pri||'normal']}</span>
+        ${o.resident?`<span style="font-size:11px;background:#e8f0fb;color:#1565c0;border-radius:5px;padding:2px 8px;font-weight:700">👤 ${o.resident}</span>`:''}
+        <span style="font-size:10px;color:var(--sub);margin-left:auto">${o.doctor||'──'} ${o.time||''}</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;line-height:1.6;white-space:pre-wrap;margin-bottom:6px">${o.content}</div>
+      ${o.editedBy?`<div style="font-size:10px;color:var(--sub)">編集: ${o.editedBy} ${o.editedTime||''}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="editDoctorOrder(${i})" style="padding:5px 12px;border-radius:7px;background:var(--bg);color:var(--sub);border:1px solid var(--bdr);font-size:11px;cursor:pointer;touch-action:manipulation">✏️ 編集</button>
+        <button onclick="deleteDoctorOrderDr(${i})" style="padding:5px 12px;border-radius:7px;background:#fef2f2;color:#c62828;border:1px solid #fca5a5;font-size:11px;cursor:pointer;touch-action:manipulation">🗑 削除</button>
+      </div>
+    </div>`;
+  }).join(''):'<div style="text-align:center;padding:40px 16px;color:var(--sub)"><div style="font-size:36px;margin-bottom:8px">📋</div>現在の医師指示はありません</div>');
+}
+function deleteDoctorOrderDr(idx){
+  if(!isAdmin()){toast('全権管理者のみ削除できます');return;}
+  showDelConfirm('この医師指示を削除しますか？',()=>{
+    const d=getBoardData();
+    if(d.doctor[idx]) moveToTrash('doctor',null,d.doctor[idx]);
+    d.doctor.splice(idx,1);
+    saveBoardData(d);
+    renderHandoverBoard();
+    renderDrOrderPane();
+    toast('削除しました');
+  });
+}
+function renderDrIncidentPane(){
+  const el=document.getElementById('dr-incident-pane');if(!el)return;
+  const residents=getResidents();
+  const incidents=getIncidents().filter(i=>new Date(i.ts).getTime()>Date.now()-14*24*60*60*1000).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  if(!incidents.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 16px;color:var(--sub)"><div style="font-size:36px;margin-bottom:8px">✅</div>直近14日間のインシデントはありません</div>';
+    return;
+  }
+  const todayStr=new Date().toDateString();
+  el.innerHTML=incidents.map(inc=>{
+    const res=inc.rid?residents.find(r=>r.id===inc.rid):null;
+    const d=new Date(inc.ts);
+    const dateStr=d.toDateString()===todayStr?'今日 '+d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+' '+d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    const sColor=INC_SEV_COLOR[inc.sev]||'#6b7280';
+    return `<div onclick="openIncidentDetail('${inc.id}')" style="background:var(--card);border:1.5px solid var(--bdr);border-left:4px solid ${sColor};border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+        <span style="font-size:11px;font-weight:800;color:${sColor}">${INC_SEV_LABEL[inc.sev]||'──'}</span>
+        <span style="font-size:12px;font-weight:700">${INC_TYPE_LABEL[inc.type]||inc.type||'──'}</span>
+        ${res?`<span style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 7px;font-weight:700">${res.name}</span>`:''}
+        <span style="font-size:10px;color:var(--sub);margin-left:auto">${dateStr}</span>
+      </div>
+      <div style="font-size:13px;color:var(--txt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${inc.detail||''}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
+        <span style="font-size:10px;color:var(--sub)">報告: ${inc.by||'──'} · ${INC_LOC_LABEL[inc.location]||''}</span>
+        ${inc.reviewed?'<span style="font-size:10px;color:var(--ok);font-weight:700">✓ 確認済</span>':(isAdmin()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}');renderDrIncidentPane()" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">確認済にする</button>`:'<span style="font-size:10px;color:var(--warn);font-weight:700">未確認</span>')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderVitalAlert(){
   const listEl=document.getElementById('vital-alert-list');
   if(!listEl)return;
@@ -9139,6 +9311,7 @@ function saveDoctorOrder(){
   saveBoardData(d);
   closeModal('modal-doctor-order');
   renderHandoverBoard();
+  if(S.screen==='scr-doctor') renderDrOrderPane();
 }
 function editDoctorOrder(idx){
   if(!isAdmin()){toast('全権管理者のみ編集できます');return;}
