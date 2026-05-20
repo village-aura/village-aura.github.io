@@ -40,6 +40,10 @@ a{color:var(--p);text-decoration:none}
 .scr{display:none;min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));animation:fadeIn .2s}
 .scr.on{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+.scr.slide-back.on{animation:slideInRight .22s}
+.scr.slide-fwd.on{animation:slideInLeft .22s}
 
 
 /* ── SETTINGS ACCORDION ── */
@@ -4060,6 +4064,7 @@ let S = {
   currentService: null,
   editRecId: null,
 };
+let navStack=[], navForward=[], _navSkipPush=false, _navDir=null;
 const _EK=['Va9k','Lp3x','Qm7j','Rw5t'].join('')+'_VillageAura';
 function _enc(str){
   const b=new TextEncoder().encode(str),k=_EK,o=new Uint8Array(b.length);
@@ -4204,6 +4209,7 @@ async function login(){
     }
   }
   addAuditLog('ログイン','ID: '+inputId);
+  localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey}));
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
   startAIKeySync();
   setTimeout(showTutorial, 600);
@@ -4215,6 +4221,7 @@ function logout(){
 }
 function _doLogout(){
   firebase.auth().signOut().catch(()=>{});
+  localStorage.removeItem('va_session');
   fbReady=false;
   clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
   aiHistory=[];
@@ -5628,10 +5635,18 @@ function closeQRPicker(){
 // ═══════════ NAVIGATION ═══════════
 function showScr(id){
   closeMobileMenu();
-  if(S.screen!==id) S.prevScreen=S.screen;
+  if(S.screen!==id){
+    if(!_navSkipPush){navStack.push(S.screen);navForward=[];if(navStack.length>30)navStack.shift();}
+    _navSkipPush=false;
+    S.prevScreen=S.screen;
+  } else {_navSkipPush=false;}
   S.screen=id;
-  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
+  const dir=_navDir; _navDir=null;
+  document.querySelectorAll('.scr').forEach(s=>{s.classList.remove('on');s.classList.remove('slide-back');s.classList.remove('slide-fwd');});
+  const scrEl=document.getElementById(id);
+  if(dir==='back')scrEl.classList.add('slide-back');
+  else if(dir==='fwd')scrEl.classList.add('slide-fwd');
+  scrEl.classList.add('on');
   const titles={
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
     'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
@@ -5687,7 +5702,25 @@ function showScr(id){
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
   else if(wasOps && window.innerWidth>=1024){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
 }
-function goBack(){showScr(S.prevScreen||'scr-dashboard');}
+function goBack(){
+  if(navStack.length>0){
+    navForward.push(S.screen);
+    const prev=navStack.pop();
+    _navSkipPush=true; _navDir='back';
+    showScr(prev);
+  } else {
+    _navDir='back';
+    showScr('scr-dashboard');
+  }
+}
+function goForward(){
+  if(navForward.length>0){
+    navStack.push(S.screen);
+    const next=navForward.pop();
+    _navSkipPush=true; _navDir='fwd';
+    showScr(next);
+  }
+}
 function toggleMobileMenu(){
   const m=document.getElementById('mobile-menu');
   m.classList.toggle('on');
@@ -10916,6 +10949,28 @@ function resetLockTimer(){
 }
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
+
+// ── スワイプナビゲーション ──
+let _swX=0,_swY=0,_swActive=false;
+document.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1||!S.user)return;
+  _swX=e.touches[0].clientX;_swY=e.touches[0].clientY;_swActive=true;
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!_swActive)return;
+  const adx=Math.abs(e.touches[0].clientX-_swX),ady=Math.abs(e.touches[0].clientY-_swY);
+  if(ady>adx+12)_swActive=false;
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!_swActive||!S.user){_swActive=false;return;}
+  _swActive=false;
+  const dx=e.changedTouches[0].clientX-_swX,dy=e.changedTouches[0].clientY-_swY;
+  if(Math.abs(dy)>Math.abs(dx)*0.85)return;
+  if(Math.abs(dx)<60)return;
+  const W=window.innerWidth;
+  if(dx>0&&_swX<48)goBack();
+  else if(dx<0&&_swX>W-48)goForward();
+},{passive:true});
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
   resetLockTimer();
@@ -11929,6 +11984,33 @@ if(localStorage.getItem('_demo_data_ver')!==_DEMO_DATA_VER){
 }
 initDisplayPrefs();
 _startLockTimer();
+
+// ── セッション復元（ページリロード後もログイン維持）──
+(function(){
+  try{
+    const sess=JSON.parse(localStorage.getItem('va_session')||'null');
+    if(!sess||!sess.user)return;
+    S.user=sess.user;S.userRole=sess.userRole;S.loginTime=sess.loginTime||'';
+    document.getElementById('scr-login').style.display='none';
+    document.getElementById('app').style.display='block';
+    const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
+    const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=(S.loginTime?S.loginTime+' ':'')+'ログイン中';
+    updateDoctorNav();
+    navStack=[];navForward=[];
+    showScr('scr-dashboard');
+    renderDashboard();
+    updateBnAcct();
+    checkUrlHash();
+    startUpdateChecker();
+    resetLockTimer();
+    firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS).then(()=>{
+      fbReady=true;
+      loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+      startAIKeySync();
+    }).catch(()=>{});
+  }catch(e){}
+})();
+
 function updateBnAcct(){
   const ico=document.getElementById('bn-acct-ico');
   const lbl=document.getElementById('bn-acct-lbl');
@@ -11995,6 +12077,7 @@ function confirmAccountSwitch(){
   const mmU=document.getElementById('mm-user');if(mmU)mmU.textContent=S.user;
   updateBnAcct();
   addAuditLog('アカウント切り替え',prev+' → '+S.user);
+  localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey:key}));
   closeAccountSwitch();
   renderDashboard();
   toast(S.user+' に切り替えました ✓');
