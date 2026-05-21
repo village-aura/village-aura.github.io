@@ -2569,16 +2569,16 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-title">🌡️ バイタル入力</div>
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
     <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：血圧130の80 脈72 体温36.5 SpO2 98</span></button>
-    <div class="field-row">
+    <div class="field-row" id="vrow-bp">
       <div class="field"><label>収縮期血圧 mmHg</label><input type="number" id="v-sys" placeholder="130"></div>
       <div class="field"><label>拡張期血圧 mmHg</label><input type="number" id="v-dia" placeholder="80"></div>
     </div>
-    <div class="field-row">
-      <div class="field"><label>脈拍 回/分</label><input type="number" id="v-pulse" placeholder="72"></div>
-      <div class="field"><label>体温 ℃</label><input type="number" step="0.1" id="v-temp" placeholder="36.5"></div>
+    <div id="vrow-pulse-temp" style="display:flex;gap:8px">
+      <div class="field" id="vrow-pulse" style="flex:1"><label>脈拍 回/分</label><input type="number" id="v-pulse" placeholder="72"></div>
+      <div class="field" id="vrow-temp" style="flex:1"><label>体温 ℃</label><input type="number" step="0.1" id="v-temp" placeholder="36.5"></div>
     </div>
-    <div class="field"><label>SpO2 %</label><input type="number" id="v-spo2" placeholder="97"></div>
-    <div class="field"><label>意識レベル</label>
+    <div class="field" id="vrow-spo2"><label>SpO2 %</label><input type="number" id="v-spo2" placeholder="97"></div>
+    <div class="field" id="vrow-conscious"><label>意識レベル</label>
       <div class="radio-group">
         <label><input type="radio" name="consciousness" value="alert" checked> 清明</label>
         <label><input type="radio" name="consciousness" value="drowsy"> 傾眠</label>
@@ -3918,7 +3918,7 @@ const SVC_BTNS = {
   nursing: ['handover'],
 };
 const BTN_DEF = {
-  vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openModal('modal-vital')"},
+  vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openVitalFull()"},
   bath:        {ico:'🛁', lbl:'入浴記録',    fn:"openBathModal()"},
   meal:        {ico:'🍚', lbl:'飲水食事',  fn:"openModal('modal-meal')"},
   excretion:   {ico:'💧', lbl:'排泄',        fn:"openModal('modal-excretion')"},
@@ -4065,6 +4065,7 @@ let S = {
   editRecId: null,
 };
 let navStack=[], navForward=[], _navSkipPush=false, _navDir=null;
+let _vitalFocusedField=null;
 const _EK=['Va9k','Lp3x','Qm7j','Rw5t'].join('')+'_VillageAura';
 function _enc(str){
   const b=new TextEncoder().encode(str),k=_EK,o=new Uint8Array(b.length);
@@ -5587,7 +5588,7 @@ function renderQuickActions(){
 function quickRecord(type, label, ico){
   const specialNav={'schedule':'scr-schedule','diary':'scr-diary','handover':'scr-handover-board','facesheet':'scr-residents','vital_alert':'scr-vital-alert','urgent_rec':'scr-urgent-rec'};
   if(specialNav[type]){showScr(specialNav[type]);return;}
-  const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
+  const modalMap={vital:"openVitalFull()",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
   const recentIds=getRecentResidents();
   const allRes=getResidents();
   const recentRes=recentIds.map(id=>allRes.find(r=>r.id===id)).filter(Boolean).slice(0,3);
@@ -5622,7 +5623,7 @@ function openResidentDirect(rid, type){
   S.quickRecordType=type;
   showScr('scr-detail');
   renderDetail();
-  const modalMap={vital:"openModal('modal-vital')",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
+  const modalMap={vital:"openVitalFull()",meal:"openModal('modal-meal')",excretion:"openModal('modal-excretion')",chrono:"openModal('modal-chrono')",weight:"openModal('modal-weight')"};
   if(modalMap[type]) setTimeout(()=>eval(modalMap[type]),300);
 }
 
@@ -6848,16 +6849,37 @@ function switchDetailTab(tab){
   if(left)left.style.display=tab==='timeline'?'none':'';
 }
 function openVitalFocused(focusField){
+  _vitalFocusedField=focusField||null;
   const recs=getRecords().filter(rc=>rc.rid===S.currentRes&&rc.type==='vital');
   const todayStr=new Date().toDateString();
   const latest=recs.filter(rc=>new Date(rc.ts).toDateString()===todayStr).sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
-  if(latest){
-    const d=latest.data;
-    ['sys','dia','pulse','temp','spo2'].forEach(k=>{const el=document.getElementById('v-'+k);if(el)el.value=d[k]||'';});
-  }
+  ['sys','dia','pulse','temp','spo2'].forEach(k=>{
+    const el=document.getElementById('v-'+k);
+    if(el) el.value=latest?(latest.data?.[k]||''):'';
+  });
+  // フォーカスモード：対象項目のみ表示
+  const showAll=!focusField;
+  const rowVis={
+    'vrow-bp':       showAll||focusField==='v-sys',
+    'vrow-pulse-temp':showAll||focusField==='v-pulse'||focusField==='v-temp',
+    'vrow-pulse':    showAll||focusField==='v-pulse',
+    'vrow-temp':     showAll||focusField==='v-temp',
+    'vrow-spo2':     showAll||focusField==='v-spo2',
+    'vrow-conscious':showAll
+  };
+  Object.entries(rowVis).forEach(([id,show])=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=show?'':'none';
+  });
+  const titleMap={'v-sys':'🩺 血圧入力','v-pulse':'💓 脈拍入力','v-temp':'🌡️ 体温入力','v-spo2':'💧 SpO2入力'};
+  const titleEl=document.querySelector('#modal-vital .sheet-title');
+  if(titleEl) titleEl.textContent=titleMap[focusField]||'🌡️ バイタル入力';
+  const vsBtn=document.getElementById('vs-btn-vital');
+  if(vsBtn) vsBtn.style.display=showAll?'':'none';
   openModal('modal-vital');
-  setTimeout(()=>{const el=document.getElementById(focusField);if(el){el.focus();el.select();}},180);
+  if(focusField) setTimeout(()=>{const el=document.getElementById(focusField);if(el){el.focus();el.select();}},180);
 }
+function openVitalFull(){openVitalFocused(null);}
 function selectService(svc){S.currentService=svc;renderDetail();}
 function openSvcSetting(){
   const r=getResidents().find(x=>x.id===S.currentRes);
@@ -7054,7 +7076,12 @@ function saveRecord(type){
       spo2:+document.getElementById('v-spo2').value||null,
       cons:document.querySelector('[name=consciousness]:checked')?.value||'alert',
       note:document.getElementById('v-note').value};
-    if(!data.sys){toast('血圧を入力してください');return;}
+    if(_vitalFocusedField){
+      const k=_vitalFocusedField.replace('v-','');
+      if(!data[k]){toast('値を入力してください');return;}
+    }else{
+      if(!data.sys){toast('血圧を入力してください');return;}
+    }
     closeModal('modal-vital');
   }else if(type==='meal'){
     const fluidOnly=document.getElementById('m-fluid-only')?.checked||false;
