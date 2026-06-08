@@ -27,8 +27,11 @@
   --r:12px;--sh:0 2px 8px rgba(0,0,0,.08);
 }
 body.dark-mode{--bg:#1a1a2e;--card:#16213e;--txt:#e8eaf6;--sub:#9e9e9e;--bdr:#2d3748;--p:#7bafd4;--pd:#3a6a94;--ps:#1e3a5f}
-body.font-lg{zoom:1.15}
-body.font-sm{zoom:0.88}
+body.font-xs{zoom:0.82}
+body.font-sm{zoom:0.91}
+body.font-lg{zoom:1.18}
+body.font-xl{zoom:1.35}
+body.font-xxl{zoom:1.52}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden;font-size:15px}
 @media(min-width:600px){body{max-width:none}}
@@ -626,6 +629,8 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
       <span class="sb-lbl">業務記録</span>
       <button class="sbn" id="sbn-bulk-vital" onclick="showScr('scr-bulk-vital')">🌡️　一括バイタル</button>
+      <button class="sbn" id="sbn-bulk-meal" onclick="showScr('scr-bulk-meal')">🍚　一括食事・水分</button>
+      <button class="sbn" id="sbn-bulk-excretion" onclick="showScr('scr-bulk-excretion')">💧　一括排泄</button>
       <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
       <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">🚌　送迎チェック</button>
       <button class="sbn" id="sbn-shift-checklist" onclick="showScr('scr-shift-checklist')">✅　チェックリスト</button>
@@ -782,6 +787,21 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
 
+    <!-- 一括入力 -->
+    <div style="margin:10px 12px 0">
+      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">一括入力</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="showScr('scr-bulk-vital')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          🌡️ 一括バイタル
+        </button>
+        <button onclick="showScr('scr-bulk-meal')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          🍚 一括食事・水分
+        </button>
+        <button onclick="showScr('scr-bulk-excretion')" style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:11px;font-weight:700;color:var(--tx);cursor:pointer;touch-action:manipulation">
+          💧 一括排泄
+        </button>
+      </div>
+    </div>
     <!-- 管理 -->
     <div style="margin:10px 12px 0">
       <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">管理</div>
@@ -1342,9 +1362,12 @@ a{color:var(--p);text-decoration:none}
             <span class="si-ico">🔤</span>
             <div class="si-body"><div class="si-name">文字サイズ</div></div>
             <div style="display:flex;gap:6px">
-              <button id="fs-sm" onclick="setFontSize('sm')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">小</button>
-              <button id="fs-md" onclick="setFontSize('md')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">標準</button>
-              <button id="fs-lg" onclick="setFontSize('lg')" style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">大</button>
+              <button id="fs-xs" onclick="setFontSize('xs')" style="padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">最小</button>
+              <button id="fs-sm" onclick="setFontSize('sm')" style="padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">小</button>
+              <button id="fs-md" onclick="setFontSize('md')" style="padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff">標準</button>
+              <button id="fs-lg" onclick="setFontSize('lg')" style="padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">大</button>
+              <button id="fs-xl" onclick="setFontSize('xl')" style="padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">特大</button>
+              <button id="fs-xxl" onclick="setFontSize('xxl')" style="padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub)">最大</button>
             </div>
           </div>
         </div></div>
@@ -1947,6 +1970,43 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" id="bv-f-stay" onclick="setBvFilter('stay')">小多機</button>
     </div>
     <div id="bulk-vital-list" style="padding:0 12px 80px"></div>
+  </div>
+
+
+  <!-- ─── 一括食事・水分 ─── -->
+  <div id="scr-bulk-meal" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--tx)">🍚 一括食事・水分入力</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">全利用者の食事・水分をまとめて記録</div>
+      </div>
+      <input type="date" id="bm-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="chip on" id="bm-f-all" onclick="setBmFilter('all')">全員</button>
+      <button class="chip" id="bm-f-resident" onclick="setBmFilter('resident')">サ高住</button>
+      <button class="chip" id="bm-f-commute" onclick="setBmFilter('commute')">デイ</button>
+      <button class="chip" id="bm-f-stay" onclick="setBmFilter('stay')">小多機</button>
+    </div>
+    <div id="bulk-meal-list" style="padding:0 12px 80px"></div>
+  </div>
+
+  <!-- ─── 一括排泄 ─── -->
+  <div id="scr-bulk-excretion" class="scr">
+    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--tx)">💧 一括排泄入力</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">全利用者の排泄をまとめて記録</div>
+      </div>
+      <input type="date" id="bex-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="chip on" id="bex-f-all" onclick="setBexFilter('all')">全員</button>
+      <button class="chip" id="bex-f-resident" onclick="setBexFilter('resident')">サ高住</button>
+      <button class="chip" id="bex-f-commute" onclick="setBexFilter('commute')">デイ</button>
+      <button class="chip" id="bex-f-stay" onclick="setBexFilter('stay')">小多機</button>
+    </div>
+    <div id="bulk-excretion-list" style="padding:0 12px 80px"></div>
   </div>
 
   <!-- ─── 服薬チェック ─── -->
@@ -2570,14 +2630,14 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
     <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：血圧130の80 脈72 体温36.5 SpO2 98</span></button>
     <div class="field-row" id="vrow-bp">
-      <div class="field"><label>収縮期血圧 mmHg</label><input type="number" id="v-sys" placeholder="130"></div>
-      <div class="field"><label>拡張期血圧 mmHg</label><input type="number" id="v-dia" placeholder="80"></div>
+      <div class="field"><label>収縮期血圧 mmHg</label><input type="number" inputmode="numeric" id="v-sys" placeholder="130"></div>
+      <div class="field"><label>拡張期血圧 mmHg</label><input type="number" inputmode="numeric" id="v-dia" placeholder="80"></div>
     </div>
     <div id="vrow-pulse-temp" style="display:flex;gap:8px">
-      <div class="field" id="vrow-pulse" style="flex:1"><label>脈拍 回/分</label><input type="number" id="v-pulse" placeholder="72"></div>
-      <div class="field" id="vrow-temp" style="flex:1"><label>体温 ℃</label><input type="number" step="0.1" id="v-temp" placeholder="36.5"></div>
+      <div class="field" id="vrow-pulse" style="flex:1"><label>脈拍 回/分</label><input type="number" inputmode="numeric" id="v-pulse" placeholder="72"></div>
+      <div class="field" id="vrow-temp" style="flex:1"><label>体温 ℃</label><input type="number" inputmode="decimal" step="0.1" id="v-temp" placeholder="36.5"></div>
     </div>
-    <div class="field" id="vrow-spo2"><label>SpO2 %</label><input type="number" id="v-spo2" placeholder="97"></div>
+    <div class="field" id="vrow-spo2"><label>SpO2 %</label><input type="number" inputmode="numeric" id="v-spo2" placeholder="97"></div>
     <div class="field" id="vrow-conscious"><label>意識レベル</label>
       <div class="radio-group">
         <label><input type="radio" name="consciousness" value="alert" checked> 清明</label>
@@ -2632,7 +2692,7 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     </div>
-    <div class="field"><label>水分摂取量（ml）</label><input type="number" id="m-fluid" placeholder="200"></div>
+    <div class="field"><label>水分摂取量（ml）</label><input type="number" inputmode="numeric" id="m-fluid" placeholder="200"></div>
     <div class="field"><label>コメント</label><textarea id="m-note" placeholder="食欲の様子など..."></textarea>
       <button class="btn-voice" onclick="startVoice('m-note',this)">🎤 音声入力</button>
     </div>
@@ -2738,7 +2798,7 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">⚖️ 体重測定</div>
-    <div class="field"><label>体重（kg）</label><input type="number" step="0.1" id="w-val" placeholder="50.0"></div>
+    <div class="field"><label>体重（kg）</label><input type="number" inputmode="decimal" step="0.1" id="w-val" placeholder="50.0"></div>
     <div class="field"><label>備考</label><textarea id="w-note" placeholder="測定条件（着衣量等）..."></textarea></div>
     <button class="btn-primary" onclick="saveRecord('weight')">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-weight')">キャンセル</button>
@@ -2872,22 +2932,22 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-title">⚙️ バイタル基準値設定</div>
     <div style="font-size:11px;color:var(--sub);background:var(--ps);padding:8px 10px;border-radius:8px;margin-bottom:12px">デフォルト：BP 90-140 / 40-85、脈拍 50-100、体温 35.5-37.2℃、SpO₂ ≥95%</div>
     <div class="field-row">
-      <div class="field"><label>収縮期 下限</label><input type="number" id="vr-sys-min" placeholder="90"></div>
-      <div class="field"><label>収縮期 上限</label><input type="number" id="vr-sys-max" placeholder="140"></div>
+      <div class="field"><label>収縮期 下限</label><input type="number" inputmode="numeric" id="vr-sys-min" placeholder="90"></div>
+      <div class="field"><label>収縮期 上限</label><input type="number" inputmode="numeric" id="vr-sys-max" placeholder="140"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>拡張期 下限</label><input type="number" id="vr-dia-min" placeholder="40"></div>
-      <div class="field"><label>拡張期 上限</label><input type="number" id="vr-dia-max" placeholder="85"></div>
+      <div class="field"><label>拡張期 下限</label><input type="number" inputmode="numeric" id="vr-dia-min" placeholder="40"></div>
+      <div class="field"><label>拡張期 上限</label><input type="number" inputmode="numeric" id="vr-dia-max" placeholder="85"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>脈拍 下限</label><input type="number" id="vr-pulse-min" placeholder="50"></div>
-      <div class="field"><label>脈拍 上限</label><input type="number" id="vr-pulse-max" placeholder="100"></div>
+      <div class="field"><label>脈拍 下限</label><input type="number" inputmode="numeric" id="vr-pulse-min" placeholder="50"></div>
+      <div class="field"><label>脈拍 上限</label><input type="number" inputmode="numeric" id="vr-pulse-max" placeholder="100"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>体温 下限</label><input type="number" id="vr-temp-min" step="0.1" placeholder="35.5"></div>
-      <div class="field"><label>体温 上限</label><input type="number" id="vr-temp-max" step="0.1" placeholder="37.2"></div>
+      <div class="field"><label>体温 下限</label><input type="number" inputmode="decimal" id="vr-temp-min" step="0.1" placeholder="35.5"></div>
+      <div class="field"><label>体温 上限</label><input type="number" inputmode="decimal" id="vr-temp-max" step="0.1" placeholder="37.2"></div>
     </div>
-    <div class="field"><label>SpO₂ 下限（以下でアラート）</label><input type="number" id="vr-spo2-min" placeholder="95"></div>
+    <div class="field"><label>SpO₂ 下限（以下でアラート）</label><input type="number" inputmode="numeric" id="vr-spo2-min" placeholder="95"></div>
     <div class="field"><label>変更理由（必須）</label><textarea id="vr-reason" placeholder="例：主治医指示 2026-05-02" rows="2"></textarea></div>
     <button onclick="showVRHistory()" style="width:100%;padding:8px;background:#f0f4ff;color:var(--p);border-radius:8px;font-size:12px;font-weight:700;margin-bottom:8px">📋 変更履歴</button>
     <div id="vr-history" style="display:none;max-height:180px;overflow-y:auto;border:1px solid var(--bdr);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px"></div>
@@ -3143,8 +3203,8 @@ a{color:var(--p);text-decoration:none}
     <div id="fst-medical" class="tab-panel" style="padding-top:14px">
       <div class="fs-sec"><h4>身体状況</h4>
         <div class="field-row">
-          <div class="field"><label>身長 (cm)</label><input type="number" step="0.1" id="fs-height" placeholder="160"></div>
-          <div class="field"><label>体重 (kg)</label><input type="number" step="0.1" id="fs-weight" placeholder="55"></div>
+          <div class="field"><label>身長 (cm)</label><input type="number" inputmode="decimal" step="0.1" id="fs-height" placeholder="160"></div>
+          <div class="field"><label>体重 (kg)</label><input type="number" inputmode="decimal" step="0.1" id="fs-weight" placeholder="55"></div>
         </div>
         <div class="field-row">
           <div class="field"><label>視覚障害</label>
@@ -4462,10 +4522,10 @@ function toggleDarkMode(on){
   localStorage.setItem('va_dark',on?'1':'0');
 }
 function setFontSize(sz){
-  document.body.classList.remove('font-sm','font-lg');
+  document.body.classList.remove('font-xs','font-sm','font-lg','font-xl','font-xxl');
   if(sz!=='md') document.body.classList.add('font-'+sz);
   localStorage.setItem('va_font',sz);
-  ['sm','md','lg'].forEach(s=>{
+  ['xs','sm','md','lg','xl','xxl'].forEach(s=>{
     const b=document.getElementById('fs-'+s);
     if(!b)return;
     const on=s===sz;
@@ -5657,7 +5717,7 @@ function showScr(id){
     'scr-stool-alert':'排便未記録一覧',
     'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
     'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理',
-    'scr-bulk-vital':'一括バイタル入力','scr-medication':'服薬チェック',
+    'scr-bulk-vital':'一括バイタル入力','scr-bulk-meal':'一括食事・水分','scr-bulk-excretion':'一括排泄','scr-medication':'服薬チェック',
     'scr-transport':'送迎チェック','scr-shift-checklist':'業務チェックリスト',
     'scr-doctor':'医師ページ'
   };
@@ -5670,7 +5730,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-shift-checklist':'sbn-shift-checklist','scr-doctor':'sbn-doctor'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-shift-checklist':'sbn-shift-checklist','scr-doctor':'sbn-doctor'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -5690,6 +5750,8 @@ function showScr(id){
   if(id==='scr-doctor') renderDoctorPage();
   if(id==='scr-tasks') renderTasksScr();
   if(id==='scr-bulk-vital') renderBulkVital();
+  if(id==='scr-bulk-meal') renderBulkMeal();
+  if(id==='scr-bulk-excretion') renderBulkExcretion();
   if(id==='scr-medication') renderMedication();
   if(id==='scr-transport') renderTransport();
   if(id==='scr-shift-checklist') renderShiftChecklist();
@@ -5697,7 +5759,7 @@ function showScr(id){
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
@@ -8685,11 +8747,11 @@ function renderBulkVital(){
       <details style="margin-top:0">
         <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 手動入力</span></summary>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px">
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">拡張期</div><input type="number" id="bv-dia-${r.id}" value="${v.dia||''}" placeholder="80" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">脈拍</div><input type="number" id="bv-pulse-${r.id}" value="${v.pulse||''}" placeholder="72" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">体温</div><input type="number" step="0.1" id="bv-temp-${r.id}" value="${v.temp||''}" placeholder="36.5" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">SpO2</div><input type="number" id="bv-spo2-${r.id}" value="${v.spo2||''}" placeholder="98" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" inputmode="numeric" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">拡張期</div><input type="number" inputmode="numeric" id="bv-dia-${r.id}" value="${v.dia||''}" placeholder="80" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">脈拍</div><input type="number" inputmode="numeric" id="bv-pulse-${r.id}" value="${v.pulse||''}" placeholder="72" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">体温</div><input type="number" inputmode="decimal" step="0.1" id="bv-temp-${r.id}" value="${v.temp||''}" placeholder="36.5" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">SpO2</div><input type="number" inputmode="numeric" id="bv-spo2-${r.id}" value="${v.spo2||''}" placeholder="98" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:8px">
           <button onclick="saveBulkVital('${r.id}')" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 18px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
@@ -8779,6 +8841,177 @@ function saveBulkVital(rid){
   renderBulkVital();
 }
 
+
+// ═══════════ 一括食事・水分 ═══════════
+let _bmFilter='all';
+function setBmFilter(f){
+  _bmFilter=f;
+  ['all','resident','commute','stay'].forEach(k=>{
+    const b=document.getElementById('bm-f-'+k);
+    if(b) b.classList.toggle('on',k===f);
+  });
+  renderBulkMeal();
+}
+function renderBulkMeal(){
+  const dateEl=document.getElementById('bm-date');
+  if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
+  const today=dateEl.value;
+  const recs=getRecords();
+  const res=getResidents().filter(r=>_bmFilter==='all'||r.services.includes(_bmFilter));
+  const list=document.getElementById('bulk-meal-list');if(!list)return;
+  if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
+  const h=new Date().getHours();
+  const autoMtype=h<10?'breakfast':h<15?'lunch':'dinner';
+  const mtypeLbl={breakfast:'朝食',lunch:'昼食',dinner:'夕食'};
+  list.innerHTML=res.map(r=>{
+    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today));
+    const done=todayRecs.length>0;
+    const lastFluid=todayRecs.reduce((acc,rc)=>acc+(rc.data?.fluid||0),0);
+    const fluidWarn=done&&lastFluid>0&&lastFluid<700;
+    const statusTxt=done?`${todayRecs.length}件記録済 水分計${lastFluid}ml`:'未記録';
+    const statusColor=done?(fluidWarn?'var(--warn)':'var(--ok)'):'var(--sub)';
+    return `<div id="bm-card-${r.id}" style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:12px 14px;box-shadow:var(--sh);border-left:3px solid ${done?(fluidWarn?'var(--warn)':'var(--ok)'):'var(--bdr)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:800">${r.name}</div>
+          <div style="font-size:11px;color:${statusColor};margin-top:1px">${statusTxt}</div>
+        </div>
+      </div>
+      <details style="margin-top:0">
+        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 入力</span></summary>
+        <div style="margin-top:8px">
+          <div style="display:flex;gap:4px;margin-bottom:8px">
+            ${['breakfast','lunch','dinner'].map(t=>`<button id="bm-mtype-${r.id}-${t}" onclick="setBmMtype('${r.id}','${t}')" style="flex:1;padding:6px 2px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid;cursor:pointer;touch-action:manipulation;background:${t===autoMtype?'var(--p)':'var(--bg)'};color:${t===autoMtype?'#fff':'var(--sub)'};border-color:${t===autoMtype?'var(--p)':'var(--bdr)'}">${mtypeLbl[t]}</button>`).join('')}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+            <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">主食（割）</div><input type="number" inputmode="numeric" min="0" max="10" id="bm-staple-${r.id}" placeholder="10" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
+            <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">副食（割）</div><input type="number" inputmode="numeric" min="0" max="10" id="bm-side-${r.id}" placeholder="10" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
+            <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">水分（ml）</div><input type="number" inputmode="numeric" id="bm-fluid-${r.id}" placeholder="200" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end">
+            <button onclick="saveBulkMeal('${r.id}')" style="background:var(--ok);color:#fff;border-radius:8px;padding:7px 20px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
+          </div>
+        </div>
+      </details>
+    </div>`;
+  }).join('');
+  // autoMtype をデフォルト選択として記憶
+  res.forEach(r=>{ if(!document.getElementById('bm-mtype-cur-'+r.id)){ const d=document.createElement('input'); d.type='hidden'; d.id='bm-mtype-cur-'+r.id; d.value=autoMtype; document.body.appendChild(d); }});
+}
+function setBmMtype(rid,t){
+  ['breakfast','lunch','dinner'].forEach(s=>{
+    const b=document.getElementById('bm-mtype-'+rid+'-'+s);
+    if(b){b.style.background=s===t?'var(--p)':'var(--bg)';b.style.color=s===t?'#fff':'var(--sub)';b.style.borderColor=s===t?'var(--p)':'var(--bdr)';}
+  });
+  const cur=document.getElementById('bm-mtype-cur-'+rid);
+  if(cur) cur.value=t; else { const d=document.createElement('input');d.type='hidden';d.id='bm-mtype-cur-'+rid;d.value=t;document.body.appendChild(d); }
+}
+function saveBulkMeal(rid){
+  const dateEl=document.getElementById('bm-date');
+  const mtypeEl=document.getElementById('bm-mtype-cur-'+rid);
+  const mtype=mtypeEl?.value||'breakfast';
+  const staple=document.getElementById('bm-staple-'+rid)?.value;
+  const side=document.getElementById('bm-side-'+rid)?.value;
+  const fluid=document.getElementById('bm-fluid-'+rid)?.value;
+  if(!staple&&!side&&!fluid){toast('値を入力してください');return;}
+  const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
+  const recs=getRecords();
+  recs.push({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',
+    data:{mtype,staple:staple?Number(staple):null,side:side?Number(side):null,fluid:fluid?Number(fluid):0,note:''}});
+  saveRecords(recs);
+  toast('食事記録を保存しました ✓');
+  renderBulkMeal();
+}
+
+// ═══════════ 一括排泄 ═══════════
+let _bexFilter='all';
+function setBexFilter(f){
+  _bexFilter=f;
+  ['all','resident','commute','stay'].forEach(k=>{
+    const b=document.getElementById('bex-f-'+k);
+    if(b) b.classList.toggle('on',k===f);
+  });
+  renderBulkExcretion();
+}
+function renderBulkExcretion(){
+  const dateEl=document.getElementById('bex-date');
+  if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
+  const today=dateEl.value;
+  const recs=getRecords();
+  const res=getResidents().filter(r=>_bexFilter==='all'||r.services.includes(_bexFilter));
+  const list=document.getElementById('bulk-excretion-list');if(!list)return;
+  if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
+  const stoolLbls={none:'なし',small:'少量',normal:'普通',large:'多量'};
+  list.innerHTML=res.map(r=>{
+    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today));
+    const done=todayRecs.length>0;
+    const hasStool=todayRecs.some(rc=>rc.data?.stool&&rc.data.stool!=='none'&&rc.data.stool);
+    const statusTxt=done?`${todayRecs.length}件記録済${hasStool?' 排便あり':''}`:'未記録';
+    return `<div id="bex-card-${r.id}" style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:12px 14px;box-shadow:var(--sh);border-left:3px solid ${done?'var(--ok)':'var(--bdr)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:800">${r.name}</div>
+          <div style="font-size:11px;color:${done?'var(--ok)':'var(--sub)'};margin-top:1px">${statusTxt}</div>
+        </div>
+      </div>
+      <details>
+        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 入力</span></summary>
+        <div style="margin-top:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <div style="font-size:10px;color:var(--sub);margin-bottom:4px;font-weight:700">排尿</div>
+              <div style="display:flex;gap:4px;align-items:center">
+                <input type="number" inputmode="numeric" id="bex-urine-${r.id}" placeholder="ml" style="width:70px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center">
+                <span style="font-size:11px;color:var(--sub)">ml</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--sub);margin-bottom:4px;font-weight:700">排便</div>
+              <div style="display:flex;gap:3px;flex-wrap:wrap">
+                ${Object.entries(stoolLbls).map(([k,l])=>`<button id="bex-stool-${r.id}-${k}" onclick="setBexStool('${r.id}','${k}')" style="padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">${l}</button>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+              <input type="checkbox" id="bex-incon-${r.id}"> 失禁
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+              <input type="checkbox" id="bex-portable-${r.id}"> ポータブルトイレ
+            </label>
+          </div>
+          <div style="display:flex;justify-content:flex-end">
+            <button onclick="saveBulkExcretion('${r.id}')" style="background:var(--ok);color:#fff;border-radius:8px;padding:7px 20px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
+          </div>
+        </div>
+      </details>
+    </div>`;
+  }).join('');
+}
+function setBexStool(rid,val){
+  ['none','small','normal','large'].forEach(k=>{
+    const b=document.getElementById('bex-stool-'+rid+'-'+k);
+    if(b){b.style.background=k===val?'var(--ok)':'var(--bg)';b.style.color=k===val?'#fff':'var(--sub)';b.style.borderColor=k===val?'var(--ok)':'var(--bdr)';}
+  });
+  const cur=document.getElementById('bex-stool-cur-'+rid);
+  if(cur) cur.value=val; else {const d=document.createElement('input');d.type='hidden';d.id='bex-stool-cur-'+rid;d.value=val;document.body.appendChild(d);}
+}
+function saveBulkExcretion(rid){
+  const dateEl=document.getElementById('bex-date');
+  const urine=document.getElementById('bex-urine-'+rid)?.value;
+  const stool=document.getElementById('bex-stool-cur-'+rid)?.value||'none';
+  const incon=document.getElementById('bex-incon-'+rid)?.checked||false;
+  const portable=document.getElementById('bex-portable-'+rid)?.checked||false;
+  if(!urine&&stool==='none'&&!incon){toast('値を入力してください');return;}
+  const etype=urine&&stool&&stool!=='none'?'both':stool&&stool!=='none'?'stool':'urine';
+  const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
+  const recs=getRecords();
+  recs.push({id:'r'+Date.now(),rid,type:'excretion',ts,by:S.user||'──',
+    data:{etype,urine:urine||'',stool:stool==='none'?'':stool,portable,incon,lax:false,note:''}});
+  saveRecords(recs);
+  toast('排泄記録を保存しました ✓');
+  renderBulkExcretion();
+}
 // ═══════════ 服薬チェック ═══════════
 let _medSlot='morning';
 const MED_SLOT_LABEL={wakeup:'起床時',morning_before:'朝食前',morning:'朝食後',noon_before:'昼食前',noon:'昼食後',evening_before:'夕食前',evening:'夕食後',bedtime:'眠前'};
@@ -10404,7 +10637,7 @@ function renderFsDiseases(diseases){
       </div>
       <div class="field-row" style="margin-bottom:6px">
         <div class="field"><label>疾患名</label><input type="text" class="fsd-name" value="${d.name||''}" placeholder="高血圧症"></div>
-        <div class="field"><label>発症年齢</label><input type="number" class="fsd-age" value="${d.onset_age||''}" placeholder="65" style="max-width:80px"></div>
+        <div class="field"><label>発症年齢</label><input type="number" inputmode="numeric" class="fsd-age" value="${d.onset_age||''}" placeholder="65" style="max-width:80px"></div>
       </div>
       <div class="field-row" style="margin-bottom:6px">
         <div class="field"><label>病院名</label><input type="text" class="fsd-hospital" value="${d.hospital||''}" placeholder="○○病院"></div>
