@@ -24,9 +24,10 @@
   --p:#3D7AB5;--pd:#2d5e8e;--ps:#e8f0fb;
   --ok:#43a047;--warn:#FB8C00;--ng:#e53935;
   --bg:#F0F2F5;--card:#fff;--txt:#1c2340;--sub:#6b7280;--bdr:#e2e5ea;
+  --tx:#1c2340;
   --r:12px;--sh:0 2px 8px rgba(0,0,0,.08);
 }
-body.dark-mode{--bg:#1a1a2e;--card:#16213e;--txt:#e8eaf6;--sub:#9e9e9e;--bdr:#2d3748;--p:#7bafd4;--pd:#3a6a94;--ps:#1e3a5f}
+body.dark-mode{--bg:#1a1a2e;--card:#16213e;--txt:#e8eaf6;--sub:#9e9e9e;--bdr:#2d3748;--p:#7bafd4;--pd:#3a6a94;--ps:#1e3a5f;--tx:#e8eaf6}
 body.font-xs{zoom:0.82}
 body.font-sm{zoom:0.91}
 body.font-lg{zoom:1.18}
@@ -68,17 +69,17 @@ a{color:var(--p);text-decoration:none}
 
 /* ── HEADER ── */
 .hd{background:var(--p);color:#fff;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
-.hd-back{font-size:22px;padding:4px 8px 4px 0;opacity:.9}
+.hd-back{font-size:13px;font-weight:700;color:#fff;padding:5px 10px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;flex-shrink:0}
 .hd-title{font-size:17px;font-weight:700;flex:1}
 .hd-sub{font-size:12px;opacity:.8}
 .hd-badge{background:rgba(255,255,255,.25);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
 
 /* ── BOTTOM NAV ── */
 .bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr);display:flex;justify-content:center;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom)}
-.bn{flex:1;max-width:96px;padding:7px 0 5px;text-align:center;color:var(--sub);transition:color .15s;min-width:0}
+.bn{flex:1;max-width:96px;padding:9px 0 7px;text-align:center;color:var(--sub);transition:color .15s;min-width:0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .bn.on{color:var(--p)}
-.bn-ico{font-size:22px;line-height:1}
-.bn-lbl{font-size:9px;margin-top:2px;font-weight:600}
+.bn-ico{font-size:23px;line-height:1}
+.bn-lbl{font-size:10px;margin-top:3px;font-weight:600}
 /* ── MOBILE DRAWER MENU ── */
 #mobile-menu{position:fixed;top:0;left:0;right:0;bottom:0;z-index:400;display:none;pointer-events:none}
 #mobile-menu.on{display:block;pointer-events:auto}
@@ -241,14 +242,16 @@ a{color:var(--p);text-decoration:none}
 .detail-col-right.dtab-hidden{display:none}
 .tl-date{font-size:12px;font-weight:700;color:var(--sub);padding:4px 0 6px;border-bottom:1px solid var(--bdr);margin-bottom:8px}
 .tl-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start}
+.tl-item[data-type="chrono"]{background:#f8f6ff;border-radius:10px;padding:10px;margin:4px 0;border-bottom:none;border-left:3px solid var(--p)}
 .tl-left{width:38px;flex-shrink:0;text-align:center}
 .tl-time{font-size:11px;color:var(--sub);white-space:nowrap}
 .tl-ico{font-size:18px;margin-bottom:2px}
-.tl-body{flex:1}
+.tl-body{flex:1;min-width:0}
 .tl-type{font-size:12px;font-weight:700;color:var(--sub)}
 .tl-val{font-size:14px;font-weight:600;margin-top:1px}
-.tl-note{font-size:12px;color:var(--sub);margin-top:2px}
-.tl-staff{font-size:11px;color:var(--sub);margin-top:3px}
+.tl-note{font-size:13px;color:var(--txt);margin-top:4px;line-height:1.6}
+.tl-item[data-type="chrono"] .tl-note{font-size:14px;color:var(--txt);white-space:pre-wrap;word-break:break-all}
+.tl-staff{font-size:11px;color:var(--sub);margin-top:4px}
 .tl-empty{text-align:center;padding:24px;color:var(--sub);font-size:14px}
 
 /* ── MODALS ── */
@@ -352,8 +355,10 @@ a{color:var(--p);text-decoration:none}
 .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
 
 /* ── TOAST ── */
-#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:normal;max-width:80%;text-align:center}
 #toast.on{opacity:1}
+.req{color:var(--ng);margin-left:3px;font-weight:800}
+.field input.err,.field textarea.err{border-color:var(--ng)!important;background:#fff5f5!important}
 
 /* ── MISC ── */
 .sec-head{font-size:13px;font-weight:800;padding:14px 14px 6px;color:var(--sub);letter-spacing:.06em;text-transform:none;display:flex;align-items:center;gap:6px}
@@ -434,10 +439,10 @@ a{color:var(--p);text-decoration:none}
   #main-content-wrap{height:100vh;overflow:hidden;display:flex;flex-direction:column}
   .hd{flex-shrink:0;padding-top:5px!important;padding-bottom:5px!important}
   .scr.on{flex:1;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:50px!important}
-  .bnav{height:44px!important;padding-bottom:env(safe-area-inset-bottom)!important}
-  .bn{padding:3px 0 2px!important}
+  .bnav{height:48px!important;padding-bottom:env(safe-area-inset-bottom)!important}
+  .bn{padding:4px 0 3px!important;min-height:48px!important}
   .bn-ico{font-size:18px!important}
-  .bn-lbl{font-size:8px!important;margin-top:0!important}
+  .bn-lbl{font-size:8px!important;margin-top:1px!important}
 }
 
 /* ── SCHEDULE ── */
@@ -483,7 +488,6 @@ a{color:var(--p);text-decoration:none}
   .hd{display:flex!important}
   #hd-menu{display:none!important}
   #hd-sb-toggle{display:flex!important}
-  #sb-close-btn{display:flex!important}
   #sb-toggle{display:none!important}
   .bnav{display:none!important}
   .scr{padding-bottom:32px;min-height:100vh}
@@ -596,7 +600,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="login-card">
       <label for="login-id">職員ID（4桁）</label>
-      <input id="login-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="例: 1001" autocomplete="username" autocapitalize="none" spellcheck="false" oninput="checkAdminShortcut(this.value)">
+      <input id="login-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="例: 1001" autocomplete="username" autocapitalize="none" spellcheck="false">
       <label for="login-pass">パスワード</label>
       <input id="login-pass" type="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
       <div id="login-err" style="display:none;color:#ff8a80;font-size:12px;margin:-10px 0 12px;text-align:center;letter-spacing:.03em"></div>
@@ -621,7 +625,6 @@ a{color:var(--p);text-decoration:none}
       <img src="facility-logo.png" alt="Village Aura" style="max-height:44px;max-width:155px;object-fit:contain;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:5px 10px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;font-size:22px">🏥</div>
       <div style="font-size:13px;font-weight:800;margin-top:9px;letter-spacing:.14em;font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;opacity:.92;text-transform:uppercase;color:#fff">Village Aura</div>
       <div style="font-size:9px;opacity:.55;margin-top:2px;line-height:1.5">メディケアビレッジかしわじま<br>こはる日和</div>
-      <button id="sb-close-btn" onclick="toggleSidebar()" style="display:none;position:absolute;top:12px;right:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;color:#fff;font-size:13px;font-weight:700;padding:4px 8px;cursor:pointer">◀</button>
     </div>
     <nav style="flex:1;padding:6px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
@@ -665,13 +668,16 @@ a{color:var(--p);text-decoration:none}
   <header class="hd" id="hd">
     <button id="hd-menu" onclick="toggleMobileMenu()">☰</button>
     <button id="hd-sb-toggle" onclick="toggleSidebar()" style="display:none;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;color:#fff;font-weight:700;padding:5px 10px;flex-shrink:0;align-items:center;gap:5px;flex-direction:column;line-height:1.2"><span id="hd-sb-ico" style="font-size:15px">▶</span><span style="font-size:9px;font-weight:600;opacity:.85;letter-spacing:.03em">メニュー</span></button>
-    <button class="hd-back" id="hd-back" onclick="goBack()" style="display:none">←</button>
+    <button class="hd-back" id="hd-back" onclick="goBack()" style="display:none">◀ 戻る</button>
     <div style="flex:1">
       <div class="hd-title" id="hd-title">ホーム</div>
       <div class="hd-sub" id="hd-sub">メディケアビレッジかしわじま</div>
     </div>
     <div class="hd-badge" id="hd-badge" style="display:none"></div>
   </header>
+
+  <!-- オフラインバナー -->
+  <div id="offline-banner" style="display:none;position:sticky;top:56px;z-index:49;background:#FB8C00;color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:700">📵 オフライン中 — 入力データはWiFi復帰後に自動同期されます</div>
 
   <!-- ─── DASHBOARD ─── -->
   <div id="scr-dashboard" class="scr on">
@@ -927,6 +933,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="summary-row" id="summary-row"></div>
     <div id="stool-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#f3e5f5;border-left:4px solid #7b1fa2;border-radius:8px;font-size:12px;font-weight:700;color:#6a1b9a"></div>
+    <div id="allergy-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#fff3e0;border-left:4px solid #e65100;border-radius:8px;font-size:12px;font-weight:700;color:#bf360c;cursor:pointer" onclick="openFacesheet()"></div>
     <div id="vital-time-bar" style="text-align:right;font-size:10px;color:var(--sub);padding:2px 14px 2px"></div>
     <div id="vital-graph-card" style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -952,6 +959,10 @@ a{color:var(--p);text-decoration:none}
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
         <span style="font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em">タイムライン</span>
         <div id="tl-nav" style="display:flex;align-items:center;gap:6px"></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="tlf-all" class="hb-filter-btn on" onclick="setTlFilter('all')">すべて</button>
+        <button id="tlf-chrono" class="hb-filter-btn" onclick="setTlFilter('chrono')">📝 経時記録</button>
       </div>
       <div id="timeline"></div>
     </div>
@@ -1085,19 +1096,30 @@ a{color:var(--p);text-decoration:none}
     <div id="hb-admin-bar" style="display:none;padding:0 12px 6px">
       <button onclick="const e=document.getElementById('do-edit-idx');if(e)e.value=-1;document.getElementById('do-content').value='';openModal('modal-doctor-order')" style="width:100%;padding:7px;background:#fef2f2;color:#c62828;border:1.5px solid #fca5a5;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 医師指示を追加</button>
     </div>
-    <!-- フィルターチップ -->
-    <div style="padding:0 12px 10px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+    <!-- 検索バー -->
+    <div style="padding:0 12px 6px">
+      <div style="background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;padding:0 12px;display:flex;align-items:center">
+        <span style="color:var(--sub);font-size:16px">🔍</span>
+        <input id="hb-search-inp" type="text" placeholder="キーワード検索..." oninput="setHbSearch(this.value)" style="flex:1;padding:10px 8px;border:none;outline:none;font-size:14px;background:none">
+        <button onclick="setHbSearch('');document.getElementById('hb-search-inp').value=''" style="color:var(--sub);font-size:14px;background:none;border:none;padding:4px;display:none" id="hb-search-clear">✕</button>
+      </div>
+    </div>
+    <!-- フィルター：緊急度ボタン + 事業所ドロップダウン -->
+    <div style="padding:0 12px 6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <button id="hb-filter-all" class="hb-filter-btn on" onclick="setHbFilter('all')">すべて</button>
       <button id="hb-filter-urgent" class="hb-filter-btn" onclick="setHbFilter('urgent')">🚨 緊急</button>
       <button id="hb-filter-important" class="hb-filter-btn" onclick="setHbFilter('important')">⚠️ 重要</button>
-      <button id="hb-filter-doctor" class="hb-filter-btn" onclick="setHbFilter('doctor')">🩺 医師から</button>
-      <button id="hb-filter-doctor_to" class="hb-filter-btn" onclick="setHbFilter('doctor_to')">📤 医師へ</button>
-      <button id="hb-filter-facility_nurse" class="hb-filter-btn" onclick="setHbFilter('facility_nurse')">🏥 施設看護師</button>
-      <button id="hb-filter-sak" class="hb-filter-btn" onclick="setHbFilter('sak')">🏠 サ高住</button>
-      <button id="hb-filter-shot" class="hb-filter-btn" onclick="setHbFilter('shot')">🏡 小多機</button>
-      <button id="hb-filter-day" class="hb-filter-btn" onclick="setHbFilter('day')">☀️ デイ</button>
-      <button id="hb-filter-visit" class="hb-filter-btn" onclick="setHbFilter('visit')">🚗 訪問介護</button>
-      <button id="hb-filter-home_care" class="hb-filter-btn" onclick="setHbFilter('home_care')">🏘️ 居宅</button>
+      <select id="hb-filter-svc" onchange="setHbFilterSvc(this.value)" style="padding:5px 8px;border:1.5px solid var(--bdr);border-radius:20px;font-size:12px;font-weight:700;color:var(--txt);background:var(--card);cursor:pointer;flex-shrink:0">
+        <option value="">事業所 ▾</option>
+        <option value="doctor">🩺 医師から</option>
+        <option value="doctor_to">📤 医師へ</option>
+        <option value="facility_nurse">🏥 施設看護師</option>
+        <option value="sak">🏠 サ高住</option>
+        <option value="shot">🏡 小多機</option>
+        <option value="day">☀️ デイ</option>
+        <option value="visit">🚗 訪問介護</option>
+        <option value="home_care">🏘️ 居宅</option>
+      </select>
     </div>
     <!-- 掲示板リスト -->
     <div id="hb-board-list" style="padding:0 12px 20px"></div>
@@ -1358,6 +1380,17 @@ a{color:var(--p);text-decoration:none}
             <div class="si-body"><div class="si-name">ダークモード</div><div class="si-desc">夜間業務に優しい暗色テーマ</div></div>
             <label class="toggle"><input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
           </div>
+          <div class="setting-item" style="margin-bottom:8px">
+            <span class="si-ico">⏰</span>
+            <div class="si-body"><div class="si-name">夜間自動ダークモード</div><div class="si-desc" id="auto-dark-desc">設定した時間帯に自動で切り替え</div></div>
+            <label class="toggle"><input type="checkbox" id="auto-dark-toggle" onchange="toggleAutoDark(this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+          <div id="auto-dark-time" style="display:none;padding:6px 0 4px;display:none;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--sub)">開始</span>
+            <input type="time" id="auto-dark-from" value="22:00" onchange="saveAutoDarkTime()" style="padding:4px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--bg);color:var(--txt)">
+            <span style="font-size:12px;color:var(--sub)">〜 終了</span>
+            <input type="time" id="auto-dark-to" value="06:00" onchange="saveAutoDarkTime()" style="padding:4px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--bg);color:var(--txt)">
+          </div>
           <div class="setting-item">
             <span class="si-ico">🔤</span>
             <div class="si-body"><div class="si-name">文字サイズ</div></div>
@@ -1488,7 +1521,7 @@ a{color:var(--p);text-decoration:none}
                   <input type="text" id="new-ip-input" placeholder="例: 192.168.1." style="flex:1;padding:8px 10px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--card);color:var(--txt)">
                   <button onclick="addAllowedIP()" style="padding:8px 12px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;white-space:nowrap">追加</button>
                 </div>
-                <button onclick="addCurrentIP()" style="margin-top:8px;width:100%;padding:8px;background:#e8f0fb;color:var(--p);border-radius:7px;font-size:13px;font-weight:700">現在のIPを追加</button>
+                <button onclick="addCurrentIP()" style="margin-top:8px;width:100%;padding:10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700">📍 現在地のIPを今すぐ登録</button>
               </div>
             </div>
             <!-- セッション管理 -->
@@ -1556,6 +1589,12 @@ a{color:var(--p);text-decoration:none}
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 手動バックアップ</div>
             <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px">バックアップをダウンロード（JSON）</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。毎日0時に自動バックアップが実行されています。</div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔁 バックアップから復元</div>
+            <label style="display:block;width:100%;padding:11px;background:#fff3e0;color:#e65100;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;text-align:center;cursor:pointer;border:1px solid #ffcc80;box-sizing:border-box">
+              JSONファイルを選択して復元
+              <input type="file" accept=".json" onchange="importData(this)" style="display:none">
+            </label>
+            <div style="font-size:11px;color:var(--ng);margin-bottom:16px;line-height:1.6">⚠️ 現在のデータを上書きします。操作前に必ずバックアップを取得してください。</div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📊 CSVエクスポート</div>
             <div style="display:flex;gap:8px;margin-bottom:6px">
               <button onclick="exportResidentsCSV()" style="flex:1;padding:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #a5d6a7">👥 利用者一覧</button>
@@ -2628,9 +2667,12 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-handle"></div>
     <div class="sheet-title">🌡️ バイタル入力</div>
     <div class="sheet-sub" id="vital-sub">利用者名 様</div>
+    <div id="vital-prev-copy" style="display:none;margin-bottom:8px">
+      <button onclick="copyPrevVital()" style="width:100%;padding:8px 12px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;text-align:left" id="vital-prev-btn"></button>
+    </div>
     <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：血圧130の80 脈72 体温36.5 SpO2 98</span></button>
     <div class="field-row" id="vrow-bp">
-      <div class="field"><label>収縮期血圧 mmHg</label><input type="number" inputmode="numeric" id="v-sys" placeholder="130"></div>
+      <div class="field"><label>収縮期血圧 mmHg<span class="req">*</span></label><input type="number" inputmode="numeric" id="v-sys" placeholder="130"></div>
       <div class="field"><label>拡張期血圧 mmHg</label><input type="number" inputmode="numeric" id="v-dia" placeholder="80"></div>
     </div>
     <div id="vrow-pulse-temp" style="display:flex;gap:8px">
@@ -2657,7 +2699,7 @@ a{color:var(--p);text-decoration:none}
 <div class="overlay" id="modal-meal" onclick="closeModal('modal-meal',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">🍚 食事・飲水</div>
+    <div class="sheet-title" id="meal-modal-title">🍚 食事・飲水</div>
     <div class="sheet-sub" id="meal-sub">利用者名 様</div>
     <button id="vs-btn-meal" class="btn-voice-smart" onclick="startVoiceSmart('meal')">🎤 音声で一括入力<span class="vs-ex">例：昼食 主食8割 副食7割 水分200</span></button>
     <div class="field"><label>食事区分</label>
@@ -2677,19 +2719,34 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div id="meal-food-fields">
     <div class="field"><label>主食摂取量：<span id="staple-lbl">8割</span></label>
-      <div class="slider-wrap">
-        <span>0</span>
-        <input type="range" min="0" max="10" value="8" id="staple-sl" oninput="document.getElementById('staple-lbl').textContent=this.value+'割'">
-        <span>10</span>
-        <span class="slider-val" id="staple-v">8</span>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <button class="meal-seg" data-v="0"  onclick="setMealSeg('staple',0)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">なし</button>
+        <button class="meal-seg" data-v="3"  onclick="setMealSeg('staple',3)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">少量</button>
+        <button class="meal-seg" data-v="5"  onclick="setMealSeg('staple',5)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">半量</button>
+        <button class="meal-seg on" data-v="8"  onclick="setMealSeg('staple',8)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff;cursor:pointer;touch-action:manipulation">8割</button>
+        <button class="meal-seg" data-v="10" onclick="setMealSeg('staple',10)" style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">完食</button>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <button onclick="adjMealSeg('staple',-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg);font-size:18px;font-weight:700;color:var(--sub);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center">−</button>
+        <span style="font-size:12px;color:var(--sub);flex:1;text-align:center">1割単位で微調整</span>
+        <button onclick="adjMealSeg('staple',+1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg);font-size:18px;font-weight:700;color:var(--sub);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center">＋</button>
+      </div>
+      <input type="range" min="0" max="10" value="8" id="staple-sl" style="display:none">
     </div>
     <div class="field"><label>副食摂取量：<span id="side-lbl">8割</span></label>
-      <div class="slider-wrap">
-        <span>0</span>
-        <input type="range" min="0" max="10" value="8" id="side-sl" oninput="document.getElementById('side-lbl').textContent=this.value+'割'">
-        <span>10</span>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <button class="meal-seg-s" data-v="0"  onclick="setMealSeg('side',0)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">なし</button>
+        <button class="meal-seg-s" data-v="3"  onclick="setMealSeg('side',3)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">少量</button>
+        <button class="meal-seg-s" data-v="5"  onclick="setMealSeg('side',5)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">半量</button>
+        <button class="meal-seg-s on" data-v="8"  onclick="setMealSeg('side',8)"  style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--p);background:var(--p);color:#fff;cursor:pointer;touch-action:manipulation">8割</button>
+        <button class="meal-seg-s" data-v="10" onclick="setMealSeg('side',10)" style="flex:1;padding:10px 0;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">完食</button>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <button onclick="adjMealSeg('side',-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg);font-size:18px;font-weight:700;color:var(--sub);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center">−</button>
+        <span style="font-size:12px;color:var(--sub);flex:1;text-align:center">1割単位で微調整</span>
+        <button onclick="adjMealSeg('side',+1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--bg);font-size:18px;font-weight:700;color:var(--sub);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center">＋</button>
+      </div>
+      <input type="range" min="0" max="10" value="8" id="side-sl" style="display:none">
     </div>
     </div>
     <div class="field"><label>水分摂取量（ml）</label><input type="number" inputmode="numeric" id="m-fluid" placeholder="200"></div>
@@ -2705,7 +2762,7 @@ a{color:var(--p);text-decoration:none}
 <div class="overlay" id="modal-excretion" onclick="closeModal('modal-excretion',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">💧 排泄記録</div>
+    <div class="sheet-title" id="excretion-modal-title">💧 排泄記録</div>
     <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力<span class="vs-ex">例：排尿あり普通量 軟便あり</span></button>
     <div class="field"><label>種別</label>
       <div class="radio-group">
@@ -3024,8 +3081,14 @@ a{color:var(--p);text-decoration:none}
         <option value="corridor">廊下</option><option value="dining">食堂</option><option value="other">その他</option>
       </select>
     </div>
-    <div class="field"><label>詳細・対応内容</label>
-      <textarea id="inc-detail" placeholder="状況・原因・対処内容を記録..." rows="4"></textarea>
+    <div class="field"><label>状況・発生経緯 <span class="req">*</span></label>
+      <textarea id="inc-detail" placeholder="発生時の状況・原因..." rows="3"></textarea>
+    </div>
+    <div class="field"><label>即時対応内容</label>
+      <textarea id="inc-response" placeholder="その場で行った対応..." rows="2"></textarea>
+    </div>
+    <div class="field"><label>再発防止策</label>
+      <textarea id="inc-prevention" placeholder="今後の対応策・改善案..." rows="2"></textarea>
     </div>
     <div class="field"><label>立会者・同席スタッフ</label>
       <input type="text" id="inc-witness" placeholder="田中 花子、山本 次郎...">
@@ -3936,18 +3999,18 @@ const INIT_VISIT_SCHED=(()=>{
   };
 })();
 const STAFF_INFO = {
-  s1:{name:'田中 花子',role:'nurse',            loginId:'1001', pass:'aura01'},
-  s2:{name:'山本 次郎',role:'care',             loginId:'1002', pass:'aura01'},
-  s3:{name:'前原 明子',role:'care',             loginId:'1003', pass:'aura01'},
-  s4:{name:'鈴木 健太',role:'care',             loginId:'1004', pass:'aura01'},
-  s5:{name:'中村 由美',role:'nurse',            loginId:'1005', pass:'aura01'},
-  s6:{name:'山田 一郎',role:'super_admin',      loginId:'1006', pass:'aura170',admin:true},
-  s7:{name:'佐藤 真理',role:'home_care',        loginId:'1007', pass:'aura01'},
-  s8:{name:'木村 誠司',role:'doctor',           loginId:'1008', pass:'aura01'},
+  s1:{name:'田中 花子',role:'nurse',            loginId:'1001'},
+  s2:{name:'山本 次郎',role:'care',             loginId:'1002'},
+  s3:{name:'前原 明子',role:'care',             loginId:'1003'},
+  s4:{name:'鈴木 健太',role:'care',             loginId:'1004'},
+  s5:{name:'中村 由美',role:'nurse',            loginId:'1005'},
+  s6:{name:'山田 一郎',role:'super_admin',      loginId:'1006',admin:true},
+  s7:{name:'佐藤 真理',role:'home_care',        loginId:'1007'},
+  s8:{name:'木村 誠司',role:'doctor',           loginId:'1008'},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
-function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key].pass;}
+function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.loginId||null;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
 function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key].role;}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
@@ -4024,11 +4087,40 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','records','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','shift_checklist'];
-const FB_SYS_EMAIL='facility@village-aura.local';
-const FB_SYS_PASS='Vp7#Xm2-Lq9Kz';
+const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','shift_checklist'];
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
+
+// HTMLエスケープ（ユーザー入力データをinnerHTMLに挿入する際に必ず使用）
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// 職員ごとのFirebase Auth用メールアドレスを返す（管理者PW変更時はバージョンを上げて別アカウント作成）
+function getStaffFirebaseEmail(key){
+  const s=getStaffSettings();
+  const ver=s[key]?.fb_ver||0;
+  return `${key}${ver>0?'_r'+ver:''}@va.internal`;
+}
+
+// Firebase Auth（職員ごと）でサインイン。初回は作成、PW不一致時は新バージョンで作成
+async function _ensureFirebaseAuth(staffKey,password){
+  const email=getStaffFirebaseEmail(staffKey);
+  try{
+    await firebase.auth().signInWithEmailAndPassword(email,password);
+  }catch(e){
+    if(e.code==='auth/user-not-found'||e.code==='auth/invalid-credential'||e.code==='auth/invalid-login-credentials'){
+      await firebase.auth().createUserWithEmailAndPassword(email,password);
+    }else if(e.code==='auth/wrong-password'){
+      // 管理者がPWを変更した場合: バージョンを上げて新しいFirebase Authアカウントを作成
+      const s=getStaffSettings();if(!s[staffKey])s[staffKey]={};
+      s[staffKey].fb_ver=(s[staffKey].fb_ver||0)+1;
+      lsSet('staff_settings',s);
+      const newEmail=getStaffFirebaseEmail(staffKey);
+      await firebase.auth().createUserWithEmailAndPassword(newEmail,password);
+    }else{
+      throw e;
+    }
+  }
+}
 
 (async function initFirebase(){
   try{
@@ -4041,7 +4133,10 @@ let _aiKey='', _aiKeyUnsub=null;
     db.enablePersistence({synchronizeTabs:true}).catch(e=>{
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
     });
-    // 匿名サインインは使わない。ログイン成功後にsignInWithEmailAndPasswordを呼ぶ
+    // 未認証時は匿名サインイン（ログイン画面でstaff_settingsを読むため）
+    firebase.auth().onAuthStateChanged(user=>{
+      if(!user) firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
+    });
   }catch(e){console.warn('Firebase init error:',e);}
 })();
 
@@ -4053,13 +4148,28 @@ function fsSet(key,value){
   }).catch(e=>console.warn('fsSet:',e));
 }
 
+// records 月別キーヘルパー
+function _recordMonthKey(ts){
+  return 'records_'+(ts||new Date().toISOString()).slice(0,7);
+}
+function _activeRecordKeys(n){
+  n=n||3;
+  const keys=[];
+  for(let i=0;i<n;i++){
+    const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);
+    keys.push('records_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+  }
+  return keys;
+}
+
 function _distributeAggregated(key,data){
   if(key==='face_sheets') Object.entries(data||{}).forEach(([rid,v])=>lsSet('fs_'+rid,v));
   if(key==='visit_schedules') Object.entries(data||{}).forEach(([d,v])=>lsSet('visit_sched_'+d,v));
 }
 async function loadFromFirebase(){
   if(!fbReady)return;
-  for(const key of FB_SYNC_KEYS){
+  const allKeys=[...FB_SYNC_KEYS,..._activeRecordKeys()];
+  await Promise.all(allKeys.map(async key=>{
     try{
       const doc=await db.collection('va_data').doc(key).get();
       if(doc.exists&&doc.data()?.data!==undefined){
@@ -4067,7 +4177,7 @@ async function loadFromFirebase(){
         _distributeAggregated(key,doc.data().data);
       }
     }catch(e){console.warn('fbLoad:',key,e);}
-  }
+  }));
 }
 
 function setupRealtimeSync(){
@@ -4080,11 +4190,11 @@ function setupRealtimeSync(){
       if(doc.metadata.hasPendingWrites)return; // 自分の書き込みは無視
       lsSet(key,doc.data().data);
       _distributeAggregated(key,doc.data().data);
-      if(key==='records'||key==='residents'){
+      if(key==='residents'){
         if(S.screen==='scr-dashboard')renderDashboard();
         if(S.screen==='scr-detail')renderDetail();
+        if(S.screen==='scr-residents')renderResList();
       }
-      if(key==='residents'&&S.screen==='scr-residents')renderResList();
       if(key==='handovers'){
         if(S.screen==='scr-handover-board')renderHandoverBoard();
         if(S.screen==='scr-detail')renderDetail();
@@ -4103,14 +4213,32 @@ function setupRealtimeSync(){
       if(key==='incidents'&&S.screen==='scr-incidents')renderIncidentList();
       if(key==='proposals'&&S.screen==='scr-proposal')renderProposalScr();
       if(S.screen==='scr-doctor'){
-        if(key==='records'||key==='vital_confirmed')renderDrVitalPane();
+        if(key==='vital_confirmed')renderDrVitalPane();
         if(key==='board_data2'){if(_drTab==='order')renderDrOrderPane();}
         if(key==='incidents'&&_drTab==='incident')renderDrIncidentPane();
       }
     },e=>console.warn('fbSync:',key,e));
     fbListeners.push(unsub);
   });
+  _activeRecordKeys().forEach(key=>{
+    const unsub=db.collection('va_data').doc(key).onSnapshot(doc=>{
+      if(!doc.exists||!doc.data()?.data)return;
+      if(doc.metadata.hasPendingWrites)return;
+      lsSet(key,doc.data().data);
+      if(S.screen==='scr-dashboard')renderDashboard();
+      if(S.screen==='scr-detail')renderDetail();
+      if(S.screen==='scr-doctor'&&_drTab!=='order'&&_drTab!=='incident')renderDrVitalPane();
+    },e=>console.warn('fbSync:',key,e));
+    fbListeners.push(unsub);
+  });
 }
+
+// 月替わり時にリスナーを自動更新（新月のキーに onSnapshot を貼り直す）
+let _syncMonth=new Date().getMonth();
+setInterval(()=>{
+  const now=new Date().getMonth();
+  if(now!==_syncMonth){_syncMonth=now;if(fbReady&&S.user)setupRealtimeSync();}
+},60000);
 
 // ═══════════ STATE ═══════════
 const _now=new Date();
@@ -4149,34 +4277,38 @@ function lsSet(k,v){
   localStorage.setItem('e_'+k,_enc(JSON.stringify(v)));
 }
 function getResidents(){return ls('residents')||INIT_RESIDENTS}
-function getRecords(){return ls('records')||[...INIT_RECORDS,...MARCH_RECORDS]}
+function getRecords(){
+  const all=_activeRecordKeys().flatMap(k=>ls(k)||[]);
+  return all.length?all:[...INIT_RECORDS,...MARCH_RECORDS];
+}
 function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
 function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
-function saveRecords(r){lsSet('records',r);fsSet('records',r);}
+function saveRecords(r){
+  const byMonth={};
+  r.forEach(rec=>{
+    const k=_recordMonthKey(rec.ts);
+    if(!byMonth[k])byMonth[k]=[];
+    byMonth[k].push(rec);
+  });
+  Object.entries(byMonth).forEach(([k,recs])=>{lsSet(k,recs);fsSet(k,recs);});
+}
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// パスワードを STAFF_INFO の値で一度だけ強制リセット（v3）
+// 初期パスワードを loginId として一度だけセット（v3）
 (function migratePasswords(){
   if(localStorage.getItem('_pw_migv3')) return;
   const s=getStaffSettings();
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k]) s[k]={};
-    s[k].pass=STAFF_INFO[k].pass;
+    s[k].pass=STAFF_INFO[k].loginId;
   });
   saveStaffSettings(s);
   localStorage.setItem('_pw_migv3','1');
 })();
 
 // ═══════════ AUTH ═══════════
-function checkAdminShortcut(val){
-  if(val!=='06419008')return;
-  const admin=Object.entries(STAFF_INFO).find(([,v])=>v.role==='super_admin');
-  if(!admin)return;
-  document.getElementById('login-id').value=getStaffLoginId(admin[0]);
-  document.getElementById('login-pass').value=getStaffPass(admin[0]);
-  document.getElementById('login-pass').focus();
-}
 async function login(){
+  const btnEl=document.getElementById('btn-login');
   const inputId=document.getElementById('login-id').value.trim();
   const inputPass=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-err');
@@ -4186,6 +4318,13 @@ async function login(){
     errEl.textContent='職員IDとパスワードを入力してください';
     errEl.style.display='block';
     return;
+  }
+  // 新端末ブートストラップ: staff_settingsがローカルになければFirestoreから取得（匿名Auth使用）
+  if(!ls('staff_settings')&&db){
+    try{
+      const doc=await db.collection('va_data').doc('staff_settings').get();
+      if(doc.exists&&doc.data()?.data) lsSet('staff_settings',doc.data().data);
+    }catch(e){}
   }
   const csEntries=getCustomStaff();
   const staffKey=
@@ -4221,6 +4360,7 @@ async function login(){
   }
   const info=staffInfo;
   S.user=info.name;
+  S.staffKey=staffKey;
   S.userRole=getStaffRole(staffKey);
   S.loginTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('scr-login').style.display='none';
@@ -4237,9 +4377,9 @@ async function login(){
   checkUrlHash();
   updateBnAcct();
   startUpdateChecker();
-  // Firebase Auth サインイン → トークン確定を待ってからFirestoreを使う
+  // Firebase Auth（職員ごと）でサインイン → Firestoreアクセスを確立
   try{
-    await firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS);
+    await _ensureFirebaseAuth(staffKey,inputPass);
     if(firebase.auth().currentUser){
       await firebase.auth().currentUser.getIdToken(true);
     }
@@ -4270,7 +4410,7 @@ async function login(){
     }
   }
   addAuditLog('ログイン','ID: '+inputId);
-  localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey}));
+  localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey,loginTs:Date.now()}));
   loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
   startAIKeySync();
   setTimeout(showTutorial, 600);
@@ -4365,15 +4505,16 @@ function handleFsPhotoSelect(input){
   input.value='';
 }
 function handleFsPhotoClear(){
-  if(!confirm('写真を削除しますか？'))return;
-  const res=getResidents();
-  const idx=res.findIndex(x=>x.id===S.currentRes);
-  if(idx<0)return;
-  delete res[idx].photo;
-  saveResidents(res);
-  _syncFsPhoto(null);
-  renderDetail();
-  toast('写真を削除しました');
+  showDelConfirm('写真を削除しますか？',()=>{
+    const res=getResidents();
+    const idx=res.findIndex(x=>x.id===S.currentRes);
+    if(idx<0)return;
+    delete res[idx].photo;
+    saveResidents(res);
+    _syncFsPhoto(null);
+    renderDetail();
+    toast('写真を削除しました');
+  });
 }
 function toggleDetailMenu(e){e.stopPropagation();const m=document.getElementById('detail-more-menu');if(!m)return;const open=m.style.display==='block';m.style.display=open?'none':'block';if(!open){const h=()=>{m.style.display='none';document.removeEventListener('click',h);};setTimeout(()=>document.addEventListener('click',h),10);}}
 function closeDetailMenu(){const m=document.getElementById('detail-more-menu');if(m)m.style.display='none';}
@@ -4419,7 +4560,7 @@ function showVRHistory(){
   const el=document.getElementById('vr-history');
   if(el.style.display!=='none'){el.style.display='none';return;}
   if(!hist.length){toast('変更履歴がありません');return;}
-  el.innerHTML=hist.map(h=>`<div style="border-bottom:1px solid var(--bdr);padding:6px 0"><div><b>${h.date}</b>　${h.staff}</div><div style="color:var(--ng);margin-top:2px">理由: ${h.reason}</div></div>`).join('');
+  el.innerHTML=hist.map(h=>`<div style="border-bottom:1px solid var(--bdr);padding:6px 0"><div><b>${escHtml(h.date)}</b>　${escHtml(h.staff)}</div><div style="color:var(--ng);margin-top:2px">理由: ${escHtml(h.reason)}</div></div>`).join('');
   el.style.display='block';
 }
 // ═══════════ TEMPLATES ═══════════
@@ -4483,9 +4624,10 @@ function saveCurrentAsTemplate(){
   openTemplatePicker(_tplTarget);
 }
 function deleteTpl(id){
-  if(!confirm('このテンプレートを削除しますか？'))return;
-  saveTemplates(getTemplates().filter(t=>t.id!==id));
-  openTemplatePicker(_tplTarget);
+  showDelConfirm('このテンプレートを削除しますか？',()=>{
+    saveTemplates(getTemplates().filter(t=>t.id!==id));
+    openTemplatePicker(_tplTarget);
+  });
 }
 // ═══════════ LOGIN LOCKOUT ═══════════
 const _LOCK_KEY='va_lock_until', _FAIL_KEY='va_login_fails', _MAX_FAILS=5, _LOCK_MIN=15;
@@ -4520,6 +4662,43 @@ function _startLockTimer(){
 function toggleDarkMode(on){
   document.body.classList.toggle('dark-mode',on);
   localStorage.setItem('va_dark',on?'1':'0');
+  const dmt=document.getElementById('dark-mode-toggle');
+  if(dmt)dmt.checked=on;
+}
+function toggleAutoDark(on){
+  localStorage.setItem('va_auto_dark',on?'1':'0');
+  const timeEl=document.getElementById('auto-dark-time');
+  if(timeEl)timeEl.style.display=on?'flex':'none';
+  checkAutoDark();
+}
+function saveAutoDarkTime(){
+  const f=document.getElementById('auto-dark-from')?.value||'22:00';
+  const t=document.getElementById('auto-dark-to')?.value||'06:00';
+  localStorage.setItem('va_auto_dark_from',f);
+  localStorage.setItem('va_auto_dark_to',t);
+  checkAutoDark();
+}
+function checkAutoDark(){
+  if(localStorage.getItem('va_auto_dark')!=='1')return;
+  const now=new Date();
+  const cur=now.getHours()*60+now.getMinutes();
+  const [fh,fm]=(localStorage.getItem('va_auto_dark_from')||'22:00').split(':').map(Number);
+  const [th,tm]=(localStorage.getItem('va_auto_dark_to')||'06:00').split(':').map(Number);
+  const from=fh*60+fm, to=th*60+tm;
+  const inRange=from>to?(cur>=from||cur<to):(cur>=from&&cur<to);
+  toggleDarkMode(inRange);
+}
+function initAutoDark(){
+  const on=localStorage.getItem('va_auto_dark')==='1';
+  const tog=document.getElementById('auto-dark-toggle');
+  if(tog)tog.checked=on;
+  const timeEl=document.getElementById('auto-dark-time');
+  if(timeEl)timeEl.style.display=on?'flex':'none';
+  const fromEl=document.getElementById('auto-dark-from');
+  const toEl=document.getElementById('auto-dark-to');
+  if(fromEl)fromEl.value=localStorage.getItem('va_auto_dark_from')||'22:00';
+  if(toEl)toEl.value=localStorage.getItem('va_auto_dark_to')||'06:00';
+  if(on)checkAutoDark();
 }
 function setFontSize(sz){
   document.body.classList.remove('font-xs','font-sm','font-lg','font-xl','font-xxl');
@@ -4541,6 +4720,8 @@ function initDisplayPrefs(){
   if(dmt) dmt.checked=dark;
   setFontSize(localStorage.getItem('va_font')||'md');
   _initSidebarState();
+  initAutoDark();
+  setInterval(checkAutoDark,60000);
 }
 // ═══════════ CSV EXPORT ═══════════
 function _csvDL(rows,fname){
@@ -5034,6 +5215,8 @@ function changePassword(){
   if(!settings[staffKey]) settings[staffKey]={};
   settings[staffKey].pass=nw;
   saveStaffSettings(settings);
+  // Firebase Auth のパスワードも同期更新（次回以降のセッション復元に必要）
+  firebase.auth().currentUser?.updatePassword(nw).catch(e=>console.warn('Firebase PW update:',e));
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
   addAuditLog('パスワード変更',S.user+' が自身のパスワードを変更');
   toast('パスワードを変更しました ✓');
@@ -5063,10 +5246,10 @@ function renderAdminStaffList(){
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
         <span style="font-size:16px">${disabled?'🔒':'👤'}</span>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${info.name}${isMe?'<span style="font-size:10px;color:var(--p);margin-left:4px">(あなた)</span>':''}</div>
+          <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(info.name)}${isMe?'<span style="font-size:10px;color:var(--p);margin-left:4px">(あなた)</span>':''}</div>
           <div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">
-            <span class="staff-badge" style="background:${rc.bg};font-size:9px">${rc.label}</span>
-            <span style="font-size:11px;color:var(--sub)">ID: ${curLoginId}</span>
+            <span class="staff-badge" style="background:${rc.bg};font-size:9px">${escHtml(rc.label)}</span>
+            <span style="font-size:11px;color:var(--sub)">ID: ${escHtml(curLoginId)}</span>
             <span style="font-size:10px;font-weight:700;color:${disabled?'var(--ng)':'var(--ok)'}">${disabled?'停止中':'有効'}</span>
           </div>
         </div>
@@ -5081,12 +5264,12 @@ function renderAdminStaffList(){
         </div>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ID</span>
-          <input type="text" id="adm-lid-${key}" value="${curLoginId}" maxlength="8" inputmode="numeric" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
+          <input type="text" id="adm-lid-${key}" value="${escHtml(curLoginId)}" maxlength="8" inputmode="numeric" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
           <button onclick="adminSetLoginId('${key}')" style="padding:6px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">PW</span>
-          <input type="text" id="adm-pw-${key}" value="${curPass}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
+          <input type="password" id="adm-pw-${key}" placeholder="新しいパスワードを入力" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
           <button onclick="adminSetPassword('${key}')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
       </div>
@@ -5130,13 +5313,17 @@ function adminSetLoginId(key){
 }
 function adminSetPassword(key){
   const val=document.getElementById('adm-pw-'+key).value.trim();
+  if(!val){toast('新しいパスワードを入力してください');return;}
   if(val.length<6||!/[a-zA-Z]/.test(val)||!/[0-9]/.test(val)){toast('英字と数字を両方含む6文字以上で入力してください');return;}
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].pass=val;
+  // Firebase Auth のバージョンを上げて古いセッションを無効化（次回ログイン時に新アカウント作成）
+  settings[key].fb_ver=(settings[key].fb_ver||0)+1;
   saveStaffSettings(settings);
+  document.getElementById('adm-pw-'+key).value='';
   addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' (ID:'+getStaffLoginId(key)+')');
-  toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓');
+  toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓（次回ログイン時に反映）');
 }
 function adminSetRole(key){
   const sel=document.getElementById('adm-role-'+key);
@@ -5278,10 +5465,23 @@ function toggleWifiRestriction(on){
   addAuditLog('Wi-Fi制限'+(on?'有効化':'無効化'),'');
   toast('Wi-Fi制限を'+(on?'有効':'無効')+'にしました');
 }
-function addAllowedIP(){
+async function addAllowedIP(){
   const val=document.getElementById('new-ip-input').value.trim();
   if(!val){toast('IPアドレスを入力してください');return;}
   const s=getWifiSettings();
+  // 初回登録（リストが空）は管理者のみ
+  if(s.allowedIPs.length===0&&!isAdmin()){
+    toast('⚠️ 初回のIP登録は管理者のみ操作できます');
+    return;
+  }
+  // 許可リストが空でない場合、現在地が許可済みIPでないとIP追加を拒否
+  if(s.allowedIPs.length>0){
+    const ip=await fetchCurrentIP();
+    if(ip&&!s.allowedIPs.some(prefix=>ip.startsWith(prefix))){
+      toast('⚠️ 施設外からはIP登録できません\n施設のWi-Fiに接続してから操作してください');
+      return;
+    }
+  }
   if(s.allowedIPs.includes(val)){toast('すでに登録されています');return;}
   s.allowedIPs.push(val);
   saveWifiSettings(s);
@@ -5291,11 +5491,43 @@ function addAllowedIP(){
   toast('IPを追加しました ✓');
 }
 async function addCurrentIP(){
+  const btn=document.querySelector('[onclick="addCurrentIP()"]');
+  if(btn)btn.textContent='取得中…';
   const ip=await fetchCurrentIP();
-  if(!ip){toast('IPアドレスを取得できませんでした');return;}
+  if(btn)btn.textContent='📍 現在地のIPを今すぐ登録';
+  if(!ip){toast('IPアドレスを取得できませんでした。ネットワークを確認してください');return;}
+  const s=getWifiSettings();
+  // 初回登録（リストが空）は管理者のみ
+  if(s.allowedIPs.length===0&&!isAdmin()){
+    toast('⚠️ 初回のIP登録は管理者のみ操作できます');
+    return;
+  }
+  // 許可リストが空でない場合、現在地が許可済みIPでないとIP変更を拒否
+  if(s.allowedIPs.length>0&&!s.allowedIPs.some(prefix=>ip.startsWith(prefix))){
+    toast('⚠️ 施設外からはIP登録できません\n施設のWi-Fiに接続してから操作してください');
+    return;
+  }
   const prefix=ip.split('.').slice(0,3).join('.')+'.';
-  document.getElementById('new-ip-input').value=prefix;
-  toast('現在のIP: '+ip+'\n先頭3ブロックを入力しました');
+  if(s.allowedIPs.includes(prefix)){
+    toast('このIP（'+ip+'）はすでに登録済みです ✓');
+    return;
+  }
+  // 古い同系列IPを自動置換（IPが変わった場合）
+  const oldIdx=s.allowedIPs.findIndex(x=>x.endsWith('.')&&x.split('.').length===4);
+  if(oldIdx>=0){
+    const old=s.allowedIPs[oldIdx];
+    s.allowedIPs[oldIdx]=prefix;
+    saveWifiSettings(s);
+    renderAccessSettings();
+    addAuditLog('許可IP更新',old+' → '+prefix);
+    toast('✅ IPを更新しました\n旧: '+old+'\n新: '+prefix+' (現在地: '+ip+')');
+  }else{
+    s.allowedIPs.push(prefix);
+    saveWifiSettings(s);
+    renderAccessSettings();
+    addAuditLog('許可IP追加（自動）',prefix+' ('+ip+')');
+    toast('✅ 施設のIPを登録しました\n'+prefix+' (現在地: '+ip+')');
+  }
 }
 function removeAllowedIP(ip){
   const s=getWifiSettings();
@@ -5436,7 +5668,7 @@ function renderHistPanel(){
 
 function addAuditLog(action,detail=''){
   const entry={ts:new Date().toISOString(),user:S.user||'未ログイン',action,detail};
-  const cutoff=Date.now()-7*24*60*60*1000;
+  const cutoff=Date.now()-30*24*60*60*1000;
   const logs=(ls('audit_log')||[]).filter(l=>new Date(l.ts).getTime()>cutoff);
   logs.unshift(entry);
   lsSet('audit_log',logs);
@@ -5449,7 +5681,7 @@ function addAuditLog(action,detail=''){
 }
 function fetchAndMergeAuditLogs(callback){
   if(!fbReady||!db){if(callback)callback();return;}
-  const cutoff=new Date(Date.now()-7*24*60*60*1000);
+  const cutoff=new Date(Date.now()-30*24*60*60*1000);
   db.collection('va_audit').where('createdAt','>',cutoff).orderBy('createdAt','desc').limit(500)
     .get().then(snap=>{
       const remote=[];
@@ -5584,6 +5816,33 @@ function exportData(){
   addAuditLog('データエクスポート','管理者によるバックアップ');
   renderBackupBanner();
   toast('バックアップをダウンロードしました ✓\nDropboxの「040_Claude/009_施設カルテシステム/backup」フォルダに移動してください');
+}
+function importData(input){
+  if(!isAdmin()){toast('管理者のみ実行できます');return;}
+  const file=input.files[0];
+  if(!file){return;}
+  input.value='';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    let data;
+    try{data=JSON.parse(e.target.result);}
+    catch{toast('JSONの解析に失敗しました。ファイルを確認してください。');return;}
+    if(!data.residents||!data.records||!data.handovers){
+      toast('バックアップファイルの形式が正しくありません。');return;
+    }
+    const exportedAt=data.exportedAt?new Date(data.exportedAt).toLocaleString('ja-JP'):'不明';
+    const recCount=Array.isArray(data.records)?data.records.length:0;
+    const resCount=Array.isArray(data.residents)?data.residents.length:0;
+    if(!confirm(`バックアップから復元しますか？\n\nファイル日時: ${exportedAt}\n利用者: ${resCount}人 / 記録: ${recCount}件\n\n⚠️ 現在のデータはすべて上書きされます。`)){return;}
+    saveResidents(data.residents);
+    saveRecords(data.records);
+    saveHandovers(data.handovers);
+    if(Array.isArray(data.auditLog)&&data.auditLog.length){lsSet('audit_log',data.auditLog);}
+    addAuditLog('データインポート',`バックアップから復元（記録${recCount}件・利用者${resCount}人）`);
+    toast('復元が完了しました ✓');
+    renderDashboard();
+  };
+  reader.readAsText(file);
 }
 function getBackupStatus(){
   const last=localStorage.getItem('last_backup');
@@ -5735,7 +5994,7 @@ function showScr(id){
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
   if(id==='scr-residents') renderResList();
-  if(id==='scr-handover-board') renderHandoverBoard();
+  if(id==='scr-handover-board'){renderHandoverBoard();setTimeout(markAllHandoverRead,800);}
   if(id==='scr-schedule') renderSchedule();
   if(id==='scr-diary') renderDiary();
   if(id==='scr-svc-entry') renderSvcEntry();
@@ -5799,8 +6058,22 @@ function _syncSbBtns(closed){
   if(t)t.textContent=closed?'▶':'◀';
   if(ico)ico.textContent=closed?'▶':'◀';
 }
+let _sbScrollY=0;
 function toggleSidebar(){
   const closed=document.body.classList.toggle('sb-closed');
+  if(window.innerWidth<1024){
+    if(!closed){
+      _sbScrollY=window.scrollY;
+      document.body.style.position='fixed';
+      document.body.style.top=`-${_sbScrollY}px`;
+      document.body.style.width='100%';
+    }else{
+      document.body.style.position='';
+      document.body.style.top='';
+      document.body.style.width='';
+      window.scrollTo(0,_sbScrollY);
+    }
+  }
   _syncSbBtns(closed);
 }
 function _initSidebarState(){
@@ -6355,8 +6628,9 @@ function deleteMonthlyGoal(){
   toast('削除しました');
 }
 
-function getStoolDays(rid){
-  const recs=getRecords().filter(r=>r.rid===rid&&r.type==='excretion'&&(r.data.etype==='stool'||r.data.etype==='both')&&r.data.stool&&r.data.stool!=='');
+function getStoolDays(rid,_allRecs){
+  const src=_allRecs||getRecords();
+  const recs=src.filter(r=>r.rid===rid&&r.type==='excretion'&&(r.data.etype==='stool'||r.data.etype==='both')&&r.data.stool&&r.data.stool!=='');
   if(!recs.length)return null;
   const last=recs.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
   return Math.floor((Date.now()-new Date(last.ts).getTime())/(24*3600*1000));
@@ -6384,13 +6658,20 @@ function renderDashboard(){
   const recs=getRecords();
   const todayStr=now.toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
+  const lastVitalTs={};
+  recs.filter(r=>r.type==='vital').forEach(r=>{if(!lastVitalTs[r.rid]||new Date(r.ts)>new Date(lastVitalTs[r.rid]))lastVitalTs[r.rid]=r.ts;});
   const noVital=res.filter(r=>!vitalToday.has(r.id));
   const vurRow=document.getElementById('vital-unrecorded-row');
   if(vurRow){
     if(noVital.length){
       vurRow.style.display='flex';
       document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
-      document.getElementById('alert-names').textContent=noVital.slice(0,3).map(r=>r.name).join('・')+(noVital.length>3?'…':'');
+      const nameList=noVital.slice(0,3).map(r=>{
+        const lts=lastVitalTs[r.id];
+        const hrsAgo=lts?Math.floor((now-new Date(lts))/3600000):null;
+        return r.name+(hrsAgo!=null?'('+hrsAgo+'h前)':'(初回)');
+      }).join('・')+(noVital.length>3?'…':'');
+      document.getElementById('alert-names').textContent=nameList;
     } else {
       vurRow.style.display='none';
     }
@@ -6427,7 +6708,7 @@ function renderDashboard(){
     }
   }
   // 排便3日以上なし アラート
-  const stoolAlerts=res.filter(r=>{ const d=getStoolDays(r.id); return d===null||d>=3; });
+  const stoolAlerts=res.filter(r=>{ const d=getStoolDays(r.id,recs); return d===null||d>=3; });
   const stoolRow=document.getElementById('stool-alert-row');
   if(stoolRow){
     if(stoolAlerts.length){
@@ -6637,17 +6918,22 @@ function renderResList(){
   const recs=getRecords();
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
+  const fluidByRes={};
+  recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).forEach(r=>{fluidByRes[r.rid]=(fluidByRes[r.rid]||0)+(r.data.fluid||0);});
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
   const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
   document.getElementById('res-list').innerHTML=res.map(r=>{
     const ok=vitalToday.has(r.id);
-    const stoolDays=getStoolDays(r.id);
+    const stoolDays=getStoolDays(r.id,recs);
     const stoolWarn=stoolDays===null||stoolDays>=3;
+    const fluid=fluidByRes[r.id]||0;
     const tags=r.services.map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
     const badges=[];
     if(!ok)badges.push('<span style="background:#fff3e0;color:#e65100;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #ffe0b2">🌡️ バイタル未</span>');
     if(stoolWarn)badges.push(`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #e1bee7">🚽 ${stoolDays===null?'排便未記録':stoolDays+'日'}` + '</span>');
+    const fluidColor=fluid>=1000?'#1b5e20':fluid>=500?'#e65100':'#9e9e9e';
+    badges.push(`<span style="background:#e8f5e9;color:${fluidColor};font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #c8e6c9">💧 ${fluid}ml</span>`);
     return `<div class="res-card" onclick="openResident('${r.id}')">
       <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
@@ -6799,6 +7085,16 @@ function renderDetail(){
     if(stoolDays===null){stoolChip.style.display='block';stoolChip.textContent='🚽 排便記録なし（記録なし）';}
     else if(stoolDays>=3){stoolChip.style.display='block';stoolChip.textContent=`🚽 最終排便：${stoolDays}日前（要確認）`;}
     else{stoolChip.style.display='none';}
+  }
+  const allergyChip=document.getElementById('allergy-alert-chip');
+  if(allergyChip){
+    const fs=getFacesheet(r.id);
+    const parts=[];
+    if(fs.food_allergy)parts.push('食品: '+fs.food_allergy);
+    if(fs.drug_allergy)parts.push('薬物: '+fs.drug_allergy);
+    if(fs.notes)parts.push('注意: '+fs.notes);
+    if(parts.length){allergyChip.style.display='block';allergyChip.textContent='⚠️ '+parts.join(' ／ ');}
+    else{allergyChip.style.display='none';}
   }
   // グラフ範囲切替ボタン
   const ranges=[{k:'today',l:'当日'},{k:'3days',l:'直近3日'},{k:'week',l:'1週間'}];
@@ -6967,18 +7263,30 @@ function saveSvcSetting(){
   renderDetail();
   toast('サービス設定を更新しました ✓');
 }
+let _tlFilter='all';
+function setTlFilter(f){
+  _tlFilter=f;
+  document.querySelectorAll('[id^="tlf-"]').forEach(b=>b.classList.toggle('on',b.id==='tlf-'+f));
+  renderTimeline();
+}
 function changeTlDate(delta){
   S.tlOffset+=delta;
   if(S.tlOffset>0) S.tlOffset=0;
   renderTimeline();
 }
 function deleteTimelineRecord(id){
-  if(!confirm('この記録を削除しますか？\nこの操作は元に戻せません。'))return;
-  const recs=getRecords().filter(r=>r.id!==id);
-  saveRecords(recs);
-  addAuditLog('記録削除',id);
-  renderTimeline();
-  toast('記録を削除しました');
+  const rec=getRecords().find(r=>r.id===id);
+  if(rec&&!isAdmin()){
+    const recOwner=rec.staffName||(STAFF_INFO[rec.staffId]?.name)||null;
+    if(recOwner&&recOwner!==S.user){toast('削除できるのは記録者と管理者のみです');return;}
+  }
+  showDelConfirm('この記録を削除しますか？',()=>{
+    const recs=getRecords().filter(r=>r.id!==id);
+    saveRecords(recs);
+    addAuditLog('記録削除',id);
+    renderTimeline();
+    toast('記録を削除しました');
+  });
 }
 function renderTimeline(){
   const targetDate=new Date();
@@ -6996,34 +7304,57 @@ function renderTimeline(){
   const allRecs=getRecords().filter(rc=>rc.rid===S.currentRes);
   const recs=allRecs.filter(rc=>new Date(rc.ts).toDateString()===targetStr)
     .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const filtered=_tlFilter==='all'?recs:recs.filter(r=>r.type===_tlFilter);
   const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐'};
   const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所'};
-  if(!recs.length){
-    document.getElementById('timeline').innerHTML=`<div class="tl-empty">${dateLabel}の記録はありません</div>`;
+  if(!filtered.length){
+    const msg=_tlFilter==='chrono'?`${dateLabel}の経時記録はありません`:`${dateLabel}の記録はありません`;
+    document.getElementById('timeline').innerHTML=`<div class="tl-empty">${msg}</div>`;
     return;
   }
+  const isChronoMode=_tlFilter==='chrono';
   let html='';
-  recs.forEach(r=>{
+  filtered.forEach(r=>{
     const d=new Date(r.ts);
     const timeStr=d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
     const si=STAFF_INFO[r.staffId];
-    const staffName=si?si.name:(S.user||'──');
-    const roleKey=si?si.role:(r.staffRole||null);
+    const staffName=r.staffName||r.by||(si?si.name:'──');
+    const roleKey=r.staffRole||(si?si.role:null);
     const rc=roleKey?getRoleInfo(roleKey):null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
     const canEdit=(r.type==='meal'||r.type==='excretion');
-    html+=`<div class="tl-item">
+    html+=`<div class="tl-item" data-type="${r.type}">
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
         ${r.type==='vital'?vitalChips(r):`<div class="tl-val">${summarizeRecord(r)}</div>`}
-        ${r.data.note||r.data.content?`<div class="tl-note">${(r.data.note||r.data.content||'').substring(0,60)}</div>`:''}
+        ${r.data.note||r.data.content?(()=>{const txt=r.data.note||r.data.content||'';const isChrono=r.type==='chrono';const short=!isChrono&&!isChronoMode&&txt.length>60;return `<div class="tl-note" id="tln-${r.id}">${short?escHtml(txt.substring(0,60))+'…':escHtml(txt)}${short?`<button onclick="expandTlNote('${r.id}',this)" style="margin-left:4px;background:none;border:none;color:var(--p);font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">続きを見る</button>`:''}</div>`;})():''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
-        <div class="tl-staff">${badge}${staffName}${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="margin-left:8px;background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">✏️ 修正</button>`:''}<button onclick="deleteTimelineRecord('${r.id}')" style="margin-left:6px;background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑️ 削除</button></div>
+        <div class="tl-staff" style="display:flex;align-items:center;gap:4px">${badge}${staffName}${r.editedBy?`<span style="font-size:9px;color:var(--sub);margin-left:4px">✏️${r.editedBy}${r.editedAt?' '+new Date(r.editedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>`:''}<div style="margin-left:auto;display:flex;gap:3px">${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;cursor:pointer;touch-action:manipulation" title="修正">✏️</button>`:''}<button onclick="deleteTimelineRecord('${r.id}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;color:var(--ng);cursor:pointer;touch-action:manipulation" title="削除">🗑️</button></div></div>
       </div>
     </div>`;
   });
   document.getElementById('timeline').innerHTML=html;
+}
+function copyPrevVital(){
+  const prev=getRecords().filter(rc=>rc.rid===S.currentRes&&rc.type==='vital')
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+  if(!prev||!prev.data)return;
+  const d=prev.data;
+  if(d.sys){document.getElementById('v-sys').value=d.sys;}
+  if(d.dia){document.getElementById('v-dia').value=d.dia;}
+  if(d.pulse){document.getElementById('v-pulse').value=d.pulse;}
+  if(d.temp){document.getElementById('v-temp').value=d.temp;}
+  if(d.spo2){document.getElementById('v-spo2').value=d.spo2;}
+  document.getElementById('vital-prev-copy').style.display='none';
+  toast('前回値をコピーしました');
+}
+function expandTlNote(id,btn){
+  const rec=getRecords().find(r=>r.id===id);if(!rec)return;
+  const el=document.getElementById('tln-'+id);if(!el)return;
+  el.textContent=rec.data.note||rec.data.content||'';
+  el.style.whiteSpace='pre-wrap';
+  if(btn)btn.remove();
 }
 
 // ═══════════ MODALS ═══════════
@@ -7044,6 +7375,20 @@ function openModal(id){
   if(id==='modal-meal'&&!S.editRecId){
     const fo=document.getElementById('m-fluid-only');
     if(fo){fo.checked=false;toggleFluidOnly(false);}
+    setMealSeg('staple',8);setMealSeg('side',8);
+  }
+  if(id==='modal-vital'){
+    const prev=getRecords().filter(rc=>rc.rid===S.currentRes&&rc.type==='vital')
+      .sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+    const pv=document.getElementById('vital-prev-copy');
+    const pb=document.getElementById('vital-prev-btn');
+    if(prev&&prev.data&&pv&&pb){
+      const d=prev.data;
+      const lbl=[d.sys&&d.dia?`血圧${d.sys}/${d.dia}`:'',d.pulse?`脈${d.pulse}`:'',d.temp?`体温${d.temp}℃`:'',d.spo2?`SpO2 ${d.spo2}%`:''].filter(Boolean).join(' ');
+      const dt=new Date(prev.ts);
+      pb.textContent=`📋 前回値をコピー（${dt.getMonth()+1}/${dt.getDate()} ${dt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}）: ${lbl}`;
+      pv.style.display='block';
+    }else if(pv){pv.style.display='none';}
   }
   document.getElementById(id).classList.add('on');
   // 記録日時セレクターを注入（対象モーダルのみ）
@@ -7079,7 +7424,11 @@ function getRecordTs(){
   if(row){
     const isCustom=row.querySelector('.ts-tab:last-child.on');
     const inp=row.querySelector('.ts-custom-input');
-    if(isCustom&&inp&&inp.value)return new Date(inp.value).toISOString();
+    if(isCustom&&inp&&inp.value){
+      const t=new Date(inp.value);
+      if(t>new Date()){toast('未来の日時は入力できません');return null;}
+      return t.toISOString();
+    }
   }
   return new Date().toISOString();
 }
@@ -7089,7 +7438,13 @@ function closeModal(id,e){
   stopVoice();
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
   if(vsBtn){vsBtn.classList.remove('recording');vsBtn.textContent='🎤 音声で一括入力';}
-  if(id==='modal-meal'||id==='modal-excretion')S.editRecId=null;
+  if(id==='modal-meal'||id==='modal-excretion'){
+    S.editRecId=null;
+    const mt=document.getElementById('meal-modal-title');if(mt)mt.textContent='🍚 食事・飲水';
+    const et=document.getElementById('excretion-modal-title');if(et)et.textContent='💧 排泄記録';
+    const msb=document.querySelector('#modal-meal .btn-primary');if(msb)msb.textContent='保存';
+    const esb=document.querySelector('#modal-excretion .btn-primary');if(esb)esb.textContent='保存';
+  }
   if(id==='modal-edit-res'){
     const modeEl=document.getElementById('er-mode');const titleEl=document.getElementById('modal-edit-res-title');
     if(modeEl)modeEl.value='edit';
@@ -7108,10 +7463,12 @@ function openEditRecord(id,type){
     if(foEl){foEl.checked=!!d.fluidOnly;toggleFluidOnly(!!d.fluidOnly);}
     const stapleEl=document.getElementById('staple-sl');
     const sideEl=document.getElementById('side-sl');
-    if(stapleEl){stapleEl.value=d.staple||0;document.getElementById('staple-lbl').textContent=(d.staple||0)+'割';}
-    if(sideEl){sideEl.value=d.side||0;document.getElementById('side-lbl').textContent=(d.side||0)+'割';}
+    if(stapleEl){stapleEl.value=d.staple||0;setMealSeg('staple',d.staple||0);}
+    if(sideEl){sideEl.value=d.side||0;setMealSeg('side',d.side||0);}
     document.getElementById('m-fluid').value=d.fluid||0;
     document.getElementById('m-note').value=d.note||'';
+    const mt=document.getElementById('meal-modal-title');if(mt)mt.textContent='✏️ 食事・飲水（修正中）';
+    const msb=document.querySelector('#modal-meal .btn-primary');if(msb)msb.textContent='修正を保存';
     openModal('modal-meal');
   } else if(type==='excretion'){
     const d=rec.data;
@@ -7123,12 +7480,45 @@ function openEditRecord(id,type){
     document.getElementById('ex-incontinent').checked=!!d.incon;
     document.getElementById('ex-laxative').checked=!!d.lax;
     document.getElementById('ex-note').value=d.note||'';
+    const et2=document.getElementById('excretion-modal-title');if(et2)et2.textContent='✏️ 排泄記録（修正中）';
+    const esb=document.querySelector('#modal-excretion .btn-primary');if(esb)esb.textContent='修正を保存';
     openModal('modal-excretion');
   }
 }
 function toggleFluidOnly(checked){
   const fields=document.getElementById('meal-food-fields');
   if(fields)fields.style.display=checked?'none':'block';
+}
+function setMealSeg(field,v){
+  v=Math.max(0,Math.min(10,v));
+  const cls=field==='staple'?'meal-seg':'meal-seg-s';
+  const lblId=field==='staple'?'staple-lbl':'side-lbl';
+  const slId=field==='staple'?'staple-sl':'side-sl';
+  document.querySelectorAll('.'+cls).forEach(b=>{
+    const on=parseInt(b.dataset.v)===v;
+    b.classList.toggle('on',on);
+    b.style.background=on?'var(--p)':'var(--bg)';
+    b.style.color=on?'#fff':'var(--sub)';
+    b.style.borderColor=on?'var(--p)':'var(--bdr)';
+  });
+  const lbl=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','完食'];
+  const el=document.getElementById(lblId);if(el)el.textContent=lbl[v]||v+'割';
+  const sl=document.getElementById(slId);if(sl)sl.value=v;
+}
+function adjMealSeg(field,delta){
+  const slId=field==='staple'?'staple-sl':'side-sl';
+  const sl=document.getElementById(slId);
+  if(!sl)return;
+  setMealSeg(field,parseInt(sl.value||8)+delta);
+}
+function vitalSanityWarn(d){
+  const w=[];
+  if(d.temp!=null&&d.temp!==0&&(d.temp<35.0||d.temp>38.5)) w.push('体温 '+d.temp+'℃');
+  if(d.sys!=null&&d.sys!==0&&(d.sys<80||d.sys>180))    w.push('収縮期血圧 '+d.sys);
+  if(d.dia!=null&&d.dia!==0&&(d.dia<50||d.dia>110))    w.push('拡張期血圧 '+d.dia);
+  if(d.pulse!=null&&d.pulse!==0&&(d.pulse<40||d.pulse>130)) w.push('脈拍 '+d.pulse);
+  if(d.spo2!=null&&d.spo2!==0&&(d.spo2<92||d.spo2>100)) w.push('SpO2 '+d.spo2+'%');
+  return w;
 }
 function saveRecord(type){
   let data={};
@@ -7140,10 +7530,20 @@ function saveRecord(type){
       note:document.getElementById('v-note').value};
     if(_vitalFocusedField){
       const k=_vitalFocusedField.replace('v-','');
-      if(!data[k]){toast('値を入力してください');return;}
+      if(!data[k]){
+        const el=document.getElementById(_vitalFocusedField);
+        if(el){el.classList.add('err');setTimeout(()=>el.classList.remove('err'),2000);}
+        toast('値を入力してください');return;
+      }
     }else{
-      if(!data.sys){toast('血圧を入力してください');return;}
+      if(!data.sys){
+        const el=document.getElementById('v-sys');
+        if(el){el.classList.add('err');setTimeout(()=>el.classList.remove('err'),2000);}
+        toast('血圧を入力してください');return;
+      }
     }
+    const vwarn=vitalSanityWarn(data);
+    if(vwarn.length&&!confirm('入力値が通常範囲外です:\n'+vwarn.join(' / ')+'\n\nこのまま保存しますか？'))return;
     closeModal('modal-vital');
   }else if(type==='meal'){
     const fluidOnly=document.getElementById('m-fluid-only')?.checked||false;
@@ -7165,7 +7565,11 @@ function saveRecord(type){
     closeModal('modal-excretion');
   }else if(type==='chrono'){
     const content=document.getElementById('c-content').value.trim();
-    if(!content){toast('記録内容を入力してください');return;}
+    if(!content){
+      const el=document.getElementById('c-content');
+      if(el){el.classList.add('err');setTimeout(()=>el.classList.remove('err'),2000);}
+      toast('記録内容を入力してください');return;
+    }
     const tags=[...document.querySelectorAll('#chrono-tags .ttag.on')].map(t=>t.textContent);
     const manualTriage=[...document.querySelectorAll('#c-triage-manual .adl-opt.on')].map(b=>{
       return Object.keys(TRIAGE_INFO).find(k=>b.textContent.includes(TRIAGE_INFO[k].label.split('へ')[0]));
@@ -7174,11 +7578,15 @@ function saveRecord(type){
     const triage=manualTriage.length?manualTriage:autoTriage;
     data={tags,priority:document.querySelector('[name=priority]:checked')?.value||'normal',
       content,handover:document.getElementById('c-handover').checked,triage};
-    if(data.handover) addHandover(S.currentRes,content);
+    if(data.handover) addHandover(S.currentRes,content,'other',data.priority);
     closeModal('modal-chrono');
   }else if(type==='weight'){
     const val=parseFloat(document.getElementById('w-val').value);
-    if(!val){toast('体重を入力してください');return;}
+    if(!val){
+      const el=document.getElementById('w-val');
+      if(el){el.classList.add('err');setTimeout(()=>el.classList.remove('err'),2000);}
+      toast('体重を入力してください');return;
+    }
     data={val,note:document.getElementById('w-note').value};
     closeModal('modal-weight');
   }else if(type==='handover'){
@@ -7220,7 +7628,8 @@ function saveRecord(type){
     toast('修正しました ✓');
   } else {
     S.editRecId=null;
-    recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:getRecordTs(),data});
+    const _ts=getRecordTs();if(_ts===null)return;
+    recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,ts:_ts,data});
     saveRecords(recs);
     const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重'}[type]||type;
     addAuditLog('記録保存',typeLabel+' / 利用者ID: '+S.currentRes);
@@ -7255,12 +7664,13 @@ function deleteHandover(id){
   const idx=hos.findIndex(x=>x.id===id);
   if(idx<0)return;
   if(hos[idx].by!==S.user&&!isAdmin()){toast('削除できるのは作成者と管理者のみです');return;}
-  if(!confirm('この申し送りを削除しますか？'))return;
-  hos.splice(idx,1);
-  h[S.currentRes]=hos;
-  saveHandovers(h);
-  renderDetail();
-  toast('申し送りを削除しました');
+  showDelConfirm('この申し送りを削除しますか？',()=>{
+    hos.splice(idx,1);
+    h[S.currentRes]=hos;
+    saveHandovers(h);
+    renderDetail();
+    toast('申し送りを削除しました');
+  });
 }
 
 // ═══════════ 業務日誌 ═══════════
@@ -8119,7 +8529,7 @@ function openVisitReportModal(editIdx=-1, presetRid=null){
   document.getElementById('vr-edit-idx').value=editIdx;
   document.getElementById('vr-modal-title').textContent=editIdx>=0?'✏️ 訪問記録を編集':'🚗 訪問介護記録を追加';
   const sel=document.getElementById('vr-resident');
-  if(sel)sel.innerHTML=getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  if(sel)sel.innerHTML=getResidents().map(r=>`<option value="${escHtml(r.id)}">${escHtml(r.name)}</option>`).join('');
   if(editIdx>=0){
     const entry=(getVisitReports()[getDiaryDateStr()]||[])[editIdx];
     if(entry){
@@ -8169,14 +8579,15 @@ function saveVisitReport(){
   toast(isEdit?'更新しました ✓':'訪問介護記録を保存しました ✓');
 }
 function deleteVisitReport(idx){
-  if(!confirm('この訪問記録を削除しますか？'))return;
-  const dateStr=getDiaryDateStr();
-  const all=getVisitReports();
-  if(!all[dateStr])return;
-  all[dateStr].splice(idx,1);
-  saveVisitReports(all);
-  renderDiary();
-  toast('削除しました');
+  showDelConfirm('この訪問記録を削除しますか？',()=>{
+    const dateStr=getDiaryDateStr();
+    const all=getVisitReports();
+    if(!all[dateStr])return;
+    all[dateStr].splice(idx,1);
+    saveVisitReports(all);
+    renderDiary();
+    toast('削除しました');
+  });
 }
 function printVisitReport(){previewReport('visit_gyomu');}
 // ═══════════ VOICE INPUT ═══════════
@@ -8278,8 +8689,8 @@ function applyVoiceParsed(type,text){
   }else if(type==='meal'){
     const p=parseMealFromText(text);
     if(p.mtype){document.querySelectorAll('[name=meal-type]').forEach(r=>r.checked=(r.value===p.mtype));labels.push('食事区分');}
-    if(p.staple!=null){document.getElementById('staple-sl').value=p.staple;document.getElementById('staple-lbl').textContent=p.staple+'割';labels.push('主食');}
-    if(p.side!=null){document.getElementById('side-sl').value=p.side;document.getElementById('side-lbl').textContent=p.side+'割';labels.push('副食');}
+    if(p.staple!=null){setMealSeg('staple',p.staple);labels.push('主食');}
+    if(p.side!=null){setMealSeg('side',p.side);labels.push('副食');}
     if(p.fluid){document.getElementById('m-fluid').value=p.fluid;labels.push('水分');}
   }else if(type==='excretion'){
     const p=parseExcretionFromText(text);
@@ -8468,7 +8879,7 @@ function addManualStaff(){
   addAuditLog('職員追加',name+' (ID:'+loginId+')');
   toast(name+'を登録しました ✓');
   ['ms-sei','ms-mei','ms-kana-sei','ms-kana-mei'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('ms-pass').value='aura01';
+  document.getElementById('ms-pass').value='';
   renderStaffRoleDropdown();
 }
 
@@ -8744,14 +9155,14 @@ function renderBulkVital(){
         </div>
         ${hasVoice?`<button id="bv-voice-${r.id}" onclick="startBulkVoice('${r.id}')" style="display:flex;align-items:center;gap:5px;padding:8px 14px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;flex-shrink:0"><span style="font-size:16px">🎤</span>音声</button>`:''}
       </div>
-      <details style="margin-top:0">
+      <details style="margin-top:0" ${hasVoice?'':'open'}>
         <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 手動入力</span></summary>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px">
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" inputmode="numeric" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">拡張期</div><input type="number" inputmode="numeric" id="bv-dia-${r.id}" value="${v.dia||''}" placeholder="80" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">脈拍</div><input type="number" inputmode="numeric" id="bv-pulse-${r.id}" value="${v.pulse||''}" placeholder="72" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">体温</div><input type="number" inputmode="decimal" step="0.1" id="bv-temp-${r.id}" value="${v.temp||''}" placeholder="36.5" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">SpO2</div><input type="number" inputmode="numeric" id="bv-spo2-${r.id}" value="${v.spo2||''}" placeholder="98" style="width:100%;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" inputmode="numeric" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">拡張期</div><input type="number" inputmode="numeric" id="bv-dia-${r.id}" value="${v.dia||''}" placeholder="80" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">脈拍</div><input type="number" inputmode="numeric" id="bv-pulse-${r.id}" value="${v.pulse||''}" placeholder="72" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">体温</div><input type="number" inputmode="decimal" step="0.1" id="bv-temp-${r.id}" value="${v.temp||''}" placeholder="36.5" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
+          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">SpO2</div><input type="number" inputmode="numeric" id="bv-spo2-${r.id}" value="${v.spo2||''}" placeholder="98" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:8px">
           <button onclick="saveBulkVital('${r.id}')" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 18px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
@@ -8831,11 +9242,14 @@ function saveBulkVital(rid){
   const temp=document.getElementById('bv-temp-'+rid)?.value;
   const spo2=document.getElementById('bv-spo2-'+rid)?.value;
   if(!sys&&!dia&&!pulse&&!temp&&!spo2){toast('値を入力してください');return;}
+  const bvData={sys:sys?Number(sys):null,dia:dia?Number(dia):null,pulse:pulse?Number(pulse):null,
+                temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null};
+  const bvwarn=vitalSanityWarn(bvData);
+  if(bvwarn.length&&!confirm('入力値が通常範囲外です:\n'+bvwarn.join(' / ')+'\n\nこのまま保存しますか？'))return;
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
+  if(new Date(ts)>new Date()){toast('未来の日付は入力できません');return;}
   const recs=getRecords();
-  recs.push({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',
-    data:{sys:sys?Number(sys):null,dia:dia?Number(dia):null,pulse:pulse?Number(pulse):null,
-          temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null}});
+  recs.push({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',data:bvData});
   saveRecords(recs);
   toast('バイタルを保存しました ✓');
   renderBulkVital();
@@ -9426,7 +9840,7 @@ function renderHandoverBoard(){
   if(adminBar)adminBar.style.display=isAdmin()?'block':'none';
   renderHbList();
   const sel=document.getElementById('do-resident');
-  if(sel)sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+  if(sel)sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
 }
 function linkifyResidents(text){
   let result=text;
@@ -9471,6 +9885,13 @@ function formatExpiry(expiresAt){
 }
 // ── 掲示板スタイル申し送りボード ──
 let _hbFilter='all';
+let _hbSearch='';
+function setHbSearch(v){
+  _hbSearch=v.trim();
+  const clr=document.getElementById('hb-search-clear');
+  if(clr)clr.style.display=_hbSearch?'block':'none';
+  renderHbList();
+}
 const HB_SEC_INFO={
   doctor:{label:'医師から',emoji:'🩺',bg:'#fce4ec',tc:'#c62828'},
   doctor_to:{label:'医師へ',emoji:'📤',bg:'#e8f0fb',tc:'#1565c0'},
@@ -9484,6 +9905,13 @@ const HB_SEC_INFO={
 function setHbFilter(f){
   _hbFilter=f;
   document.querySelectorAll('.hb-filter-btn').forEach(b=>b.classList.toggle('on',b.id==='hb-filter-'+f));
+  const svc=document.getElementById('hb-filter-svc');if(svc)svc.value='';
+  renderHbList();
+}
+function setHbFilterSvc(f){
+  if(!f)return;
+  _hbFilter=f;
+  document.querySelectorAll('.hb-filter-btn').forEach(b=>b.classList.remove('on'));
   renderHbList();
 }
 function renderHbList(){
@@ -9498,6 +9926,11 @@ function renderHbList(){
   if(_hbFilter==='urgent') all=all.filter(h=>h.pri==='urgent');
   else if(_hbFilter==='important') all=all.filter(h=>h.pri==='important');
   else if(['doctor','doctor_to','facility_nurse','sak','shot','day','visit','home_care'].includes(_hbFilter)) all=all.filter(h=>h._sec===_hbFilter);
+  if(_hbSearch){
+    const q=_hbSearch.toLowerCase();
+    const resMap={};getResidents().forEach(r=>{resMap[r.id]=r.name;});
+    all=all.filter(h=>(h.content||'').toLowerCase().includes(q)||(h.by||'').includes(q)||(h.rid&&resMap[h.rid]||'').includes(q));
+  }
   const priOrder={urgent:0,important:1,normal:2};
   all.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
   if(!all.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">申し送りはありません</div>';return;}
@@ -9526,9 +9959,9 @@ function renderHbList(){
         ${priBadge}${secTag}${resChip}
         <div style="margin-left:auto;display:flex;align-items:center">${editBtn}${delBtn}</div>
       </div>
-      <div style="font-size:13px;color:var(--txt);line-height:1.55">${h.content||''}</div>
+      <div style="font-size:13px;color:var(--txt);line-height:1.55;white-space:pre-wrap">${linkifyResidents(escHtml(h.content||''))}</div>
       <div style="font-size:10px;color:var(--sub);margin-top:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap">
-        <span>${h.by||''}</span><span>·</span><span>${h.time||''}</span>
+        <span>${h.by||''}</span><span>·</span><span>${h.date?h.date+' ':''}${h.time||''}</span>
         <span>·</span><span style="color:${expiryColor}">${expiryTxt}</span>
         ${editedMark?`<span style="color:var(--sub)">${editedMark}</span>`:''}
       </div>
@@ -9603,7 +10036,7 @@ function saveBoardHandover(){
     if(section==='sak')d.sak[sakShift]=items; else d[section]=items;
     toast('申し送りを更新しました ✓');
   } else {
-    const entry={id:Date.now().toString(),content,pri,rid,expiryType,expiresAt,staffRole:S.userRole,by:S.user||'──',time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),editedBy:null};
+    const entry={id:Date.now().toString(),content,pri,rid,expiryType,expiresAt,staffRole:S.userRole,by:S.user||'──',date:new Date().toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}),time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),editedBy:null};
     if(section==='sak')d.sak[sakShift].unshift(entry); else d[section].unshift(entry);
     toast('申し送りを保存しました ✓');
   }
@@ -9652,7 +10085,7 @@ function saveDoctorOrder(){
     d.doctor[editIdx].content=content;
     d.doctor[editIdx].pri=doPri;
     d.doctor[editIdx].doctor=document.getElementById('do-doctor').value||'医師';
-    d.doctor[editIdx].resident=document.getElementById('do-resident').value;
+    d.doctor[editIdx].rid=document.getElementById('do-resident').value;
     d.doctor[editIdx].editedBy=S.user||'──';
     d.doctor[editIdx].editedTime=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
     toast('医師指示を更新しました ✓');
@@ -9660,9 +10093,9 @@ function saveDoctorOrder(){
     d.doctor.unshift({
       id:Date.now().toString(),content,
       doctor:document.getElementById('do-doctor').value||'医師',
-      resident:document.getElementById('do-resident').value,
-      pri:doPri,rid:'',
+      pri:doPri,rid:document.getElementById('do-resident').value,
       staffRole:'doctor',by:S.user||'──',
+      date:new Date().toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}),
       time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),
       editedBy:null,editedTime:null
     });
@@ -9680,7 +10113,7 @@ function editDoctorOrder(idx){
   if(!o)return;
   document.getElementById('do-content').value=o.content||'';
   document.getElementById('do-doctor').value=o.doctor||'稲田俊雄';
-  document.getElementById('do-resident').value=o.resident||'';
+  document.getElementById('do-resident').value=o.rid||'';
   const priEl=document.querySelector(`input[name="do-pri"][value="${o.pri||'normal'}"]`);
   if(priEl)priEl.checked=true;
   let idxEl=document.getElementById('do-edit-idx');
@@ -10033,15 +10466,16 @@ function saveVisitEntry(){
   renderSchedule();
 }
 function deleteVisitEntry(){
-  if(!confirm('この予定を削除しますか？'))return;
-  const dateStr=document.getElementById('ve-date').value;
-  const idx=parseInt(document.getElementById('ve-idx').value);
-  const visits=getVisitSched(dateStr);
-  visits.splice(idx,1);
-  saveVisitSched(dateStr,visits);
-  closeModal('modal-visit-entry');
-  toast('削除しました');
-  renderSchedule();
+  showDelConfirm('この予定を削除しますか？',()=>{
+    const dateStr=document.getElementById('ve-date').value;
+    const idx=parseInt(document.getElementById('ve-idx').value);
+    const visits=getVisitSched(dateStr);
+    visits.splice(idx,1);
+    saveVisitSched(dateStr,visits);
+    closeModal('modal-visit-entry');
+    toast('削除しました');
+    renderSchedule();
+  });
 }
 
 function importVisitCSV(inp){
@@ -11174,16 +11608,16 @@ function loadMayDemoData(){
   };
   if(!ls('board_data2')){lsSet('board_data2',demoBoard);}
 
-  const existing=(ls('records')||[]).filter(r=>!r.ts.startsWith('2026-05-'));
-  lsSet('records',[...existing,...recs]);
+  const existing=getRecords().filter(r=>!r.ts.startsWith('2026-05-'));
+  saveRecords([...existing,...recs]);
   toast('5月分デモデータを挿入しました（'+recs.length+'件）');
   renderDashboard();
 }
 
 function resetDemo(){
   if(!confirm('デモデータをリセットしますか？'))return;
-  ['residents','records','handovers','schedules','board_data2'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
-  Object.keys(localStorage).filter(k=>k.startsWith('visit_sched_')||k.startsWith('e_visit_sched_')||k.startsWith('e_fs_')||k.startsWith('fs_')).forEach(k=>localStorage.removeItem(k));
+  ['residents','handovers','schedules','board_data2'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
+  Object.keys(localStorage).filter(k=>k.startsWith('records_')||k.startsWith('e_records_')||k.startsWith('visit_sched_')||k.startsWith('e_visit_sched_')||k.startsWith('e_fs_')||k.startsWith('fs_')).forEach(k=>localStorage.removeItem(k));
   toast('リセットしました');renderDashboard();
 }
 
@@ -11226,11 +11660,19 @@ document.addEventListener('touchend',e=>{
   _swActive=false;
   const dx=e.changedTouches[0].clientX-_swX,dy=e.changedTouches[0].clientY-_swY;
   if(Math.abs(dy)>Math.abs(dx)*0.85)return;
-  if(Math.abs(dx)<60)return;
+  if(Math.abs(dx)<50)return;
   const W=window.innerWidth;
-  if(dx>0&&_swX<48)goBack();
-  else if(dx<0&&_swX>W-48)goForward();
+  if(dx>0&&_swX<72)goBack();
+  else if(dx<0&&_swX>W-72)goForward();
 },{passive:true});
+function updateOfflineBanner(){
+  const b=document.getElementById('offline-banner');
+  if(b)b.style.display=navigator.onLine?'none':'block';
+}
+window.addEventListener('online', ()=>{updateOfflineBanner();toast('WiFi接続が回復しました ✓');});
+window.addEventListener('offline',()=>{updateOfflineBanner();toast('⚠️ オフライン — データはローカルに保存されます');});
+updateOfflineBanner();
+
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
   resetLockTimer();
@@ -11322,7 +11764,7 @@ function renderRoundsList(){
   const key=_roundsKey();
   const checks=data[key]||{};
   const allRes=getResidents();
-  const residents=_roundsFacility==='all'?allRes:allRes.filter(r=>r.svcType===_roundsFacility);
+  const residents=_roundsFacility==='all'?allRes:allRes.filter(r=>(r.services||[]).includes(_roundsFacility));
   let totalTasks=0,doneTasks=0;
   const html=residents.map(r=>{
     const rChecks=checks[r.id]||{};
@@ -11345,9 +11787,11 @@ function renderRoundsList(){
       <div id="rc-${r.id}" style="display:${pct===100?'none':'block'}">
         ${ROUNDS_TASKS.map(t=>{
           const checked=!!rChecks[t.key];
+          const chkTime=(rChecks['_time']||{})[t.key]||'';
+          const chkBy=(rChecks['_by']||{})[t.key]||'';
           return `<div class="rounds-check-row">
             <span class="rounds-check-ico">${t.ico}</span>
-            <span style="flex:1;font-size:14px">${t.lbl}</span>
+            <span style="flex:1;font-size:14px">${t.lbl}${checked&&(chkTime||chkBy)?`<span style="font-size:10px;color:var(--sub);margin-left:6px">${[chkTime,chkBy].filter(Boolean).join(' ')}</span>`:''}</span>
             <button onclick="toggleRoundsCheck('${r.id}','${t.key}')" style="width:32px;height:32px;border-radius:8px;border:2px solid ${checked?'var(--ok)':'var(--bdr)'};background:${checked?'var(--ok)':'#fff'};color:${checked?'#fff':'var(--sub)'};font-size:16px;cursor:pointer;touch-action:manipulation;flex-shrink:0">${checked?'✓':''}</button>
           </div>`;
         }).join('')}
@@ -11376,6 +11820,8 @@ function toggleRoundsCheck(rid,taskKey){
   if(data[key][rid][taskKey]){
     if(!data[key][rid]['_by'])data[key][rid]['_by']={};
     data[key][rid]['_by'][taskKey]=S.user;
+    if(!data[key][rid]['_time'])data[key][rid]['_time']={};
+    data[key][rid]['_time'][taskKey]=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
   }
   saveRoundsData(data);
   renderRoundsList();
@@ -11508,16 +11954,33 @@ function openIncidentModal(editId=''){
   if(!editId){
     document.querySelector('input[name="inc-sev"][value="low"]').checked=true;
     document.getElementById('inc-detail').value='';
+    document.getElementById('inc-response').value='';
+    document.getElementById('inc-prevention').value='';
     document.getElementById('inc-witness').value='';
     document.querySelector('#inc-type-btns .cat-btn.on')?.classList.remove('on');
     const firstBtn=document.querySelector('#inc-type-btns .cat-btn');
     if(firstBtn)firstBtn.classList.add('on');
     document.getElementById('inc-type').value='near_miss';
   }
+  if(editId){
+    const inc=getIncidents().find(i=>i.id===editId);
+    if(inc){
+      document.getElementById('inc-detail').value=inc.detail||'';
+      document.getElementById('inc-response').value=inc.response||'';
+      document.getElementById('inc-prevention').value=inc.prevention||'';
+      document.getElementById('inc-witness').value=inc.witness||'';
+      const sevEl=document.querySelector(`input[name="inc-sev"][value="${inc.sev||'low'}"]`);
+      if(sevEl)sevEl.checked=true;
+      document.querySelectorAll('#inc-type-btns .cat-btn').forEach(b=>b.classList.toggle('on',b.dataset.val===inc.type));
+      document.getElementById('inc-type').value=inc.type||'near_miss';
+      document.getElementById('inc-location').value=inc.location||'room';
+    }
+  }
   // populate residents
   const sel=document.getElementById('inc-resident');
   if(sel)sel.innerHTML='<option value="">施設共通</option>'+getResidents().map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
-  if(S.currentRes&&sel)sel.value=S.currentRes;
+  if(editId){const inc=getIncidents().find(i=>i.id===editId);if(inc&&sel)sel.value=inc.rid||'';}
+  else if(S.currentRes&&sel)sel.value=S.currentRes;
   document.getElementById('modal-incident').classList.add('on');
 }
 
@@ -11527,15 +11990,17 @@ function saveIncident(){
   const rid=document.getElementById('inc-resident').value;
   const location=document.getElementById('inc-location').value;
   const detail=document.getElementById('inc-detail').value.trim();
+  const response=document.getElementById('inc-response').value.trim();
+  const prevention=document.getElementById('inc-prevention').value.trim();
   const witness=document.getElementById('inc-witness').value.trim();
   if(!detail){toast('詳細を入力してください');return;}
   const incidents=getIncidents();
   const editId=document.getElementById('inc-edit-id').value;
   if(editId){
     const idx=incidents.findIndex(i=>i.id===editId);
-    if(idx>=0){incidents[idx]={...incidents[idx],type,sev,rid,location,detail,witness,updatedAt:new Date().toISOString()};}
+    if(idx>=0){incidents[idx]={...incidents[idx],type,sev,rid,location,detail,response,prevention,witness,updatedAt:new Date().toISOString()};}
   } else {
-    incidents.unshift({id:'inc_'+Date.now(),type,sev,rid,location,detail,witness,by:S.user,ts:new Date().toISOString(),reviewed:false});
+    incidents.unshift({id:'inc_'+Date.now(),type,sev,rid,location,detail,response,prevention,witness,by:S.user,ts:new Date().toISOString(),reviewed:false});
   }
   saveIncidents(incidents);
   closeModal('modal-incident');
@@ -11569,7 +12034,7 @@ function renderIncidentList(){
     const res=inc.rid?residents.find(r=>r.id===inc.rid):null;
     const d=new Date(inc.ts);
     const dateStr=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    return `<div class="inc-card ${inc.sev}" onclick="openIncidentDetail('${inc.id}')">
+    return `<div class="inc-card ${inc.sev}" data-inc-id="${inc.id}" onclick="openIncidentDetail('${inc.id}')">`
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
         <span class="inc-sev-badge" style="background:${INC_SEV_COLOR[inc.sev]}">${INC_SEV_LABEL[inc.sev]}</span>
         <span style="font-size:12px;font-weight:700;color:var(--txt)">${INC_TYPE_LABEL[inc.type]||inc.type}</span>
@@ -11588,16 +12053,23 @@ function renderIncidentList(){
 function openIncidentDetail(id){
   const inc=getIncidents().find(i=>i.id===id);if(!inc)return;
   const res=inc.rid?getResidents().find(r=>r.id===inc.rid):null;
-  const msg=`【${INC_TYPE_LABEL[inc.type]||inc.type}】${INC_SEV_LABEL[inc.sev]}\n`+
-    `日時: ${new Date(inc.ts).toLocaleString('ja-JP')}\n`+
-    `${res?'利用者: '+res.name+'\n':''}場所: ${INC_LOC_LABEL[inc.location]||''}\n`+
-    `報告者: ${inc.by}\n${inc.witness?'立会: '+inc.witness+'\n':''}\n`+
-    `内容:\n${inc.detail}`;
-  if(confirm(msg+'\n\n[OK]で確認済にする / [キャンセル]で編集')){
-    if(isAdmin())reviewIncident(id);
-  } else {
-    openIncidentModal(id);
-  }
+  // 展開/折り畳み切替
+  const el=document.getElementById('inc-detail-'+id);
+  if(el){el.style.display=el.style.display==='none'?'block':'none';return;}
+  // カードの末尾に詳細パネルを挿入
+  const card=document.querySelector(`[data-inc-id="${id}"]`);
+  if(!card){openIncidentModal(id);return;}
+  const panel=document.createElement('div');
+  panel.id='inc-detail-'+id;
+  panel.style.cssText='padding:10px 0 4px;border-top:1px solid var(--bdr);margin-top:8px;font-size:12px;color:var(--txt);line-height:1.7';
+  panel.innerHTML=`<div><b>📋 状況：</b>${escHtml(inc.detail)}</div>`+
+    (inc.response?`<div style="margin-top:6px"><b>✅ 即時対応：</b>${escHtml(inc.response)}</div>`:'')+
+    (inc.prevention?`<div style="margin-top:6px"><b>🔄 再発防止：</b>${escHtml(inc.prevention)}</div>`:'')+
+    (inc.witness?`<div style="margin-top:6px"><b>👥 立会：</b>${escHtml(inc.witness)}</div>`:'')+
+    `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">`+
+    (isAdmin()&&!inc.reviewed?`<button onclick="event.stopPropagation();reviewIncident('${id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;border:none;cursor:pointer">✓ 確認済にする</button>`:'')+
+    `<button onclick="event.stopPropagation();openIncidentModal('${id}')" style="font-size:11px;background:var(--bg);color:var(--p);border:1px solid var(--p);border-radius:6px;padding:4px 12px;font-weight:700;cursor:pointer">✏️ 編集</button></div>`;
+  card.appendChild(panel);
 }
 
 function reviewIncident(id){
@@ -11907,7 +12379,7 @@ function regenerateFamilyReport(){
       const s=Math.round((m.data.staple||0)*10);
       const si=Math.round((m.data.side||0)*10);
       const fl=m.data.fluid||0;
-      txt+=`${mLabel[m.data.mealType]||m.data.mealType}: 主食${s}%・副食${si}%・水分${fl}ml`;
+      txt+=`${mLabel[m.data.mtype]||m.data.mtype}: 主食${s}%・副食${si}%・水分${fl}ml`;
       if(m.data.note)txt+=`（${m.data.note}）`;
       txt+='\n';
     });
@@ -12068,10 +12540,11 @@ function toggleTaskDone(id){
 }
 
 function deleteTask(id){
-  if(!confirm('このタスクを削除しますか？'))return;
-  saveTasks(getTasks().filter(t=>t.id!==id));
-  renderTasksList();
-  toast('削除しました');
+  showDelConfirm('このタスクを削除しますか？',()=>{
+    saveTasks(getTasks().filter(t=>t.id!==id));
+    renderTasksList();
+    toast('削除しました');
+  });
 }
 
 // ═══════════ FEATURE 7: 申し送り読了確認 ═══════════
@@ -12088,6 +12561,20 @@ function markHandoverRead(itemKey){
     renderHandoverBoard();
     updateHandoverUnreadBadge();
   }
+}
+function markAllHandoverRead(){
+  if(!S.user)return;
+  const bd=getBoardData();
+  const allItems=[...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.nurse||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])];
+  const data=getHandoverReads();
+  let changed=false;
+  allItems.forEach(h=>{
+    if(!h||!h.content)return;
+    const key=h.id||'unknown';
+    if(!data[key])data[key]=[];
+    if(!data[key].includes(S.user)){data[key].push(S.user);changed=true;}
+  });
+  if(changed){saveHandoverReads(data);updateHandoverUnreadBadge();}
 }
 
 function updateHandoverUnreadBadge(){
@@ -12250,7 +12737,12 @@ _startLockTimer();
   try{
     const sess=JSON.parse(localStorage.getItem('va_session')||'null');
     if(!sess||!sess.user)return;
-    S.user=sess.user;S.userRole=sess.userRole;S.loginTime=sess.loginTime||'';
+    // セッション有効期限チェック（8時間）
+    if(sess.loginTs&&(Date.now()-sess.loginTs)>8*60*60*1000){
+      localStorage.removeItem('va_session');
+      return;
+    }
+    S.user=sess.user;S.userRole=sess.userRole;S.loginTime=sess.loginTime||'';S.staffKey=sess.staffKey||null;
     document.getElementById('scr-login').style.display='none';
     document.getElementById('app').style.display='block';
     const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
@@ -12263,11 +12755,16 @@ _startLockTimer();
     checkUrlHash();
     startUpdateChecker();
     resetLockTimer();
-    firebase.auth().signInWithEmailAndPassword(FB_SYS_EMAIL,FB_SYS_PASS).then(()=>{
-      fbReady=true;
-      loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
-      startAIKeySync();
-    }).catch(()=>{});
+    // Firebase Auth SDKが自動でセッションを復元するのを待つ（パスワード再入力不要）
+    const unsubAuth=firebase.auth().onAuthStateChanged(user=>{
+      unsubAuth();
+      if(user&&!user.isAnonymous){
+        fbReady=true;
+        loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+        startAIKeySync();
+      }
+      // 非認証 or 匿名の場合はオフラインモードで継続（次回操作時に再ログイン誘導）
+    });
   }catch(e){}
 })();
 
@@ -12337,7 +12834,7 @@ function confirmAccountSwitch(){
   const mmU=document.getElementById('mm-user');if(mmU)mmU.textContent=S.user;
   updateBnAcct();
   addAuditLog('アカウント切り替え',prev+' → '+S.user);
-  localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey:key}));
+  localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey:key,loginTs:Date.now()}));
   closeAccountSwitch();
   renderDashboard();
   toast(S.user+' に切り替えました ✓');
