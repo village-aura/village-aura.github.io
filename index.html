@@ -12035,7 +12035,7 @@ function renderIncidentList(){
     const res=inc.rid?residents.find(r=>r.id===inc.rid):null;
     const d=new Date(inc.ts);
     const dateStr=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    return `<div class="inc-card ${inc.sev}" data-inc-id="${inc.id}" onclick="openIncidentDetail('${inc.id}')">`
+    return `<div class="inc-card ${inc.sev}" data-inc-id="${inc.id}" onclick="openIncidentDetail('${inc.id}')">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
         <span class="inc-sev-badge" style="background:${INC_SEV_COLOR[inc.sev]}">${INC_SEV_LABEL[inc.sev]}</span>
         <span style="font-size:12px;font-weight:700;color:var(--txt)">${INC_TYPE_LABEL[inc.type]||inc.type}</span>
