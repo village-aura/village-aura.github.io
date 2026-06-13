@@ -12729,6 +12729,12 @@ if(localStorage.getItem('_demo_data_ver')!==_DEMO_DATA_VER){
   ['records','schedules'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
   localStorage.setItem('_demo_data_ver',_DEMO_DATA_VER);
 }
+// デプロイv4: ログインロックを強制リセット
+if(!localStorage.getItem('_unlock_v4')){
+  localStorage.removeItem('va_lock_until');
+  localStorage.removeItem('va_login_fails');
+  localStorage.setItem('_unlock_v4','1');
+}
 initDisplayPrefs();
 _startLockTimer();
 
