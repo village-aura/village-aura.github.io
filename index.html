@@ -4294,16 +4294,16 @@ function saveRecords(r){
 }
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// 初期パスワードを loginId として一度だけセット（v4）
+// 初期パスワードをセット（v5）管理者のみ loginId、他は aura01
 (function migratePasswords(){
-  if(localStorage.getItem('_pw_migv4')) return;
+  if(localStorage.getItem('_pw_migv5')) return;
   const s=getStaffSettings();
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k]) s[k]={};
-    s[k].pass=STAFF_INFO[k].loginId;
+    s[k].pass = (STAFF_INFO[k].admin) ? STAFF_INFO[k].loginId : 'aura01';
   });
   saveStaffSettings(s);
-  localStorage.setItem('_pw_migv4','1');
+  localStorage.setItem('_pw_migv5','1');
 })();
 
 // ═══════════ AUTH ═══════════
