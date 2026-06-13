@@ -7683,18 +7683,22 @@ const DIARY_REPORTS={
     {id:'sak_kojin', title:'個人記録（月次）', ico:'👤', desc:'バイタル・食事・排泄・体重（月次）', fn:'genKojinRecord', monthly:true},
     {id:'sak_yakin', title:'夜間日誌',        ico:'🌙', desc:'夜間巡視・異常有無・引継ぎ', fn:'genYakin'},
     {id:'sak_riyohyo',title:'曜日別利用票',   ico:'📅', desc:'曜日別サービス利用者名簿', fn:'genRiyohyo', monthlyOnly:true},
+    {id:'sak_handover',title:'申し送りシート',ico:'📣', desc:'本日有効な申し送り一覧（サ高住）', fn:'genSakHandoverSheet'},
   ],
   shot:[
     {id:'shot_gyomu', title:'業務日誌',        ico:'📋', desc:'スタッフ・来所/外出/宿泊・個別記録・申し送り', fn:'genShotGyomu'},
     {id:'shot_kojin', title:'個別記録（月次）', ico:'👤', desc:'バイタル・食事・入浴・体重（月次）', fn:'genKojinRecord', monthly:true},
+    {id:'shot_handover',title:'申し送りシート',ico:'📣', desc:'本日有効な申し送り一覧（小多機）', fn:'genShotHandoverSheet'},
   ],
   day:[
     {id:'day_gyomu',  title:'業務日誌',         ico:'📋', desc:'デイサービス利用者・バイタル・ケア記録', fn:'genDayGyomu'},
     {id:'day_status', title:'デイ利用者状況',    ico:'📊', desc:'利用者別水分・体重・特記事項', fn:'genDayStatus'},
+    {id:'day_handover',title:'申し送りシート',  ico:'📣', desc:'本日有効な申し送り一覧（デイ）', fn:'genDayHandoverSheet'},
   ],
   visit:[
     {id:'visit_gyomu',  title:'訪問介護 業務日報', ico:'📋', desc:'訪問員別業務・時間帯一覧', fn:'genVisitGyomu'},
     {id:'visit_record', title:'訪問介護記録',      ico:'📝', desc:'利用者別月次訪問履歴', fn:'genVisitRecord', monthly:true},
+    {id:'visit_handover',title:'申し送りシート',   ico:'📣', desc:'本日有効な申し送り一覧（訪問介護）', fn:'genVisitHandoverSheet'},
   ],
 };
 function getDiaryDate(off=S_diary_offset){const d=new Date();d.setDate(d.getDate()+off);return d;}
@@ -7833,7 +7837,7 @@ function previewReport(id){
     const [yr,mo]=ym.split('-').map(Number);
     html=genRiyohyo(yr,mo);
   }else{
-    const fnMap={genSakGyomu,genYakin,genShotGyomu,genDayGyomu,genDayStatus,genVisitGyomu};
+    const fnMap={genSakGyomu,genYakin,genShotGyomu,genDayGyomu,genDayStatus,genVisitGyomu,genSakHandoverSheet,genShotHandoverSheet,genDayHandoverSheet,genVisitHandoverSheet};
     const fn=fnMap[rdef.fn];
     if(fn)html=fn(dateStr);
   }
@@ -8495,6 +8499,85 @@ function genVisitRecord(rid,year,month){
 <div class="sec">▌担当者確認欄</div><div style="border:1px solid #555;min-height:40px;padding:6px"></div>
 <button class="prbtn" onclick="window.print()">🖨 印刷</button></body></html>`;
 }
+// ── 申し送りシート（共通） ──
+function _genHandoverSheetHtml(dateStr, sections, svcLabel, svcColor){
+  const d=new Date(dateStr+'T12:00:00');
+  const ry=_reiwa(d.getFullYear()),mon=d.getMonth()+1,day=d.getDate(),wd=_wd(d);
+  const bd=getBoardData();
+  const residents=getResidents();
+  const resMap={};residents.forEach(r=>{resMap[r.id]=r.name;});
+  // 対象セクションの申し送りを収集（期限切れ除外）
+  let items=[];
+  sections.forEach(sec=>{
+    if(sec==='sak'){
+      [...(bd.sak?.am||[]),...(bd.sak?.pm||[])].forEach(e=>{if(!isExpired(e))items.push({...e,_secLabel:'サ高住'});});
+    } else {
+      (bd[sec]||[]).forEach(e=>{if(!isExpired(e))items.push({...e,_secLabel:HB_SEC_INFO[sec]?.label||sec});});
+    }
+  });
+  // 重複除去（idベース）
+  const seen=new Set(); items=items.filter(e=>{if(seen.has(e.id))return false;seen.add(e.id);return true;});
+  // 優先度順ソート
+  const priOrder={urgent:0,important:1,normal:2};
+  items.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
+
+  const priLabel={urgent:'<span style="background:#fef2f2;color:#c62828;font-size:9px;font-weight:bold;border:1px solid #fca5a5;padding:1px 5px;border-radius:3px;margin-right:4px">【緊急】</span>',important:'<span style="background:#fff7ed;color:#c2410c;font-size:9px;font-weight:bold;border:1px solid #fdba74;padding:1px 5px;border-radius:3px;margin-right:4px">【重要】</span>',normal:''};
+  const priRowStyle={urgent:'border-left:4px solid #c62828',important:'border-left:4px solid #FB8C00',normal:'border-left:4px solid #ccc'};
+
+  const rows=items.length ? items.map(e=>{
+    const resName=e.rid?resMap[e.rid]||'':' ';
+    const expStr=e.expiresAt?new Date(e.expiresAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'まで':'無期限';
+    return `<tr style="${priRowStyle[e.pri]||'border-left:4px solid #ccc'}">
+      <td style="width:14%;text-align:center;font-size:10px">${resName}</td>
+      <td style="line-height:1.6">${priLabel[e.pri]||''}${escHtml(e.content||'')}</td>
+      <td style="width:16%;text-align:center;font-size:9px;white-space:nowrap">${escHtml(e.by||'')}　${escHtml(e.date||'')} ${escHtml(e.time||'')}</td>
+      <td style="width:10%;text-align:center;font-size:9px">${expStr}</td>
+      <td style="width:8%;text-align:center"></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" style="text-align:center;padding:20px;color:#999">申し送りはありません</td></tr>`;
+
+  return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>申し送りシート ${svcLabel} ${mon}/${day}</title><style>${_PCSS()}
+    tr td:first-child{background:#fafafa}
+    .legend{display:flex;gap:12px;font-size:9px;margin-bottom:6px;align-items:center}
+    .leg-item{display:flex;align-items:center;gap:3px}
+    .leg-bar{width:10px;height:10px;border-radius:1px}
+  </style></head><body>
+<div class="hdr">
+  <span class="hdr-date">令和${ry}年${mon}月${day}日（${wd}）</span>
+  <span class="hdr-title" style="color:${svcColor}">📣 申し送りシート　${svcLabel}</span>
+  <span class="hdr-date">有効件数：${items.length}件</span>
+</div>
+<div class="legend">
+  <div class="leg-item"><div class="leg-bar" style="background:#c62828"></div>緊急</div>
+  <div class="leg-item"><div class="leg-bar" style="background:#FB8C00"></div>重要</div>
+  <div class="leg-item"><div class="leg-bar" style="background:#ccc"></div>通常</div>
+</div>
+<table>
+  <thead><tr>
+    <th style="width:14%">利用者</th>
+    <th>申し送り内容</th>
+    <th style="width:16%">投稿者・日時</th>
+    <th style="width:10%">有効期限</th>
+    <th style="width:8%">確認</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div style="margin-top:14px;display:flex;gap:10px">
+  <div style="flex:1;border:1px solid #aaa;border-radius:4px;padding:6px 8px;min-height:30px">
+    <div style="font-size:9px;color:#666;margin-bottom:4px">▌引継ぎ事項・特記</div>
+  </div>
+</div>
+<div style="margin-top:10px;display:flex;gap:10px">
+  ${['申し送り者','リーダー','管理者'].map(l=>`<div style="flex:1;border:1px solid #aaa;border-radius:4px;padding:4px 8px;text-align:center"><div style="font-size:9px;color:#666;margin-bottom:16px">${l}</div></div>`).join('')}
+</div>
+<button class="prbtn" onclick="window.print()">🖨 印刷</button>
+</body></html>`;
+}
+function genSakHandoverSheet(dateStr){return _genHandoverSheetHtml(dateStr,['sak'],'サ高住','#1565c0');}
+function genShotHandoverSheet(dateStr){return _genHandoverSheetHtml(dateStr,['shot'],'小多機','#2e7d32');}
+function genDayHandoverSheet(dateStr){return _genHandoverSheetHtml(dateStr,['day'],'デイ','#f57c00');}
+function genVisitHandoverSheet(dateStr){return _genHandoverSheetHtml(dateStr,['visit'],'訪問介護','#6a1b9a');}
+
 function openVisitReportFromDetail(){
   openVisitReportModal(-1, S.currentRes);
 }
