@@ -8049,17 +8049,17 @@ th{background:#e0e0e0;text-align:center;font-weight:bold}
 @media print{.prbtn{display:none}}`;
 }
 function _autoFitScript(){
-  return `<script>(function(){
-  function fit(){
-    document.body.style.transform='';document.body.style.width='';
-    var bh=document.documentElement.scrollHeight;
-    var wh=window.innerHeight||1040;
-    if(bh>wh){var s=(wh/bh*0.97).toFixed(3);document.body.style.transform='scale('+s+')';document.body.style.transformOrigin='top left';document.body.style.width=(100/s).toFixed(1)+'%';}
-  }
-  document.addEventListener('DOMContentLoaded',fit);
-  window.addEventListener('beforeprint',fit);
-  window.addEventListener('afterprint',function(){document.body.style.transform='';document.body.style.width='';});
-}());<\/script>`;
+  return '<sc'+'ript>(function(){'
+    +'function fit(){'
+    +'document.body.style.transform="";document.body.style.width="";'
+    +'var bh=document.documentElement.scrollHeight;'
+    +'var wh=window.innerHeight||1040;'
+    +'if(bh>wh){var s=(wh/bh*0.97).toFixed(3);document.body.style.transform="scale("+s+")";document.body.style.transformOrigin="top left";document.body.style.width=(100/s).toFixed(1)+"%";}'
+    +'}'
+    +'document.addEventListener("DOMContentLoaded",fit);'
+    +'window.addEventListener("beforeprint",fit);'
+    +'window.addEventListener("afterprint",function(){document.body.style.transform="";document.body.style.width="";});'
+    +'}());<'+'/script>';
 }
 // ── サ高住 業務日誌 ──
 function genSakGyomu(dateStr){
