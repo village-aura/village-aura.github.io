@@ -4004,7 +4004,7 @@ const STAFF_INFO = {
   s3:{name:'前原 明子',role:'care',             loginId:'1003'},
   s4:{name:'鈴木 健太',role:'care',             loginId:'1004'},
   s5:{name:'中村 由美',role:'nurse',            loginId:'1005'},
-  s6:{name:'山田 一郎',role:'super_admin',      loginId:'1006',admin:true},
+  s6:{name:'山田 一郎',role:'super_admin',      loginId:'06419008',admin:true},
   s7:{name:'佐藤 真理',role:'home_care',        loginId:'1007'},
   s8:{name:'木村 誠司',role:'doctor',           loginId:'1008'},
 };
@@ -4294,16 +4294,16 @@ function saveRecords(r){
 }
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// 初期パスワードを loginId として一度だけセット（v3）
+// 初期パスワードを loginId として一度だけセット（v4）
 (function migratePasswords(){
-  if(localStorage.getItem('_pw_migv3')) return;
+  if(localStorage.getItem('_pw_migv4')) return;
   const s=getStaffSettings();
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k]) s[k]={};
     s[k].pass=STAFF_INFO[k].loginId;
   });
   saveStaffSettings(s);
-  localStorage.setItem('_pw_migv3','1');
+  localStorage.setItem('_pw_migv4','1');
 })();
 
 // ═══════════ AUTH ═══════════
