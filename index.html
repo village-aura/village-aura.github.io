@@ -4308,17 +4308,19 @@ function saveRecords(r){
 }
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// 初期パスワードをセット（v6）管理者のみ loginId、他は aura01
-(function migratePasswords(){
-  if(localStorage.getItem('_pw_migv6')) return;
+// 管理者パスワードを毎回 loginId で確定（フラグなし・Firestore上書き防止）
+(function ensureAdminPass(){
   const s=getStaffSettings();
+  let changed=false;
   Object.keys(STAFF_INFO).forEach(k=>{
-    if(!s[k]) s[k]={};
-    s[k].pass = (STAFF_INFO[k].admin) ? STAFF_INFO[k].loginId : 'aura01';
+    if(!s[k])s[k]={};
+    if(STAFF_INFO[k].admin){
+      if(s[k].pass!==STAFF_INFO[k].loginId){s[k].pass=STAFF_INFO[k].loginId;changed=true;}
+    } else if(!s[k].pass){
+      s[k].pass='aura01';changed=true;
+    }
   });
-  saveStaffSettings(s);
-  localStorage.setItem('_pw_migv5','1');
-  localStorage.setItem('_pw_migv6','1');
+  if(changed)saveStaffSettings(s);
 })();
 
 // ═══════════ AUTH ═══════════
@@ -4334,11 +4336,19 @@ async function login(){
     errEl.style.display='block';
     return;
   }
-  // 新端末ブートストラップ: staff_settingsがローカルになければFirestoreから取得（匿名Auth使用）
+  // 新端末ブートストラップ: staff_settingsがローカルになければFirestoreから取得
   if(!ls('staff_settings')&&db){
     try{
       const doc=await db.collection('va_data').doc('staff_settings').get();
-      if(doc.exists&&doc.data()?.data) lsSet('staff_settings',doc.data().data);
+      if(doc.exists&&doc.data()?.data){
+        const d=doc.data().data;
+        // Firestoreの古いpassを上書き（adminは必ずloginId）
+        Object.keys(STAFF_INFO).forEach(k=>{
+          if(STAFF_INFO[k].admin){if(!d[k])d[k]={};d[k].pass=STAFF_INFO[k].loginId;}
+          else if(!d[k]?.pass){if(!d[k])d[k]={};d[k].pass='aura01';}
+        });
+        lsSet('staff_settings',d);
+      }
     }catch(e){}
   }
   const csEntries=getCustomStaff();
