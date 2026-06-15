@@ -9258,7 +9258,7 @@ function renderBulkVital(){
         </div>
         ${hasVoice?`<button id="bv-voice-${r.id}" onclick="startBulkVoice('${r.id}')" style="display:flex;align-items:center;gap:5px;padding:8px 14px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;flex-shrink:0"><span style="font-size:16px">🎤</span>音声</button>`:''}
       </div>
-      <details style="margin-top:0" ${hasVoice?'':'open'}>
+      <details style="margin-top:0" open>
         <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 手動入力</span></summary>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px">
           <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" inputmode="numeric" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
@@ -9337,13 +9337,15 @@ function startBulkVoice(rid){
   doStart();
 }
 function r2name(rid){return getResidents().find(r=>r.id===rid)?.name||rid;}
+function _han(v){return (v||'').replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)).replace(/．/g,'.');}
+function _getVal(id){return _han(document.getElementById(id)?.value||'');}
 function saveBulkVital(rid){
   const dateEl=document.getElementById('bv-date');
-  const sys=document.getElementById('bv-sys-'+rid)?.value;
-  const dia=document.getElementById('bv-dia-'+rid)?.value;
-  const pulse=document.getElementById('bv-pulse-'+rid)?.value;
-  const temp=document.getElementById('bv-temp-'+rid)?.value;
-  const spo2=document.getElementById('bv-spo2-'+rid)?.value;
+  const sys=_getVal('bv-sys-'+rid);
+  const dia=_getVal('bv-dia-'+rid);
+  const pulse=_getVal('bv-pulse-'+rid);
+  const temp=_getVal('bv-temp-'+rid);
+  const spo2=_getVal('bv-spo2-'+rid);
   if(!sys&&!dia&&!pulse&&!temp&&!spo2){toast('値を入力してください');return;}
   const bvData={sys:sys?Number(sys):null,dia:dia?Number(dia):null,pulse:pulse?Number(pulse):null,
                 temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null};
@@ -9394,8 +9396,8 @@ function renderBulkMeal(){
           <div style="font-size:11px;color:${statusColor};margin-top:1px">${statusTxt}</div>
         </div>
       </div>
-      <details style="margin-top:0">
-        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 入力</span></summary>
+      <details style="margin-top:0" open>
+        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▼ 入力</span></summary>
         <div style="margin-top:8px">
           <div style="display:flex;gap:4px;margin-bottom:8px">
             ${['breakfast','lunch','dinner'].map(t=>`<button id="bm-mtype-${r.id}-${t}" onclick="setBmMtype('${r.id}','${t}')" style="flex:1;padding:6px 2px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid;cursor:pointer;touch-action:manipulation;background:${t===autoMtype?'var(--p)':'var(--bg)'};color:${t===autoMtype?'#fff':'var(--sub)'};border-color:${t===autoMtype?'var(--p)':'var(--bdr)'}">${mtypeLbl[t]}</button>`).join('')}
@@ -9427,9 +9429,9 @@ function saveBulkMeal(rid){
   const dateEl=document.getElementById('bm-date');
   const mtypeEl=document.getElementById('bm-mtype-cur-'+rid);
   const mtype=mtypeEl?.value||'breakfast';
-  const staple=document.getElementById('bm-staple-'+rid)?.value;
-  const side=document.getElementById('bm-side-'+rid)?.value;
-  const fluid=document.getElementById('bm-fluid-'+rid)?.value;
+  const staple=_getVal('bm-staple-'+rid);
+  const side=_getVal('bm-side-'+rid);
+  const fluid=_getVal('bm-fluid-'+rid);
   if(!staple&&!side&&!fluid){toast('値を入力してください');return;}
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
   const recs=getRecords();
@@ -9471,8 +9473,8 @@ function renderBulkExcretion(){
           <div style="font-size:11px;color:${done?'var(--ok)':'var(--sub)'};margin-top:1px">${statusTxt}</div>
         </div>
       </div>
-      <details>
-        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 入力</span></summary>
+      <details open>
+        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▼ 入力</span></summary>
         <div style="margin-top:8px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
             <div>
@@ -9515,7 +9517,7 @@ function setBexStool(rid,val){
 }
 function saveBulkExcretion(rid){
   const dateEl=document.getElementById('bex-date');
-  const urine=document.getElementById('bex-urine-'+rid)?.value;
+  const urine=_getVal('bex-urine-'+rid);
   const stool=document.getElementById('bex-stool-cur-'+rid)?.value||'none';
   const incon=document.getElementById('bex-incon-'+rid)?.checked||false;
   const portable=document.getElementById('bex-portable-'+rid)?.checked||false;
