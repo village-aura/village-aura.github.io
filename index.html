@@ -8712,6 +8712,7 @@ function printVisitReport(){previewReport('visit_gyomu');}
 // ═══════════ VOICE INPUT ═══════════
 // ── VOICE SMART PARSER ──
 function startVoiceSmart(type){
+  if(_isIOSNonSafari){toast('iPadのChromeでは音声入力ができません。SafariでURL（village-aura.github.io）を開くか、キーボードの🎤ボタンをお使いください');return;}
   if(_isIOS&&location.protocol!=='https:'){toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;}
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){toast('このブラウザは音声入力に対応していません');return;}
   const btn=document.getElementById('vs-btn-'+type);
@@ -8838,6 +8839,8 @@ let recognition=null;
 let _voiceActive=false;
 // iPad/iPhone判定（iPad ProはUAがMacintoshに偽装されるためmaxTouchPointsで補完）
 const _isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+// iOS上のChrome/Firefox等はSpeech API非対応（CriOS=Chrome, FxiOS=Firefox）
+const _isIOSNonSafari=_isIOS&&(/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent));
 function _voiceErrMsg(code){
   if(code==='not-allowed')return 'マイクの使用が許可されていません。設定アプリ→Safari→マイクを確認してください';
   if(code==='network')return 'ネットワークエラー。インターネット接続を確認してください';
@@ -8846,9 +8849,8 @@ function _voiceErrMsg(code){
   return '音声認識エラー: '+code;
 }
 function startVoice(targetId,btn){
-  if(_isIOS&&location.protocol!=='https:'){
-    toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;
-  }
+  if(_isIOSNonSafari){toast('iPadのChromeでは音声入力ができません。SafariでURL（village-aura.github.io）を開くか、キーボードの🎤ボタンをお使いください');return;}
+  if(_isIOS&&location.protocol!=='https:'){toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;}
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     toast('このブラウザは音声入力に対応していません');return;
   }
@@ -11363,6 +11365,7 @@ function closeFsDictationPanel(){
   if(btn){btn.textContent='🎤 まとめて音声入力';btn.style.background='';btn.style.borderColor='';btn.style.color='';}
 }
 function startVoiceContinuous(targetId, onEnd){
+  if(_isIOSNonSafari){toast('iPadのChromeでは音声入力ができません。SafariでURL（village-aura.github.io）を開くか、キーボードの🎤ボタンをお使いください');return;}
   if(_isIOS&&location.protocol!=='https:'){toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;}
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     toast('このブラウザは音声入力に対応していません');return;
