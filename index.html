@@ -8734,8 +8734,8 @@ function startVoiceSmart(type){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();
     recognition.lang='ja-JP';
-    recognition.continuous=!_isIOS;
-    recognition.interimResults=!_isIOS;
+    recognition.continuous=true;
+    recognition.interimResults=true;
     recognition.onresult=e=>{
       const cur=[...e.results].map(r=>r[0].transcript).join('');
       finalText=accum+cur;
@@ -8864,8 +8864,8 @@ function startVoice(targetId,btn){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();
     recognition.lang='ja-JP';
-    recognition.continuous=!_isIOS;   // iOSはcontinuous非対応
-    recognition.interimResults=!_isIOS;
+    recognition.continuous=true;
+    recognition.interimResults=true;
     recognition.onresult=e=>{
       const t=[...e.results].map(r=>r[0].transcript).join('');
       const el=document.getElementById(targetId);if(el)el.value=accum+t;
@@ -11379,8 +11379,8 @@ function startVoiceContinuous(targetId, onEnd){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();
     recognition.lang='ja-JP';
-    recognition.continuous=!_isIOS;
-    recognition.interimResults=!_isIOS;
+    recognition.continuous=true;
+    recognition.interimResults=true;
     recognition.onresult=e=>{
       const t=[...e.results].map(r=>r[0].transcript).join('');
       const el=document.getElementById(targetId);if(el)el.value=accum+t;
