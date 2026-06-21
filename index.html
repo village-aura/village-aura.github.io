@@ -8745,6 +8745,7 @@ function startVoiceSmart(type){
       recognition=null;
       if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,restartDelay);return;}
       if(ev.error==='aborted'){return;}
+      if(_isIOS&&(ev.error==='service-not-allowed'||ev.error==='not-allowed')){_iosFallbackVoice(null,btn,btnOrigText);return;}
       _voiceActive=false;
       if(btn){btn.classList.remove('recording');btn.textContent=btnOrigText;}
       toast(_voiceErrMsg(ev.error));
@@ -8759,6 +8760,7 @@ function startVoiceSmart(type){
     };
     try{recognition.start();}
     catch(e){
+      if(_isIOS){_iosFallbackVoice(null,btn,btnOrigText);return;}
       _voiceActive=false;
       if(btn){btn.classList.remove('recording');btn.textContent=btnOrigText;}
       toast('音声認識を開始できませんでした。再度タップしてください');
@@ -8842,11 +8844,18 @@ const _isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==
 // iOS上のChrome/Firefox等はSpeech API非対応（CriOS=Chrome, FxiOS=Firefox）
 const _isIOSNonSafari=_isIOS&&(/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent));
 function _voiceErrMsg(code){
-  if(code==='not-allowed')return 'マイクの使用が許可されていません。設定アプリ→Safari→マイクを確認してください';
+  if(code==='not-allowed'||code==='service-not-allowed')return 'マイク許可をリセットしてください：Safari設定→プライバシー→マイク→village-aura.github.ioを「許可」に変更';
   if(code==='network')return 'ネットワークエラー。インターネット接続を確認してください';
   if(code==='audio-capture')return 'マイクが見つかりません';
-  if(code==='service-not-allowed')return '設定アプリ→「Siriと検索」→Siriをオン、または一般→キーボード→「音声入力を有効にする」をオンにしてください（両方必要な場合があります）';
   return '音声認識エラー: '+code;
+}
+// iOS向け: Web Speech APIが使えない場合にキーボード音声入力へ誘導
+function _iosFallbackVoice(targetId,btn,btnLabel){
+  _voiceActive=false;
+  if(btn){btn.classList.remove('recording');btn.textContent=btnLabel||'🎤 音声入力';}
+  const el=targetId?document.getElementById(targetId):null;
+  if(el){el.focus();}
+  toast('キーボード左下の🎤ボタンをタップして音声入力してください');
 }
 function startVoice(targetId,btn){
   if(_isIOSNonSafari){toast('iPadのChromeでは音声入力ができません。SafariでURL（village-aura.github.io）を開くか、キーボードの🎤ボタンをお使いください');return;}
@@ -8874,6 +8883,7 @@ function startVoice(targetId,btn){
       recognition=null;
       if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,restartDelay);return;}
       if(ev.error==='aborted'){return;}
+      if(_isIOS&&(ev.error==='service-not-allowed'||ev.error==='not-allowed')){_iosFallbackVoice(targetId,btn,'🎤 音声入力');return;}
       _voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤 音声入力';
       toast(_voiceErrMsg(ev.error));
     };
@@ -8887,6 +8897,7 @@ function startVoice(targetId,btn){
     };
     try{recognition.start();}
     catch(e){
+      if(_isIOS){_iosFallbackVoice(targetId,btn,'🎤 音声入力');return;}
       _voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤 音声入力';
       toast('音声認識を開始できませんでした。再度タップしてください');
     }
