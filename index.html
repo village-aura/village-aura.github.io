@@ -8712,24 +8712,29 @@ function printVisitReport(){previewReport('visit_gyomu');}
 // ═══════════ VOICE INPUT ═══════════
 // ── VOICE SMART PARSER ──
 function startVoiceSmart(type){
+  if(_isIOS&&location.protocol!=='https:'){toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;}
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){toast('このブラウザは音声入力に対応していません');return;}
   const btn=document.getElementById('vs-btn-'+type);
   if(_voiceActive){
-    stopVoice();  // _voiceActive=false → onend が applyVoiceParsed を呼ぶ
+    stopVoice();
     return;
   }
   _voiceActive=true;
   let finalText='';let accum='';
+  const restartDelay=_isIOS?700:200;
+  const btnOrigText='🎤 音声で一括入力';
   if(btn){btn.classList.add('recording');btn.textContent='🔴 認識中… もう一度タップで停止';}
   function doStart(){
     if(!_voiceActive){
-      if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
+      if(btn){btn.classList.remove('recording');btn.querySelector?.(`.vs-ex`)?.remove();btn.textContent=btnOrigText;}
       if(finalText)applyVoiceParsed(type,finalText);
       return;
     }
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();
-    recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+    recognition.lang='ja-JP';
+    recognition.continuous=!_isIOS;
+    recognition.interimResults=!_isIOS;
     recognition.onresult=e=>{
       const cur=[...e.results].map(r=>r[0].transcript).join('');
       finalText=accum+cur;
@@ -8737,20 +8742,26 @@ function startVoiceSmart(type){
     };
     recognition.onerror=ev=>{
       recognition=null;
-      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,200);return;}
+      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,restartDelay);return;}
+      if(ev.error==='aborted'){return;}
       _voiceActive=false;
-      if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
-      if(ev.error!=='aborted')toast('音声認識エラー');
+      if(btn){btn.classList.remove('recording');btn.textContent=btnOrigText;}
+      toast(_voiceErrMsg(ev.error));
     };
     recognition.onend=()=>{
       recognition=null;
-      if(_voiceActive){accum=finalText;setTimeout(doStart,200);}
+      if(_voiceActive){accum=finalText;btn.textContent='🔴 続けて話してください...';setTimeout(doStart,restartDelay);}
       else{
-        if(btn){btn.classList.remove('recording');btn.textContent='🎤 音声で一括入力';}
+        if(btn){btn.classList.remove('recording');btn.textContent=btnOrigText;}
         if(finalText)applyVoiceParsed(type,finalText);
       }
     };
-    recognition.start();
+    try{recognition.start();}
+    catch(e){
+      _voiceActive=false;
+      if(btn){btn.classList.remove('recording');btn.textContent=btnOrigText;}
+      toast('音声認識を開始できませんでした。再度タップしてください');
+    }
   }
   doStart();
 }
@@ -8825,35 +8836,58 @@ function applyVoiceParsed(type,text){
 
 let recognition=null;
 let _voiceActive=false;
+// iPad/iPhone判定（iPad ProはUAがMacintoshに偽装されるためmaxTouchPointsで補完）
+const _isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function _voiceErrMsg(code){
+  if(code==='not-allowed')return 'マイクの使用が許可されていません。設定アプリ→Safari→マイクを確認してください';
+  if(code==='network')return 'ネットワークエラー。インターネット接続を確認してください';
+  if(code==='audio-capture')return 'マイクが見つかりません';
+  if(code==='service-not-allowed')return '音声認識サービスが利用できません';
+  return '音声認識エラー: '+code;
+}
 function startVoice(targetId,btn){
+  if(_isIOS&&location.protocol!=='https:'){
+    toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;
+  }
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     toast('このブラウザは音声入力に対応していません');return;
   }
-  if(_voiceActive){stopVoice();btn.classList.remove('recording');btn.textContent='🎤 音声入力';return;}
+  if(_voiceActive){stopVoice();return;}
   _voiceActive=true;
   let accum='';
   btn.classList.add('recording');btn.textContent='🔴 録音中（タップで停止）';
+  const restartDelay=_isIOS?700:200;
   function doStart(){
     if(!_voiceActive){btn.classList.remove('recording');btn.textContent='🎤 音声入力';return;}
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();
-    recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+    recognition.lang='ja-JP';
+    recognition.continuous=!_isIOS;   // iOSはcontinuous非対応
+    recognition.interimResults=!_isIOS;
     recognition.onresult=e=>{
       const t=[...e.results].map(r=>r[0].transcript).join('');
       const el=document.getElementById(targetId);if(el)el.value=accum+t;
     };
     recognition.onerror=ev=>{
       recognition=null;
-      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,200);return;}
+      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,restartDelay);return;}
+      if(ev.error==='aborted'){return;}
       _voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤 音声入力';
-      if(ev.error!=='aborted')toast('音声認識エラー');
+      toast(_voiceErrMsg(ev.error));
     };
     recognition.onend=()=>{
       recognition=null;
-      if(_voiceActive){const el=document.getElementById(targetId);if(el)accum=el.value;setTimeout(doStart,200);}
-      else{btn.classList.remove('recording');btn.textContent='🎤 音声入力';}
+      if(_voiceActive){
+        const el=document.getElementById(targetId);if(el)accum=el.value;
+        btn.textContent='🔴 続けて話してください...';
+        setTimeout(doStart,restartDelay);
+      }else{btn.classList.remove('recording');btn.textContent='🎤 音声入力';}
     };
-    recognition.start();
+    try{recognition.start();}
+    catch(e){
+      _voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤 音声入力';
+      toast('音声認識を開始できませんでした。再度タップしてください');
+    }
   }
   doStart();
 }
@@ -11329,32 +11363,39 @@ function closeFsDictationPanel(){
   if(btn){btn.textContent='🎤 まとめて音声入力';btn.style.background='';btn.style.borderColor='';btn.style.color='';}
 }
 function startVoiceContinuous(targetId, onEnd){
+  if(_isIOS&&location.protocol!=='https:'){toast('iPadで音声入力を使うにはHTTPS接続が必要です。デモURLからアクセスしてください');return;}
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     toast('このブラウザは音声入力に対応していません');return;
   }
   if(recognition) stopVoice();
   _voiceActive=true;
   let accum='';
+  const restartDelay=_isIOS?700:200;
   function doStart(){
     if(!_voiceActive){if(onEnd)onEnd();return;}
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();
-    recognition.lang='ja-JP';recognition.continuous=true;recognition.interimResults=true;
+    recognition.lang='ja-JP';
+    recognition.continuous=!_isIOS;
+    recognition.interimResults=!_isIOS;
     recognition.onresult=e=>{
       const t=[...e.results].map(r=>r[0].transcript).join('');
       const el=document.getElementById(targetId);if(el)el.value=accum+t;
     };
     recognition.onerror=ev=>{
       recognition=null;
-      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,200);return;}
+      if(ev.error==='no-speech'&&_voiceActive){setTimeout(doStart,restartDelay);return;}
+      if(ev.error==='aborted'){return;}
       _voiceActive=false;if(onEnd)onEnd();
+      toast(_voiceErrMsg(ev.error));
     };
     recognition.onend=()=>{
       recognition=null;
-      if(_voiceActive){const el=document.getElementById(targetId);if(el)accum=el.value;setTimeout(doStart,200);}
+      if(_voiceActive){const el=document.getElementById(targetId);if(el)accum=el.value;setTimeout(doStart,restartDelay);}
       else{if(onEnd)onEnd();}
     };
-    recognition.start();
+    try{recognition.start();}
+    catch(e){_voiceActive=false;if(onEnd)onEnd();toast('音声認識を開始できませんでした。再度タップしてください');}
   }
   doStart();
 }
