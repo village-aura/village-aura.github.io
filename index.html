@@ -6691,12 +6691,13 @@ function renderDashboard(){
     if(noVital.length){
       vurRow.style.display='flex';
       document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
-      const nameList=noVital.slice(0,3).map(r=>{
+      const nameChips=noVital.slice(0,3).map(r=>{
         const lts=lastVitalTs[r.id];
         const hrsAgo=lts?Math.floor((now-new Date(lts))/3600000):null;
-        return r.name+(hrsAgo!=null?'('+hrsAgo+'h前)':'(初回)');
-      }).join('・')+(noVital.length>3?'…':'');
-      document.getElementById('alert-names').textContent=nameList;
+        const lbl=r.name+(hrsAgo!=null?`(${hrsAgo}h前)`:'(初回)');
+        return `<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#fff3e0;color:#c62828;border:1px solid #ffcc80;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${lbl}</button>`;
+      }).join('')+(noVital.length>3?`<span style="font-size:11px;color:var(--sub)">…他${noVital.length-3}名</span>`:'');
+      document.getElementById('alert-names').innerHTML=nameChips;
     } else {
       vurRow.style.display='none';
     }
@@ -6739,8 +6740,9 @@ function renderDashboard(){
     if(stoolAlerts.length){
       stoolRow.style.display='flex';
       document.getElementById('stool-alert-count').textContent='排便3日以上なし：'+stoolAlerts.length+'名';
-      document.getElementById('stool-alert-names').textContent=stoolAlerts.slice(0,3).map(r=>r.name).join('・')+(stoolAlerts.length>3?'…':'');
-      stoolRow.onclick=()=>showScr('scr-stool-alert');
+      const stoolChips=stoolAlerts.slice(0,3).map(r=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#f3e5f5;color:#7b1fa2;border:1px solid #ce93d8;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}</button>`).join('')+(stoolAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${stoolAlerts.length-3}名</span>`:'');
+      document.getElementById('stool-alert-names').innerHTML=stoolChips;
+      stoolRow.onclick=(e)=>{if(!e.target.closest('button'))showScr('scr-stool-alert');};
     } else {
       stoolRow.style.display='none';
     }
@@ -10122,7 +10124,8 @@ function renderHbList(){
     const delBtn=canDelete?(!isDoctorOrder
       ?`<button onclick="event.stopPropagation();deleteBoardHandover('${h._sec}',${h._origIdx},'${h._shift||''}')" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`
       :`<button onclick="event.stopPropagation();deleteDoctorOrder(${h._origIdx})" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`):'';
-    return `<div class="hb-card ${priClass}">
+    const cardClick=_res?`onclick="openResident('${_res.id}')" style="cursor:pointer"`:'';
+    return `<div class="hb-card ${priClass}" ${cardClick}>
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px">
         ${priBadge}${secTag}${resChip}
         <div style="margin-left:auto;display:flex;align-items:center">${editBtn}${delBtn}</div>
@@ -10132,6 +10135,7 @@ function renderHbList(){
         <span>${h.by||''}</span><span>·</span><span>${h.date?h.date+' ':''}${h.time||''}</span>
         <span>·</span><span style="color:${expiryColor}">${expiryTxt}</span>
         ${editedMark?`<span style="color:var(--sub)">${editedMark}</span>`:''}
+        ${_res?`<span style="margin-left:auto;font-size:10px;color:var(--p);font-weight:700">→ カルテ</span>`:''}
       </div>
     </div>`;
   }).join('');
