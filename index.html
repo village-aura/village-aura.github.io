@@ -646,7 +646,6 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-bulk-excretion" onclick="showScr('scr-bulk-excretion')">💧　一括排泄</button>
       <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
       <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">🚌　送迎チェック</button>
-      <button class="sbn" id="sbn-shift-checklist" onclick="showScr('scr-shift-checklist')">✅　チェックリスト</button>
       <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">👁　巡回チェック</button>
       <span class="sb-lbl">管理</span>
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
@@ -2094,24 +2093,6 @@ a{color:var(--p);text-decoration:none}
       <button id="tr-tab-in"  onclick="setTrTab('in')"  style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">🏠 帰宅</button>
     </div>
     <div id="transport-list" style="padding:0 12px 80px"></div>
-  </div>
-
-  <!-- ─── 業務チェックリスト ─── -->
-  <div id="scr-shift-checklist" class="scr">
-    <div style="padding:12px 12px 0;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:#e65100">✅ 業務チェックリスト</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:2px">シフト別の業務確認</div>
-      </div>
-      <button id="cl-edit-btn" onclick="openChecklistEdit()" style="display:none;background:var(--bg);border:1.5px solid var(--bdr);color:var(--sub);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">⚙️ 編集</button>
-    </div>
-    <div style="padding:8px 12px 4px;display:flex;gap:6px">
-      <button id="cl-shift-early"   onclick="setClShift('early')"   style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">早番</button>
-      <button id="cl-shift-day"     onclick="setClShift('day')"     style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">日勤</button>
-      <button id="cl-shift-late"    onclick="setClShift('late')"    style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">遅番</button>
-      <button id="cl-shift-night"   onclick="setClShift('night')"   style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">夜勤</button>
-    </div>
-    <div id="checklist-body" style="padding:0 12px 80px"></div>
   </div>
 
   <!-- HELP SCREEN -->
@@ -4101,7 +4082,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','shift_checklist'];
+const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records'];
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
 
@@ -4222,7 +4203,6 @@ function setupRealtimeSync(){
       if(key==='rounds_data'&&S.screen==='scr-rounds')renderRoundsList();
       if(key==='reposition_times'&&S.screen==='scr-dashboard')renderDashboard();
       if(key==='transport_records'&&S.screen==='scr-transport')renderTransport();
-      if(key==='shift_checklist'&&S.screen==='scr-shift-checklist')renderShiftChecklist();
       if(key==='monthly_goals'&&S.screen==='scr-dashboard')renderDashboard();
       if(key==='incidents'&&S.screen==='scr-incidents')renderIncidentList();
       if(key==='proposals'&&S.screen==='scr-proposal')renderProposalScr();
@@ -6002,7 +5982,7 @@ function showScr(id){
     'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
     'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理',
     'scr-bulk-vital':'一括バイタル入力','scr-bulk-meal':'一括食事・水分','scr-bulk-excretion':'一括排泄','scr-medication':'服薬チェック',
-    'scr-transport':'送迎チェック','scr-shift-checklist':'業務チェックリスト',
+    'scr-transport':'送迎チェック',
     'scr-doctor':'医師ページ'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
@@ -6014,7 +5994,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-shift-checklist':'sbn-shift-checklist','scr-doctor':'sbn-doctor'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-doctor':'sbn-doctor'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-dashboard') renderDashboard();
@@ -6038,12 +6018,11 @@ function showScr(id){
   if(id==='scr-bulk-excretion') renderBulkExcretion();
   if(id==='scr-medication') renderMedication();
   if(id==='scr-transport') renderTransport();
-  if(id==='scr-shift-checklist') renderShiftChecklist();
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-shift-checklist','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
@@ -9905,71 +9884,6 @@ function saveTransportNote(rid,date,note){
   saveTransportRecords(records);
 }
 
-// ═══════════ 業務チェックリスト ═══════════
-let _clShift='early';
-const CL_SHIFT_LABEL={early:'早番',day:'日勤',late:'遅番',night:'夜勤'};
-function getShiftChecklist(){return ls('shift_checklist')||{templates:{},records:{}};}
-function saveShiftChecklist(d){lsSet('shift_checklist',d);fsSet('shift_checklist',d);}
-function setClShift(shift){
-  _clShift=shift;
-  ['early','day','late','night'].forEach(s=>{
-    const b=document.getElementById('cl-shift-'+s);
-    if(b){b.style.background=s===shift?'var(--p)':'var(--bg)';b.style.color=s===shift?'#fff':'var(--sub)';b.style.border=s===shift?'none':'1.5px solid var(--bdr)';}
-  });
-  renderShiftChecklist();
-}
-function renderShiftChecklist(){
-  const editBtn=document.getElementById('cl-edit-btn');
-  if(editBtn)editBtn.style.display=(isAdmin()||isFacilityAdmin())?'block':'none';
-  const cl=getShiftChecklist();
-  const templates=cl.templates[_clShift]||[];
-  const today=new Date().toISOString().slice(0,10);
-  const recKey=today+'_'+_clShift;
-  const rec=cl.records[recKey]||{};
-  const el=document.getElementById('checklist-body');if(!el)return;
-  if(!templates.length){
-    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--sub)"><div style="font-size:32px;margin-bottom:8px">✅</div>${CL_SHIFT_LABEL[_clShift]}のチェックリストが未登録です${isAdmin()||isFacilityAdmin()?'<br><button onclick="openChecklistEdit()" style="margin-top:12px;background:var(--p);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">⚙️ 項目を追加する</button>':''}</div>`;
-    return;
-  }
-  const done=templates.filter(t=>rec[t.id]?.done).length;
-  el.innerHTML=`<div style="background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:10px;box-shadow:var(--sh)">
-    <div style="font-size:12px;color:var(--sub);margin-bottom:6px">${CL_SHIFT_LABEL[_clShift]} — ${today} — ${done}/${templates.length}完了</div>
-    <div style="height:6px;background:var(--bdr);border-radius:4px;overflow:hidden"><div style="height:100%;background:var(--ok);border-radius:4px;width:${templates.length?Math.round(done/templates.length*100):0}%;transition:width .3s"></div></div>
-  </div>`+templates.map(t=>{
-    const c=rec[t.id]||{};
-    return `<div onclick="toggleClItem('${t.id}','${recKey}')" style="background:var(--card);border-radius:10px;margin-bottom:6px;padding:12px 14px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;touch-action:manipulation;border-left:3px solid ${c.done?'var(--ok)':'var(--bdr)'}">
-      <div style="width:26px;height:26px;border-radius:8px;border:2px solid ${c.done?'var(--ok)':'var(--bdr)'};background:${c.done?'var(--ok)':'#fff'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0">${c.done?'✓':''}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700;color:${c.done?'var(--sub)':'var(--tx)'}${c.done?';text-decoration:line-through':''}">${t.text}</div>
-        ${c.done?`<div style="font-size:10px;color:var(--sub)">${c.by||''} ${c.time||''}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
-function toggleClItem(tid,recKey){
-  const cl=getShiftChecklist();
-  if(!cl.records[recKey])cl.records[recKey]={};
-  const cur=cl.records[recKey][tid]||{};
-  if(cur.done){
-    cl.records[recKey][tid]={done:false};
-  } else {
-    const now=new Date();
-    cl.records[recKey][tid]={done:true,by:S.user||'──',time:now.toTimeString().slice(0,5)};
-  }
-  saveShiftChecklist(cl);
-  renderShiftChecklist();
-}
-function openChecklistEdit(){
-  const cl=getShiftChecklist();
-  const templates=cl.templates[_clShift]||[];
-  const newItem=prompt(`${CL_SHIFT_LABEL[_clShift]}に追加する項目を入力:`);
-  if(!newItem||!newItem.trim())return;
-  if(!cl.templates[_clShift])cl.templates[_clShift]=[];
-  cl.templates[_clShift].push({id:'cl'+Date.now(),text:newItem.trim()});
-  saveShiftChecklist(cl);
-  renderShiftChecklist();
-}
-
 // ═══════════ 水分摂取アラート ═══════════
 function getFluidTarget(rid){
   const r=getResidents().find(x=>x.id===rid);
@@ -11876,7 +11790,6 @@ function _renderCurrentScreen(){
   else if(s==='scr-incidents')renderIncidentList();
   else if(s==='scr-rounds')renderRoundsList();
   else if(s==='scr-transport')renderTransport();
-  else if(s==='scr-shift-checklist')renderShiftChecklist();
   else if(s==='scr-doctor'){if(_drTab==='vital')renderDrVitalPane();else if(_drTab==='order')renderDrOrderPane();else renderDrIncidentPane();}
 }
 
