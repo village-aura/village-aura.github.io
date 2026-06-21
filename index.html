@@ -8845,7 +8845,7 @@ function _voiceErrMsg(code){
   if(code==='not-allowed')return 'マイクの使用が許可されていません。設定アプリ→Safari→マイクを確認してください';
   if(code==='network')return 'ネットワークエラー。インターネット接続を確認してください';
   if(code==='audio-capture')return 'マイクが見つかりません';
-  if(code==='service-not-allowed')return '音声認識サービスが利用できません';
+  if(code==='service-not-allowed')return '設定アプリ→一般→キーボード→「音声入力を有効にする」をオンにしてください';
   return '音声認識エラー: '+code;
 }
 function startVoice(targetId,btn){
