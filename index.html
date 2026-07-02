@@ -4352,7 +4352,8 @@ async function login(){
   }
   // ── Wi-Fi制限チェック ──
   const ws=getWifiSettings();
-  if(ws.enabled&&ws.allowedIPs.length>0){
+  // 管理者はWi-Fi制限の対象外
+  if(ws.enabled&&ws.allowedIPs.length>0&&!STAFF_INFO[staffKey]?.admin){
     if(btnEl)btnEl.textContent='確認中…';
     const ip=await fetchCurrentIP();
     if(btnEl)btnEl.textContent='ログイン';
