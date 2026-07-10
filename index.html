@@ -4112,6 +4112,7 @@ function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
 function isSuperAdminRole(){return S.userRole==='super_admin'||S.userRole==='super_admin_doctor';}
 function isFacilityAdmin(){return !!(S.userRole?.startsWith('facility_manager_'));}
+function isManagerOrAbove(){return isSuperAdminRole()||isFacilityAdmin()||isAdmin();}
 function getManagedFacility(){
   if(!isFacilityAdmin())return null;
   return S.userRole.replace('facility_manager_','');
@@ -5362,9 +5363,10 @@ function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
   const isSuperAdmin=isSuperAdminRole();
-  const roleOptions=Object.entries(ROLE_COLORS).map(([r,v])=>
-    '<option value="'+r+'">'+v.label+'</option>'
-  ).join('');
+  const roleOptions=Object.entries(ROLE_COLORS)
+    .filter(([r])=>isSuperAdminRole()||!STAFF_ADMIN_ROLES.includes(r))
+    .map(([r,v])=>'<option value="'+r+'">'+v.label+'</option>')
+    .join('');
   const allEntries=[
     ...Object.entries(STAFF_INFO).filter(([,s])=>!s.hidden),
     ...Object.entries(getCustomStaff())
@@ -5519,10 +5521,14 @@ function adminSetPassword(key){
   toast(getStaffInfo(key)?.name||'不明'+' のパスワードを変更しました ✓（次回ログイン時に反映）');
 }
 function adminSetRole(key){
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
   const sel=document.getElementById('adm-role-'+key);
   if(!sel)return;
   const newRole=sel.value;
   if(!newRole){toast('ロールを選択してください');return;}
+  if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(newRole)){
+    toast('全権管理者・管理者ロールへの変更は全権管理者のみ実行できます');return;
+  }
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].role=newRole;
@@ -5659,12 +5665,13 @@ function toggleWifiRestriction(on){
   toast('Wi-Fi制限を'+(on?'有効':'無効')+'にしました');
 }
 async function addAllowedIP(){
+  if(!isSuperAdminRole()){toast('IPアドレス設定は全権管理者のみ実行できます');return;}
   const val=document.getElementById('new-ip-input').value.trim();
   if(!val){toast('IPアドレスを入力してください');return;}
   const s=getWifiSettings();
-  // 初回登録（リストが空）は管理者のみ
-  if(s.allowedIPs.length===0&&!isAdmin()){
-    toast('⚠️ 初回のIP登録は管理者のみ操作できます');
+  // 初回登録（リストが空）は全権管理者のみ
+  if(s.allowedIPs.length===0&&!isSuperAdminRole()){
+    toast('⚠️ 初回のIP登録は全権管理者のみ操作できます');
     return;
   }
   // 許可リストが空でない場合、現在地が許可済みIPでないとIP追加を拒否
@@ -5684,15 +5691,16 @@ async function addAllowedIP(){
   toast('IPを追加しました ✓');
 }
 async function addCurrentIP(){
+  if(!isSuperAdminRole()){toast('IPアドレス設定は全権管理者のみ実行できます');return;}
   const btn=document.querySelector('[onclick="addCurrentIP()"]');
   if(btn)btn.textContent='取得中…';
   const ip=await fetchCurrentIP();
   if(btn)btn.textContent='📍 現在地のIPを今すぐ登録';
   if(!ip){toast('IPアドレスを取得できませんでした。ネットワークを確認してください');return;}
   const s=getWifiSettings();
-  // 初回登録（リストが空）は管理者のみ
-  if(s.allowedIPs.length===0&&!isAdmin()){
-    toast('⚠️ 初回のIP登録は管理者のみ操作できます');
+  // 初回登録（リストが空）は全権管理者のみ
+  if(s.allowedIPs.length===0&&!isSuperAdminRole()){
+    toast('⚠️ 初回のIP登録は全権管理者のみ操作できます');
     return;
   }
   // 許可リストが空でない場合、現在地が許可済みIPでないとIP変更を拒否
@@ -5723,6 +5731,7 @@ async function addCurrentIP(){
   }
 }
 function removeAllowedIP(ip){
+  if(!isSuperAdminRole()){toast('IPアドレス設定は全権管理者のみ実行できます');return;}
   const s=getWifiSettings();
   s.allowedIPs=s.allowedIPs.filter(x=>x!==ip);
   saveWifiSettings(s);
@@ -5989,7 +5998,7 @@ function toggleAuditLog(){
 }
 // ── データエクスポート ──
 function exportData(){
-  if(!isAdmin()){toast('管理者のみ実行できます');return;}
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
   const data={
     exportedAt:new Date().toISOString(),
     exportedBy:S.user,
@@ -6034,6 +6043,7 @@ async function uploadBackupToFirestore(data){
 }
 
 async function restoreFromFirestoreBackup(){
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
   if(!fbReady||!db){toast('Firebase未接続のため復元できません');return;}
   if(!confirm('Firestoreのバックアップから復元しますか？\n現在のデータは上書きされます。')){return;}
   try{
@@ -6052,7 +6062,7 @@ async function restoreFromFirestoreBackup(){
   }catch(e){toast('復元に失敗しました: '+e.message);}
 }
 function importData(input){
-  if(!isAdmin()){toast('管理者のみ実行できます');return;}
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
   const file=input.files[0];
   if(!file){return;}
   input.value='';
@@ -6684,7 +6694,7 @@ function renderDrIncidentPane(){
       <div style="font-size:13px;color:var(--txt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${inc.detail||''}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
         <span style="font-size:10px;color:var(--sub)">報告: ${inc.by||'──'} · ${INC_LOC_LABEL[inc.location]||''}</span>
-        ${inc.reviewed?'<span style="font-size:10px;color:var(--ok);font-weight:700">✓ 確認済</span>':(isAdmin()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}');renderDrIncidentPane()" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">確認済にする</button>`:'<span style="font-size:10px;color:var(--warn);font-weight:700">未確認</span>')}
+        ${inc.reviewed?'<span style="font-size:10px;color:var(--ok);font-weight:700">✓ 確認済</span>':(isManagerOrAbove()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}');renderDrIncidentPane()" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">確認済にする</button>`:'<span style="font-size:10px;color:var(--warn);font-weight:700">未確認</span>')}
       </div>
     </div>`;
   }).join('');
@@ -7537,7 +7547,7 @@ function changeTlDate(delta){
 }
 function deleteTimelineRecord(id){
   const rec=getRecords().find(r=>r.id===id);
-  if(rec&&!isAdmin()){
+  if(rec&&!isManagerOrAbove()){
     const recOwner=rec.staffName||(STAFF_INFO[rec.staffId]?.name)||null;
     if(recOwner&&recOwner!==S.user){toast('削除できるのは記録者と管理者のみです');return;}
   }
@@ -12736,7 +12746,7 @@ function renderIncidentList(){
       <div style="font-size:13px;color:var(--txt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${inc.detail}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
         <span style="font-size:11px;color:var(--sub)">${inc.by} · ${INC_LOC_LABEL[inc.location]||''}</span>
-        ${!inc.reviewed&&isAdmin()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer">確認済にする</button>`:''}
+        ${!inc.reviewed&&isManagerOrAbove()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer">確認済にする</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -12759,12 +12769,13 @@ function openIncidentDetail(id){
     (inc.prevention?`<div style="margin-top:6px"><b>🔄 再発防止：</b>${escHtml(inc.prevention)}</div>`:'')+
     (inc.witness?`<div style="margin-top:6px"><b>👥 立会：</b>${escHtml(inc.witness)}</div>`:'')+
     `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">`+
-    (isAdmin()&&!inc.reviewed?`<button onclick="event.stopPropagation();reviewIncident('${id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;border:none;cursor:pointer">✓ 確認済にする</button>`:'')+
+    (isManagerOrAbove()&&!inc.reviewed?`<button onclick="event.stopPropagation();reviewIncident('${id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;border:none;cursor:pointer">✓ 確認済にする</button>`:'')+
     `<button onclick="event.stopPropagation();openIncidentModal('${id}')" style="font-size:11px;background:var(--bg);color:var(--p);border:1px solid var(--p);border-radius:6px;padding:4px 12px;font-weight:700;cursor:pointer">✏️ 編集</button></div>`;
   card.appendChild(panel);
 }
 
 function reviewIncident(id){
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
   const incidents=getIncidents();
   const idx=incidents.findIndex(i=>i.id===id);
   if(idx<0)return;
