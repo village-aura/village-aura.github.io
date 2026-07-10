@@ -998,7 +998,20 @@ a{color:var(--p);text-decoration:none}
       <div class="card" style="margin:0 0 12px;font-size:13px;color:var(--sub);line-height:1.7">
         <div style="font-weight:700;color:var(--txt);margin-bottom:6px">📌 CSVフォーマット（利用者）</div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:11px;overflow-x:auto;white-space:pre">name,name_kana,gender,birth_date,care_level,room,service_types,facility
-山田 花子,ヤマダ ハナコ,female,1943-05-12,care2,101,"resident,commute",かしわじま</code>
+山田 花子,ヤマダ ハナコ,female,1935-04-19,care2,101,"resident,commute",サ高住</code>
+        <div style="font-weight:700;color:var(--txt);margin:10px 0 6px">📌 CSVフォーマット（職員） — role列があると職員として取込</div>
+        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:11px;overflow-x:auto;white-space:pre">name,name_kana,role,jigyousho,password
+田中 花子,タナカ ハナコ,care,サ高住,aura01</code>
+        <div style="margin-top:6px;font-size:11px">role値: care / nurse / home_care / medical_office / facility_manager_resident / facility_manager_commute / facility_manager_stay</div>
+      </div>
+      <div class="card" style="margin:0 0 12px">
+        <div style="font-weight:700;color:var(--txt);margin-bottom:8px">📋 フェイスシートJSON一括インポート</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">convert_facesheet.py が出力した facesheet_import.json を選択してください</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="file" id="fs-json-inp" accept=".json" style="display:none" onchange="handleFacesheetJSON(this)">
+          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONファイルを選択</button>
+          <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
+        </div>
       </div>
       <div id="csv-preview" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -9058,6 +9071,7 @@ function parseCSV(text){
 function importCSV(){
   if(!S.csvData)return;
   const {headers,rows}=S.csvData;
+  if(headers.includes('role')){importStaffCSV(headers,rows);return;}
   const i=n=>headers.indexOf(n);
   const existing=getResidents();
   const added=[];
@@ -9065,14 +9079,18 @@ function importCSV(){
     const name=i('name')>=0?r[i('name')]:'';
     if(!name)return;
     if(existing.find(e=>e.name===name)){return;}
+    const birthStr=i('birth_date')>=0?r[i('birth_date')]:'';
+    let age=0;
+    if(birthStr){try{age=Math.floor((Date.now()-new Date(birthStr))/(365.25*24*3600*1000));}catch(e){}}
     added.push({
       id:'r'+Date.now()+Math.random(),
       name,kana:i('name_kana')>=0?r[i('name_kana')]:'',
       gender:i('gender')>=0?r[i('gender')]:'female',
-      age:0,care:i('care_level')>=0?r[i('care_level')]:'care1',
+      birthDate:birthStr,age,
+      care:i('care_level')>=0?r[i('care_level')]:'care1',
       room:i('room')>=0?r[i('room')]:'',
       services:i('service_types')>=0?r[i('service_types')].split(',').map(s=>s.trim()):['resident'],
-      facility:i('facility')>=0?r[i('facility')]:'かしわじま',
+      facility:i('facility')>=0?r[i('facility')]:'サ高住',
       allergy:i('allergies')>=0?r[i('allergies')]:''
     });
   });
@@ -9081,6 +9099,60 @@ function importCSV(){
   toast(`${added.length}名をインポートしました ✓`);
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
+}
+function importStaffCSV(headers,rows){
+  const i=n=>headers.indexOf(n);
+  const cs=getCustomStaff();const ss=getStaffSettings();
+  let added=0,skipped=0;
+  rows.forEach(r=>{
+    const name=(i('name')>=0?r[i('name')]:'').trim();
+    if(!name)return;
+    const pass=(i('password')>=0?r[i('password')]:'aura01').trim();
+    const role=i('role')>=0?r[i('role')].trim():'care';
+    const loginId=getNextStaffLoginId();
+    const key='cs'+Date.now()+Math.random();
+    const kana=(i('name_kana')>=0?r[i('name_kana')]:'').trim();
+    const jigyousho=(i('jigyousho')>=0?r[i('jigyousho')]:'サ高住').trim();
+    cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
+    ss[key]={pass,loginId};
+    added++;
+  });
+  if(!added){toast('新しい職員データがありません');return;}
+  saveCustomStaff(cs);saveStaffSettings(ss);
+  toast(`${added}名の職員をインポートしました ✓`);
+  document.getElementById('csv-preview').style.display='none';
+  S.csvData=null;
+}
+function handleFacesheetJSON(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      importFacesheetJSON(data);
+    }catch(ex){toast('JSONファイルの読み込みに失敗しました: '+ex.message);}
+  };
+  r.readAsText(f,'UTF-8');
+}
+function importFacesheetJSON(data){
+  // data = { '利用者001': { address, tel, contacts, ... }, ... }
+  const residents=getResidents();
+  let count=0;
+  Object.entries(data).forEach(([resNo,fs])=>{
+    const res=residents.find(r=>r.name===resNo);
+    if(!res)return;
+    const prev=getFacesheet(res.id)||{};
+    lsFsSet(res.id,{...prev,...fs,updatedAt:new Date().toISOString()});
+    count++;
+  });
+  if(!count){
+    const statusEl=document.getElementById('fs-json-status');
+    if(statusEl)statusEl.textContent='⚠ 一致する利用者が見つかりません（先にCSVで利用者を登録してください）';
+    return;
+  }
+  const statusEl=document.getElementById('fs-json-status');
+  if(statusEl)statusEl.textContent=`✓ ${count}名分のフェイスシートをインポートしました`;
+  toast(`${count}名分のフェイスシートをインポートしました ✓`);
 }
 function addManualResident(){
   const sei=document.getElementById('m-sei').value.trim();
