@@ -985,40 +985,66 @@ a{color:var(--p);text-decoration:none}
   <!-- ─── IMPORT ─── -->
   <div id="scr-import" class="scr">
     <div class="tab-bar">
-      <button class="tab on" data-tab="tab-csv" onclick="switchTab(this)">CSV / Excel 取込</button>
-      <button class="tab" data-tab="tab-manual" onclick="switchTab(this)">手入力</button>
+      <button class="tab on" data-tab="tab-res-import" onclick="switchTab(this)">👤 利用者取込</button>
+      <button class="tab" data-tab="tab-staff-import" onclick="switchTab(this)">🏥 職員取込</button>
+      <button class="tab" data-tab="tab-manual" onclick="switchTab(this)">✏️ 手入力</button>
     </div>
-    <div id="tab-csv" class="tab-panel on">
+
+    <!-- ─── 利用者取込 ─── -->
+    <div id="tab-res-import" class="tab-panel on">
       <div class="upload-area" id="upload-area" onclick="document.getElementById('file-inp').click()" ondragover="dragOver(event)" ondrop="dropFile(event)">
-        <span class="up-ico">📂</span>
-        <div class="up-txt">ファイルをタップして選択</div>
-        <div class="up-sub">CSV (UTF-8 / Shift-JIS) または Excel (.xlsx) に対応</div>
-        <input type="file" id="file-inp" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile(this)">
+        <span class="up-ico">👤</span>
+        <div class="up-txt">利用者CSVを選択</div>
+        <div class="up-sub">テンプレ: 利用者インポート_テンプレ.csv</div>
+        <input type="file" id="file-inp" accept=".csv" style="display:none" onchange="handleFile(this)">
       </div>
-      <div class="card" style="margin:0 0 12px;font-size:13px;color:var(--sub);line-height:1.7">
-        <div style="font-weight:700;color:var(--txt);margin-bottom:6px">📌 CSVフォーマット（利用者）</div>
-        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:11px;overflow-x:auto;white-space:pre">name,name_kana,gender,birth_date,care_level,room,service_types,facility
+      <div id="csv-preview" style="display:none;margin-top:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <b id="csv-count"></b>
+          <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="importCSV()">利用者をインポート</button>
+        </div>
+        <div class="preview-wrap"><table class="preview-table" id="preview-table"></table></div>
+      </div>
+      <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
+        <div style="font-weight:700;font-size:12px;color:var(--sub);margin-bottom:6px">📌 CSVフォーマット</div>
+        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">name,name_kana,gender,birth_date,care_level,room,service_types,facility
 山田 花子,ヤマダ ハナコ,female,1935-04-19,care2,101,"resident,commute",サ高住</code>
-        <div style="font-weight:700;color:var(--txt);margin:10px 0 6px">📌 CSVフォーマット（職員） — role列があると職員として取込</div>
-        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:11px;overflow-x:auto;white-space:pre">name,name_kana,role,jigyousho,password
-田中 花子,タナカ ハナコ,care,サ高住,aura01</code>
-        <div style="margin-top:6px;font-size:11px">role値: care / nurse / home_care / medical_office / facility_manager_resident / facility_manager_commute / facility_manager_stay</div>
       </div>
-      <div class="card" style="margin:0 0 12px">
-        <div style="font-weight:700;color:var(--txt);margin-bottom:8px">📋 フェイスシートJSON一括インポート</div>
-        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">convert_facesheet.py が出力した facesheet_import.json を選択してください</div>
+      <div style="margin-top:10px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
+        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:6px">📋 フェイスシートJSON一括インポート</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">convert_facesheet.py が出力した facesheet_import.json を選択</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input type="file" id="fs-json-inp" accept=".json" style="display:none" onchange="handleFacesheetJSON(this)">
-          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONファイルを選択</button>
+          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONを選択</button>
           <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
         </div>
       </div>
-      <div id="csv-preview" style="display:none">
+    </div>
+
+    <!-- ─── 職員取込 ─── -->
+    <div id="tab-staff-import" class="tab-panel">
+      <div class="upload-area" id="upload-area-staff" onclick="document.getElementById('file-inp-staff').click()" ondragover="dragOverStaff(event)" ondrop="dropFileStaff(event)">
+        <span class="up-ico">🏥</span>
+        <div class="up-txt">職員CSVを選択</div>
+        <div class="up-sub">テンプレ: 従業員インポート_テンプレ.csv</div>
+        <input type="file" id="file-inp-staff" accept=".csv" style="display:none" onchange="handleStaffFile(this)">
+      </div>
+      <div id="staff-csv-preview" style="display:none;margin-top:10px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <b id="csv-count"></b>
-          <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="importCSV()">インポート</button>
+          <b id="staff-csv-count"></b>
+          <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="importStaffCSVFromPreview()">職員をインポート</button>
         </div>
-        <div class="preview-wrap"><table class="preview-table" id="preview-table"></table></div>
+        <div class="preview-wrap"><table class="preview-table" id="staff-preview-table"></table></div>
+      </div>
+      <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
+        <div style="font-weight:700;font-size:12px;color:var(--sub);margin-bottom:6px">📌 CSVフォーマット</div>
+        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">name,name_kana,role,jigyousho,password
+田中 花子,タナカ ハナコ,care,サ高住,aura01</code>
+        <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.8">
+          role値:<br>
+          care（介護職員）/ nurse（看護師）/ home_care（居宅）/ medical_office（医療事務）<br>
+          facility_manager_resident / facility_manager_commute / facility_manager_stay
+        </div>
       </div>
     </div>
     <div id="tab-manual" class="tab-panel">
@@ -9073,7 +9099,6 @@ function parseCSV(text){
 function importCSV(){
   if(!S.csvData)return;
   const {headers,rows}=S.csvData;
-  if(headers.includes('role')){importStaffCSV(headers,rows);return;}
   const i=n=>headers.indexOf(n);
   const existing=getResidents();
   const added=[];
@@ -9102,10 +9127,44 @@ function importCSV(){
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
 }
+function handleStaffFile(inp){
+  const f=inp.files[0];if(!f)return;
+  if(!f.name.endsWith('.csv')){toast('CSVファイルを選択してください');return;}
+  const r=new FileReader();
+  r.onload=e=>{
+    const raw=e.target.result;
+    const text=raw.includes('?')?new TextDecoder('shift-jis').decode(new Uint8Array(e.target.result)):raw;
+    parseStaffCSV(text);
+  };
+  r.readAsText(f,'UTF-8');
+}
+function dragOverStaff(e){e.preventDefault();document.getElementById('upload-area-staff').classList.add('drag');}
+function dropFileStaff(e){
+  e.preventDefault();document.getElementById('upload-area-staff').classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){const inp=document.getElementById('file-inp-staff');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleStaffFile(inp);}
+}
+function parseStaffCSV(text){
+  const lines=text.trim().split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+  const headers=lines[0];const rows=lines.slice(1).filter(r=>r.some(c=>c));
+  S.staffCsvData={headers,rows};
+  document.getElementById('staff-csv-count').innerHTML=`<b>${rows.length} 名の職員データが見つかりました</b>`;
+  const th=headers.map(h=>`<th>${h}</th>`).join('');
+  const tbody=rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+  document.getElementById('staff-preview-table').innerHTML=`<thead><tr>${th}</tr></thead><tbody>${tbody}</tbody>`;
+  document.getElementById('staff-csv-preview').style.display='block';
+}
+function importStaffCSVFromPreview(){
+  if(!S.staffCsvData)return;
+  const {headers,rows}=S.staffCsvData;
+  importStaffCSV(headers,rows);
+  document.getElementById('staff-csv-preview').style.display='none';
+  S.staffCsvData=null;
+}
 function importStaffCSV(headers,rows){
   const i=n=>headers.indexOf(n);
   const cs=getCustomStaff();const ss=getStaffSettings();
-  let added=0,skipped=0;
+  let added=0;
   rows.forEach(r=>{
     const name=(i('name')>=0?r[i('name')]:'').trim();
     if(!name)return;
@@ -9121,9 +9180,8 @@ function importStaffCSV(headers,rows){
   });
   if(!added){toast('新しい職員データがありません');return;}
   saveCustomStaff(cs);saveStaffSettings(ss);
+  addAuditLog('職員一括登録',added+'名');
   toast(`${added}名の職員をインポートしました ✓`);
-  document.getElementById('csv-preview').style.display='none';
-  S.csvData=null;
 }
 function handleFacesheetJSON(inp){
   const f=inp.files[0];if(!f)return;
