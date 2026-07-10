@@ -994,9 +994,9 @@ a{color:var(--p);text-decoration:none}
     <div id="tab-res-import" class="tab-panel on">
       <div class="upload-area" id="upload-area" onclick="document.getElementById('file-inp').click()" ondragover="dragOver(event)" ondrop="dropFile(event)">
         <span class="up-ico">👤</span>
-        <div class="up-txt">利用者CSVを選択</div>
-        <div class="up-sub">テンプレ: 利用者インポート_テンプレ.csv</div>
-        <input type="file" id="file-inp" accept=".csv" style="display:none" onchange="handleFile(this)">
+        <div class="up-txt">利用者Excelを選択</div>
+        <div class="up-sub">Excel (.xlsx) または CSV に対応</div>
+        <input type="file" id="file-inp" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile(this)">
       </div>
       <div id="csv-preview" style="display:none;margin-top:10px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -1008,10 +1008,10 @@ a{color:var(--p);text-decoration:none}
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
-          <button onclick="downloadResCsvTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
+          <button onclick="downloadResExcelTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
         </div>
-        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">name,name_kana,gender,birth_date,care_level,room,service_types,facility
-山田 花子,ヤマダ ハナコ,female,1935-04-19,care2,101,"resident,commute",サ高住</code>
+        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">氏名, ふりがな, 性別, 生年月日, 要介護度, 居室, サービス種別, 事業所
+山田 花子, ヤマダ ハナコ, 女性, 1935/04/19, 要介護2, 101, 居住, サ高住</code>
       </div>
       <div style="margin-top:10px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
         <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:6px">📋 フェイスシートJSON一括インポート</div>
@@ -1028,9 +1028,9 @@ a{color:var(--p);text-decoration:none}
     <div id="tab-staff-import" class="tab-panel">
       <div class="upload-area" id="upload-area-staff" onclick="document.getElementById('file-inp-staff').click()" ondragover="dragOverStaff(event)" ondrop="dropFileStaff(event)">
         <span class="up-ico">🏥</span>
-        <div class="up-txt">職員CSVを選択</div>
-        <div class="up-sub">テンプレ: 従業員インポート_テンプレ.csv</div>
-        <input type="file" id="file-inp-staff" accept=".csv" style="display:none" onchange="handleStaffFile(this)">
+        <div class="up-txt">職員Excelを選択</div>
+        <div class="up-sub">Excel (.xlsx) または CSV に対応</div>
+        <input type="file" id="file-inp-staff" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleStaffFile(this)">
       </div>
       <div id="staff-csv-preview" style="display:none;margin-top:10px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -1042,14 +1042,14 @@ a{color:var(--p);text-decoration:none}
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
-          <button onclick="downloadStaffCsvTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
+          <button onclick="downloadStaffExcelTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
         </div>
-        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">name,name_kana,role,jigyousho,password
-田中 花子,タナカ ハナコ,care,サ高住,aura01</code>
+        <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">氏名, ふりがな, 職種, 事業所
+田中 花子, タナカ ハナコ, 介護職, サ高住</code>
         <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.8">
-          role値:<br>
-          care（介護職員）/ nurse（看護師）/ home_care（居宅）/ medical_office（医療事務）<br>
-          facility_manager_resident / facility_manager_commute / facility_manager_stay
+          職種: 全権管理者 / 医師 / 管理者 / 管理者補佐 / 介護職 / 看護職 / 事務<br>
+          事業所: 法人 / サ高住 / デイ / 小多機 / 訪問介護 / 訪問看護<br>
+          ※ パスワードは自動割り当て（登録後に本人が変更）
         </div>
       </div>
     </div>
@@ -9073,17 +9073,82 @@ function selectCatBtn(btn, selectId){
 }
 
 // ═══════════ CSV IMPORT ═══════════
+// ─── インポート定数 ───────────────────────────────────────
+const RES_COL={'氏名':'name','ふりがな':'name_kana','性別':'gender','生年月日':'birth_date',
+  '要介護度':'care_level','居室':'room','サービス種別':'service_types','事業所':'facility','アレルギー':'allergies',
+  'name':'name','name_kana':'name_kana','gender':'gender','birth_date':'birth_date',
+  'care_level':'care_level','room':'room','service_types':'service_types','facility':'facility','allergies':'allergies'};
+const GENDER_DISP={'女性':'female','男性':'male','female':'female','male':'male'};
+const CARE_DISP={'自立':'none','要支援1':'support1','要支援2':'support2',
+  '要介護1':'care1','要介護2':'care2','要介護3':'care3','要介護4':'care4','要介護5':'care5',
+  'none':'none','support1':'support1','support2':'support2',
+  'care1':'care1','care2':'care2','care3':'care3','care4':'care4','care5':'care5'};
+const SVC_DISP={'居住':'resident','デイ（通所）':'commute','デイ':'commute','通所':'commute',
+  '小多機':'stay','訪問':'visit','訪問看護':'nursing',
+  'resident':'resident','commute':'commute','stay':'stay','visit':'visit','nursing':'nursing'};
+const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho',
+  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password'};
+const ROLE_DISP={'全権管理者':'super_admin','医師':'doctor','管理者':'facility_manager_resident',
+  '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
+  'super_admin':'super_admin','doctor':'doctor','care':'care','nurse':'nurse','medical_office':'medical_office',
+  'home_care':'home_care','facility_manager_resident':'facility_manager_resident',
+  'facility_manager_commute':'facility_manager_commute','facility_manager_stay':'facility_manager_stay'};
+const JIGYOUSHO_DISP={'デイ':'デイサービス'};
+
+// ─── SheetJS ────────────────────────────────────────────
+let _xlsxLoading=null;
+function loadSheetJS(){
+  if(window.XLSX)return Promise.resolve(window.XLSX);
+  if(_xlsxLoading)return _xlsxLoading;
+  _xlsxLoading=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=()=>res(window.XLSX);
+    s.onerror=()=>rej(new Error('SheetJS load failed'));
+    document.head.appendChild(s);
+  });
+  return _xlsxLoading;
+}
+function generatePassword(){
+  const c='abcdefghjkmnpqrstuvwxyz23456789';
+  return 'aura'+Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join('');
+}
+
+// ─── ファイルハンドラ（利用者） ───────────────────────────
 function handleFile(inp){
   const f=inp.files[0];if(!f)return;
-  if(f.name.endsWith('.csv')){
+  if(f.name.match(/\.xlsx?$/i)){
+    toast('Excelを読み込み中...');
+    loadSheetJS().then(XLSX=>{
+      const r=new FileReader();
+      r.onload=e=>{
+        const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'YYYY-MM-DD'});
+        const headers=(data[0]||[]).map(h=>String(h||'').trim());
+        const rows=data.slice(1).filter(r=>r.some(c=>c!=null&&String(c).trim()!==''));
+        showResPreview(headers,rows);
+      };
+      r.readAsArrayBuffer(f);
+    }).catch(()=>toast('Excelの読み込みに失敗しました（オンライン環境が必要です）'));
+  }else{
     const r=new FileReader();
     r.onload=e=>{
       const raw=e.target.result;
       const text=raw.includes('�')?new TextDecoder('shift-jis').decode(new Uint8Array(e.target.result)):raw;
-      parseCSV(text);
+      const lines=text.trim().split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+      showResPreview(lines[0],lines.slice(1).filter(r=>r.some(c=>c)));
     };
     r.readAsText(f,'UTF-8');
-  }else{toast('CSVファイルを選択してください（.xlsx は本番版で対応予定）');}
+  }
+}
+function showResPreview(headers,rows){
+  S.csvData={headers,rows};
+  document.getElementById('csv-count').innerHTML=`<b>${rows.length} 件のデータが見つかりました</b>`;
+  const th=headers.map(h=>`<th>${h}</th>`).join('');
+  const tbody=rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join('');
+  document.getElementById('preview-table').innerHTML=`<thead><tr>${th}</tr></thead><tbody>${tbody}</tbody>`;
+  document.getElementById('csv-preview').style.display='block';
 }
 function dragOver(e){e.preventDefault();document.getElementById('upload-area').classList.add('drag');}
 function dropFile(e){
@@ -9091,39 +9156,35 @@ function dropFile(e){
   const f=e.dataTransfer.files[0];
   if(f){const inp=document.getElementById('file-inp');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleFile(inp);}
 }
-function parseCSV(text){
-  const lines=text.trim().split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
-  const headers=lines[0];const rows=lines.slice(1).filter(r=>r.some(c=>c));
-  S.csvData={headers,rows};
-  document.getElementById('csv-count').innerHTML=`<b>${rows.length} 件のデータが見つかりました</b>`;
-  const th=headers.map(h=>`<th>${h}</th>`).join('');
-  const tbody=rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
-  document.getElementById('preview-table').innerHTML=`<thead><tr>${th}</tr></thead><tbody>${tbody}</tbody>`;
-  document.getElementById('csv-preview').style.display='block';
-}
 function importCSV(){
   if(!S.csvData)return;
   const {headers,rows}=S.csvData;
-  const i=n=>headers.indexOf(n);
+  const norm=h=>RES_COL[h]||h;
+  const normed=headers.map(norm);
+  const i=n=>normed.indexOf(n);
   const existing=getResidents();
   const added=[];
   rows.forEach(r=>{
-    const name=i('name')>=0?r[i('name')]:'';
+    const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    if(existing.find(e=>e.name===name)){return;}
-    const birthStr=i('birth_date')>=0?r[i('birth_date')]:'';
+    if(existing.find(e=>e.name===name))return;
+    const birthStr=(i('birth_date')>=0?String(r[i('birth_date')]||''):'').replace(/\//g,'-');
     let age=0;
-    if(birthStr){try{age=Math.floor((Date.now()-new Date(birthStr))/(365.25*24*3600*1000));}catch(e){}}
+    if(birthStr)try{age=Math.floor((Date.now()-new Date(birthStr))/(365.25*24*3600*1000));}catch(e){}
+    const gRaw=(i('gender')>=0?String(r[i('gender')]||''):'').trim();
+    const cRaw=(i('care_level')>=0?String(r[i('care_level')]||''):'').trim();
+    const sRaw=(i('service_types')>=0?String(r[i('service_types')]||''):'').trim();
+    const svcs=sRaw?sRaw.split(/[,、]/).map(s=>SVC_DISP[s.trim()]||s.trim()).filter(Boolean):['resident'];
+    const jRaw=(i('facility')>=0?String(r[i('facility')]||''):'').trim();
     added.push({
       id:'r'+Date.now()+Math.random(),
-      name,kana:i('name_kana')>=0?r[i('name_kana')]:'',
-      gender:i('gender')>=0?r[i('gender')]:'female',
-      birthDate:birthStr,age,
-      care:i('care_level')>=0?r[i('care_level')]:'care1',
-      room:i('room')>=0?r[i('room')]:'',
-      services:i('service_types')>=0?r[i('service_types')].split(',').map(s=>s.trim()):['resident'],
-      facility:i('facility')>=0?r[i('facility')]:'サ高住',
-      allergy:i('allergies')>=0?r[i('allergies')]:''
+      name,kana:(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim(),
+      gender:GENDER_DISP[gRaw]||'female',birthDate:birthStr,age,
+      care:CARE_DISP[cRaw]||cRaw||'care1',
+      room:(i('room')>=0?String(r[i('room')]||''):'').trim(),
+      services:svcs,
+      facility:JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住',
+      allergy:(i('allergies')>=0?String(r[i('allergies')]||''):'').trim()
     });
   });
   if(!added.length){toast('新しいデータがありません（重複またはデータなし）');return;}
@@ -9132,53 +9193,48 @@ function importCSV(){
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
 }
-function downloadCsv(filename, content){
-  const bom='﻿';
-  const blob=new Blob([bom+content],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download=filename;a.click();
-  URL.revokeObjectURL(a.href);
-}
-function downloadResCsvTemplate(){
-  downloadCsv('利用者インポート_テンプレ.csv',
-`name,name_kana,gender,birth_date,care_level,room,service_types,facility,allergies
-山田 花子,ヤマダ ハナコ,female,1935-04-19,care2,101,"resident,commute",サ高住,
-田中 太郎,タナカ タロウ,male,1942-11-03,care3,205,resident,サ高住,卵アレルギー`);
-  toast('テンプレをダウンロードしました ✓');
-}
-function downloadStaffCsvTemplate(){
-  downloadCsv('従業員インポート_テンプレ.csv',
-`name,name_kana,role,jigyousho,password
-田中 花子,タナカ ハナコ,care,サ高住,aura01
-山田 太郎,ヤマダ タロウ,nurse,小多機,aura01`);
-  toast('テンプレをダウンロードしました ✓');
-}
+
+// ─── ファイルハンドラ（職員） ─────────────────────────────
 function handleStaffFile(inp){
   const f=inp.files[0];if(!f)return;
-  if(!f.name.endsWith('.csv')){toast('CSVファイルを選択してください');return;}
-  const r=new FileReader();
-  r.onload=e=>{
-    const raw=e.target.result;
-    const text=raw.includes('?')?new TextDecoder('shift-jis').decode(new Uint8Array(e.target.result)):raw;
-    parseStaffCSV(text);
-  };
-  r.readAsText(f,'UTF-8');
+  if(f.name.match(/\.xlsx?$/i)){
+    toast('Excelを読み込み中...');
+    loadSheetJS().then(XLSX=>{
+      const r=new FileReader();
+      r.onload=e=>{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
+        const headers=(data[0]||[]).map(h=>String(h||'').trim());
+        const rows=data.slice(1).filter(r=>r.some(c=>c!=null&&String(c).trim()!==''));
+        showStaffPreview(headers,rows);
+      };
+      r.readAsArrayBuffer(f);
+    }).catch(()=>toast('Excelの読み込みに失敗しました（オンライン環境が必要です）'));
+  }else{
+    const r=new FileReader();
+    r.onload=e=>{
+      const raw=e.target.result;
+      const text=raw.includes('�')?new TextDecoder('shift-jis').decode(new Uint8Array(e.target.result)):raw;
+      const lines=text.trim().split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+      showStaffPreview(lines[0],lines.slice(1).filter(r=>r.some(c=>c)));
+    };
+    r.readAsText(f,'UTF-8');
+  }
+}
+function showStaffPreview(headers,rows){
+  S.staffCsvData={headers,rows};
+  document.getElementById('staff-csv-count').innerHTML=`<b>${rows.length} 名の職員データが見つかりました</b>`;
+  const th=headers.map(h=>`<th>${h}</th>`).join('');
+  const tbody=rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join('');
+  document.getElementById('staff-preview-table').innerHTML=`<thead><tr>${th}</tr></thead><tbody>${tbody}</tbody>`;
+  document.getElementById('staff-csv-preview').style.display='block';
 }
 function dragOverStaff(e){e.preventDefault();document.getElementById('upload-area-staff').classList.add('drag');}
 function dropFileStaff(e){
   e.preventDefault();document.getElementById('upload-area-staff').classList.remove('drag');
   const f=e.dataTransfer.files[0];
   if(f){const inp=document.getElementById('file-inp-staff');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleStaffFile(inp);}
-}
-function parseStaffCSV(text){
-  const lines=text.trim().split('\n').map(l=>l.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
-  const headers=lines[0];const rows=lines.slice(1).filter(r=>r.some(c=>c));
-  S.staffCsvData={headers,rows};
-  document.getElementById('staff-csv-count').innerHTML=`<b>${rows.length} 名の職員データが見つかりました</b>`;
-  const th=headers.map(h=>`<th>${h}</th>`).join('');
-  const tbody=rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
-  document.getElementById('staff-preview-table').innerHTML=`<thead><tr>${th}</tr></thead><tbody>${tbody}</tbody>`;
-  document.getElementById('staff-csv-preview').style.display='block';
 }
 function importStaffCSVFromPreview(){
   if(!S.staffCsvData)return;
@@ -9188,26 +9244,95 @@ function importStaffCSVFromPreview(){
   S.staffCsvData=null;
 }
 function importStaffCSV(headers,rows){
-  const i=n=>headers.indexOf(n);
+  const norm=h=>STAFF_COL[h]||h;
+  const normed=headers.map(norm);
+  const i=n=>normed.indexOf(n);
   const cs=getCustomStaff();const ss=getStaffSettings();
   let added=0;
+  const results=[];
   rows.forEach(r=>{
-    const name=(i('name')>=0?r[i('name')]:'').trim();
+    const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    const pass=(i('password')>=0?r[i('password')]:'aura01').trim();
-    const role=i('role')>=0?r[i('role')].trim():'care';
+    const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():generatePassword();
+    const roleRaw=(i('role')>=0?String(r[i('role')]||''):'').trim();
+    const role=ROLE_DISP[roleRaw]||'care';
+    const jRaw=(i('jigyousho')>=0?String(r[i('jigyousho')]||''):'').trim();
+    const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
     const loginId=getNextStaffLoginId();
     const key='cs'+Date.now()+Math.random();
-    const kana=(i('name_kana')>=0?r[i('name_kana')]:'').trim();
-    const jigyousho=(i('jigyousho')>=0?r[i('jigyousho')]:'サ高住').trim();
+    const kana=(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim();
     cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
     ss[key]={pass,loginId};
+    results.push({name,loginId,pass});
     added++;
   });
   if(!added){toast('新しい職員データがありません');return;}
   saveCustomStaff(cs);saveStaffSettings(ss);
   addAuditLog('職員一括登録',added+'名');
   toast(`${added}名の職員をインポートしました ✓`);
+  if(results.length)console.table(results);
+}
+
+// ─── Excel テンプレートDL ─────────────────────────────────
+async function downloadResExcelTemplate(){
+  let XLSX;
+  try{XLSX=await loadSheetJS();}catch(e){toast('Excel生成にはオンライン環境が必要です');return;}
+  const wb=XLSX.utils.book_new();
+  const data=[
+    ['氏名','ふりがな','性別','生年月日','要介護度','居室','サービス種別','事業所','アレルギー'],
+    ['山田 花子','ヤマダ ハナコ','女性','1935/04/19','要介護2','101','居住','サ高住',''],
+    ['田中 太郎','タナカ タロウ','男性','1942/11/03','要介護3','205','居住,デイ（通所）','サ高住','卵アレルギー'],
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:12},{wch:14},{wch:6},{wch:12},{wch:10},{wch:6},{wch:18},{wch:10},{wch:20}];
+  const help=[
+    ['性別','要介護度','サービス種別（複数はカンマ区切り）','事業所'],
+    ['女性','自立','居住','法人'],
+    ['男性','要支援1','デイ（通所）','サ高住'],
+    ['','要支援2','小多機','デイサービス'],
+    ['','要介護1','訪問','小多機'],
+    ['','要介護2','訪問看護','訪問介護'],
+    ['','要介護3','','訪問看護'],
+    ['','要介護4','',''],
+    ['','要介護5','',''],
+  ];
+  XLSX.utils.book_append_sheet(wb,ws,'利用者一覧');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(help),'選択肢一覧');
+  XLSX.writeFile(wb,'利用者インポート_テンプレ.xlsx');
+  toast('Excelテンプレをダウンロードしました ✓');
+}
+async function downloadStaffExcelTemplate(){
+  let XLSX;
+  try{XLSX=await loadSheetJS();}catch(e){toast('Excel生成にはオンライン環境が必要です');return;}
+  const wb=XLSX.utils.book_new();
+  const data=[
+    ['氏名','ふりがな','職種','事業所'],
+    ['田中 花子','タナカ ハナコ','介護職','サ高住'],
+    ['山田 太郎','ヤマダ タロウ','看護職','小多機'],
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:12},{wch:14},{wch:12},{wch:10}];
+  const help=[
+    ['職種（そのまま入力）','事業所（そのまま入力）','備考'],
+    ['全権管理者','法人','パスワードは自動割当'],
+    ['医師','サ高住',''],
+    ['管理者','デイサービス',''],
+    ['管理者補佐','小多機',''],
+    ['介護職','訪問介護',''],
+    ['看護職','訪問看護',''],
+    ['事務','',''],
+  ];
+  XLSX.utils.book_append_sheet(wb,ws,'職員一覧');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(help),'選択肢一覧');
+  XLSX.writeFile(wb,'職員インポート_テンプレ.xlsx');
+  toast('職員Excelテンプレをダウンロードしました ✓');
+}
+function downloadCsv(filename, content){
+  const bom='﻿';
+  const blob=new Blob([bom+content],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+  URL.revokeObjectURL(a.href);
 }
 function handleFacesheetJSON(inp){
   const f=inp.files[0];if(!f)return;
