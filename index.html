@@ -6957,7 +6957,8 @@ function renderResList(){
   if(addBtn)addBtn.style.display=(isAdmin()||isFacilityAdmin())?'block':'none';
   const q=(document.getElementById('search-inp').value||'').toLowerCase();
   const qk=hiraToKata(q);
-  const res=getResidents().filter(r=>{
+  const allResidents=getResidents();
+  const res=allResidents.filter(r=>{
     const kana=(r.kana||'').toLowerCase();
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
     const matchF=S.filter==='all'||r.services.includes(S.filter);
@@ -6995,7 +6996,9 @@ function renderResList(){
         <div class="status-label">${ok?'記録済':'未記録'}</div>
       </div>
     </div>`;
-  }).join('')||'<div class="empty"><div class="e-ico">🔍</div><p>該当する利用者がいません</p></div>';
+  }).join('')||(allResidents.length===0&&isAdmin()
+    ?`<div class="empty"><div class="e-ico">👥</div><p>利用者が登録されていません</p><div style="margin-top:16px"><button onclick="seedDemoData()" style="background:#fff3e0;color:#e65100;border:1.5px solid #ffcc80;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation">📋 デモデータを挿入する</button></div></div>`
+    :'<div class="empty"><div class="e-ico">🔍</div><p>該当する利用者がいません</p></div>');
 }
 
 // ═══════════ SERVICE ENTRY ROUTE ═══════════
