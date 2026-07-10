@@ -1679,6 +1679,15 @@ a{color:var(--p);text-decoration:none}
               </div>
               <span style="font-size:18px;color:var(--sub)">›</span>
             </div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🗑️ 利用者データ削除</div>
+            <div class="setting-item" style="margin-bottom:16px">
+              <span class="si-ico">🗑️</span>
+              <div class="si-body">
+                <div class="si-name">全利用者・記録を削除</div>
+                <div class="si-desc">利用者・バイタル等の全記録を完全削除します</div>
+              </div>
+              <button onclick="deleteAllResidents()" style="background:#fce4ec;color:#c62828;border:1.5px solid #ef9a9a;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">削除</button>
+            </div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔄 デモリセット</div>
             <div class="setting-item" style="margin-bottom:8px">
               <span class="si-ico">📥</span>
@@ -12317,6 +12326,16 @@ function loadMayDemoData(){
   renderDashboard();
 }
 
+function deleteAllResidents(){
+  if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
+  if(!confirm('全利用者・全記録を削除します。\nこの操作は取り消せません。\n\nよろしいですか？'))return;
+  const keys=['residents','records'];
+  keys.forEach(k=>{lsSet(k,[]);fsSet(k,[]);});
+  Object.keys(localStorage).filter(k=>k.startsWith('records_')||k.startsWith('e_records_')||k.startsWith('fs_')||k.startsWith('e_fs_')||k.startsWith('vital_confirmed')||k.startsWith('e_vital_confirmed')).forEach(k=>localStorage.removeItem(k));
+  addAuditLog('全利用者削除','全利用者・記録を削除');
+  toast('全利用者・記録を削除しました ✓');
+  renderDashboard();
+}
 function resetDemo(){
   if(!confirm('デモデータをリセットしますか？'))return;
   ['residents','handovers','schedules','board_data2'].forEach(k=>{localStorage.removeItem(k);localStorage.removeItem('e_'+k);});
