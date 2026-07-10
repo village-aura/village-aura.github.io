@@ -1006,7 +1006,10 @@ a{color:var(--p);text-decoration:none}
         <div class="preview-wrap"><table class="preview-table" id="preview-table"></table></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="font-weight:700;font-size:12px;color:var(--sub);margin-bottom:6px">📌 CSVフォーマット</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
+          <button onclick="downloadResCsvTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
+        </div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">name,name_kana,gender,birth_date,care_level,room,service_types,facility
 山田 花子,ヤマダ ハナコ,female,1935-04-19,care2,101,"resident,commute",サ高住</code>
       </div>
@@ -1037,7 +1040,10 @@ a{color:var(--p);text-decoration:none}
         <div class="preview-wrap"><table class="preview-table" id="staff-preview-table"></table></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="font-weight:700;font-size:12px;color:var(--sub);margin-bottom:6px">📌 CSVフォーマット</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
+          <button onclick="downloadStaffCsvTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
+        </div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">name,name_kana,role,jigyousho,password
 田中 花子,タナカ ハナコ,care,サ高住,aura01</code>
         <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.8">
@@ -9126,6 +9132,27 @@ function importCSV(){
   toast(`${added.length}名をインポートしました ✓`);
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
+}
+function downloadCsv(filename, content){
+  const bom='﻿';
+  const blob=new Blob([bom+content],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+  URL.revokeObjectURL(a.href);
+}
+function downloadResCsvTemplate(){
+  downloadCsv('利用者インポート_テンプレ.csv',
+`name,name_kana,gender,birth_date,care_level,room,service_types,facility,allergies
+山田 花子,ヤマダ ハナコ,female,1935-04-19,care2,101,"resident,commute",サ高住,
+田中 太郎,タナカ タロウ,male,1942-11-03,care3,205,resident,サ高住,卵アレルギー`);
+  toast('テンプレをダウンロードしました ✓');
+}
+function downloadStaffCsvTemplate(){
+  downloadCsv('従業員インポート_テンプレ.csv',
+`name,name_kana,role,jigyousho,password
+田中 花子,タナカ ハナコ,care,サ高住,aura01
+山田 太郎,ヤマダ タロウ,nurse,小多機,aura01`);
+  toast('テンプレをダウンロードしました ✓');
 }
 function handleStaffFile(inp){
   const f=inp.files[0];if(!f)return;
