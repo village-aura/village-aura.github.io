@@ -986,7 +986,7 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-import" class="scr">
     <div class="tab-bar">
       <button class="tab on" data-tab="tab-res-import" onclick="switchTab(this)">👤 利用者取込</button>
-      <button class="tab" data-tab="tab-staff-import" onclick="switchTab(this)">🏥 職員取込</button>
+      <button class="tab" id="tab-staff-import-btn" data-tab="tab-staff-import" onclick="switchTab(this)">🏥 職員取込</button>
       <button class="tab" data-tab="tab-manual" onclick="switchTab(this)">✏️ 手入力</button>
     </div>
 
@@ -1056,7 +1056,7 @@ a{color:var(--p);text-decoration:none}
     <div id="tab-manual" class="tab-panel">
       <div style="margin-bottom:12px">
         <button class="tab on" data-mt="mt-res" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;margin-right:6px">利用者</button>
-        <button class="tab" data-mt="mt-staff" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">職員</button>
+        <button class="tab" id="tab-mt-staff-btn" data-mt="mt-staff" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">職員</button>
       </div>
       <div id="mt-res">
         <div class="field-row">
@@ -6242,6 +6242,7 @@ function showScr(id){
   const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-doctor':'sbn-doctor'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
+  if(id==='scr-import') initImportScr();
   if(id==='scr-dashboard') renderDashboard();
   if(id==='scr-residents') renderResList();
   if(id==='scr-handover-board'){renderHandoverBoard();setTimeout(markAllHandoverRead,800);}
@@ -9310,6 +9311,7 @@ function dropFileStaff(e){
   if(f){const inp=document.getElementById('file-inp-staff');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleStaffFile(inp);}
 }
 function importStaffCSVFromPreview(){
+  if(!isSuperAdminRole()&&!isFacilityAdmin()&&!isAdmin()){toast('職員登録は管理者以上のみ実行できます');return;}
   if(!S.staffCsvData)return;
   const {headers,rows}=S.staffCsvData;
   importStaffCSV(headers,rows);
@@ -9329,6 +9331,7 @@ function importStaffCSV(headers,rows){
     const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():generatePassword();
     const roleRaw=(i('role')>=0?String(r[i('role')]||''):'').trim();
     const role=ROLE_DISP[roleRaw]||'care';
+    if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId:'-',pass:'-',note:'スキップ（全権管理者のみ登録可）'});return;}
     const jRaw=(i('jigyousho')>=0?String(r[i('jigyousho')]||''):'').trim();
     const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
     const loginId=getNextStaffLoginId();
@@ -9542,18 +9545,24 @@ function getNextStaffLoginId(){
   return String(Math.max(...ids,99)+1).padStart(4,'0');
 }
 const ROLE_ORDER=['super_admin_doctor','super_admin','facility_manager_resident','facility_manager_commute','facility_manager_stay','facility_manager_visit','facility_manager_home_care','nurse','care','medical_office','home_care'];
+const STAFF_ADMIN_ROLES=['super_admin_doctor','super_admin','facility_manager_resident','facility_manager_commute','facility_manager_stay','facility_manager_visit','facility_manager_home_care'];
+const STAFF_GENERAL_ROLES=['doctor','nurse','care','medical_office','home_care'];
+function initImportScr(){
+  const canStaff=isSuperAdminRole()||isFacilityAdmin()||isAdmin();
+  ['tab-staff-import-btn','tab-mt-staff-btn'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=canStaff?'':'none';
+  });
+}
 function renderStaffRoleDropdown(){
-  const myLevel=ROLE_ORDER.indexOf(S.userRole??'home_care');
   const sel=document.getElementById('ms-role');
   if(!sel)return;
-  sel.innerHTML=ROLE_ORDER
-    .filter((_,i)=>i>=myLevel)
-    .map(r=>`<option value="${r}">${ROLE_COLORS[r]?.label||r}</option>`)
-    .join('');
+  const available=isSuperAdminRole()?ROLE_ORDER:STAFF_GENERAL_ROLES;
+  sel.innerHTML=available.map(r=>`<option value="${r}">${ROLE_COLORS[r]?.label||r}</option>`).join('');
   const loginIdEl=document.getElementById('ms-loginid');
   if(loginIdEl)loginIdEl.value=getNextStaffLoginId();
 }
 function addManualStaff(){
+  if(!isSuperAdminRole()&&!isFacilityAdmin()&&!isAdmin()){toast('職員登録は管理者以上のみ実行できます');return;}
   const sei=document.getElementById('ms-sei').value.trim();
   const mei=document.getElementById('ms-mei').value.trim();
   if(!sei||!mei){toast('姓と名を入力してください');return;}
@@ -9563,6 +9572,7 @@ function addManualStaff(){
     toast('パスワードは6文字以上で入力してください');return;
   }
   const role=document.getElementById('ms-role').value;
+  if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){toast('全権管理者・管理者ロールの登録は全権管理者のみ実行できます');return;}
   const loginId=document.getElementById('ms-loginid').value||getNextStaffLoginId();
   const kanaSei=document.getElementById('ms-kana-sei').value.trim();
   const kanaMei=document.getElementById('ms-kana-mei').value.trim();
