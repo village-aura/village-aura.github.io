@@ -5270,7 +5270,7 @@ function renderSettings(){
   const adminWrap=document.getElementById('acc-admin-wrap');
   const propUser=document.getElementById('acc-proposal-user');
   const facMgrWrap=document.getElementById('acc-facmgr-wrap');
-  if(isAdmin()){
+  if(isSuperAdminRole()){
     if(adminWrap) adminWrap.style.display='block';
     if(propUser) propUser.style.display='none';
     if(facMgrWrap) facMgrWrap.style.display='none';
@@ -5278,14 +5278,14 @@ function renderSettings(){
     renderAccessSettings();
     renderProposalList();
     const rpWrap=document.getElementById('acc-role-preview');
-    if(rpWrap) rpWrap.style.display=isSuperAdminRole()?'block':'none';
-    if(isSuperAdminRole()) renderRolePreviewGrid();
+    if(rpWrap) rpWrap.style.display='block';
+    renderRolePreviewGrid();
     if(Date.now()-_lastAuditFetch>30000){
       fetchAndMergeAuditLogs(()=>renderHistoryViewer());
     } else {
       renderHistoryViewer();
     }
-  } else if(isFacilityAdmin()){
+  } else if(isFacilityAdmin()||isAdmin()){
     if(adminWrap) adminWrap.style.display='none';
     if(propUser) propUser.style.display='none';
     if(facMgrWrap){
@@ -6528,7 +6528,7 @@ function switchVaTab(tab){
   renderVitalAlert();
 }
 // ═══════════ 医師ページ ═══════════
-function isDoctor(){return S.userRole==='doctor'||S.userRole==='super_admin_doctor'||isAdmin();}
+function isDoctor(){return S.userRole==='doctor'||isSuperAdminRole();}
 function updateDoctorNav(){
   const show=isDoctor()?'':'none';
   const sbn=document.getElementById('sbn-doctor');
