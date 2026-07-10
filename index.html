@@ -5368,6 +5368,7 @@ function renderAdminStaffList(){
     const rc=getRoleInfo(curRole);
     const editId='adm-edit-'+key;
     const canDel=isCustomKey(key)&&!isMe;
+    const canChangePw=S.userRole==='super_admin'||isMe;
     return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
         <span style="font-size:16px">${disabled?'🔒':'👤'}</span>
@@ -5393,11 +5394,7 @@ function renderAdminStaffList(){
           <input type="text" id="adm-lid-${key}" value="${escHtml(curLoginId)}" maxlength="8" inputmode="numeric" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
           <button onclick="adminSetLoginId('${key}')" style="padding:6px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
-        <div style="display:flex;gap:6px;align-items:center${canDel?';margin-bottom:6px':''}">
-          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">PW</span>
-          <input type="password" id="adm-pw-${key}" placeholder="新しいパスワード" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
-          <button onclick="adminSetPassword('${key}')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
-        </div>
+        ${canChangePw?('<div style="display:flex;gap:6px;align-items:center'+(canDel?';margin-bottom:6px':'')+'"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">PW</span><input type="password" id="adm-pw-'+key+'" placeholder="新しいパスワード" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb"><button onclick="adminSetPassword(\''+key+'\')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button></div>'):''}
         ${canDel?('<button onclick="deleteCustomStaff(\''+key+'\')" style="width:100%;padding:7px;background:#fff;color:var(--ng);border:1.5px solid var(--ng);border-radius:7px;font-size:12px;font-weight:700">この職員を削除</button>'):''}
       </div>
     </div>`;
@@ -5451,9 +5448,11 @@ function adminSetLoginId(key){
   toast(getStaffInfo(key)?.name||'不明'+' の職員IDを変更しました ✓');
 }
 function adminSetPassword(key){
+  const isMe=getStaffInfo(key)?.name===S.user;
+  if(S.userRole!=='super_admin'&&!isMe){toast('パスワードを変更できるのは全権管理者か本人のみです');return;}
   const val=document.getElementById('adm-pw-'+key).value.trim();
   if(!val){toast('新しいパスワードを入力してください');return;}
-  if(val.length<6||!/[a-zA-Z]/.test(val)||!/[0-9]/.test(val)){toast('英字と数字を両方含む6文字以上で入力してください');return;}
+  if(val.length<6){toast('パスワードは6文字以上で入力してください');return;}
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].pass=val;
@@ -9390,6 +9389,16 @@ const INIT_STAFF_DATA=[
   {name:"松村 望",kana:"マツムラ ノゾミ",role:'care',jigyousho:"小多機",loginId:'0096',pass:'auraqtdg'},
   {name:"石原 美保",kana:"イシハラ ミホ",role:'care',jigyousho:"小多機",loginId:'0097',pass:'auramvhg'},
   {name:"藤井 晃頼",kana:"フジイ アキヨリ",role:'care',jigyousho:"サ高住",loginId:'0099',pass:'auracwh7'},
+  {name:"中桐 芳江",kana:"ナカギリ ヨシエ",role:'nurse',jigyousho:"いなだ医院",loginId:'0016',pass:'aurappgw'},
+  {name:"兼信 真理",kana:"カネノブ マリ",role:'nurse',jigyousho:"いなだ医院",loginId:'0018',pass:'aurafhhe'},
+  {name:"上池 都紀",kana:"カミイケ ミヤキ",role:'nurse',jigyousho:"いなだ医院",loginId:'0010',pass:'aura3cj2'},
+  {name:"播元 恵美子",kana:"ハリモト エミコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0011',pass:'auraptyz'},
+  {name:"桂 詩子",kana:"カツラ ウタコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0013',pass:'aurauc9w'},
+  {name:"小田 悦子",kana:"オダ エツコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0015',pass:'aurasgq2'},
+  {name:"岡 友子",kana:"オカ トモコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0071',pass:'aurawvg4'},
+  {name:"山室 八千代",kana:"ヤマムロ ヤチヨ",role:'nurse',jigyousho:"いなだ医院",loginId:'0073',pass:'aura74n5'},
+  {name:"芦内 薫",kana:"アシウチ カオル",role:'nurse',jigyousho:"いなだ医院",loginId:'0095',pass:'aurap6yg'},
+  {name:"柚木 清美",kana:"ユノキ キヨミ",role:'nurse',jigyousho:"いなだ医院",loginId:'0098',pass:'auraeryf'},
 ];
 function initDemoStaff(){
   if(!confirm(`テスト職員を全削除して実際の職員${INIT_STAFF_DATA.length}名を登録しますか？\n\n※この操作は取り消せません`))return;
