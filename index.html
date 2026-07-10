@@ -1130,7 +1130,10 @@ a{color:var(--p);text-decoration:none}
           <input type="text" id="ms-loginid" readonly style="background:#f3f4f6;color:var(--sub)">
         </div>
         <div class="field"><label>初期パスワード</label>
-          <input type="text" id="ms-pass" value="aura01" placeholder="英数字6文字以上">
+          <div style="display:flex;gap:6px">
+            <input type="text" id="ms-pass" style="flex:1;font-family:monospace;letter-spacing:.05em" readonly>
+            <button type="button" onclick="genMsPass()" style="padding:8px 10px;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:8px;font-size:12px;white-space:nowrap;font-weight:700">🔀 再生成</button>
+          </div>
           <div style="font-size:11px;color:var(--sub);margin-top:4px">初回ログイン後に本人が変更してください</div>
         </div>
         <button class="btn-primary" onclick="addManualStaff()">職員を登録</button>
@@ -9494,8 +9497,8 @@ function addManualStaff(){
   if(!sei||!mei){toast('姓と名を入力してください');return;}
   const name=sei+' '+mei;
   const pass=document.getElementById('ms-pass').value.trim();
-  if(pass.length<6||!/[a-zA-Z]/.test(pass)||!/[0-9]/.test(pass)){
-    toast('パスワードは英数字を含む6文字以上で入力してください');return;
+  if(pass.length<6){
+    toast('パスワードは6文字以上で入力してください');return;
   }
   const role=document.getElementById('ms-role').value;
   const loginId=document.getElementById('ms-loginid').value||getNextStaffLoginId();
@@ -9516,7 +9519,7 @@ function addManualStaff(){
   addAuditLog('職員追加',name+' (ID:'+loginId+')');
   toast(name+'を登録しました ✓');
   ['ms-sei','ms-mei','ms-kana-sei','ms-kana-mei'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('ms-pass').value='';
+  genMsPass();
   renderStaffRoleDropdown();
 }
 
@@ -9533,7 +9536,11 @@ function switchManualTab(btn){
   btn.classList.add('on');
   const panels=['mt-res','mt-staff'];
   panels.forEach(id=>{document.getElementById(id).style.display=id===btn.dataset.mt?'block':'none';});
-  if(btn.dataset.mt==='mt-staff')renderStaffRoleDropdown();
+  if(btn.dataset.mt==='mt-staff'){renderStaffRoleDropdown();genMsPass();}
+}
+function genMsPass(){
+  const el=document.getElementById('ms-pass');
+  if(el)el.value=generatePassword();
 }
 
 // ═══════════ EDIT RESIDENT ═══════════
