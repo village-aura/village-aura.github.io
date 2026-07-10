@@ -1610,6 +1610,8 @@ a{color:var(--p);text-decoration:none}
               <button onclick="exportVitalsCSV()" style="flex:1;padding:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #90caf9">🌡 バイタル記録</button>
             </div>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px">Excel・Numbersで開けるCSV形式</div>
+            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔬 デモデータ挿入</div>
+            <button onclick="seedDemoData()" style="width:100%;padding:10px;background:#fff3e0;color:#e65100;border:1.5px solid #ffcc80;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:16px">📋 Excelデモデータを挿入</button>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📥 利用者・職員 登録</div>
             <div class="setting-item" onclick="showScr('scr-import')" style="cursor:pointer;margin-bottom:16px">
               <span class="si-ico">📥</span>
@@ -3228,9 +3230,14 @@ a{color:var(--p);text-decoration:none}
             <div class="field"><label>③ 氏名</label><input type="text" class="fs-c-name" placeholder=""></div>
             <div class="field"><label>続柄</label><input type="text" class="fs-c-rel" placeholder=""></div>
           </div>
+          <div class="field-row" style="margin-bottom:4px">
+            <div class="field"><label>④ 氏名</label><input type="text" class="fs-c-name" placeholder=""></div>
+            <div class="field"><label>続柄</label><input type="text" class="fs-c-rel" placeholder=""></div>
+          </div>
           <div class="field"><label>TEL</label><input type="tel" class="fs-c-tel" placeholder=""></div>
         </div>
       </div>
+      <div class="field"><label>担当ケアマネ</label><input type="text" id="fs-care-manager" placeholder="○○事業所 山田CM"></div>
       <div class="field"><label>家族・本人の状況</label><textarea id="fs-family-situation" placeholder="同居者の有無、家族との関係など..." rows="3"></textarea></div>
       <button class="btn-primary" onclick="saveFacesheetData()">保存</button>
     </div>
@@ -3243,6 +3250,20 @@ a{color:var(--p);text-decoration:none}
         <div class="adl-row"><span class="adl-lbl">入浴</span><div class="adl-opts" id="adl-nyuyoku" data-mode="bath"></div></div>
         <div class="adl-row"><span class="adl-lbl">着脱</span><div class="adl-opts" id="adl-chakudatsu"></div></div>
         <div class="adl-row"><span class="adl-lbl">移動</span><div class="adl-opts" id="adl-ido"></div></div>
+      </div>
+      <div class="fs-sec"><h4>義歯・排泄詳細</h4>
+        <div class="adl-row"><span class="adl-lbl">義歯</span><div class="adl-opts" id="adl-gishi"></div></div>
+        <div class="adl-row" style="margin-top:8px"><span class="adl-lbl">日中排泄</span><div class="adl-opts" id="adl-haichuchu"></div></div>
+        <div class="adl-row"><span class="adl-lbl">夜間排泄</span><div class="adl-opts" id="adl-haiyakan"></div></div>
+        <div class="field-row" style="margin-top:6px">
+          <div class="field"><label>尿意</label>
+            <select id="fs-nyo"><option value="あり">あり</option><option value="なし">なし</option></select>
+          </div>
+          <div class="field"><label>便意</label>
+            <select id="fs-ben"><option value="あり">あり</option><option value="なし">なし</option></select>
+          </div>
+        </div>
+        <div class="field"><label>排泄備考</label><textarea id="fs-haisetsu-note" rows="2" placeholder="排泄に関する特記事項..."></textarea></div>
       </div>
       <div class="fs-sec"><h4>食事形態</h4>
         <div class="adl-row"><span class="adl-lbl">主食</span><div class="adl-opts" id="adl-shushoku" data-mode="main"></div></div>
@@ -3275,6 +3296,14 @@ a{color:var(--p);text-decoration:none}
         <div class="field"><label>言語障害</label>
           <select id="fs-language"><option value="none">なし</option><option value="yes">あり</option></select>
         </div>
+        <div class="field-row">
+          <div class="field"><label>麻痺</label>
+            <select id="fs-paralysis"><option value="none">なし</option><option value="yes">あり</option></select>
+          </div>
+          <div class="field"><label>拘縮</label>
+            <select id="fs-contracture"><option value="none">なし</option><option value="yes">あり</option></select>
+          </div>
+        </div>
       </div>
       <div class="fs-sec"><h4>感染症・アレルギー</h4>
         <div class="field"><label>感染症</label><input type="text" id="fs-infection" placeholder="MRSA、疥癬など..."></div>
@@ -3303,6 +3332,18 @@ a{color:var(--p);text-decoration:none}
 
     <!-- 経済タブ -->
     <div id="fst-economy" class="tab-panel" style="padding-top:14px">
+      <div class="fs-sec"><h4>年金・収入</h4>
+        <div class="field"><label>年金種別</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:4px 0">
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" name="fs-pension" value="national"> 国民年金</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" name="fs-pension" value="employee"> 厚生年金</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" name="fs-pension" value="disability"> 障害者年金</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" name="fs-pension" value="mutual"> 共済年金</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" name="fs-pension" value="welfare"> 生活保護</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" name="fs-pension" value="other"> その他</label>
+          </div>
+        </div>
+      </div>
       <div class="fs-sec"><h4>費用負担</h4>
         <div class="field-row">
           <div class="field"><label>負担限度額段階</label>
@@ -10921,6 +10962,8 @@ const SIDE_OPTS=['普通','キザミ','一口大','ペースト食'];
 const DIET_OPTS=['一般食','糖尿病食','高血圧食','肝臓食'];
 const TOROMI_OPTS=['なし','あり'];
 const IDO_TOOL_OPTS=['車椅子','リクライニング','T字杖','センサーマット'];
+const GISHI_OPTS=['なし','部分義歯','総義歯（上）','総義歯（下）','総義歯（上下）'];
+const HAICHU_OPTS=['布パンツ','尿取りパット','リハパン','おむつ','留置カテーテル'];
 
 function getFacesheet(rid){
   const d=ls('fs_'+rid)||{};
@@ -10990,6 +11033,7 @@ function openFacesheet(){
   document.getElementById('fs-address').value=fs.address;
   document.getElementById('fs-tel').value=fs.tel;
   document.getElementById('fs-cog').value=fs.cog;
+  const cmEl=document.getElementById('fs-care-manager');if(cmEl)cmEl.value=fs.care_manager||'';
   document.getElementById('fs-family-situation').value=fs.family_situation;
   const names=document.querySelectorAll('.fs-c-name');
   const rels=document.querySelectorAll('.fs-c-rel');
@@ -11011,12 +11055,20 @@ function openFacesheet(){
   renderAdlOpts('adl-seigen',DIET_OPTS,fs.adl_seigen);
   document.getElementById('fs-food-allergy').value=fs.food_allergy;
   renderAdlOpts('adl-ido-tool',IDO_TOOL_OPTS,fs.ido_tool,true);
+  renderAdlOpts('adl-gishi',GISHI_OPTS,fs.adl_gishi);
+  renderAdlOpts('adl-haichuchu',HAICHU_OPTS,fs.adl_haichuchu,true);
+  renderAdlOpts('adl-haiyakan',HAICHU_OPTS,fs.adl_haiyakan,true);
+  const nyoEl=document.getElementById('fs-nyo');if(nyoEl)nyoEl.value=fs.nyo||'あり';
+  const benEl=document.getElementById('fs-ben');if(benEl)benEl.value=fs.ben||'あり';
+  const hnEl=document.getElementById('fs-haisetsu-note');if(hnEl)hnEl.value=fs.haisetsu_note||'';
   // 医療タブ
   document.getElementById('fs-height').value=fs.height||'';
   document.getElementById('fs-weight').value=fs.weight||'';
   document.getElementById('fs-vision').value=fs.vision;
   document.getElementById('fs-hearing').value=fs.hearing;
   document.getElementById('fs-language').value=fs.language;
+  const paraEl=document.getElementById('fs-paralysis');if(paraEl)paraEl.value=fs.paralysis||'none';
+  const conEl=document.getElementById('fs-contracture');if(conEl)conEl.value=fs.contracture||'none';
   document.getElementById('fs-infection').value=fs.infection;
   document.getElementById('fs-drug-allergy').value=fs.drug_allergy;
   document.getElementById('fs-blood-thinner').value=fs.blood_thinner;
@@ -11033,6 +11085,9 @@ function openFacesheet(){
   document.getElementById('fs-burden-ratio').value=fs.burden_ratio;
   document.querySelectorAll('input[name="fs-payment"]').forEach(r=>r.checked=(r.value===fs.payment_method));
   renderFsServices(fs.service_usage);
+  document.querySelectorAll('input[name="fs-pension"]').forEach(cb=>{
+    cb.checked=(fs.pension_types||[]).includes(cb.value);
+  });
   // ファイルタブ
   document.getElementById('fs-pdf-status').textContent=
     fs.pdf_name?`📄 ${fs.pdf_name}（${fs.pdf_date}）`:'アップロードされていません';
@@ -11081,11 +11136,12 @@ function renderFsSchedule(){
   }).join('');
 }
 function saveFacesheetData(){
-  const contacts=[...Array(3)].map((_,i)=>({
+  const contacts=[...Array(4)].map((_,i)=>({
     name:document.querySelectorAll('.fs-c-name')[i]?.value||'',
     rel:document.querySelectorAll('.fs-c-rel')[i]?.value||'',
     tel:document.querySelectorAll('.fs-c-tel')[i]?.value||'',
   }));
+  const pension_types=[...document.querySelectorAll('input[name="fs-pension"]:checked')].map(cb=>cb.value);
   const paymentEl=document.querySelector('input[name="fs-payment"]:checked');
   const service_usage={};
   document.querySelectorAll('.fs-svc-item').forEach(el=>{
@@ -11101,7 +11157,8 @@ function saveFacesheetData(){
     address:document.getElementById('fs-address').value,
     tel:document.getElementById('fs-tel').value,
     cog:document.getElementById('fs-cog').value,
-    contacts,family_situation:document.getElementById('fs-family-situation').value,
+    contacts,care_manager:document.getElementById('fs-care-manager')?.value||'',
+    family_situation:document.getElementById('fs-family-situation').value,
     adl_shokuji:getAdlVal('adl-shokuji')||'自立',
     adl_haisetsu:getAdlVal('adl-haisetsu')||'自立',
     adl_nyuyoku:getAdlVal('adl-nyuyoku')||'個浴',
@@ -11113,11 +11170,19 @@ function saveFacesheetData(){
     adl_seigen:getAdlVal('adl-seigen')||'一般食',
     food_allergy:document.getElementById('fs-food-allergy').value,
     ido_tool:getAdlVal('adl-ido-tool',true),
+    adl_gishi:getAdlVal('adl-gishi')||'なし',
+    adl_haichuchu:getAdlVal('adl-haichuchu',true),
+    adl_haiyakan:getAdlVal('adl-haiyakan',true),
+    nyo:document.getElementById('fs-nyo')?.value||'あり',
+    ben:document.getElementById('fs-ben')?.value||'あり',
+    haisetsu_note:document.getElementById('fs-haisetsu-note')?.value||'',
     height:parseFloat(document.getElementById('fs-height').value)||null,
     weight:parseFloat(document.getElementById('fs-weight').value)||null,
     vision:document.getElementById('fs-vision').value,
     hearing:document.getElementById('fs-hearing').value,
     language:document.getElementById('fs-language').value,
+    paralysis:document.getElementById('fs-paralysis')?.value||'none',
+    contracture:document.getElementById('fs-contracture')?.value||'none',
     infection:document.getElementById('fs-infection').value,
     drug_allergy:document.getElementById('fs-drug-allergy').value,
     blood_thinner:document.getElementById('fs-blood-thinner').value,
@@ -11132,6 +11197,7 @@ function saveFacesheetData(){
     burden_level:document.getElementById('fs-burden-level').value,
     burden_ratio:document.getElementById('fs-burden-ratio').value,
     payment_method:paymentEl?paymentEl.value:'',
+    pension_types,
     service_usage,
     updatedAt:new Date().toISOString(),
   });
@@ -11361,6 +11427,7 @@ function applyFsFields(d){
   };
   setText('fs-address',d.address);setText('fs-tel',d.tel);
   setSel('fs-cog',d.cog);
+  const _cmEl=document.getElementById('fs-care-manager');if(_cmEl&&d.care_manager)_cmEl.value=d.care_manager;
   setText('fs-family-situation',d.family_situation);
   setAdl('adl-shokuji',ADL_OPTS,d.adl_shokuji);
   setAdl('adl-haisetsu',ADL_OPTS,d.adl_haisetsu);
@@ -11376,6 +11443,8 @@ function applyFsFields(d){
   if(d.height!=null) document.getElementById('fs-height').value=d.height;
   if(d.weight!=null) document.getElementById('fs-weight').value=d.weight;
   setSel('fs-vision',d.vision);setSel('fs-hearing',d.hearing);setSel('fs-language',d.language);
+  const _paraEl=document.getElementById('fs-paralysis');if(_paraEl&&d.paralysis)_paraEl.value=d.paralysis;
+  const _conEl=document.getElementById('fs-contracture');if(_conEl&&d.contracture)_conEl.value=d.contracture;
   setText('fs-infection',d.infection);setText('fs-drug-allergy',d.drug_allergy);
   setText('fs-blood-thinner',d.blood_thinner);
   setText('fs-main-doctor',d.main_doctor);setText('fs-doctor-tel',d.doctor_tel);
@@ -12951,6 +13020,73 @@ function openPhotoZoom(src){
 }
 function closePhotoZoom(){
   document.getElementById('photo-zoom-ov').style.display='none';
+}
+
+// ── デモデータ挿入 ──
+function seedDemoData(){
+  if(!isAdmin()){toast('管理者権限が必要です');return;}
+  if(!confirm('デモデータ（サンプル利用者・職員）を挿入しますか？\n既存データは上書きされません。')){return;}
+  const res=getResidents();
+  const existDemo=res.find(r=>r.name==='デモ 利用者');
+  if(existDemo){toast('既にデモデータが存在します');return;}
+  // 利用者サンプル
+  const rid='demo_'+Date.now();
+  res.push({
+    id:rid,name:'デモ 利用者',kana:'デモ リヨウシャ',
+    gender:'female',age:91,care:'care2',room:'101',
+    services:['resident'],facility:'かしわじま',
+    allergy:'',photo:'',
+  });
+  saveResidents(res);
+  // フェイスシート
+  const fs={
+    address:'倉敷市玉島5987番地2',tel:'086-526-2545',
+    cog:'mild',
+    care_manager:'シーサイドリビング 瀧口CM',
+    family_situation:'夫と息子夫婦の４人暮らし。長女は隣市、次女は関西在住。ここ数年、物忘れが増えてきており、時間の経過の感覚が鈍く何時の話か分からなくなっている。自宅では夫と同じ部屋で過ごし殆どテレビを見て寝ている。運動量の低下を家族は心配している。',
+    contacts:[
+      {name:'',rel:'長男',tel:'086-526-2545'},
+      {name:'',rel:'長男妻',tel:'090-5784-8887'},
+      {name:'',rel:'',tel:''},{name:'',rel:'',tel:''},
+    ],
+    adl_shokuji:'一部介助',adl_haisetsu:'一部介助',
+    adl_nyuyoku:'個浴',adl_chakudatsu:'一部介助',adl_ido:'見守り',
+    adl_shushoku:'全粥',adl_fukushoku:'普通',adl_toromi:'なし',adl_seigen:'一般食',
+    food_allergy:'',
+    ido_tool:['車椅子'],
+    adl_gishi:'部分義歯',
+    adl_haichuchu:['布パンツ','尿取りパット'],
+    adl_haiyakan:['布パンツ','尿取りパット'],
+    nyo:'あり',ben:'あり',
+    haisetsu_note:'排泄動作は自立されているが、リハパンを履かれていない事や、パットが入っていない事があり、汚染が増えてきている。夜間の汚染（防水シーツ、下衣を汚す）も増えてきている。',
+    weight:51.8,height:null,
+    vision:'yes',hearing:'yes',language:'none',
+    paralysis:'none',contracture:'none',
+    infection:'',drug_allergy:'',blood_thinner:'',
+    family_hospital:'藤沢脳神経外科',family_specialty:'脳神経外科',
+    main_doctor:'藤沢医師',doctor_tel:'086-528-3111',
+    family_doctor_address:'',
+    diseases:[
+      {name:'腰椎圧迫骨折',hospital:'プライムホスピタル',specialist:'',doctor:'',onset:'R6年3月',note:''},
+      {name:'脳梗塞後遺症',hospital:'藤沢脳神経外科',specialist:'脳神経外科',doctor:'藤沢',onset:'',note:''},
+      {name:'腰椎椎間板ヘルニア',hospital:'',specialist:'',doctor:'',onset:'',note:''},
+      {name:'高血圧症',hospital:'',specialist:'',doctor:'',onset:'',note:''},
+    ],
+    disability:'無',
+    notes:'ベッド（シーサイド福祉用具）',
+    burden_level:'',burden_ratio:'',payment_method:'',
+    pension_types:[],
+    service_usage:{
+      home_care:{enabled:true,office:'訪問介護こはる日和',freq:''},
+      day_care:{enabled:true,office:'デイサービスセンターこはる日和',freq:''},
+      welfare_equip:{enabled:true,office:'シーサイド福祉用具',freq:''},
+    },
+    updatedAt:new Date().toISOString(),
+  };
+  lsFsSet(rid,fs);
+  S.currentRes=rid;
+  renderResList();
+  toast('デモデータを挿入しました ✓');
 }
 </script>
 <!-- 写真拡大オーバーレイ -->
