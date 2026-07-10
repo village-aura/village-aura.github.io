@@ -1423,7 +1423,6 @@ a{color:var(--p);text-decoration:none}
             </div>
             <button onclick="logout()" style="background:var(--ng);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">ログアウト</button>
           </div>
-          <div style="font-size:12px;color:var(--sub);padding:8px 0">※ デモ版のためパスワード変更は無効です。</div>
         </div></div>
       </div>
 
@@ -4101,7 +4100,7 @@ const STAFF_INFO = {
   s3:{name:'前原 明子',role:'care',loginId:'1003',hidden:true},
   s4:{name:'鈴木 健太',role:'care',loginId:'1004',hidden:true},
   s5:{name:'中村 由美',role:'nurse',loginId:'1005',hidden:true},
-  s6:{name:'稲田 崇志',role:'super_admin',loginId:'06419008',admin:true,hidden:true},
+  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'06419008',admin:true,hidden:true},
   s7:{name:'佐藤 真理',role:'home_care',loginId:'1007',hidden:true},
   s8:{name:'木村 誠司',role:'doctor',loginId:'1008',hidden:true},
 };
@@ -4113,6 +4112,7 @@ function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
+function isSuperAdminRole(){return S.userRole==='super_admin'||S.userRole==='super_admin_doctor';}
 function isFacilityAdmin(){return !!(S.userRole?.startsWith('facility_manager_'));}
 function getManagedFacility(){
   if(!isFacilityAdmin())return null;
@@ -4149,7 +4149,8 @@ const BTN_DEF = {
   visit_report:{ico:'🚗', lbl:'訪問介護記録',fn:'openVisitReportFromDetail()'},
 };
 const ROLE_COLORS = {
-  super_admin:               {bg:'#b71c1c',label:'統括管理者'},
+  super_admin:               {bg:'#b71c1c',label:'全権管理者'},
+  super_admin_doctor:        {bg:'#7b1fa2',label:'全権管理者 兼 医師'},
   doctor:                    {bg:'#c62828',label:'医師'},
   facility_manager_resident: {bg:'#3D7AB5',label:'サ高住管理者'},
   facility_manager_commute:  {bg:'#e65100',label:'デイ管理者'},
@@ -5327,7 +5328,7 @@ function enterRolePreview(role){
   renderDashboard();
 }
 function exitRolePreview(){
-  S.userRole=S._previewOrigRole||'super_admin';
+  S.userRole=S._previewOrigRole||'super_admin_doctor';
   S._previewMode=false;
   S._previewOrigRole=null;
   const banner=document.getElementById('preview-banner');
@@ -5360,7 +5361,7 @@ function changePassword(){
 function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
-  const isSuperAdmin=S.userRole==='super_admin';
+  const isSuperAdmin=isSuperAdminRole();
   const roleOptions=Object.entries(ROLE_COLORS).map(([r,v])=>
     '<option value="'+r+'">'+v.label+'</option>'
   ).join('');
@@ -5503,7 +5504,7 @@ function adminSetLoginId(key){
 }
 function adminSetPassword(key){
   const isMe=getStaffInfo(key)?.name===S.user;
-  if(S.userRole!=='super_admin'&&!isMe){toast('パスワードを変更できるのは全権管理者か本人のみです');return;}
+  if(!isSuperAdminRole()&&!isMe){toast('パスワードを変更できるのは全権管理者か本人のみです');return;}
   const val=document.getElementById('adm-pw-'+key).value.trim();
   if(!val){toast('新しいパスワードを入力してください');return;}
   if(val.length<6){toast('パスワードは6文字以上で入力してください');return;}
@@ -6507,7 +6508,7 @@ function switchVaTab(tab){
   renderVitalAlert();
 }
 // ═══════════ 医師ページ ═══════════
-function isDoctor(){return S.userRole==='doctor'||isAdmin();}
+function isDoctor(){return S.userRole==='doctor'||S.userRole==='super_admin_doctor'||isAdmin();}
 function updateDoctorNav(){
   const show=isDoctor()?'':'none';
   const sbn=document.getElementById('sbn-doctor');
@@ -7065,7 +7066,7 @@ function renderDashboard(){
     else{iLbl.textContent='なし';iLbl.style.color='var(--ok)';}
   }
   // デモ職員初期化 URL トリガー
-  if(new URLSearchParams(location.search).get('init_staff')==='1'&&S.userRole==='super_admin'){
+  if(new URLSearchParams(location.search).get('init_staff')==='1'&&isSuperAdminRole()){
     setTimeout(initDemoStaff,800);
   }
 }
@@ -9162,7 +9163,7 @@ const SVC_DISP={'居住':'resident','デイ（通所）':'commute','デイ':'com
   'resident':'resident','commute':'commute','stay':'stay','visit':'visit','nursing':'nursing'};
 const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho',
   'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password'};
-const ROLE_DISP={'全権管理者':'super_admin','医師':'doctor','管理者':'facility_manager_resident',
+const ROLE_DISP={'全権管理者':'super_admin','全権管理者 兼 医師':'super_admin_doctor','医師':'doctor','管理者':'facility_manager_resident',
   '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
   'super_admin':'super_admin','doctor':'doctor','care':'care','nurse':'nurse','medical_office':'medical_office',
   'home_care':'home_care','facility_manager_resident':'facility_manager_resident',
@@ -9428,7 +9429,7 @@ const INIT_STAFF_DATA=[
   {name:"長谷川 美樹",kana:"ハセガワ ミキ",role:'facility_manager_commute',jigyousho:"訪問介護",loginId:'0035',pass:'aura3qbn'},
   {name:"今井 光恵",kana:"イマイ ミツエ",role:'nurse',jigyousho:"法人",loginId:'0014',pass:'aura9t95'},
   {name:"芝崎 千春",kana:"シバザキ チハル",role:'care',jigyousho:"訪問介護",loginId:'0036',pass:'auraazyt'},
-  {name:"稲田 崇志",kana:"イナダ タカシ",role:'super_admin',jigyousho:"法人",loginId:'0001',pass:'aurajwdq'},
+  {name:"稲田 崇志",kana:"イナダ タカシ",role:'super_admin_doctor',jigyousho:"法人",loginId:'0001',pass:'aurajwdq'},
   {name:"稲田 真帆",kana:"イナダ マホ",role:'super_admin',jigyousho:"法人",loginId:'0002',pass:'aurar86j'},
   {name:"柚木 愛",kana:"ユノキ ホノカ",role:'medical_office',jigyousho:"法人",loginId:'0069',pass:'aurasf75'},
   {name:"綾目 紅",kana:"アヤメ コウ",role:'medical_office',jigyousho:"法人",loginId:'0070',pass:'aurakwve'},
@@ -9542,7 +9543,7 @@ function getNextStaffLoginId(){
   const ids=Object.values(getCustomStaff()).map(s=>parseInt(s.loginId)||0).filter(n=>n<10000);
   return String(Math.max(...ids,99)+1).padStart(4,'0');
 }
-const ROLE_ORDER=['super_admin','facility_manager_resident','facility_manager_commute','facility_manager_stay','facility_manager_visit','facility_manager_home_care','nurse','care','medical_office','home_care'];
+const ROLE_ORDER=['super_admin_doctor','super_admin','facility_manager_resident','facility_manager_commute','facility_manager_stay','facility_manager_visit','facility_manager_home_care','nurse','care','medical_office','home_care'];
 function renderStaffRoleDropdown(){
   const myLevel=ROLE_ORDER.indexOf(S.userRole??'home_care');
   const sel=document.getElementById('ms-role');
