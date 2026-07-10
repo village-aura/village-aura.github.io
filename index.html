@@ -4096,8 +4096,8 @@ const STAFF_INFO = {
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.loginId||null;}
-function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key].loginId;}
-function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key].role;}
+function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key]?.loginId||getCustomStaff()[key]?.loginId||'';}
+function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key]?.role||getCustomStaff()[key]?.role||'care';}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
@@ -5351,21 +5351,20 @@ function renderAdminStaffList(){
   const roleOptions=Object.entries(ROLE_COLORS).map(([r,v])=>
     '<option value="'+r+'">'+v.label+'</option>'
   ).join('');
-  const sorted=Object.entries(STAFF_INFO).filter(([,s])=>!s.hidden).sort((a,b)=>{
-    const roleOrder={super_admin:0,doctor:1,facility_manager_resident:2,facility_manager_commute:2,facility_manager_stay:2,facility_manager_visit:2,facility_manager_home_care:2,nurse:3,care:4,home_care:5,medical_office:6};
-    const ra=roleOrder[getStaffRole(a[0])]??9, rb=roleOrder[getStaffRole(b[0])]??9;
-    if(ra!==rb) return ra-rb;
-    return getStaffLoginId(a[0]).localeCompare(getStaffLoginId(b[0]),'ja',{numeric:true});
-  });
+  const allEntries=[
+    ...Object.entries(STAFF_INFO).filter(([,s])=>!s.hidden),
+    ...Object.entries(getCustomStaff())
+  ].sort((a,b)=>(parseInt(getStaffLoginId(a[0]))||9999)-(parseInt(getStaffLoginId(b[0]))||9999));
+  const isCustomKey=key=>!!getCustomStaff()[key];
   list.innerHTML='<div style="display:flex;flex-direction:column;gap:4px">'
-    +sorted.map(([key,info])=>{
+    +allEntries.map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
-    const curPass=getStaffPass(key);
     const curLoginId=getStaffLoginId(key);
     const curRole=getStaffRole(key);
     const rc=getRoleInfo(curRole);
     const editId='adm-edit-'+key;
+    const canDel=isCustomKey(key)&&!isMe;
     return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
         <span style="font-size:16px">${disabled?'🔒':'👤'}</span>
@@ -5391,20 +5390,32 @@ function renderAdminStaffList(){
           <input type="text" id="adm-lid-${key}" value="${escHtml(curLoginId)}" maxlength="8" inputmode="numeric" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
           <button onclick="adminSetLoginId('${key}')" style="padding:6px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center${canDel?';margin-bottom:6px':''}">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">PW</span>
-          <input type="password" id="adm-pw-${key}" placeholder="新しいパスワードを入力" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
+          <input type="password" id="adm-pw-${key}" placeholder="新しいパスワード" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
           <button onclick="adminSetPassword('${key}')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
+        ${canDel?('<button onclick="deleteCustomStaff(\''+key+'\')" style="width:100%;padding:7px;background:#fff;color:var(--ng);border:1.5px solid var(--ng);border-radius:7px;font-size:12px;font-weight:700">この職員を削除</button>'):''}
       </div>
     </div>`;
   }).join('')+'</div>';
-  sorted.forEach(([key])=>{
+  allEntries.forEach(([key])=>{
     const sel=document.getElementById('adm-role-'+key);
     if(sel) sel.value=getStaffRole(key);
   });
 }
 
+
+function deleteCustomStaff(key){
+  const cs=getCustomStaff();
+  const info=cs[key];if(!info)return;
+  if(!confirm(info.name+' を削除しますか？'))return;
+  delete cs[key];saveCustomStaff(cs);
+  const ss=getStaffSettings();delete ss[key];saveStaffSettings(ss);
+  addAuditLog('職員削除',info.name+' (ID:'+info.loginId+')');
+  toast(info.name+' を削除しました ✓');
+  renderAdminStaffList();
+}
 function toggleAdmEdit(id){
   const el=document.getElementById(id);
   const arrow=document.getElementById(id+'-arrow');
@@ -5419,21 +5430,22 @@ function toggleStaffDisabled(key,disable){
   settings[key].disabled=disable;
   saveStaffSettings(settings);
   renderAdminStaffList();
-  addAuditLog(disable?'アカウント停止':'アカウント有効化',STAFF_INFO[key].name+' (ID:'+getStaffLoginId(key)+')');
-  toast(STAFF_INFO[key].name+(disable?' を利用停止しました':' を有効化しました'));
+  addAuditLog(disable?'アカウント停止':'アカウント有効化',getStaffInfo(key)?.name||'不明'+' (ID:'+getStaffLoginId(key)+')');
+  toast(getStaffInfo(key)?.name||'不明'+(disable?' を利用停止しました':' を有効化しました'));
 }
 function adminSetLoginId(key){
   const val=document.getElementById('adm-lid-'+key).value.trim();
   if(!val){toast('IDを入力してください');return;}
-  const dup=Object.keys(STAFF_INFO).find(k=>k!==key&&getStaffLoginId(k)===val);
+  const allK=[...Object.keys(STAFF_INFO),...Object.keys(getCustomStaff())];
+  const dup=allK.find(k=>k!==key&&getStaffLoginId(k)===val);
   if(dup){toast('このIDは既に使用されています');return;}
   const settings=getStaffSettings();
   if(!settings[key]) settings[key]={};
   settings[key].loginId=val;
   saveStaffSettings(settings);
   renderAdminStaffList();
-  addAuditLog('職員ID変更',STAFF_INFO[key].name+' → '+val);
-  toast(STAFF_INFO[key].name+' の職員IDを変更しました ✓');
+  addAuditLog('職員ID変更',getStaffInfo(key)?.name||'不明'+' → '+val);
+  toast(getStaffInfo(key)?.name||'不明'+' の職員IDを変更しました ✓');
 }
 function adminSetPassword(key){
   const val=document.getElementById('adm-pw-'+key).value.trim();
@@ -5446,8 +5458,8 @@ function adminSetPassword(key){
   settings[key].fb_ver=(settings[key].fb_ver||0)+1;
   saveStaffSettings(settings);
   document.getElementById('adm-pw-'+key).value='';
-  addAuditLog('管理者パスワード変更',STAFF_INFO[key].name+' (ID:'+getStaffLoginId(key)+')');
-  toast(STAFF_INFO[key].name+' のパスワードを変更しました ✓（次回ログイン時に反映）');
+  addAuditLog('管理者パスワード変更',getStaffInfo(key)?.name||'不明'+' (ID:'+getStaffLoginId(key)+')');
+  toast(getStaffInfo(key)?.name||'不明'+' のパスワードを変更しました ✓（次回ログイン時に反映）');
 }
 function adminSetRole(key){
   const sel=document.getElementById('adm-role-'+key);
@@ -5460,8 +5472,8 @@ function adminSetRole(key){
   saveStaffSettings(settings);
   renderAdminStaffList();
   const label=(ROLE_COLORS[newRole]||{label:newRole}).label;
-  addAuditLog('ロール変更',STAFF_INFO[key].name+' → '+label);
-  toast(STAFF_INFO[key].name+' のロールを「'+label+'」に変更しました ✓');
+  addAuditLog('ロール変更',getStaffInfo(key)?.name||'不明'+' → '+label);
+  toast(getStaffInfo(key)?.name||'不明'+' のロールを「'+label+'」に変更しました ✓');
 }
 // ── 端末管理・Wi-Fi制限 ──
 function computeFingerprint(){
@@ -5733,8 +5745,10 @@ function getHistCat(action){
   return c||{key:'other',label:'その他',color:'#9ca3af'};
 }
 function getAllStaffNames(){
-  const names=Object.values(STAFF_INFO).map(s=>s.name);
-  Object.values(getCustomStaff()).forEach(s=>{if(!names.includes(s.name))names.push(s.name);});
+  const cs=getCustomStaff();
+  const sorted=Object.values(cs).sort((a,b)=>(parseInt(a.loginId)||9999)-(parseInt(b.loginId)||9999));
+  const names=sorted.map(s=>s.name);
+  Object.values(STAFF_INFO).filter(s=>!s.hidden).forEach(s=>{if(!names.includes(s.name))names.push(s.name);});
   return names;
 }
 function renderHistoryViewer(){
