@@ -654,7 +654,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <span class="sb-lbl">システム</span>
-      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　データ登録</button>
+      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　新規登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
       <button class="sbn" id="sbn-doctor" onclick="showScr('scr-doctor')" style="display:none">🩺　医師ページ</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
@@ -1604,23 +1604,32 @@ a{color:var(--p);text-decoration:none}
           </div></div>
         </div>
 
-        <!-- 職員・ログ管理 -->
+        <!-- 職員管理 -->
         <div class="acc-item" id="acc-staff">
           <button class="acc-hd" onclick="toggleAcc(this)">
-            <span class="acc-ico">🛡</span>
-            <span class="acc-ttl">職員・ログ管理</span>
+            <span class="acc-ico">👥</span>
+            <span class="acc-ttl">職員管理</span>
             <i class="acc-arrow">›</i>
           </button>
           <div class="acc-body"><div class="acc-inner">
             <div id="admin-staff-list"></div>
-            <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.04em">📋 操作ログ</div>
-                <span style="font-size:10px;color:var(--sub)">過去7日間保管</span>
-              </div>
-              <button id="audit-log-btn" onclick="toggleAuditLog()" style="width:100%;padding:10px;background:var(--bg);color:var(--p);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--p)">▼ ログを表示</button>
-              <div id="audit-log-list" style="display:none;max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--bdr);border-radius:8px;margin-top:8px;background:var(--card)"></div>
+          </div></div>
+        </div>
+
+        <!-- ログ・履歴 -->
+        <div class="acc-item" id="acc-staff-log">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">📋</span>
+            <span class="acc-ttl">ログ・履歴</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.04em">📋 操作ログ</div>
+              <span style="font-size:10px;color:var(--sub)">過去7日間保管</span>
             </div>
+            <button id="audit-log-btn" onclick="toggleAuditLog()" style="width:100%;padding:10px;background:var(--bg);color:var(--p);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--p)">▼ ログを表示</button>
+            <div id="audit-log-list" style="display:none;max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--bdr);border-radius:8px;margin-top:8px;background:var(--card)"></div>
             <div style="margin-top:12px;border-top:1px solid var(--bdr);padding-top:12px">
               <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📊 アカウント別履歴</div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="hist-filter-bar">
@@ -1784,7 +1793,7 @@ a{color:var(--p);text-decoration:none}
         <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
         <button class="mmn" onclick="showScr('scr-incidents');closeMobileMenu()">⚠️ インシデント</button>
         <button class="mmn" onclick="showScr('scr-tasks');closeMobileMenu()">📌 タスク管理</button>
-        <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 データ登録</button>
+        <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 新規登録</button>
         <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
         <button class="mmn" id="mmn-doctor" onclick="showScr('scr-doctor');closeMobileMenu()" style="display:none">🩺 医師ページ</button>
         <button class="mmn" onclick="showScr('scr-settings');closeMobileMenu()">⚙️ 設定</button>
@@ -5351,6 +5360,7 @@ function changePassword(){
 function renderAdminStaffList(){
   const list=document.getElementById('admin-staff-list');
   const settings=getStaffSettings();
+  const isSuperAdmin=S.userRole==='super_admin';
   const roleOptions=Object.entries(ROLE_COLORS).map(([r,v])=>
     '<option value="'+r+'">'+v.label+'</option>'
   ).join('');
@@ -5359,7 +5369,9 @@ function renderAdminStaffList(){
     ...Object.entries(getCustomStaff())
   ].sort((a,b)=>(parseInt(getStaffLoginId(a[0]))||9999)-(parseInt(getStaffLoginId(b[0]))||9999));
   const isCustomKey=key=>!!getCustomStaff()[key];
-  list.innerHTML='<div style="display:flex;flex-direction:column;gap:4px">'
+  // 一括パスワード発行ボタン（super_adminのみ）
+  const bulkPwBtn=isSuperAdmin?'<button onclick="bulkAssignPasswords()" style="width:100%;padding:10px;background:#f3e8ff;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px">🔑 パスワード未設定の職員に一括発行</button>':'';
+  list.innerHTML=bulkPwBtn+'<div style="display:flex;flex-direction:column;gap:4px">'
     +allEntries.map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
@@ -5368,7 +5380,10 @@ function renderAdminStaffList(){
     const rc=getRoleInfo(curRole);
     const editId='adm-edit-'+key;
     const canDel=isCustomKey(key)&&!isMe;
-    const canChangePw=S.userRole==='super_admin'||isMe;
+    const canChangePw=isSuperAdmin||isMe;
+    const curPw=getStaffPass(key)||'';
+    const pwDisplay=canChangePw?('<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">現PW</span><span id="adm-pw-show-'+key+'" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:.08em;color:var(--txt);padding:6px 8px;background:#f8f9fb;border:1px solid var(--bdr);border-radius:7px;cursor:pointer" onclick="togglePwShow(\''+key+'\',\''+escHtml(curPw)+'\')" title="タップで表示">'+(curPw?'●●●●●●●●':'（未設定）')+'</span><button onclick="adminRegenPassword(\''+key+'\')" style="padding:6px 8px;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:7px;font-size:11px;font-weight:700;white-space:nowrap">🔀 再発行</button></div>'):'';
+    const pwChange=canChangePw?('<div style="display:flex;gap:6px;align-items:center'+(canDel?';margin-bottom:6px':'')+'"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">変更</span><input type="password" id="adm-pw-'+key+'" placeholder="新しいパスワード（任意）" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb"><button onclick="adminSetPassword(\''+key+'\')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button></div>'):'';
     return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
         <span style="font-size:16px">${disabled?'🔒':'👤'}</span>
@@ -5394,7 +5409,7 @@ function renderAdminStaffList(){
           <input type="text" id="adm-lid-${key}" value="${escHtml(curLoginId)}" maxlength="8" inputmode="numeric" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb">
           <button onclick="adminSetLoginId('${key}')" style="padding:6px 10px;background:#6b7280;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
-        ${canChangePw?('<div style="display:flex;gap:6px;align-items:center'+(canDel?';margin-bottom:6px':'')+'"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">PW</span><input type="password" id="adm-pw-'+key+'" placeholder="新しいパスワード" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb"><button onclick="adminSetPassword(\''+key+'\')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button></div>'):''}
+        ${pwDisplay}${pwChange}
         ${canDel?('<button onclick="deleteCustomStaff(\''+key+'\')" style="width:100%;padding:7px;background:#fff;color:var(--ng);border:1.5px solid var(--ng);border-radius:7px;font-size:12px;font-weight:700">この職員を削除</button>'):''}
       </div>
     </div>`;
@@ -5406,6 +5421,45 @@ function renderAdminStaffList(){
 }
 
 
+function togglePwShow(key,pw){
+  const el=document.getElementById('adm-pw-show-'+key);
+  if(!el)return;
+  el.textContent=el.textContent.startsWith('●')?pw:(pw?'●●●●●●●●':'（未設定）');
+}
+function adminRegenPassword(key){
+  const newPw=generatePassword();
+  const settings=getStaffSettings();
+  if(!settings[key])settings[key]={};
+  settings[key].pass=newPw;
+  settings[key].fb_ver=(settings[key].fb_ver||0)+1;
+  saveStaffSettings(settings);
+  const cs=getCustomStaff();
+  if(cs[key]){cs[key].pass=newPw;saveCustomStaff(cs);}
+  addAuditLog('PW再発行',getStaffInfo(key)?.name||'不明');
+  renderAdminStaffList();
+  toast(getStaffInfo(key)?.name||'不明'+'のパスワードを再発行しました ✓');
+}
+function bulkAssignPasswords(){
+  if(!confirm('パスワード未設定の職員にパスワードを一括発行します。\nよろしいですか？'))return;
+  const cs=getCustomStaff();
+  const ss=getStaffSettings();
+  let count=0;
+  Object.keys(cs).forEach(key=>{
+    const hasPw=ss[key]?.pass||cs[key]?.pass;
+    if(!hasPw){
+      const pw=generatePassword();
+      if(!ss[key])ss[key]={};
+      ss[key].pass=pw;
+      cs[key].pass=pw;
+      count++;
+    }
+  });
+  saveCustomStaff(cs);
+  saveStaffSettings(ss);
+  addAuditLog('PW一括発行',count+'名');
+  renderAdminStaffList();
+  toast(count+'名にパスワードを発行しました ✓');
+}
 function deleteCustomStaff(key){
   const cs=getCustomStaff();
   const info=cs[key];if(!info)return;
@@ -6166,7 +6220,7 @@ function showScr(id){
   scrEl.classList.add('on');
   const titles={
     'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
-    'scr-detail':'利用者詳細','scr-import':'データ登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
+    'scr-detail':'利用者詳細','scr-import':'新規登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
     'scr-diary':'業務日誌',
     'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
