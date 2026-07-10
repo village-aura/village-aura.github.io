@@ -696,6 +696,9 @@ a{color:var(--p);text-decoration:none}
       <span id="dash-user-lbl" style="font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis"></span>
     </div>
 
+    <!-- バックアップ警告バナー -->
+    <div id="backup-banner" style="display:none"></div>
+
     <!-- ステータスバー（コンパクト） -->
     <div style="margin:0 12px 10px">
       <div id="dash-alerts-hd" onclick="toggleDashAlerts()" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border-radius:10px;cursor:pointer;border:1.5px solid var(--bdr);touch-action:manipulation">
@@ -1597,7 +1600,7 @@ a{color:var(--p);text-decoration:none}
           <div class="acc-body"><div class="acc-inner">
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 手動バックアップ</div>
             <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px">バックアップをダウンロード（JSON）</button>
-            <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。毎日0時に自動バックアップが実行されています。</div>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。管理者ログイン時、前回から24時間以上経過している場合は自動でダウンロードされます。</div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔁 バックアップから復元</div>
             <label style="display:block;width:100%;padding:11px;background:#fff3e0;color:#e65100;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;text-align:center;cursor:pointer;border:1px solid #ffcc80;box-sizing:border-box">
               JSONファイルを選択して復元
@@ -4458,7 +4461,15 @@ async function login(){
   }
   addAuditLog('ログイン','ID: '+inputId);
   localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey,loginTs:Date.now()}));
-  loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+  loadFromFirebase().then(()=>{
+    renderDashboard();setupRealtimeSync();
+    if(isAdmin()){
+      const bst=getBackupStatus();
+      if(bst.days===null||bst.days>=1){
+        setTimeout(()=>{ exportData(); },3000);
+      }
+    }
+  });
   startAIKeySync();
   setTimeout(showTutorial, 600);
 }
@@ -5897,7 +5908,25 @@ function getBackupStatus(){
   const days=Math.floor((Date.now()-new Date(last).getTime())/(1000*60*60*24));
   return {days, urgent:days>=7, warn:days>=5, lastDate:new Date(last).toLocaleDateString('ja-JP')};
 }
-function renderBackupBanner(){}
+function renderBackupBanner(){
+  const el=document.getElementById('backup-banner');
+  if(!el||!isAdmin()){if(el)el.style.display='none';return;}
+  const st=getBackupStatus();
+  const overdue=st.days===null||st.days>=7;
+  const warn=!overdue&&st.days>=3;
+  if(!overdue&&!warn){el.style.display='none';return;}
+  const msg=st.days===null?'バックアップがまだ取得されていません':`最後のバックアップから ${st.days} 日が経過しています`;
+  const color=overdue?{bg:'#fff3e0',bdr:'#ffcc80',txt:'#e65100',sub:'#bf360c'}:{bg:'#fffde7',bdr:'#fff176',txt:'#f57f17',sub:'#e65100'};
+  el.style.display='block';
+  el.innerHTML=`<div onclick="exportData()" style="margin:0 12px 8px;background:${color.bg};border:1.5px solid ${color.bdr};border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;touch-action:manipulation">
+    <span style="font-size:20px">${overdue?'⚠️':'💾'}</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:${color.txt}">${msg}</div>
+      <div style="font-size:11px;color:${color.sub}">タップしてダウンロード</div>
+    </div>
+    <span style="font-size:18px;color:${color.txt}">›</span>
+  </div>`;
+}
 function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
 
 // ── RECENT RESIDENTS ──
