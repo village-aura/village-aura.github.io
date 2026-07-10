@@ -5267,7 +5267,9 @@ function renderSettings(){
     renderAdminStaffList();
     renderAccessSettings();
     renderProposalList();
-    renderRolePreviewGrid();
+    const rpWrap=document.getElementById('acc-role-preview');
+    if(rpWrap) rpWrap.style.display=isSuperAdminRole()?'block':'none';
+    if(isSuperAdminRole()) renderRolePreviewGrid();
     if(Date.now()-_lastAuditFetch>30000){
       fetchAndMergeAuditLogs(()=>renderHistoryViewer());
     } else {
@@ -5322,7 +5324,7 @@ function enterRolePreview(role){
     banner.style.background=info.bg||'#555';
     document.getElementById('preview-banner-lbl').textContent=(info.label||role)+' として閲覧中';
   }
-  showScr('scr-home');
+  showScr('scr-dashboard');
   renderDashboard();
 }
 function exitRolePreview(){
