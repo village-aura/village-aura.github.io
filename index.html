@@ -5184,10 +5184,9 @@ function copyProposalPrompt(){
 }
 
 function forceReload(){
-  const base=location.href.split('?')[0].split('#')[0];
-  const params=new URLSearchParams(location.search);
-  const tok=params.get('tok');
-  location.href=base+'?_r='+Date.now()+(tok?'&tok='+encodeURIComponent(tok):'');
+  const u=new URL(location.href);
+  u.searchParams.set('_r',Date.now());
+  location.href=u.toString();
 }
 let _initEtag=null;
 let _updateCheckTimer=null;
