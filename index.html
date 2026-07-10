@@ -1602,8 +1602,9 @@ a{color:var(--p);text-decoration:none}
             <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px">バックアップをダウンロード（JSON）</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。管理者ログイン時、前回から24時間以上経過している場合は自動でダウンロードされます。</div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔁 バックアップから復元</div>
+            <button onclick="restoreFromFirestoreBackup()" style="width:100%;padding:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:8px;border:1px solid #90caf9">☁️ クラウドバックアップから復元（推奨）</button>
             <label style="display:block;width:100%;padding:11px;background:#fff3e0;color:#e65100;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;text-align:center;cursor:pointer;border:1px solid #ffcc80;box-sizing:border-box">
-              JSONファイルを選択して復元
+              📂 JSONファイルを選択して復元
               <input type="file" accept=".json" onchange="importData(this)" style="display:none">
             </label>
             <div style="font-size:11px;color:var(--ng);margin-bottom:16px;line-height:1.6">⚠️ 現在のデータを上書きします。操作前に必ずバックアップを取得してください。</div>
@@ -4461,9 +4462,28 @@ async function login(){
   }
   addAuditLog('ログイン','ID: '+inputId);
   localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey,loginTs:Date.now()}));
-  loadFromFirebase().then(()=>{
+  loadFromFirebase().then(async ()=>{
     renderDashboard();setupRealtimeSync();
     if(isAdmin()){
+      // localStorage破損チェック（利用者が0人 かつ Firestoreにバックアップあり）
+      if(getResidents().length===0&&fbReady&&db){
+        try{
+          const doc=await db.collection('va_backups').doc('latest').get();
+          if(doc.exists&&doc.data()?.residents?.length>0){
+            const d=doc.data();
+            const savedAt=d.savedAt?.toDate?d.savedAt.toDate().toLocaleString('ja-JP'):'不明';
+            if(confirm(`データが空になっています。\nクラウドバックアップ（${savedAt}）から自動復元しますか？`)){
+              if(d.residents){lsSet('residents',d.residents);fsSet('residents',d.residents);}
+              if(d.handovers){lsSet('handovers',d.handovers);fsSet('handovers',d.handovers);}
+              await loadFromFirebase();
+              renderDashboard();
+              toast('クラウドバックアップから自動復元しました ✓');
+              addAuditLog('自動復元','データ空検知 → Firestoreバックアップから復元（'+savedAt+'）');
+            }
+          }
+        }catch(e){console.warn('Auto-restore check failed:',e);}
+      }
+      // 24h経過で自動バックアップDL
       const bst=getBackupStatus();
       if(bst.days===null||bst.days>=1){
         setTimeout(()=>{ exportData(); },3000);
@@ -5872,8 +5892,47 @@ function exportData(){
   URL.revokeObjectURL(url);
   localStorage.setItem('last_backup', new Date().toISOString());
   addAuditLog('データエクスポート','管理者によるバックアップ');
+  uploadBackupToFirestore(data);
   renderBackupBanner();
-  toast('バックアップをダウンロードしました ✓\nDropboxの「040_Claude/009_施設カルテシステム/backup」フォルダに移動してください');
+  toast('バックアップをダウンロード＆クラウド保存しました ✓');
+}
+
+async function uploadBackupToFirestore(data){
+  if(!fbReady||!db)return;
+  try{
+    const payload={
+      savedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      savedBy:data.exportedBy||S.user,
+      exportedAt:data.exportedAt,
+      residents:data.residents,
+      handovers:data.handovers,
+    };
+    // サイズチェック（Firestoreドキュメント上限1MB）
+    if(JSON.stringify(payload).length>850000) payload.handovers=[];
+    await db.collection('va_backups').doc('latest').set(payload);
+    // 日付別コピーも保存（最大30件）
+    const dateKey=new Date().toISOString().slice(0,10);
+    await db.collection('va_backups').doc(dateKey).set(payload);
+  }catch(e){console.warn('Firestore backup upload failed:',e);}
+}
+
+async function restoreFromFirestoreBackup(){
+  if(!fbReady||!db){toast('Firebase未接続のため復元できません');return;}
+  if(!confirm('Firestoreのバックアップから復元しますか？\n現在のデータは上書きされます。')){return;}
+  try{
+    const doc=await db.collection('va_backups').doc('latest').get();
+    if(!doc.exists){toast('クラウドバックアップが見つかりません');return;}
+    const d=doc.data();
+    const savedAt=d.savedAt?.toDate?d.savedAt.toDate().toLocaleString('ja-JP'):'不明';
+    if(!confirm(`バックアップ日時: ${savedAt}\n保存者: ${d.savedBy||'不明'}\n\n復元を実行しますか？`)){return;}
+    if(d.residents){lsSet('residents',d.residents);fsSet('residents',d.residents);}
+    if(d.handovers){lsSet('handovers',d.handovers);fsSet('handovers',d.handovers);}
+    // その他のFirestoreデータを再ロード
+    await loadFromFirebase();
+    renderDashboard();
+    toast('クラウドバックアップから復元しました ✓');
+    addAuditLog('データ復元','Firestoreバックアップから復元（'+savedAt+'）');
+  }catch(e){toast('復元に失敗しました: '+e.message);}
 }
 function importData(input){
   if(!isAdmin()){toast('管理者のみ実行できます');return;}
