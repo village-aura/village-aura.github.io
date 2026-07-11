@@ -363,8 +363,8 @@ a{color:var(--p);text-decoration:none}
 .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
 
 /* ── TOAST ── */
-#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:99999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:normal;max-width:80%;text-align:center}
-#toast.on{opacity:1}
+#toast{position:fixed;bottom:50vh;left:0;right:0;margin:0 auto;width:fit-content;max-width:80%;background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:2147483647;display:none;pointer-events:none;white-space:normal;text-align:center}
+#toast.on{display:block}
 .req{color:var(--ng);margin-left:3px;font-weight:800}
 .field input.err,.field textarea.err{border-color:var(--ng)!important;background:#fff5f5!important}
 
@@ -589,7 +589,7 @@ a{color:var(--p);text-decoration:none}
 </style>
 </head>
 <body>
-<div id="ver-banner" style="position:fixed;top:0;left:0;right:0;background:#d32f2f;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;z-index:99998;text-align:center">🔧 DEBUG VER 2026-07-11C — タップしてテスト</div>
+<div id="ver-banner" style="position:fixed;top:0;left:0;right:0;background:#d32f2f;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;z-index:99998;text-align:center">🔧 DEBUG VER 2026-07-11D — TOUCH:0 CLICK:0</div>
 
 <!-- ═══════════ LOGIN ═══════════ -->
 <div id="scr-login" class="scr on">
@@ -12268,10 +12268,15 @@ function handleFsFile(inp,mode){
 // ═══════════ TOAST ═══════════
 let toastTimer;
 function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('on');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.remove('on'),2500);
+  try{
+    const el=document.getElementById('toast');
+    if(!el){const b=document.getElementById('ver-banner');if(b)b.textContent='TOAST_NULL: '+msg;return;}
+    el.textContent=msg;
+    el.classList.add('on');
+    el.style.display='block';
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>{el.classList.remove('on');el.style.display='none';},2500);
+  }catch(ex){const b=document.getElementById('ver-banner');if(b)b.textContent='TOAST_ERR: '+ex.message;}
 }
 
 // ═══════════ RESET ═══════════
@@ -12541,11 +12546,23 @@ function resetLockTimer(){
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
 
-// ── デバッグ: タップ先要素の特定 ──
+// ── デバッグ: TOUCH/CLICKカウンター ──
+let _dbgT=0,_dbgC=0;
+function _dbgBanner(extra){
+  try{const b=document.getElementById('ver-banner');if(b)b.textContent='v11D T:'+_dbgT+' C:'+_dbgC+(extra?' '+extra:'');}catch(e){}
+}
+document.addEventListener('touchend',function(e){
+  _dbgT++;
+  let info='';
+  try{const t=e.changedTouches[0]&&document.elementFromPoint(e.changedTouches[0].clientX,e.changedTouches[0].clientY);if(t)info=t.tagName+(t.id?'#'+t.id:'');}catch(e2){}
+  _dbgBanner(info);
+  toast('TOUCH:'+_dbgT+' '+info);
+},{passive:true,capture:true});
 document.addEventListener('click',function(e){
-  const t=e.target;
-  const info=t.tagName+(t.id?'#'+t.id:'')+(t.className&&typeof t.className==='string'?'.'+t.className.trim().split(/\s+/)[0]:'');
-  toast('TAP→'+info+' / onclick='+(t.getAttribute('onclick')||'none').substr(0,30));
+  _dbgC++;
+  let info='';
+  try{info=e.target.tagName+(e.target.id?'#'+e.target.id:'');}catch(e2){}
+  _dbgBanner(info);
 },true);
 
 // ── スワイプナビゲーション ──
