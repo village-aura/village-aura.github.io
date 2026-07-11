@@ -1683,6 +1683,8 @@ a{color:var(--p);text-decoration:none}
               📊 ローカル: <b id="ss-local-res">--</b>名 ／ クラウド: <b id="ss-cloud-res">--</b>名
               <button onclick="refreshSyncStatus()" style="margin-left:8px;padding:2px 8px;font-size:11px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);cursor:pointer">確認</button>
             </div>
+            <button onclick="deduplicateResidents(this)" style="width:100%;padding:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;border:1px solid #a5d6a7">🔧 重複利用者をまとめて削除</button>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:10px;line-height:1.6">同じ氏名が複数登録されている場合、最初の1件だけ残して削除します。</div>
             <button id="btn-push-fs" onclick="pushAllToFirestore(this)" style="width:100%;padding:11px;background:#1565c0;color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:4px">📤 このPCのデータをクラウドに強制アップロード</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">他の端末に表示されない場合に使用。このPCのデータをFirestoreに上書き保存します。</div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 手動バックアップ</div>
@@ -6002,6 +6004,19 @@ async function refreshSyncStatus(){
     if(cloudEl)cloudEl.textContent=serverCount;
   }catch(e){if(cloudEl)cloudEl.textContent='読取失敗';}
 }
+// ── 重複利用者削除 ──
+function deduplicateResidents(btn){
+  const rs=getResidents();
+  const seen=new Set(),deduped=[];
+  for(const r of rs){const k=_normName(r.name);if(!seen.has(k)){seen.add(k);deduped.push(r);}}
+  const removed=rs.length-deduped.length;
+  if(!removed){toast('重複なし（削除対象なし）');return;}
+  saveResidents(deduped);
+  if(fbReady&&db)_doFsSet('residents',deduped);
+  toast(`重複 ${removed}名を削除しました ✓ 残 ${deduped.length}名`);
+  if(btn){btn.textContent=`✅ ${removed}名削除済み`;setTimeout(()=>{if(btn)btn.textContent='🔧 重複利用者をまとめて削除';},4000);}
+  _renderCurrentScreen();
+}
 // ── クラウド強制アップロード ──
 async function pushAllToFirestore(btn){
   if(!fbReady||!db){
@@ -9318,6 +9333,7 @@ function dropFile(e){
   const f=e.dataTransfer.files[0];
   if(f){const inp=document.getElementById('file-inp');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleFile(inp);}
 }
+function _normName(n){return String(n||'').replace(/\s+/g,' ').replace(/　/g,' ').trim();}
 function importCSV(){
   if(!S.csvData)return;
   const {headers,rows}=S.csvData;
@@ -9325,11 +9341,11 @@ function importCSV(){
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
   const existing=getResidents();
-  const added=[];
+  const added=[];let skipped=0;
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    if(existing.find(e=>e.name===name))return;
+    if(existing.find(e=>_normName(e.name)===_normName(name))){skipped++;return;}
     const birthStr=(i('birth_date')>=0?String(r[i('birth_date')]||''):'').replace(/\//g,'-');
     let age=0;
     if(birthStr)try{age=Math.floor((Date.now()-new Date(birthStr))/(365.25*24*3600*1000));}catch(e){}
@@ -9349,12 +9365,16 @@ function importCSV(){
       allergy:(i('allergies')>=0?String(r[i('allergies')]||''):'').trim()
     });
   });
-  if(!added.length){toast('新しいデータがありません（重複またはデータなし）');return;}
-  const mergedRes=[...existing,...added];
+  if(!added.length){toast(`新しいデータがありません（重複 ${skipped}名スキップ）`);return;}
+  // マージ後に名前で重複除去（念のため）
+  const raw=[...existing,...added];
+  const seenNames=new Set();
+  const mergedRes=raw.filter(r=>{const k=_normName(r.name);if(seenNames.has(k))return false;seenNames.add(k);return true;});
   saveResidents(mergedRes);
   // Firebaseが接続済みなら即時プッシュ（キュー消失防止）
   if(fbReady&&db) _doFsSet('residents',mergedRes);
-  toast(`${added.length}名をインポートしました ✓`);
+  const dupMsg=skipped?` （重複 ${skipped}名スキップ）`:'';
+  toast(`${added.length}名をインポートしました ✓${dupMsg}`);
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
 }
