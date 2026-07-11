@@ -9189,8 +9189,8 @@ const CARE_DISP={'自立':'none','要支援1':'support1','要支援2':'support2'
 const SVC_DISP={'居住':'resident','デイ（通所）':'commute','デイ':'commute','通所':'commute',
   '小多機':'stay','訪問':'visit','訪問看護':'nursing',
   'resident':'resident','commute':'commute','stay':'stay','visit':'visit','nursing':'nursing'};
-const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho',
-  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password'};
+const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho','従業員番号':'emp_no',
+  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password','emp_no':'emp_no'};
 const ROLE_DISP={'全権管理者':'super_admin','全権管理者 兼 医師':'super_admin_doctor','医師':'doctor','管理者':'facility_manager_resident',
   '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
   'サ高住管理者':'facility_manager_resident','デイ管理者':'facility_manager_commute',
@@ -9365,7 +9365,8 @@ function importStaffCSV(headers,rows){
     if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId:'-',pass:'-',note:'スキップ（全権管理者のみ登録可）'});return;}
     const jRaw=(i('jigyousho')>=0?String(r[i('jigyousho')]||''):'').trim();
     const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
-    const loginId=getNextStaffLoginId();
+    const empRaw=(i('emp_no')>=0?String(r[i('emp_no')]||''):'').trim();
+    const loginId=empRaw?String(parseInt(empRaw)||0).padStart(4,'0'):getNextStaffLoginId();
     const key='cs'+Date.now()+Math.random();
     const kana=(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim();
     cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
