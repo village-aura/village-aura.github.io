@@ -13529,15 +13529,21 @@ _startLockTimer();
     startUpdateChecker();
     resetLockTimer();
     // Firebase Auth SDKが自動でセッションを復元するのを待つ（パスワード再入力不要）
+    // ※ onAuthStateChanged は null → 匿名 → 本人 の順で複数回発火することがあるため
+    //   非匿名ユーザーが来るまで待ち続け、5秒でタイムアウトする
+    let _sessAuthDone=false;
     const unsubAuth=firebase.auth().onAuthStateChanged(user=>{
-      unsubAuth();
+      if(_sessAuthDone)return;
       if(user&&!user.isAnonymous){
+        _sessAuthDone=true;
+        unsubAuth();
         fbReady=true;
         flushFsQueue();
         loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();_renderCurrentScreen();});
-            }
-      // 非認証 or 匿名の場合はオフラインモードで継続（次回操作時に再ログイン誘導）
+      }
+      // null/匿名: まだ復元中の可能性があるため待機継続
     });
+    setTimeout(()=>{if(!_sessAuthDone){_sessAuthDone=true;unsubAuth();}},5000);
   }catch(e){}
 })();
 
