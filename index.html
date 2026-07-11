@@ -116,15 +116,6 @@ a{color:var(--p);text-decoration:none}
 .man-item code{background:#f0f4ff;color:var(--p);border-radius:4px;padding:1px 5px;font-size:12px}
 .ai-wrap{display:flex;flex-direction:column;height:calc(100vh - 170px)}
 .ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
-.ai-msg{max-width:86%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.65;word-break:break-word}
-.ai-msg.user{background:var(--p);color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
-.ai-msg.ai{background:var(--card);color:var(--txt);align-self:flex-start;border-radius:16px 16px 16px 4px;box-shadow:var(--sh)}
-.ai-msg.typing{background:var(--card);color:var(--sub);align-self:flex-start;font-style:italic;box-shadow:var(--sh);border-radius:16px}
-.ai-input-row{display:flex;gap:8px;padding:10px 12px;background:var(--bg);border-top:1px solid var(--bdr);padding-bottom:calc(10px + env(safe-area-inset-bottom))}
-.ai-input{flex:1;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:24px;font-size:15px;background:#fff;resize:none;height:44px;overflow:hidden}
-.ai-send{background:var(--p);color:#fff;border-radius:50%;width:44px;height:44px;font-size:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
-.ai-send:disabled{background:var(--bdr)}
-.ai-key-notice{margin:12px;padding:12px 14px;background:#fff3e0;border:1.5px solid #FB8C00;border-radius:var(--r);font-size:13px;line-height:1.6}
 
 /* ── LOGIN ── */
 #scr-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:0;background:#091929;position:relative;overflow:hidden}
@@ -1723,23 +1714,6 @@ a{color:var(--p);text-decoration:none}
             </div>
           </div></div>
         </div>
-
-        <!-- AI設定 -->
-        <div class="acc-item" id="acc-ai">
-          <button class="acc-hd" onclick="toggleAcc(this)">
-            <span class="acc-ico">🤖</span>
-            <span class="acc-ttl">AI FAQ設定（Groq）</span>
-            <i class="acc-arrow">›</i>
-          </button>
-          <div class="acc-body"><div class="acc-inner">
-            <div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:10px">Groqの無料APIキーを入力するとAI FAQが使えます。<br><a href="https://console.groq.com" target="_blank" style="color:var(--p)">console.groq.com</a> でキーを取得してください。</div>
-            <input type="password" id="ai-api-key-input" placeholder="gsk_..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--txt);margin-bottom:8px">
-            <div style="display:flex;gap:8px;margin-bottom:8px">
-              <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
-              <button onclick="clearAIKey()" style="padding:10px 14px;background:var(--bg);color:var(--ng);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--bdr)">削除</button>
-            </div>
-            <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
-          </div></div>
         </div>
 
         <!-- 提案管理 -->
@@ -2198,7 +2172,6 @@ a{color:var(--p);text-decoration:none}
         <button id="htab-tasks" onclick="showHelpTab('tasks')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📌<br>タスク</button>
         <button id="htab-settings" onclick="showHelpTab('settings')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">⚙️<br>設定</button>
         <button id="htab-faq" onclick="showHelpTab('faq')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">❓<br>Q&amp;A</button>
-        <button id="htab-ai" onclick="showHelpTab('ai')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🤖<br>AI FAQ</button>
         <button id="htab-updates" onclick="showHelpTab('updates')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4;position:relative">🆕<br>更新履歴<span id="updates-new-dot" style="display:none;position:absolute;top:6px;right:8px;width:6px;height:6px;background:#ff5252;border-radius:50%"></span></button>
       </div>
       <!-- 右コンテンツ -->
@@ -2716,25 +2689,6 @@ a{color:var(--p);text-decoration:none}
 
           </div>
         </div>
-
-        <div id="hsec-ai" class="help-sec" style="display:none;padding:0">
-          <div id="ai-key-notice" class="ai-key-notice" style="display:none">
-        🔑 AI FAQを使うにはAnthropicのAPIキーが必要です。<br>
-        <b>設定</b>画面 →「AI FAQ APIキー」に入力してください。<br>
-        <span style="font-size:11px;color:var(--sub)">APIキーは端末内にのみ保存されます。</span>
-      </div>
-      <div class="ai-wrap">
-        <div class="ai-messages" id="ai-messages">
-          <div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>
-        </div>
-        <div class="ai-input-row">
-          <input class="ai-input" id="ai-input" type="text" placeholder="質問を入力…" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendAIMessage();}">
-          <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">➤</button>
-        </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   </div><!-- /main-content-wrap -->
 </div>
@@ -4211,7 +4165,6 @@ const FB_CONFIG={
 };
 const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records'];
 let db=null, fbReady=false, fbListeners=[];
-let _aiKey='', _aiKeyUnsub=null;
 
 // HTMLエスケープ（ユーザー入力データをinnerHTMLに挿入する際に必ず使用）
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -4386,7 +4339,7 @@ function _dec(b64){
     for(let i=0;i<b.length;i++)o[i]=b[i]^k.charCodeAt(i%k.length);
     return new TextDecoder().decode(o);}catch{return null;}
 }
-const _NOENC=new Set(['enc_ver','ai_api_key']);
+const _NOENC=new Set(['enc_ver']);
 function ls(k){
   if(_NOENC.has(k)){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
   const ev=localStorage.getItem('e_'+k);
@@ -4500,9 +4453,6 @@ async function login(){
   document.getElementById('app').style.display='block';
   const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
   const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
-  aiHistory=[];
-  const aiEl=document.getElementById('ai-messages');
-  if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   resetLockTimer();
   updateDoctorNav();
   showScr('scr-dashboard');
@@ -4572,7 +4522,6 @@ async function login(){
       }
     }
   });
-  startAIKeySync();
   setTimeout(showTutorial, 600);
 }
 function logout(){
@@ -4585,17 +4534,12 @@ function _doLogout(){
   localStorage.removeItem('va_session');
   fbReady=false;
   clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
-  aiHistory=[];
-  const aiEl=document.getElementById('ai-messages');
-  if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
   document.getElementById('login-id').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').style.display='none';
-  if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
-  _aiKey='';
 }
 
 // ═══════════ PHOTO ═══════════
@@ -4912,33 +4856,8 @@ function exportVitalsCSV(){
   _csvDL(rows,'vitals_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv');
   toast('バイタル記録をCSVで出力しました ✓');
 }
-// ═══════════ AI KEY SYNC ═══════════
-function startAIKeySync(){
-  if(!db)return;
-  if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
-  _aiKeyUnsub=db.collection('va_data').doc('__config').onSnapshot(snap=>{
-    _aiKey=(snap.exists&&snap.data().ai_api_key)||'';
-    const inp=document.getElementById('ai-api-key-input');
-    const sts=document.getElementById('ai-key-status');
-    const notice=document.getElementById('ai-key-notice');
-    if(inp)inp.value=_aiKey?'••••••••••••'+_aiKey.slice(-4):'';
-    if(sts)sts.textContent=_aiKey?'✓ APIキー登録済み（全端末共通）':'未登録';
-    if(notice)notice.style.display=_aiKey?'none':'block';
-  },()=>{});
-}
 
-// ═══════════ HELP / AI FAQ ═══════════
-const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
-主な機能：ログイン（職員ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
-職員ロール：統括管理者・サ高住管理者・デイ管理者・小多機管理者・訪問管理者・居宅管理者・看護師・介護職員・医療事務・居宅職員。
-介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
-let aiHistory=[];
-function initHelpScreen(){
-  showHelpTab('login');
-  const key=_aiKey;
-  const notice=document.getElementById('ai-key-notice');
-  if(notice)notice.style.display=key?'none':'block';
-}
+function initHelpScreen(){showHelpTab('login');}
 // ═══════════ TUTORIAL ═══════════
 const TUT_STEPS=[
   {ico:'🌟',title:'Village Aura へようこそ！',body:'介護記録・申し送り・タスク管理・帳票出力をスマホひとつで管理できます。\n初めての方向けに基本操作をご案内します。',tip:'初期パスワードは職員IDと同じです。ログイン後すぐに設定 → パスワード変更で変更してください'},
@@ -4948,7 +4867,7 @@ const TUT_STEPS=[
   {ico:'📌',title:'タスク管理',body:'メニューの「📌 タスク」からスタッフへのタスク割り当てができます。\n事業所・担当者・ステータスでフィルタリング可能。\n完了したタスクはチェックして管理します。',tip:'各事業所管理者は担当事業所のタスクが自動表示され、担当範囲のタスク削除も可能です'},
   {ico:'📣',title:'2種類の申し送り',body:'・ボード申し送り：シフト間の当日引き継ぎ（申し送りボード）\n・カルテ申し送り：長期的な医療・ケア情報（利用者詳細）',tip:'利用者詳細 → 「今シフトの申し送り」で両方を一覧確認できます'},
   {ico:'📊',title:'業務日誌・帳票出力',body:'業務日誌タブ（☰ メニュー内）から事業所ごとに帳票をプレビュー・印刷できます。\n入力した記録が自動的に帳票に反映されます。',tip:'個人記録・訪問介護記録は利用者選択と月指定が必要です'},
-  {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\nAI FAQにも質問できます（APIキー登録後）。'},
+  {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\n'},
 ];
 let S_tut_step=0;
 function showTutorial(force=false){
@@ -4978,62 +4897,6 @@ function nextTutorialStep(){
 function skipTutorial(){
   localStorage.setItem('tutorial_done_'+(S.user||'_'),'1');
   document.getElementById('tutorial-overlay').style.display='none';
-}
-function saveAIKey(){
-  const val=document.getElementById('ai-api-key-input').value.trim();
-  if(!val||val.startsWith('••')){toast('新しいAPIキーを入力してください');return;}
-  if(!db){toast('Firebaseに接続できません');return;}
-  db.collection('va_data').doc('__config').set({ai_api_key:val},{merge:true})
-    .then(()=>toast('APIキーを保存しました（全端末に反映） ✓'))
-    .catch(e=>toast('保存エラー: '+e.message));
-}
-function clearAIKey(){
-  if(!confirm('APIキーを削除しますか？全端末から削除されます。'))return;
-  if(!db){toast('Firebaseに接続できません');return;}
-  db.collection('va_data').doc('__config').update({ai_api_key:firebase.firestore.FieldValue.delete()})
-    .then(()=>toast('APIキーを削除しました'))
-    .catch(e=>toast('削除エラー: '+e.message));
-}
-function appendAIMsg(role,text){
-  const el=document.getElementById('ai-messages');if(!el)return;
-  const div=document.createElement('div');
-  div.className='ai-msg '+role;
-  div.textContent=text;
-  el.appendChild(div);
-  el.scrollTop=el.scrollHeight;
-  return div;
-}
-async function sendAIMessage(){
-  const inp=document.getElementById('ai-input');
-  const text=inp.value.trim();if(!text)return;
-  const key=_aiKey||'';
-  if(!key){toast('設定画面でGroq APIキーを登録してください');return;}
-  inp.value='';
-  appendAIMsg('user',text);
-  aiHistory.push({role:'user',content:text});
-  const btn=document.getElementById('ai-send-btn');
-  btn.disabled=true;
-  const typing=appendAIMsg('typing','考え中…');
-  try{
-    const useKey=_aiKey||'';
-    const messages=[{role:'system',content:AI_SYSTEM},...aiHistory];
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+useKey},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:600,messages})
-    });
-    const data=await res.json();
-    if(data.error){throw new Error(data.error.message||JSON.stringify(data.error));}
-    const reply=data.choices?.[0]?.message?.content||'応答を取得できませんでした';
-    typing.remove();
-    appendAIMsg('ai',reply);
-    aiHistory.push({role:'assistant',content:reply});
-    if(aiHistory.length>20)aiHistory=aiHistory.slice(-20);
-  }catch(e){
-    typing.remove();
-    appendAIMsg('ai','エラーが発生しました：'+e.message);
-  }
-  btn.disabled=false;
 }
 
 // ═══════════ SETTINGS ═══════════
@@ -5278,11 +5141,6 @@ function renderSettings(){
   setFontSize(localStorage.getItem('va_font')||'md');
   ['pw-cur','pw-new','pw-new2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const pwErr=document.getElementById('pw-err');if(pwErr)pwErr.style.display='none';
-  const key=_aiKey||'';
-  const inp=document.getElementById('ai-api-key-input');
-  const sts=document.getElementById('ai-key-status');
-  if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
-  if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminWrap=document.getElementById('acc-admin-wrap');
   const propUser=document.getElementById('acc-proposal-user');
   const facMgrWrap=document.getElementById('acc-facmgr-wrap');
@@ -10444,15 +10302,14 @@ function _compressImage(file,maxPx,quality){
 async function processMedPhoto(input){
   if(!input.files||!input.files[0])return;
   const status=document.getElementById('med-ocr-status');
-  if(!_aiKey){toast('AIキー未設定。設定 → AI設定でGroqキーを入力してください');return;}
   const file=input.files[0];
   if(status){status.style.display='block';status.textContent='📷 画像を圧縮中...';}
   try{
     const base64=await _compressImage(file,1024,0.75);
     if(status)status.textContent='📷 薬手帳を解析中...';
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    const res=await fetch('https://village-aura.inadaiin.com/ai/ocr',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+_aiKey,'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'meta-llama/llama-4-scout-17b-16e-instruct',
         messages:[{role:'user',content:[
@@ -13570,8 +13427,7 @@ _startLockTimer();
       if(user&&!user.isAnonymous){
         fbReady=true;
         loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
-        startAIKeySync();
-      }
+            }
       // 非認証 or 匿名の場合はオフラインモードで継続（次回操作時に再ログイン誘導）
     });
   }catch(e){}
