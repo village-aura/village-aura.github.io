@@ -4235,12 +4235,22 @@ async function _ensureFirebaseAuth(staffKey,password){
   }catch(e){console.warn('Firebase init error:',e);}
 })();
 
+const _fsPendingQueue=new Map();
 function fsSet(key,value){
-  if(!fbReady)return;
+  if(!fbReady){_fsPendingQueue.set(key,value);return;}
+  _doFsSet(key,value);
+}
+function _doFsSet(key,value){
   db.collection('va_data').doc(key).set({
     data:value,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   }).catch(e=>console.warn('fsSet:',e));
+}
+function flushFsQueue(){
+  if(!fbReady||!db||!_fsPendingQueue.size)return;
+  _fsPendingQueue.forEach((val,key)=>_doFsSet(key,val));
+  console.log('fsQueue flushed:',_fsPendingQueue.size,'keys');
+  _fsPendingQueue.clear();
 }
 
 // records 月別キーヘルパー
@@ -4501,6 +4511,7 @@ async function login(){
       await firebase.auth().currentUser.getIdToken(true);
     }
     fbReady=true;
+    flushFsQueue(); // ログイン前にキューされた書き込みを一括送信
     // Firestoreから端末設定・Wi-Fi設定を先に同期
     for(const k of ['device_settings','wifi_settings']){
       try{
@@ -13505,6 +13516,7 @@ _startLockTimer();
       unsubAuth();
       if(user&&!user.isAnonymous){
         fbReady=true;
+        flushFsQueue();
         loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
             }
       // 非認証 or 匿名の場合はオフラインモードで継続（次回操作時に再ログイン誘導）
