@@ -363,7 +363,7 @@ a{color:var(--p);text-decoration:none}
 .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
 
 /* ── TOAST ── */
-#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:normal;max-width:80%;text-align:center}
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:99999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:normal;max-width:80%;text-align:center}
 #toast.on{opacity:1}
 .req{color:var(--ng);margin-left:3px;font-weight:800}
 .field input.err,.field textarea.err{border-color:var(--ng)!important;background:#fff5f5!important}
@@ -589,6 +589,7 @@ a{color:var(--p);text-decoration:none}
 </style>
 </head>
 <body>
+<div id="ver-banner" style="position:fixed;top:0;left:0;right:0;background:#d32f2f;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;z-index:99998;text-align:center">🔧 DEBUG VER 2026-07-11C — タップしてテスト</div>
 
 <!-- ═══════════ LOGIN ═══════════ -->
 <div id="scr-login" class="scr on">
