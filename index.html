@@ -4530,17 +4530,13 @@ function saveRecords(r){
 }
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// 管理者パスワードを毎回 loginId で確定（フラグなし・Firestore上書き防止）
-(function ensureAdminPass(){
+// 非管理者のSTAFF_INFOメンバーにデフォルトPWを設定（管理者はgetStaffPassのフォールバックで対応）
+(function ensureDefaultPass(){
   const s=getStaffSettings();
   let changed=false;
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k])s[k]={};
-    if(STAFF_INFO[k].admin){
-      if(!s[k].pass){s[k].pass=STAFF_INFO[k].loginId;changed=true;}
-    } else if(!s[k].pass){
-      s[k].pass='aura01';changed=true;
-    }
+    if(!STAFF_INFO[k].admin&&!s[k].pass){s[k].pass='aura01';changed=true;}
   });
   if(changed)saveStaffSettings(s);
 })();
