@@ -4111,7 +4111,7 @@ const STAFF_INFO = {
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
-function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.loginId||null;}
+function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.pass||STAFF_INFO[key]?.loginId||null;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key]?.loginId||getCustomStaff()[key]?.loginId||'';}
 function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key]?.role||getCustomStaff()[key]?.role||'care';}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
@@ -4412,15 +4412,17 @@ function saveRecords(r){
 }
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// 管理者パスワードを毎回 loginId で確定（フラグなし・Firestore上書き防止）
+// 管理者アカウントのloginId・passをSTAFF_INFO基準で毎回確定
 (function ensureAdminPass(){
   const s=getStaffSettings();
   let changed=false;
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k])s[k]={};
     if(STAFF_INFO[k].admin){
-      const expected=STAFF_INFO[k].pass||STAFF_INFO[k].loginId;
-      if(s[k].pass!==expected){s[k].pass=expected;changed=true;}
+      const expectedPass=STAFF_INFO[k].pass||STAFF_INFO[k].loginId;
+      const expectedId=STAFF_INFO[k].loginId;
+      if(s[k].pass!==expectedPass){s[k].pass=expectedPass;changed=true;}
+      if(s[k].loginId!==expectedId){s[k].loginId=expectedId;changed=true;}
     } else if(!s[k].pass){
       s[k].pass='aura01';changed=true;
     }
