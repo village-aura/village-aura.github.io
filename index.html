@@ -4110,7 +4110,7 @@ const STAFF_INFO = {
   s9:{name:'稲田 真帆',role:'super_admin',loginId:'0002',pass:'aura01',admin:true},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
-function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
+function saveStaffSettings(d){lsSet('staff_settings',d);if(fbReady&&db)_doFsSet('staff_settings',d);else fsSet('staff_settings',d);}
 function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.pass||STAFF_INFO[key]?.loginId||null;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key]?.loginId||getCustomStaff()[key]?.loginId||'';}
 function getStaffRole(key){const s=getStaffSettings();if(STAFF_INFO[key]?.admin)return STAFF_INFO[key].role;return s[key]?.role||STAFF_INFO[key]?.role||getCustomStaff()[key]?.role||'care';}
@@ -5448,7 +5448,7 @@ function bulkAssignPasswords(){
   const ss=getStaffSettings();
   let count=0;
   Object.keys(cs).forEach(key=>{
-    const hasPw=ss[key]?.pass||cs[key]?.pass;
+    const pw_=ss[key]?.pass||cs[key]?.pass;const hasPw=pw_&&pw_!=='aura01';
     if(!hasPw){
       const pw=generatePassword();
       if(!ss[key])ss[key]={};
@@ -7265,7 +7265,7 @@ function renderResList(){
   const res=allResidents.filter(r=>{
     const kana=(r.kana||'').toLowerCase();
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
-    const matchF=S.filter==='all'||r.services.includes(S.filter);
+    const matchF=S.filter==='all'||(r.services||[]).includes(S.filter);
     return matchQ&&matchF;
   });
   const recs=getRecords();
@@ -7292,7 +7292,7 @@ function renderResList(){
     const ok=vitalToday.has(r.id);
     const stoolDays=getStoolDays(r.id,recs);
     const fluid=fluidByRes[r.id]||0;
-    const tags=r.services.map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
+    const tags=(r.services||[]).map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
     // 右メトリクス
     const vitalCls=ok?'rm-ok':'rm-warn';
     const vitalLbl=ok?'🌡️ 記録済':'🌡️ 未記録';
@@ -7397,7 +7397,7 @@ function renderDetail(){
         <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
       </div>
     </div>
-    <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
+    <div style="margin-bottom:8px">${(r.services||[]).map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
       <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;border:none;cursor:pointer">👤 利用者情報詳細</button>
       <button onclick="toggleDetailMenu(event)" id="detail-more-btn" style="width:40px;height:36px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;font-size:20px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;letter-spacing:-.05em">⋯</button>
@@ -9810,7 +9810,7 @@ function openEditResident(){
     document.getElementById('er-birth').value=approxYear+'-01-01';
   }
   ['er-sv-res','er-sv-com','er-sv-sta','er-sv-vis'].forEach(id=>{
-    document.getElementById(id).checked=r.services.includes(document.getElementById(id).value);
+    document.getElementById(id).checked=(r.services||[]).includes(document.getElementById(id).value);
   });
   const prev=document.getElementById('er-photo-preview');
   const clrBtn=document.getElementById('er-photo-clear');
@@ -10031,7 +10031,7 @@ function setBvFilter(f){
 function renderBulkVital(){
   const dateEl=document.getElementById('bv-date');
   if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
-  const res=getResidents().filter(r=>_bvFilter==='all'||r.services.includes(_bvFilter));
+  const res=getResidents().filter(r=>_bvFilter==='all'||(r.services||[]).includes(_bvFilter));
   const today=dateEl.value;
   const recs=getRecords();
   const list=document.getElementById('bulk-vital-list');if(!list)return;
@@ -10168,7 +10168,7 @@ function renderBulkMeal(){
   if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
-  const res=getResidents().filter(r=>_bmFilter==='all'||r.services.includes(_bmFilter));
+  const res=getResidents().filter(r=>_bmFilter==='all'||(r.services||[]).includes(_bmFilter));
   const list=document.getElementById('bulk-meal-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const h=new Date().getHours();
@@ -10249,7 +10249,7 @@ function renderBulkExcretion(){
   if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
-  const res=getResidents().filter(r=>_bexFilter==='all'||r.services.includes(_bexFilter));
+  const res=getResidents().filter(r=>_bexFilter==='all'||(r.services||[]).includes(_bexFilter));
   const list=document.getElementById('bulk-excretion-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const stoolLbls={none:'なし',small:'少量',normal:'普通',large:'多量'};
@@ -10587,7 +10587,7 @@ function renderTransport(){
   const today=dateEl.value;
   const records=getTransportRecords();
   const todayRecs=records[today]||{};
-  const res=getResidents().filter(r=>r.services.includes('commute')||r.services.includes('stay'));
+  const res=getResidents().filter(r=>(r.services||[]).includes('commute')||(r.services||[]).includes('stay'));
   const list=document.getElementById('transport-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">デイ・小多機の利用者がいません</div>';return;}
   list.innerHTML=res.map(r=>{
@@ -10598,7 +10598,7 @@ function renderTransport(){
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:13px;font-weight:800">${r.name}</div>
-          <div style="font-size:11px;color:var(--sub)">${r.facility} ${r.services.includes('commute')?'デイ':'小多機'}</div>
+          <div style="font-size:11px;color:var(--sub)">${r.facility} ${(r.services||[]).includes('commute')?'デイ':'小多機'}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           ${done?`<span style="font-size:12px;font-weight:700;color:var(--ok)">✓ ${timeVal}</span>`:''}
