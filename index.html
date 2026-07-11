@@ -911,6 +911,7 @@ a{color:var(--p);text-decoration:none}
         <input type="search" id="search-inp" placeholder="名前・フリガナで検索..." oninput="renderResList()">
       </div>
       <button id="btn-add-resident" onclick="openAddResident()" style="display:none;flex-shrink:0;background:var(--p);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(61,122,181,.35);touch-action:manipulation;white-space:nowrap">＋ 利用者</button>
+      <button onclick="reloadFromCloud(this)" style="flex-shrink:0;background:var(--card);border:1.5px solid var(--bdr);color:var(--sub);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;touch-action:manipulation;white-space:nowrap">🔄 再読込</button>
     </div>
     <div class="filter-chips" id="filter-chips">
       <button class="chip on" data-f="all" onclick="setFilter('all')">全員</button>
@@ -7194,6 +7195,14 @@ function setResSort(s){
     c.classList.toggle('on',c.dataset.s===s);
   });
   renderResList();
+}
+async function reloadFromCloud(btn){
+  if(!fbReady||!db){toast('Firebase未接続');return;}
+  if(btn){btn.disabled=true;btn.textContent='⏳ 読込中...';}
+  await loadFromFirebase();
+  _renderCurrentScreen();
+  if(btn){btn.disabled=false;btn.textContent='🔄 再読込';}
+  toast('クラウドから再読み込みしました ✓');
 }
 function hiraToKata(s){return s.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
 function renderResList(){
