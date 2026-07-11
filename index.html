@@ -7613,9 +7613,12 @@ function openVitalFocused(focusField){
 function openVitalFull(){openVitalFocused(null);}
 function selectService(svc){S.currentService=svc;renderDetail();}
 function openSvcSetting(){
-  toast('🔧 openSvcSetting: res='+S.currentRes);
-  const r=getResidents().find(x=>x.id===S.currentRes);
-  if(!r){toast('🔧 openSvcSetting: resident NOT found');return;}
+  const _res=getResidents();
+  const _r=_res.find(x=>x.id===S.currentRes);
+  try{document.getElementById('ver-banner').textContent='SVC: res='+S.currentRes+' found='+!!_r+' total='+_res.length;}catch(e){}
+  toast('🔧 openSvcSetting: res='+S.currentRes+' found='+!!_r);
+  const r=_r;
+  if(!r){return;}
   const svcs=r.services||[];
   document.getElementById('ss-res').checked=svcs.includes('resident');
   document.getElementById('ss-stay').checked=svcs.includes('stay');
@@ -12269,14 +12272,13 @@ function handleFsFile(inp,mode){
 let toastTimer;
 function toast(msg){
   try{
-    const el=document.getElementById('toast');
-    if(!el){const b=document.getElementById('ver-banner');if(b)b.textContent='TOAST_NULL: '+msg;return;}
-    el.textContent=msg;
-    el.classList.add('on');
-    el.style.display='block';
     clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>{el.classList.remove('on');el.style.display='none';},2500);
-  }catch(ex){const b=document.getElementById('ver-banner');if(b)b.textContent='TOAST_ERR: '+ex.message;}
+    let el=document.getElementById('_t');
+    if(!el){el=document.createElement('div');el.id='_t';document.body.appendChild(el);}
+    el.textContent=msg;
+    el.style.cssText='position:fixed!important;top:80px!important;left:5%!important;right:5%!important;background:#1c2340!important;color:#fff!important;padding:12px 16px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;z-index:2147483647!important;text-align:center!important;display:block!important;word-break:break-all!important';
+    toastTimer=setTimeout(()=>{if(el)el.style.display='none';},3000);
+  }catch(ex){try{document.getElementById('ver-banner').textContent='T_ERR:'+ex.message;}catch(e2){}}
 }
 
 // ═══════════ RESET ═══════════
@@ -12563,7 +12565,9 @@ document.addEventListener('click',function(e){
   let info='';
   try{
     const t=e.target;
-    info=t.tagName+(t.id?'#'+t.id:'')+(t.className&&typeof t.className==='string'?'.'+t.className.trim().split(/\s+/)[0]:'');
+    const cls=t.className&&typeof t.className==='string'?'.'+t.className.trim().split(/\s+/)[0]:'';
+    const oc=(t.getAttribute&&t.getAttribute('onclick')||'').substr(0,20);
+    info=t.tagName+cls+(oc?' oc='+oc:'');
   }catch(e2){}
   _dbgBanner(info);
   toast('C:'+_dbgC+' '+info);
