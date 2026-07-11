@@ -1232,7 +1232,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── 入浴記録モーダル ─── -->
-  <div class="overlay" id="modal-bath" onclick="closeModal('modal-bath',event)">
+  <div class="overlay" id="modal-bath">
     <div class="sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
       <div class="sheet-title">🛁 入浴記録</div>
@@ -1255,7 +1255,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── 服薬登録モーダル ─── -->
-  <div class="overlay" id="modal-med-reg" onclick="closeModal('modal-med-reg',event)">
+  <div class="overlay" id="modal-med-reg">
     <div class="sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
       <div class="sheet-title">💊 服薬登録</div>
@@ -1273,7 +1273,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── BOARD TRASH MODAL ─── -->
-  <div class="overlay" id="modal-board-trash" onclick="closeModal('modal-board-trash',event)">
+  <div class="overlay" id="modal-board-trash">
     <div class="modal-inner" onclick="event.stopPropagation()" style="max-width:500px">
       <div style="font-size:16px;font-weight:800;margin-bottom:2px">🗑️ 削除ゴミ箱</div>
       <div style="font-size:12px;color:var(--sub);margin-bottom:14px">30日以内の削除データを復元できます</div>
@@ -1947,7 +1947,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ATTENDANCE MODAL -->
-<div class="overlay" id="modal-attendance" onclick="closeModal('modal-attendance',event)">
+<div class="overlay" id="modal-attendance">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="att-modal-title">🕐 来所・退所時間</div>
@@ -1966,7 +1966,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
   <!-- VISIT REPORT MODAL -->
-<div class="overlay" id="modal-visit-report" onclick="closeModal('modal-visit-report',event)">
+<div class="overlay" id="modal-visit-report">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="vr-edit-idx" value="-1">
@@ -2723,7 +2723,7 @@ a{color:var(--p);text-decoration:none}
 <!-- ═══════════ MODALS ═══════════ -->
 
 <!-- VITAL -->
-<div class="overlay" id="modal-vital" onclick="closeModal('modal-vital',event)">
+<div class="overlay" id="modal-vital">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🌡️ バイタル入力</div>
@@ -2757,7 +2757,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- MEAL -->
-<div class="overlay" id="modal-meal" onclick="closeModal('modal-meal',event)">
+<div class="overlay" id="modal-meal">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="meal-modal-title">🍚 食事・飲水</div>
@@ -2820,7 +2820,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- EXCRETION -->
-<div class="overlay" id="modal-excretion" onclick="closeModal('modal-excretion',event)">
+<div class="overlay" id="modal-excretion">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="excretion-modal-title">💧 排泄記録</div>
@@ -2854,7 +2854,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- CHRONOLOGICAL -->
-<div class="overlay" id="modal-chrono" onclick="closeModal('modal-chrono',event)">
+<div class="overlay" id="modal-chrono">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">📝 経時記録</div>
@@ -2912,7 +2912,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- WEIGHT -->
-<div class="overlay" id="modal-weight" onclick="closeModal('modal-weight',event)">
+<div class="overlay" id="modal-weight">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">⚖️ 体重測定</div>
@@ -2924,7 +2924,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- HANDOVER -->
-<div class="overlay" id="modal-handover" onclick="closeModal('modal-handover',event)">
+<div class="overlay" id="modal-handover">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="ho-edit-id" value="">
@@ -2958,7 +2958,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- SERVICE SETTING -->
-<div class="overlay" id="modal-svc-setting" onclick="closeModal('modal-svc-setting',event)">
+<div class="overlay" id="modal-svc-setting">
   <div class="sheet" onclick="event.stopPropagation()" style="padding-bottom:calc(20px + env(safe-area-inset-bottom))">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🔧 利用サービスを編集</div>
@@ -2987,7 +2987,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- EDIT RESIDENT -->
-<div class="overlay" id="modal-edit-res" onclick="closeModal('modal-edit-res',event)">
+<div class="overlay" id="modal-edit-res">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="er-mode" value="edit">
@@ -3044,7 +3044,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- VITAL RANGES -->
-<div class="overlay" id="modal-vital-ranges" onclick="closeModal('modal-vital-ranges',event)">
+<div class="overlay" id="modal-vital-ranges">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">⚙️ バイタル基準値設定</div>
@@ -3075,7 +3075,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- TEMPLATE PICKER -->
-<div class="overlay" id="modal-tpl-picker" onclick="closeModal('modal-tpl-picker',event)">
+<div class="overlay" id="modal-tpl-picker">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="tpl-picker-title">📝 テンプレート</div>
@@ -3095,7 +3095,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- INCIDENT REPORT MODAL -->
-<div class="overlay" id="modal-incident" onclick="closeModal('modal-incident',event)">
+<div class="overlay" id="modal-incident">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="inc-edit-id" value="">
@@ -3160,7 +3160,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- FAMILY REPORT MODAL -->
-<div class="overlay" id="modal-family-report" onclick="closeModal('modal-family-report',event)">
+<div class="overlay" id="modal-family-report">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -3177,7 +3177,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- QR CODE MODAL -->
-<div class="overlay" id="modal-qrcode" onclick="closeModal('modal-qrcode',event)">
+<div class="overlay" id="modal-qrcode">
   <div class="sheet" onclick="event.stopPropagation()" style="text-align:center">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="qr-modal-title">📲 QRコード</div>
@@ -3212,7 +3212,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- FACE SHEET -->
-<div class="overlay" id="modal-facesheet" onclick="closeModal('modal-facesheet',event)">
+<div class="overlay" id="modal-facesheet">
   <div class="sheet" style="max-height:96vh" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -3481,7 +3481,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- INFECTION MODAL -->
-<div class="overlay" id="modal-infection" onclick="closeModal('modal-infection',event)">
+<div class="overlay" id="modal-infection">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="inf-modal-title">🦠 感染・隔離登録</div>
@@ -3567,7 +3567,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- VISIT ENTRY -->
-<div class="overlay" id="modal-visit-entry" onclick="closeModal('modal-visit-entry',event)">
+<div class="overlay" id="modal-visit-entry">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="visit-modal-title">訪問予定を追加</div>
@@ -3599,7 +3599,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- BOARD HANDOVER -->
-<div class="overlay" id="modal-board-ho" onclick="closeModal('modal-board-ho',event)">
+<div class="overlay" id="modal-board-ho">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="board-ho-title">📣 申し送り追加</div>
@@ -3646,7 +3646,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- DOCTOR ORDER -->
-<div class="overlay" id="modal-doctor-order" onclick="closeModal('modal-doctor-order',event)">
+<div class="overlay" id="modal-doctor-order">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🩺 医師指示の追加</div>
@@ -3675,7 +3675,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- PROPOSAL FORM -->
-<div class="overlay" id="modal-proposal" onclick="closeModal('modal-proposal',event)">
+<div class="overlay" id="modal-proposal">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">💡 改善提案</div>
@@ -3707,7 +3707,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- PROPOSAL DETAIL (admin) -->
-<div class="overlay" id="modal-proposal-detail" onclick="closeModal('modal-proposal-detail',event)">
+<div class="overlay" id="modal-proposal-detail">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="pdetail-title">提案詳細</div>
@@ -3723,7 +3723,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- TASK MODAL -->
-<div class="overlay" id="modal-task" onclick="closeModal('modal-task',event)">
+<div class="overlay" id="modal-task">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="task-modal-title">📌 タスクを追加</div>
@@ -3754,7 +3754,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- MONTHLY GOAL EDIT -->
-<div class="overlay" id="modal-monthly-goal" onclick="closeModal('modal-monthly-goal',event)">
+<div class="overlay" id="modal-monthly-goal">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🎯 今月の目標を設定</div>
@@ -3781,7 +3781,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- SCHEDULE ADD -->
-<div class="sheet-modal-auto" id="modal-sch-add" onclick="closeModal('modal-sch-add',event)">
+<div class="sheet-modal-auto" id="modal-sch-add">
   <div class="modal-inner" onclick="event.stopPropagation()">
     <div class="sheet-title">📅 スケジュール追加</div>
     <!-- 音声入力バー -->
