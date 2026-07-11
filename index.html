@@ -1493,6 +1493,11 @@ a{color:var(--p);text-decoration:none}
           </div>
           <div style="border-top:1px solid var(--bdr);padding-top:14px;margin-top:4px">
             <div style="font-size:13px;font-weight:700;margin-bottom:10px">🔑 パスワード変更</div>
+            <div style="display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:8px 12px;margin-bottom:8px">
+              <span style="font-size:12px;color:var(--sub);white-space:nowrap">現在のPW</span>
+              <span id="my-pw-disp" style="flex:1;font-family:monospace;font-size:14px;color:var(--txt);letter-spacing:.05em">●●●●●●●●</span>
+              <button onclick="toggleMyPwShow()" style="font-size:11px;color:var(--p);background:none;border:1px solid var(--p);border-radius:6px;padding:3px 8px;touch-action:manipulation">表示</button>
+            </div>
             <div id="pw-err" style="display:none;background:#fee;color:#c00;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:8px"></div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <input type="password" id="pw-cur" placeholder="現在のパスワード" autocomplete="current-password" style="padding:10px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--bg);color:var(--txt);width:100%">
@@ -5417,6 +5422,7 @@ function renderSettings(){
   if(dmt) dmt.checked=document.body.classList.contains('dark-mode');
   setFontSize(localStorage.getItem('va_font')||'md');
   ['pw-cur','pw-new','pw-new2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const myPwDisp=document.getElementById('my-pw-disp');if(myPwDisp)myPwDisp.textContent='●●●●●●●●';
   const pwErr=document.getElementById('pw-err');if(pwErr)pwErr.style.display='none';
   const key=_aiKey||'';
   const inp=document.getElementById('ai-api-key-input');
@@ -5589,6 +5595,12 @@ function renderAdminStaffList(){
 }
 
 
+function toggleMyPwShow(){
+  const el=document.getElementById('my-pw-disp');
+  if(!el)return;
+  const pw=getStaffPass(S.staffKey)||'';
+  el.textContent=el.textContent.startsWith('●')?pw:'●●●●●●●●';
+}
 function togglePwShow(key){
   const el=document.getElementById('adm-pw-show-'+key);
   if(!el)return;
@@ -5703,9 +5715,12 @@ function adminSetPassword(key){
   // Firebase Auth のバージョンを上げて古いセッションを無効化（次回ログイン時に新アカウント作成）
   settings[key].fb_ver=(settings[key].fb_ver||0)+1;
   saveStaffSettings(settings);
+  const cs=getCustomStaff();
+  if(cs[key]){cs[key].pass=val;saveCustomStaff(cs);}
   document.getElementById('adm-pw-'+key).value='';
   addAuditLog('管理者パスワード変更',getStaffInfo(key)?.name||'不明'+' (ID:'+getStaffLoginId(key)+')');
-  toast(getStaffInfo(key)?.name||'不明'+' のパスワードを変更しました ✓（次回ログイン時に反映）');
+  renderAdminStaffList();
+  toast((getStaffInfo(key)?.name||'不明')+' のパスワードを変更しました ✓');
 }
 function adminSetRole(key){
   if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
