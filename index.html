@@ -4207,7 +4207,7 @@ const STAFF_INFO = {
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
-function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.loginId||null;}
+function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||getCustomStaff()[key]?.pass||STAFF_INFO[key]?.loginId||null;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key]?.loginId||getCustomStaff()[key]?.loginId||'';}
 function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key]?.role||getCustomStaff()[key]?.role||'care';}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
@@ -4532,7 +4532,7 @@ function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k])s[k]={};
     if(STAFF_INFO[k].admin){
-      if(s[k].pass!==STAFF_INFO[k].loginId){s[k].pass=STAFF_INFO[k].loginId;changed=true;}
+      if(!s[k].pass){s[k].pass=STAFF_INFO[k].loginId;changed=true;}
     } else if(!s[k].pass){
       s[k].pass='aura01';changed=true;
     }
@@ -5550,7 +5550,7 @@ function renderAdminStaffList(){
     const canDel=isCustomKey(key)&&!isMe;
     const canChangePw=isSuperAdmin||isMe;
     const curPw=getStaffPass(key)||'';
-    const pwDisplay=canChangePw?('<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">現PW</span><span id="adm-pw-show-'+key+'" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:.08em;color:var(--txt);padding:6px 8px;background:#f8f9fb;border:1px solid var(--bdr);border-radius:7px;cursor:pointer" onclick="togglePwShow(\''+key+'\',\''+escHtml(curPw)+'\')" title="タップで表示">'+(curPw?'●●●●●●●●':'（未設定）')+'</span><button onclick="adminRegenPassword(\''+key+'\')" style="padding:6px 8px;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:7px;font-size:11px;font-weight:700;white-space:nowrap">🔀 再発行</button></div>'):'';
+    const pwDisplay=canChangePw?('<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">現PW</span><span id="adm-pw-show-'+key+'" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:.08em;color:var(--txt);padding:6px 8px;background:#f8f9fb;border:1px solid var(--bdr);border-radius:7px;cursor:pointer" onclick="togglePwShow(\''+key+'\')" title="タップで表示">'+(curPw?'●●●●●●●●':'（未設定）')+'</span><button onclick="adminRegenPassword(\''+key+'\')" style="padding:6px 8px;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:7px;font-size:11px;font-weight:700;white-space:nowrap">🔀 再発行</button></div>'):'';
     const pwChange=canChangePw?('<div style="display:flex;gap:6px;align-items:center'+(canDel?';margin-bottom:6px':'')+'"><span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">変更</span><input type="password" id="adm-pw-'+key+'" placeholder="新しいパスワード（任意）" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;background:#f8f9fb"><button onclick="adminSetPassword(\''+key+'\')" style="padding:6px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button></div>'):'';
     return `<div style="background:var(--bg);border-radius:8px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer" onclick="toggleAdmEdit('${editId}')">
@@ -5589,9 +5589,10 @@ function renderAdminStaffList(){
 }
 
 
-function togglePwShow(key,pw){
+function togglePwShow(key){
   const el=document.getElementById('adm-pw-show-'+key);
   if(!el)return;
+  const pw=getStaffPass(key)||'';
   el.textContent=el.textContent.startsWith('●')?pw:(pw?'●●●●●●●●':'（未設定）');
 }
 function adminRegenPassword(key){
