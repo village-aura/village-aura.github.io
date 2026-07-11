@@ -1757,6 +1757,14 @@ a{color:var(--p);text-decoration:none}
             </div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🗑️ 利用者データ削除</div>
             <div class="setting-item" style="margin-bottom:16px">
+              <span class="si-ico">🧹</span>
+              <div class="si-body">
+                <div class="si-name">デモ利用者を一括削除</div>
+                <div class="si-desc">デモ用に挿入された山田花子・鈴木一郎等10名を削除します</div>
+              </div>
+              <button onclick="deleteDemoResidents()" style="background:#fff3e0;color:#e65100;border:1.5px solid #ffcc80;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">削除</button>
+            </div>
+            <div class="setting-item" style="margin-bottom:16px">
               <span class="si-ico">🗑️</span>
               <div class="si-body">
                 <div class="si-name">全利用者・記録を削除</div>
@@ -12663,6 +12671,21 @@ function deleteAllStaff(){
   lsSet('staff_settings',{});fsSet('staff_settings',{});
   addAuditLog('全職員削除','カスタム職員を全削除');
   toast('全職員を削除しました ✓');
+}
+function deleteDemoResidents(){
+  if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
+  const demoIds=new Set(INIT_RESIDENTS.map(r=>r.id));
+  const demoNames=new Set(INIT_RESIDENTS.map(r=>r.name));
+  const all=getAllResidents();
+  const toRemove=all.filter(r=>demoIds.has(r.id)||demoNames.has(r.name));
+  if(!toRemove.length){toast('デモ利用者は見当たりません');return;}
+  const names=toRemove.map(r=>r.name).join('、');
+  if(!confirm('以下のデモ利用者を削除します（本番データは残ります）:\n\n'+names+'\n\nよろしいですか？'))return;
+  const removeIds=new Set(toRemove.map(r=>r.id));
+  saveResidents(all.filter(r=>!removeIds.has(r.id)));
+  addAuditLog('デモ利用者削除',toRemove.length+'名削除: '+names);
+  if(S.screen==='scr-residents')renderResList();
+  toast(toRemove.length+'名のデモ利用者を削除しました ✓');
 }
 function deleteAllResidents(){
   if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
