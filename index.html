@@ -1462,6 +1462,14 @@ a{color:var(--p);text-decoration:none}
         </div>
         <button onclick="forceReload()" style="flex-shrink:0;background:var(--p);color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:800;white-space:nowrap;touch-action:manipulation">更新する</button>
       </div>
+      <!-- ─── Firestore再同期 ─── -->
+      <div style="background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:800">☁️ クラウドからデータを再読込</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:3px">利用者・フェイスシートが表示されない時にタップ</div>
+        </div>
+        <button onclick="forceSyncFromFirestore()" style="flex-shrink:0;background:#0ea5e9;color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:800;white-space:nowrap;touch-action:manipulation">再読込</button>
+      </div>
 
       <!-- ─── アカウント ─── -->
       <div class="acc-item open" id="acc-account">
@@ -4391,6 +4399,14 @@ function setupRealtimeSync(){
       if(key==='monthly_goals'&&S.screen==='scr-dashboard')renderDashboard();
       if(key==='incidents'&&S.screen==='scr-incidents')renderIncidentList();
       if(key==='proposals'&&S.screen==='scr-proposal')renderProposalScr();
+      if(key==='face_sheets'){
+        const fsModal=document.getElementById('modal-facesheet');
+        if(fsModal&&fsModal.classList.contains('on'))openFacesheet();
+      }
+      if(key==='residents'){
+        const fsModal=document.getElementById('modal-facesheet');
+        if(fsModal&&fsModal.classList.contains('on'))openFacesheet();
+      }
       if(S.screen==='scr-doctor'){
         if(key==='vital_confirmed')renderDrVitalPane();
         if(key==='board_data2'){if(_drTab==='order')renderDrOrderPane();}
@@ -5325,6 +5341,18 @@ function startUpdateChecker(){
     _initEtag=tag; // 既存の update checker にも共有
   }catch(e){}
 })();
+async function forceSyncFromFirestore(){
+  if(!fbReady||!db){toast('クラウド未接続です（ログインし直してください）');return;}
+  toast('クラウドから再読込中…');
+  await loadFromFirebase();
+  renderDashboard();
+  setupRealtimeSync();
+  if(S.screen==='scr-residents')renderResList();
+  if(S.screen==='scr-detail')renderDetail();
+  const fsModal=document.getElementById('modal-facesheet');
+  if(fsModal&&fsModal.classList.contains('on'))openFacesheet();
+  toast('✓ クラウドからデータを再読込しました');
+}
 function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
