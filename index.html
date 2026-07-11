@@ -5956,9 +5956,8 @@ function toggleAuditLog(){
 }
 // ── クラウド強制アップロード ──
 async function pushAllToFirestore(){
-  if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
+  if(!isManagerOrAbove()){toast('管理者のみ実行できます');return;}
   if(!fbReady||!db){toast('Firebase未接続。ログインし直してください');return;}
-  if(!confirm('このPCのlocalStorageにある全データをFirestoreに上書きします。\nよろしいですか？'))return;
   const keys=[...FB_SYNC_KEYS,..._activeRecordKeys()];
   let ok=0,skip=0;
   toast('アップロード中...');
