@@ -4104,10 +4104,10 @@ const STAFF_INFO = {
   s3:{name:'前原 明子',role:'care',loginId:'1003',hidden:true},
   s4:{name:'鈴木 健太',role:'care',loginId:'1004',hidden:true},
   s5:{name:'中村 由美',role:'nurse',loginId:'1005',hidden:true},
-  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'0001',pass:'06419008',admin:true,hidden:true},
+  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'0001',pass:'06419008',admin:true},
   s7:{name:'佐藤 真理',role:'home_care',loginId:'1007',hidden:true},
   s8:{name:'木村 誠司',role:'doctor',loginId:'1008',hidden:true},
-  s9:{name:'稲田 真帆',role:'super_admin',loginId:'0002',pass:'aura01',admin:true,hidden:true},
+  s9:{name:'稲田 真帆',role:'super_admin',loginId:'0002',pass:'aura01',admin:true},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
