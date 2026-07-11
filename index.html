@@ -7624,7 +7624,9 @@ function openSvcSetting(){
   document.getElementById('ss-stay').checked=svcs.includes('stay');
   document.getElementById('ss-com').checked=svcs.includes('commute');
   document.getElementById('ss-vis').checked=svcs.includes('visit');
-  document.getElementById('modal-svc-setting').classList.add('on');
+  const _m=document.getElementById('modal-svc-setting');
+  _m.classList.add('on');
+  try{document.getElementById('ver-banner').textContent='SVC_MODAL cls='+_m.className+' disp='+getComputedStyle(_m).display;}catch(e){}
 }
 function saveSvcSetting(){
   const res=getResidents();
