@@ -1688,6 +1688,14 @@ a{color:var(--p);text-decoration:none}
               </div>
               <button onclick="deleteAllResidents()" style="background:#fce4ec;color:#c62828;border:1.5px solid #ef9a9a;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">削除</button>
             </div>
+            <div class="setting-item" style="margin-bottom:8px">
+              <span class="si-ico">🏥</span>
+              <div class="si-body">
+                <div class="si-name">全職員を削除</div>
+                <div class="si-desc">インポートした全職員データを削除します（管理者アカウントは保持）</div>
+              </div>
+              <button onclick="deleteAllStaff()" style="background:#fce4ec;color:#c62828;border:1.5px solid #ef9a9a;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">削除</button>
+            </div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">🔄 デモリセット</div>
             <div class="setting-item" style="margin-bottom:8px">
               <span class="si-ico">📥</span>
@@ -9185,6 +9193,8 @@ const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事
   'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password'};
 const ROLE_DISP={'全権管理者':'super_admin','全権管理者 兼 医師':'super_admin_doctor','医師':'doctor','管理者':'facility_manager_resident',
   '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
+  'サ高住管理者':'facility_manager_resident','デイ管理者':'facility_manager_commute',
+  '小多機管理者':'facility_manager_stay','訪問管理者':'facility_manager_visit','居宅管理者':'home_care',
   'super_admin':'super_admin','doctor':'doctor','care':'care','nurse':'nurse','medical_office':'medical_office',
   'home_care':'home_care','facility_manager_resident':'facility_manager_resident',
   'facility_manager_commute':'facility_manager_commute','facility_manager_stay':'facility_manager_stay'};
@@ -12326,6 +12336,14 @@ function loadMayDemoData(){
   renderDashboard();
 }
 
+function deleteAllStaff(){
+  if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
+  if(!confirm('インポートした全職員データを削除します。\nこの操作は取り消せません。\n\nよろしいですか？'))return;
+  saveCustomStaff({});
+  lsSet('staff_settings',{});fsSet('staff_settings',{});
+  addAuditLog('全職員削除','カスタム職員を全削除');
+  toast('全職員を削除しました ✓');
+}
 function deleteAllResidents(){
   if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
   if(!confirm('全利用者・全記録を削除します。\nこの操作は取り消せません。\n\nよろしいですか？'))return;
