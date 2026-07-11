@@ -4228,11 +4228,9 @@ async function _ensureFirebaseAuth(staffKey,password){
     db.enablePersistence({synchronizeTabs:true}).catch(e=>{
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
     });
-    // 未認証時は匿名サインイン（ログイン画面でstaff_settingsを読むため）
-    // ただしセッション復元中（va_sessionあり）は匿名で上書きしない
+    // 未認証時は匿名サインイン（ログイン画面・セッション復元フォールバック共用）
     firebase.auth().onAuthStateChanged(user=>{
-      if(!user&&!localStorage.getItem('va_session'))
-        firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
+      if(!user) firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
     });
   }catch(e){console.warn('Firebase init error:',e);}
 })();
@@ -13534,22 +13532,18 @@ _startLockTimer();
     checkUrlHash();
     startUpdateChecker();
     resetLockTimer();
-    // Firebase Auth SDKが自動でセッションを復元するのを待つ（パスワード再入力不要）
-    // ※ onAuthStateChanged は null → 匿名 → 本人 の順で複数回発火することがあるため
-    //   非匿名ユーザーが来るまで待ち続け、5秒でタイムアウトする
+    // Firebase Auth SDKが自動でセッションを復元するのを待つ
+    // メール認証 or 匿名認証どちらでも fbReady=true にする（匿名はフォールバック）
     let _sessAuthDone=false;
     const unsubAuth=firebase.auth().onAuthStateChanged(user=>{
-      if(_sessAuthDone)return;
-      if(user&&!user.isAnonymous){
-        _sessAuthDone=true;
-        unsubAuth();
-        fbReady=true;
-        flushFsQueue();
-        loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();_renderCurrentScreen();});
-      }
-      // null/匿名: まだ復元中の可能性があるため待機継続
+      if(_sessAuthDone||!user)return;
+      _sessAuthDone=true;
+      unsubAuth();
+      fbReady=true;
+      flushFsQueue();
+      loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();_renderCurrentScreen();});
     });
-    setTimeout(()=>{if(!_sessAuthDone){_sessAuthDone=true;unsubAuth();}},5000);
+    setTimeout(()=>{if(!_sessAuthDone){_sessAuthDone=true;unsubAuth();}},8000);
   }catch(e){}
 })();
 
