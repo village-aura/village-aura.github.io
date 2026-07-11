@@ -6052,9 +6052,11 @@ async function pushAllToFirestore(btn){
       ok++;
     }catch(e){console.warn('push failed:',key,e);skip++;}
   }));
-  addAuditLog('強制クラウドアップロード',ok+'件アップロード・'+skip+'件スキップ');
-  if(btn){btn.disabled=false;btn.textContent=`✅ 完了 ${ok}件アップロード`;}
-  setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},4000);
+  const resCount=(()=>{const r=ls('residents');return Array.isArray(r)?r.length:0;})();
+  const staffCount=(()=>{const c=ls('custom_staff');return c?Object.keys(c).length:0;})();
+  addAuditLog('強制クラウドアップロード',ok+'項目アップロード・'+skip+'項目スキップ');
+  if(btn){btn.disabled=false;btn.textContent=`✅ 完了（利用者${resCount}名・職員${staffCount}名 含む${ok}項目）`;}
+  setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},6000);
 }
 // ── データエクスポート ──
 function exportData(){
