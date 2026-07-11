@@ -7578,6 +7578,7 @@ function switchDetailTab(tab){
   if(left)left.style.display=tab==='timeline'?'none':'';
 }
 function openVitalFocused(focusField){
+  toast('🔧 openVitalFocused: '+focusField+' / res='+S.currentRes);
   _vitalFocusedField=focusField||null;
   const recs=getRecords().filter(rc=>rc.rid===S.currentRes&&rc.type==='vital');
   const todayStr=new Date().toDateString();
@@ -7611,8 +7612,9 @@ function openVitalFocused(focusField){
 function openVitalFull(){openVitalFocused(null);}
 function selectService(svc){S.currentService=svc;renderDetail();}
 function openSvcSetting(){
+  toast('🔧 openSvcSetting: res='+S.currentRes);
   const r=getResidents().find(x=>x.id===S.currentRes);
-  if(!r)return;
+  if(!r){toast('🔧 openSvcSetting: resident NOT found');return;}
   const svcs=r.services||[];
   document.getElementById('ss-res').checked=svcs.includes('resident');
   document.getElementById('ss-stay').checked=svcs.includes('stay');
@@ -7730,6 +7732,7 @@ function expandTlNote(id,btn){
 
 // ═══════════ MODALS ═══════════
 function openModal(id){
+  toast('🔧 openModal: '+id+' / res='+S.currentRes);
   const r=getResidents().find(x=>x.id===S.currentRes);
   const name=r?r.name+' 様':'利用者';
   ['vital-sub','meal-sub','chrono-sub'].forEach(sid=>{
@@ -10810,6 +10813,7 @@ function editBoardItem(section,shift,editIdx){
   openBoardHandover(section,editIdx);
 }
 function openBoardHandover(section,editIdx=-1,presetRid=null){
+  toast('🔧 openBoardHandover: '+section);
   const secField=document.getElementById('bho-section-field');
   const secSel=document.getElementById('bho-section-sel');
   const isNew=editIdx<0;
@@ -11366,6 +11370,7 @@ function selectCalDay(day){
   S.schedDay=day;S.schedView='day';renderSchedule();
 }
 function openSchAdd(){
+  toast('🔧 openSchAdd called');
   const res=getResidents();
   document.getElementById('sch-rid').innerHTML=res.map(r=>`<option value="${r.id}"${r.id===S.schedRid?' selected':''}>${r.name}</option>`).join('');
   document.getElementById('sch-date').value=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
@@ -13236,7 +13241,8 @@ function renderDashboardInfection(){
 
 // ═══════════ FEATURE 6: 家族向け連絡帳自動生成 ═══════════
 function openFamilyReport(){
-  if(!S.currentRes){toast('利用者を選択してください');return;}
+  toast('🔧 openFamilyReport: res='+S.currentRes);
+  if(!S.currentRes){toast('🔧 openFamilyReport: res is null');return;}
   document.getElementById('family-report-date').textContent=
     new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   regenerateFamilyReport();
