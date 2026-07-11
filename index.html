@@ -9494,10 +9494,12 @@ function importStaffCSV(headers,rows){
 // ── 重複職員削除 ──
 function deduplicateCustomStaff(btn){
   const cs=getCustomStaff();const ss=getStaffSettings();
+  // STAFF_INFOと名前が被るエントリも削除対象
+  const staffInfoNames=new Set(Object.values(STAFF_INFO).map(s=>_normName(s.name)));
   const seen=new Set(),dupKeys=[];
   for(const [key,staff] of Object.entries(cs)){
     const k=_normName(staff.name);
-    if(seen.has(k))dupKeys.push(key);
+    if(staffInfoNames.has(k)||seen.has(k))dupKeys.push(key);
     else seen.add(k);
   }
   if(!dupKeys.length){toast('重複なし（削除対象なし）');return;}
