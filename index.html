@@ -191,6 +191,8 @@ a{color:var(--p);text-decoration:none}
 .filter-chips::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s}
 .chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
+.sort-chip{flex-shrink:0;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s;cursor:pointer;touch-action:manipulation}
+.sort-chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
 .res-list{padding:0 12px}
 .res-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
 .res-avatar{width:44px;height:44px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
@@ -912,6 +914,15 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" data-f="stay" onclick="setFilter('stay')">小多機</button>
       <button class="chip" data-f="visit" onclick="setFilter('visit')">訪問</button>
       <button class="chip" data-f="nursing" onclick="setFilter('nursing')">訪問看護</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;padding:0 12px 8px">
+      <span style="font-size:11px;color:var(--sub);flex-shrink:0">並替:</span>
+      <div style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">
+        <button class="sort-chip on" data-s="kana" onclick="setResSort('kana')">かな順</button>
+        <button class="sort-chip" data-s="room" onclick="setResSort('room')">居室順</button>
+        <button class="sort-chip" data-s="age" onclick="setResSort('age')">年齢順</button>
+        <button class="sort-chip" data-s="unrecorded" onclick="setResSort('unrecorded')">未記録優先</button>
+      </div>
     </div>
     <div class="res-list" id="res-list"></div>
   </div>
@@ -7109,6 +7120,14 @@ function setFilter(f){
   });
   renderResList();
 }
+let _resSort='kana';
+function setResSort(s){
+  _resSort=s;
+  document.querySelectorAll('.sort-chip').forEach(c=>{
+    c.classList.toggle('on',c.dataset.s===s);
+  });
+  renderResList();
+}
 function hiraToKata(s){return s.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
 function renderResList(){
   const addBtn=document.getElementById('btn-add-resident');
@@ -7121,10 +7140,22 @@ function renderResList(){
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
     const matchF=S.filter==='all'||r.services.includes(S.filter);
     return matchQ&&matchF;
-  }).sort((a,b)=>a.kana.localeCompare(b.kana,'ja'));
+  });
   const recs=getRecords();
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
+  res.sort((a,b)=>{
+    if(_resSort==='room'){
+      const ra=parseInt(a.room)||9999, rb=parseInt(b.room)||9999;
+      return ra!==rb?ra-rb:a.kana.localeCompare(b.kana,'ja');
+    }
+    if(_resSort==='age') return (b.age||0)-(a.age||0)||a.kana.localeCompare(b.kana,'ja');
+    if(_resSort==='unrecorded'){
+      const ua=vitalToday.has(a.id)?1:0, ub=vitalToday.has(b.id)?1:0;
+      return ua!==ub?ua-ub:a.kana.localeCompare(b.kana,'ja');
+    }
+    return a.kana.localeCompare(b.kana,'ja'); // kana（デフォルト）
+  });
   const fluidByRes={};
   recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).forEach(r=>{fluidByRes[r.rid]=(fluidByRes[r.rid]||0)+(r.data.fluid||0);});
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
