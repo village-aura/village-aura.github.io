@@ -9350,7 +9350,10 @@ function importCSV(){
     });
   });
   if(!added.length){toast('新しいデータがありません（重複またはデータなし）');return;}
-  saveResidents([...existing,...added]);
+  const mergedRes=[...existing,...added];
+  saveResidents(mergedRes);
+  // Firebaseが接続済みなら即時プッシュ（キュー消失防止）
+  if(fbReady&&db) _doFsSet('residents',mergedRes);
   toast(`${added.length}名をインポートしました ✓`);
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
@@ -9432,6 +9435,8 @@ function importStaffCSV(headers,rows){
   });
   if(!added){toast('新しい職員データがありません');return;}
   saveCustomStaff(cs);saveStaffSettings(ss);
+  // Firebase接続済みなら即時プッシュ
+  if(fbReady&&db){_doFsSet('custom_staff',cs);_doFsSet('staff_settings',ss);}
   addAuditLog('職員一括登録',added+'名');
   toast(`${added}名の職員をインポートしました ✓`);
   if(results.length)console.table(results);
