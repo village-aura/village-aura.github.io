@@ -4569,17 +4569,35 @@ async function login(){
     }catch(e){}
   }
   const csEntries=getCustomStaff();
-  const staffKey=
+  let staffKey=
     Object.keys(STAFF_INFO).find(k=>getStaffLoginId(k)===inputId)||
     Object.keys(csEntries).find(k=>(getStaffSettings()[k]?.loginId||csEntries[k].loginId)===inputId);
-  const staffInfo=STAFF_INFO[staffKey]||csEntries[staffKey];
+  let staffInfo=STAFF_INFO[staffKey]||csEntries[staffKey];
   if(!staffKey||getStaffPass(staffKey)!==inputPass){
-    const rem=_recordFail();
-    if(_checkLock()){_startLockTimer();return;}
-    errEl.textContent='職員IDまたはパスワードが正しくありません'+(rem>0?'（あと'+rem+'回失敗するとロックされます）':'');
-    errEl.style.display='block';
-    document.getElementById('login-pass').value='';
-    return;
+    // キャッシュが古い可能性あり → Firestoreから最新のstaff_settingsを取得してリトライ
+    let retryOk=false;
+    if(db){
+      try{
+        if(btnEl)btnEl.textContent='確認中…';
+        const doc=await db.collection('va_data').doc('staff_settings').get();
+        if(doc.exists&&doc.data()?.data){
+          lsSet('staff_settings',doc.data().data);
+          const rk=Object.keys(STAFF_INFO).find(k=>getStaffLoginId(k)===inputId)
+            ||Object.keys(csEntries).find(k=>(getStaffSettings()[k]?.loginId||csEntries[k].loginId)===inputId);
+          if(rk&&getStaffPass(rk)===inputPass){
+            staffKey=rk;staffInfo=STAFF_INFO[rk]||csEntries[rk];retryOk=true;
+          }
+        }
+      }catch(e){}finally{if(btnEl)btnEl.textContent='ログイン';}
+    }
+    if(!retryOk){
+      const rem=_recordFail();
+      if(_checkLock()){_startLockTimer();return;}
+      errEl.textContent='職員IDまたはパスワードが正しくありません'+(rem>0?'（あと'+rem+'回失敗するとロックされます）':'');
+      errEl.style.display='block';
+      document.getElementById('login-pass').value='';
+      return;
+    }
   }
   _clearLock();
   if(isStaffDisabled(staffKey)){
