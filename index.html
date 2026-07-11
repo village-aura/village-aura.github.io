@@ -13772,14 +13772,13 @@ _startLockTimer();
     startUpdateChecker();
     resetLockTimer();
     // Firebase Auth SDKが自動でセッションを復元するのを待つ（パスワード再入力不要）
+    // user=nullの場合は匿名サインイン完了を待つため unsubscribe しない
     const unsubAuth=firebase.auth().onAuthStateChanged(user=>{
+      if(!user)return; // 匿名サインイン完了まで待機
       unsubAuth();
-      if(user&&!user.isAnonymous){
-        fbReady=true;
-        loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
-        startAIKeySync();
-      }
-      // 非認証 or 匿名の場合はオフラインモードで継続（次回操作時に再ログイン誘導）
+      fbReady=true;
+      loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+      startAIKeySync();
     });
   }catch(e){}
 })();
