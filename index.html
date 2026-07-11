@@ -1479,6 +1479,16 @@ a{color:var(--p);text-decoration:none}
             </div>
             <button onclick="logout()" style="background:var(--ng);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">ログアウト</button>
           </div>
+          <div style="border-top:1px solid var(--bdr);padding-top:14px;margin-top:4px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px">🔑 パスワード変更</div>
+            <div id="pw-err" style="display:none;background:#fee;color:#c00;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:8px"></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <input type="password" id="pw-cur" placeholder="現在のパスワード" autocomplete="current-password" style="padding:10px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--bg);color:var(--txt);width:100%">
+              <input type="password" id="pw-new" placeholder="新しいパスワード（4文字以上）" autocomplete="new-password" style="padding:10px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--bg);color:var(--txt);width:100%">
+              <input type="password" id="pw-new2" placeholder="新しいパスワード（確認）" autocomplete="new-password" style="padding:10px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--bg);color:var(--txt);width:100%">
+              <button onclick="changePassword()" style="padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">変更する</button>
+            </div>
+          </div>
         </div></div>
       </div>
 
@@ -9684,10 +9694,8 @@ function addManualStaff(){
   const mei=document.getElementById('ms-mei').value.trim();
   if(!sei||!mei){toast('姓と名を入力してください');return;}
   const name=sei+' '+mei;
-  const pass=document.getElementById('ms-pass').value.trim();
-  if(pass.length<6){
-    toast('パスワードは6文字以上で入力してください');return;
-  }
+  const pass=document.getElementById('ms-pass').value.trim()||'aura'+getNextStaffLoginId();
+  if(pass.length<4){toast('パスワードが短すぎます');return;}
   const role=document.getElementById('ms-role').value;
   if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){toast('全権管理者・管理者ロールの登録は全権管理者のみ実行できます');return;}
   const loginId=document.getElementById('ms-loginid').value||getNextStaffLoginId();
@@ -9708,8 +9716,8 @@ function addManualStaff(){
   addAuditLog('職員追加',name+' (ID:'+loginId+')');
   toast(name+'を登録しました ✓');
   ['ms-sei','ms-mei','ms-kana-sei','ms-kana-mei'].forEach(id=>document.getElementById(id).value='');
-  genMsPass();
   renderStaffRoleDropdown();
+  genMsPass();
 }
 
 // ═══════════ TAB SWITCHERS ═══════════
@@ -9879,7 +9887,8 @@ function importFacesheetExcel(headers,rows){
 }
 function genMsPass(){
   const el=document.getElementById('ms-pass');
-  if(el)el.value=generatePassword();
+  const idEl=document.getElementById('ms-loginid');
+  if(el)el.value='aura'+(idEl?.value||getNextStaffLoginId());
 }
 
 // ═══════════ EDIT RESIDENT ═══════════
