@@ -4229,8 +4229,10 @@ async function _ensureFirebaseAuth(staffKey,password){
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
     });
     // 未認証時は匿名サインイン（ログイン画面でstaff_settingsを読むため）
+    // ただしセッション復元中（va_sessionあり）は匿名で上書きしない
     firebase.auth().onAuthStateChanged(user=>{
-      if(!user) firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
+      if(!user&&!localStorage.getItem('va_session'))
+        firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
     });
   }catch(e){console.warn('Firebase init error:',e);}
 })();
