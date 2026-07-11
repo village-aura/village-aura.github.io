@@ -5,7 +5,7 @@
 <script>
 // Service Worker 登録（デプロイのたびにキャッシュ自動クリア）
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
-window.onerror=function(msg,src,line,col,err){var d=document.getElementById('js-err-banner');if(!d){d=document.createElement('div');d.id='js-err-banner';d.style.cssText='position:fixed;top:0;left:0;right:0;background:#b71c1c;color:#fff;padding:10px 12px;font-size:12px;z-index:99999;white-space:pre-wrap;word-break:break-all';document.body?document.body.appendChild(d):(window.addEventListener('DOMContentLoaded',function(){document.body.appendChild(d);}));}d.textContent=(d.textContent?d.textContent+'\n---\n':'')+'JS ERROR (line '+line+'): '+msg;return false;};
+window.onerror=function(msg,src,line,col,err){if(!msg||msg==='Script error.'||msg==='Script error'||(line===0&&!src))return false;var d=document.getElementById('js-err-banner');if(!d){d=document.createElement('div');d.id='js-err-banner';d.style.cssText='position:fixed;top:0;left:0;right:0;background:#b71c1c;color:#fff;padding:10px 12px;font-size:12px;z-index:99999;white-space:pre-wrap;word-break:break-all';document.body?document.body.appendChild(d):(window.addEventListener('DOMContentLoaded',function(){document.body.appendChild(d);}));}d.textContent=(d.textContent?d.textContent+'\n---\n':'')+'JS ERROR (line '+line+'): '+msg;return false;};
 // ログインフォールバック: メインスクリプトが壊れていても手動リカバリー
 window._loginFallback=function(){
   if(typeof login==='function'){try{login();}catch(e){var er=document.getElementById('login-err');if(er){er.textContent='エラー: '+e.message;er.style.display='block';}}}
