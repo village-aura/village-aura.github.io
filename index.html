@@ -201,7 +201,7 @@ a{color:var(--p);text-decoration:none}
 .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s}
 .chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
 .res-list{padding:0 12px}
-.res-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
+.res-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;position:relative}
 .res-avatar{width:44px;height:44px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
 .res-avatar.male{background:#e3f2fd}
 .res-info{flex:1}
@@ -441,6 +441,16 @@ a{color:var(--p);text-decoration:none}
   #sidebar{display:flex}
   body.sb-closed #sidebar{display:none}
   body:not(.sb-closed) #sb-backdrop{display:block}
+}
+/* ── PORTRAIT SCROLL FIX（iOS タブレット縦向き）── */
+@media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
+  body{overflow:hidden;height:100vh}
+  #main-content-wrap{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .scr.on{flex:1;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .search-bar{top:0!important}
+  .sch-bar{top:0!important}
+  .detail-mobile-tabs{top:0!important}
+  .diary-right{top:0!important}
 }
 
 /* ── LANDSCAPE COMPACT（タブレット・大型スマホ横向き）── */
@@ -4314,8 +4324,12 @@ async function _ensureFirebaseAuth(staffKey,password){
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
     });
     // 未認証時は匿名サインイン（ログイン画面でstaff_settingsを読むため）
+    // セッション復元と競合しないよう2秒待ってから実行
     firebase.auth().onAuthStateChanged(user=>{
-      if(!user) firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
+      if(!user) setTimeout(()=>{
+        if(!firebase.auth().currentUser)
+          firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
+      },2000);
     });
   }catch(e){console.warn('Firebase init error:',e);}
 })();
@@ -4463,13 +4477,33 @@ function lsSet(k,v){
   if(_NOENC.has(k)){localStorage.setItem(k,JSON.stringify(v));return;}
   localStorage.setItem('e_'+k,_enc(JSON.stringify(v)));
 }
-function getResidents(){return ls('residents')||INIT_RESIDENTS}
+function getAllResidents(){return ls('residents')||INIT_RESIDENTS;}
+function getResidents(){return getAllResidents().filter(r=>!r.hidden);}
 function getRecords(){
   const all=_activeRecordKeys().flatMap(k=>ls(k)||[]);
   return all.length?all:[...INIT_RECORDS,...MARCH_RECORDS];
 }
 function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
 function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
+function hideResident(id){
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
+  const res=getAllResidents();const r=res.find(x=>x.id===id);if(!r)return;
+  r.hidden=true;saveResidents(res);
+  addAuditLog('利用者非表示',r.name);renderResList();toast(r.name+' を非表示にしました');
+}
+function unhideResident(id){
+  if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
+  const res=getAllResidents();const r=res.find(x=>x.id===id);if(!r)return;
+  delete r.hidden;saveResidents(res);
+  addAuditLog('利用者再表示',r.name);renderResList();toast(r.name+' を再表示にしました');
+}
+function deleteResidentPermanently(id){
+  if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
+  const res=getAllResidents();const r=res.find(x=>x.id===id);if(!r)return;
+  if(!confirm('「'+r.name+'」を完全削除します。\n記録データは残りますが利用者情報は消えます。\nこの操作は元に戻せません。\n\nよろしいですか？'))return;
+  saveResidents(res.filter(x=>x.id!==id));
+  addAuditLog('利用者削除',r.name);renderResList();toast(r.name+' を削除しました');
+}
 function saveRecords(r){
   const byMonth={};
   r.forEach(rec=>{
@@ -7316,6 +7350,8 @@ function renderResList(){
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
   const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
+  const canHide=isManagerOrAbove();
+  const canDel=isSuperAdminRole();
   document.getElementById('res-list').innerHTML=res.map(r=>{
     const ok=vitalToday.has(r.id);
     const stoolDays=getStoolDays(r.id,recs);
@@ -7327,7 +7363,9 @@ function renderResList(){
     if(stoolWarn)badges.push(`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #e1bee7">🚽 ${stoolDays===null?'排便未記録':stoolDays+'日'}` + '</span>');
     const fluidColor=fluid>=1000?'#1b5e20':fluid>=500?'#e65100':'#9e9e9e';
     badges.push(`<span style="background:#e8f5e9;color:${fluidColor};font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #c8e6c9">💧 ${fluid}ml</span>`);
+    const hideBtn=canHide?`<button onclick="event.stopPropagation();hideResident('${r.id}')" title="非表示にする" style="position:absolute;top:8px;right:8px;font-size:13px;opacity:.35;background:none;border:none;cursor:pointer;touch-action:manipulation;padding:4px;line-height:1;border-radius:4px" onmouseenter="this.style.opacity='.8'" onmouseleave="this.style.opacity='.35'">🙈</button>`:'';
     return `<div class="res-card" onclick="openResident('${r.id}')">
+      ${hideBtn}
       <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
         <div class="res-name">${r.name} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
@@ -7343,6 +7381,23 @@ function renderResList(){
   }).join('')||(allResidents.length===0&&isAdmin()
     ?`<div class="empty"><div class="e-ico">👥</div><p>利用者が登録されていません</p><div style="margin-top:16px"><button onclick="seedDemoData()" style="background:#fff3e0;color:#e65100;border:1.5px solid #ffcc80;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation">📋 デモデータを挿入する</button></div></div>`
     :'<div class="empty"><div class="e-ico">🔍</div><p>該当する利用者がいません</p></div>');
+
+  // 管理者以上: 非表示利用者セクション
+  if(canHide){
+    const hiddenList=getAllResidents().filter(r=>r.hidden);
+    const el=document.getElementById('res-list');
+    if(hiddenList.length){
+      const hdHtml=`<div style="margin-top:20px;padding:0 0 4px">
+        <div style="font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;padding:0 2px 8px;text-transform:uppercase">👁️‍🗨️ 非表示の利用者（${hiddenList.length}名）</div>
+        ${hiddenList.map(r=>`<div style="background:var(--card);border-radius:10px;padding:11px 14px;margin-bottom:6px;box-shadow:var(--sh);display:flex;align-items:center;gap:10px;opacity:.65;border-left:3px solid var(--bdr)">
+          <div style="flex:1;font-size:14px;font-weight:700">${r.name} <span style="font-size:12px;font-weight:400;color:var(--sub)">${r.age||''}歳</span></div>
+          <button onclick="unhideResident('${r.id}')" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;white-space:nowrap">再表示</button>
+          ${canDel?`<button onclick="deleteResidentPermanently('${r.id}')" style="padding:6px 10px;background:#c62828;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">削除</button>`:''}
+        </div>`).join('')}
+      </div>`;
+      el.insertAdjacentHTML('beforeend',hdHtml);
+    }
+  }
 }
 
 // ═══════════ SERVICE ENTRY ROUTE ═══════════
@@ -9374,7 +9429,7 @@ function importCSV(){
   const norm=h=>RES_COL[h]||h;
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
-  const existing=getResidents();
+  const existing=getAllResidents();
   const added=[];
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
@@ -9632,7 +9687,7 @@ function handleFacesheetJSON(inp){
 }
 function importFacesheetJSON(data){
   // data = { '利用者001': { address, tel, contacts, ... }, ... }
-  const residents=getResidents();
+  const residents=getAllResidents();
   let count=0;
   Object.entries(data).forEach(([resNo,fs])=>{
     const res=residents.find(r=>r.name===resNo);
