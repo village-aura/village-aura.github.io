@@ -4220,10 +4220,6 @@ async function _ensureFirebaseAuth(staffKey,password){
 (async function initFirebase(){
   try{
     firebase.initializeApp(FB_CONFIG);
-    firebase.appCheck().activate(
-      new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcastgsAAAAAHFjkxmkwvQ2n_-rmKqDfIpSqjCB'),
-      true
-    );
     db=firebase.firestore();
     db.enablePersistence({synchronizeTabs:true}).catch(e=>{
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
