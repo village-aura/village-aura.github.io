@@ -589,7 +589,6 @@ a{color:var(--p);text-decoration:none}
 </style>
 </head>
 <body>
-<div id="ver-banner" style="position:fixed;top:0;left:0;right:0;background:#d32f2f;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;z-index:99998;text-align:center">🔧 DEBUG VER 2026-07-11D — TOUCH:0 CLICK:0</div>
 
 <!-- ═══════════ LOGIN ═══════════ -->
 <div id="scr-login" class="scr on">
@@ -7579,7 +7578,6 @@ function switchDetailTab(tab){
   if(left)left.style.display=tab==='timeline'?'none':'';
 }
 function openVitalFocused(focusField){
-  toast('🔧 openVitalFocused: '+focusField+' / res='+S.currentRes);
   _vitalFocusedField=focusField||null;
   const recs=getRecords().filter(rc=>rc.rid===S.currentRes&&rc.type==='vital');
   const todayStr=new Date().toDateString();
@@ -7613,20 +7611,14 @@ function openVitalFocused(focusField){
 function openVitalFull(){openVitalFocused(null);}
 function selectService(svc){S.currentService=svc;renderDetail();}
 function openSvcSetting(){
-  const _res=getResidents();
-  const _r=_res.find(x=>x.id===S.currentRes);
-  try{document.getElementById('ver-banner').textContent='SVC: res='+S.currentRes+' found='+!!_r+' total='+_res.length;}catch(e){}
-  toast('🔧 openSvcSetting: res='+S.currentRes+' found='+!!_r);
-  const r=_r;
-  if(!r){return;}
+  const r=getResidents().find(x=>x.id===S.currentRes);
+  if(!r)return;
   const svcs=r.services||[];
   document.getElementById('ss-res').checked=svcs.includes('resident');
   document.getElementById('ss-stay').checked=svcs.includes('stay');
   document.getElementById('ss-com').checked=svcs.includes('commute');
   document.getElementById('ss-vis').checked=svcs.includes('visit');
-  const _m=document.getElementById('modal-svc-setting');
-  _m.classList.add('on');
-  try{document.getElementById('ver-banner').textContent='SVC_MODAL cls='+_m.className+' disp='+getComputedStyle(_m).display;}catch(e){}
+  document.getElementById('modal-svc-setting').classList.add('on');
 }
 function saveSvcSetting(){
   const res=getResidents();
@@ -7738,7 +7730,6 @@ function expandTlNote(id,btn){
 
 // ═══════════ MODALS ═══════════
 function openModal(id){
-  toast('🔧 openModal: '+id+' / res='+S.currentRes);
   const r=getResidents().find(x=>x.id===S.currentRes);
   const name=r?r.name+' 様':'利用者';
   ['vital-sub','meal-sub','chrono-sub'].forEach(sid=>{
@@ -7812,8 +7803,18 @@ function getRecordTs(){
   }
   return new Date().toISOString();
 }
+const _modalOpenAt={};
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.overlay').forEach(el=>{
+    new MutationObserver(muts=>{
+      muts.forEach(m=>{if(m.attributeName==='class'&&el.classList.contains('on'))_modalOpenAt[el.id]=performance.now();});
+    }).observe(el,{attributes:true});
+  });
+});
 function closeModal(id,e){
   if(e&&e.target!==document.getElementById(id))return;
+  if(e&&_modalOpenAt[id]&&(performance.now()-_modalOpenAt[id])<500)return;
+  delete _modalOpenAt[id];
   document.getElementById(id).classList.remove('on');
   stopVoice();
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
@@ -10819,7 +10820,6 @@ function editBoardItem(section,shift,editIdx){
   openBoardHandover(section,editIdx);
 }
 function openBoardHandover(section,editIdx=-1,presetRid=null){
-  toast('🔧 openBoardHandover: '+section);
   const secField=document.getElementById('bho-section-field');
   const secSel=document.getElementById('bho-section-sel');
   const isNew=editIdx<0;
@@ -11376,7 +11376,6 @@ function selectCalDay(day){
   S.schedDay=day;S.schedView='day';renderSchedule();
 }
 function openSchAdd(){
-  toast('🔧 openSchAdd called');
   const res=getResidents();
   document.getElementById('sch-rid').innerHTML=res.map(r=>`<option value="${r.id}"${r.id===S.schedRid?' selected':''}>${r.name}</option>`).join('');
   document.getElementById('sch-date').value=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
@@ -12276,11 +12275,11 @@ function toast(msg){
   try{
     clearTimeout(toastTimer);
     let el=document.getElementById('_t');
-    if(!el){el=document.createElement('div');el.id='_t';document.body.appendChild(el);}
+    if(!el){el=document.createElement('div');el.id='_t';el.style.cssText='position:fixed;bottom:calc(50vh + 20px);left:10%;right:10%;background:rgba(28,35,64,.95);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;z-index:10000;text-align:center;pointer-events:none;display:none';document.body.appendChild(el);}
     el.textContent=msg;
-    el.style.cssText='position:fixed!important;top:80px!important;left:5%!important;right:5%!important;background:#1c2340!important;color:#fff!important;padding:12px 16px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;z-index:2147483647!important;text-align:center!important;display:block!important;word-break:break-all!important';
-    toastTimer=setTimeout(()=>{if(el)el.style.display='none';},3000);
-  }catch(ex){try{document.getElementById('ver-banner').textContent='T_ERR:'+ex.message;}catch(e2){}}
+    el.style.display='block';
+    toastTimer=setTimeout(()=>{el.style.display='none';},2500);
+  }catch(ex){}
 }
 
 // ═══════════ RESET ═══════════
@@ -12550,30 +12549,6 @@ function resetLockTimer(){
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
 
-// ── デバッグ: TOUCH/CLICKカウンター ──
-let _dbgT=0,_dbgC=0;
-function _dbgBanner(extra){
-  try{const b=document.getElementById('ver-banner');if(b)b.textContent='v11D T:'+_dbgT+' C:'+_dbgC+(extra?' '+extra:'');}catch(e){}
-}
-document.addEventListener('touchend',function(e){
-  _dbgT++;
-  let info='';
-  try{const t=e.changedTouches[0]&&document.elementFromPoint(e.changedTouches[0].clientX,e.changedTouches[0].clientY);if(t)info=t.tagName+(t.id?'#'+t.id:'');}catch(e2){}
-  _dbgBanner(info);
-  toast('TOUCH:'+_dbgT+' '+info);
-},{passive:true,capture:true});
-document.addEventListener('click',function(e){
-  _dbgC++;
-  let info='';
-  try{
-    const t=e.target;
-    const cls=t.className&&typeof t.className==='string'?'.'+t.className.trim().split(/\s+/)[0]:'';
-    const oc=(t.getAttribute&&t.getAttribute('onclick')||'').substr(0,20);
-    info=t.tagName+cls+(oc?' oc='+oc:'');
-  }catch(e2){}
-  _dbgBanner(info);
-  toast('C:'+_dbgC+' '+info);
-},true);
 
 // ── スワイプナビゲーション ──
 let _swX=0,_swY=0,_swActive=false;
@@ -13276,8 +13251,7 @@ function renderDashboardInfection(){
 
 // ═══════════ FEATURE 6: 家族向け連絡帳自動生成 ═══════════
 function openFamilyReport(){
-  toast('🔧 openFamilyReport: res='+S.currentRes);
-  if(!S.currentRes){toast('🔧 openFamilyReport: res is null');return;}
+  if(!S.currentRes)return;
   document.getElementById('family-report-date').textContent=
     new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   regenerateFamilyReport();
