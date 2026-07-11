@@ -4104,9 +4104,10 @@ const STAFF_INFO = {
   s3:{name:'前原 明子',role:'care',loginId:'1003',hidden:true},
   s4:{name:'鈴木 健太',role:'care',loginId:'1004',hidden:true},
   s5:{name:'中村 由美',role:'nurse',loginId:'1005',hidden:true},
-  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'06419008',admin:true,hidden:true},
+  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'0001',pass:'06419008',admin:true,hidden:true},
   s7:{name:'佐藤 真理',role:'home_care',loginId:'1007',hidden:true},
   s8:{name:'木村 誠司',role:'doctor',loginId:'1008',hidden:true},
+  s9:{name:'稲田 真帆',role:'super_admin',loginId:'0002',pass:'aura01',admin:true,hidden:true},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
 function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
@@ -4418,7 +4419,8 @@ function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k])s[k]={};
     if(STAFF_INFO[k].admin){
-      if(s[k].pass!==STAFF_INFO[k].loginId){s[k].pass=STAFF_INFO[k].loginId;changed=true;}
+      const expected=STAFF_INFO[k].pass||STAFF_INFO[k].loginId;
+      if(s[k].pass!==expected){s[k].pass=expected;changed=true;}
     } else if(!s[k].pass){
       s[k].pass='aura01';changed=true;
     }
@@ -4449,7 +4451,7 @@ async function login(){
           if(doc.exists&&doc.data()?.data){
             const d=doc.data().data;
             Object.keys(STAFF_INFO).forEach(k=>{
-              if(STAFF_INFO[k].admin){if(!d[k])d[k]={};d[k].pass=STAFF_INFO[k].loginId;}
+              if(STAFF_INFO[k].admin){if(!d[k])d[k]={};d[k].pass=STAFF_INFO[k].pass||STAFF_INFO[k].loginId;}
               else if(!d[k]?.pass){if(!d[k])d[k]={};d[k].pass='aura01';}
             });
             lsSet('staff_settings',d);
@@ -9266,8 +9268,8 @@ const CARE_DISP={'自立':'none','要支援1':'support1','要支援2':'support2'
 const SVC_DISP={'居住':'resident','デイ（通所）':'commute','デイ':'commute','通所':'commute',
   '小多機':'stay','訪問':'visit','訪問看護':'nursing',
   'resident':'resident','commute':'commute','stay':'stay','visit':'visit','nursing':'nursing'};
-const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho',
-  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password'};
+const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho','従業員番号':'emp_no',
+  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password','emp_no':'emp_no'};
 const ROLE_DISP={'全権管理者':'super_admin','全権管理者 兼 医師':'super_admin_doctor','医師':'doctor','管理者':'facility_manager_resident',
   '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
   'super_admin':'super_admin','doctor':'doctor','care':'care','nurse':'nurse','medical_office':'medical_office',
@@ -9437,7 +9439,10 @@ function importStaffCSV(headers,rows){
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
   const cs=getCustomStaff();const ss=getStaffSettings();
-  const existingNames=new Set(Object.values(cs).map(s=>_normName(s.name)));
+  const existingNames=new Set([
+    ...Object.values(cs).map(s=>_normName(s.name)),
+    ...Object.values(STAFF_INFO).map(s=>_normName(s.name)),
+  ]);
   let added=0,skipped=0;
   const results=[];
   rows.forEach(r=>{
@@ -9450,7 +9455,8 @@ function importStaffCSV(headers,rows){
     if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId:'-',pass:'-',note:'スキップ（全権管理者のみ登録可）'});return;}
     const jRaw=(i('jigyousho')>=0?String(r[i('jigyousho')]||''):'').trim();
     const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
-    const loginId=getNextStaffLoginId();
+    const empNoRaw=(i('emp_no')>=0?String(r[i('emp_no')]||''):'').trim();
+    const loginId=empNoRaw?String(empNoRaw).padStart(4,'0'):getNextStaffLoginId();
     const key='cs'+Date.now()+Math.random();
     const kana=(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim();
     cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
