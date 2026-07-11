@@ -9439,38 +9439,51 @@ function importStaffCSV(headers,rows){
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
   const cs=getCustomStaff();const ss=getStaffSettings();
-  const existingNames=new Set([
-    ...Object.values(cs).map(s=>_normName(s.name)),
-    ...Object.values(STAFF_INFO).map(s=>_normName(s.name)),
-  ]);
-  let added=0,skipped=0;
+  // STAFF_INFOの名前は常にスキップ（全権管理者はコードで管理）
+  const staffInfoNames=new Set(Object.values(STAFF_INFO).map(s=>_normName(s.name)));
+  // custom_staff内の既存エントリ: 名前→キー のマップ（UPSERT用）
+  const existingKeyByName={};
+  Object.entries(cs).forEach(([k,s])=>{existingKeyByName[_normName(s.name)]=k;});
+  let added=0,updated=0,skipped=0;
   const results=[];
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    if(existingNames.has(_normName(name))){skipped++;results.push({name,loginId:'-',pass:'-',note:'スキップ（重複）'});return;}
-    const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():generatePassword();
+    if(staffInfoNames.has(_normName(name))){skipped++;return;}
+    const empNoRaw=(i('emp_no')>=0?String(r[i('emp_no')]||''):'').trim();
+    const loginId=empNoRaw?String(parseInt(empNoRaw,10)).padStart(4,'0'):getNextStaffLoginId();
     const roleRaw=(i('role')>=0?String(r[i('role')]||''):'').trim();
     const role=ROLE_DISP[roleRaw]||'care';
-    if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId:'-',pass:'-',note:'スキップ（全権管理者のみ登録可）'});return;}
+    if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId,note:'スキップ（全権管理者のみ登録可）'});skipped++;return;}
     const jRaw=(i('jigyousho')>=0?String(r[i('jigyousho')]||''):'').trim();
     const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
-    const empNoRaw=(i('emp_no')>=0?String(r[i('emp_no')]||''):'').trim();
-    const loginId=empNoRaw?String(empNoRaw).padStart(4,'0'):getNextStaffLoginId();
-    const key='cs'+Date.now()+Math.random();
     const kana=(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim();
-    cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
-    ss[key]={pass,loginId};
-    results.push({name,loginId,pass});
-    added++;
+    const existingKey=existingKeyByName[_normName(name)];
+    if(existingKey){
+      // 既存エントリのloginId・role・jigyoushoを更新（パスワードは維持）
+      cs[existingKey]={...cs[existingKey],name,kana:kana||cs[existingKey].kana,role,loginId,jigyousho};
+      ss[existingKey]={...ss[existingKey],loginId};
+      results.push({name,loginId,note:'更新'});
+      updated++;
+    }else{
+      const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():'aura01';
+      const key='cs'+Date.now()+Math.random();
+      cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
+      ss[key]={pass,loginId};
+      results.push({name,loginId,pass,note:'新規'});
+      added++;
+    }
   });
-  if(!added){toast(`新しい職員データがありません（重複 ${skipped}名スキップ）`);return;}
+  if(!added&&!updated){toast(`変更なし（全権管理者スキップ ${skipped}名）`);return;}
   saveCustomStaff(cs);saveStaffSettings(ss);
   // Firebase接続済みなら即時プッシュ
   if(fbReady&&db){_doFsSet('custom_staff',cs);_doFsSet('staff_settings',ss);}
-  addAuditLog('職員一括登録',added+'名');
-  const dupMsg=skipped?` （重複 ${skipped}名スキップ）`:'';
-  toast(`${added}名の職員をインポートしました ✓${dupMsg}`);
+  addAuditLog('職員一括登録',`新規${added}名・更新${updated}名`);
+  const parts=[];
+  if(added)parts.push(`新規${added}名`);
+  if(updated)parts.push(`ID更新${updated}名`);
+  if(skipped)parts.push(`スキップ${skipped}名`);
+  toast(`職員インポート完了: ${parts.join('・')} ✓`);
   if(results.length)console.table(results);
 }
 // ── 重複職員削除 ──
