@@ -1683,7 +1683,8 @@ a{color:var(--p);text-decoration:none}
               📊 ローカル: <b id="ss-local-res">--</b>名 ／ クラウド: <b id="ss-cloud-res">--</b>名
               <button onclick="refreshSyncStatus()" style="margin-left:8px;padding:2px 8px;font-size:11px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);cursor:pointer">確認</button>
             </div>
-            <button onclick="deduplicateResidents(this)" style="width:100%;padding:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;border:1px solid #a5d6a7">🔧 重複利用者をまとめて削除</button>
+            <button onclick="deduplicateResidents(this)" style="width:100%;padding:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:4px;border:1px solid #a5d6a7">🔧 重複利用者をまとめて削除</button>
+            <button onclick="deduplicateCustomStaff(this)" style="width:100%;padding:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;border:1px solid #a5d6a7">🔧 重複職員をまとめて削除</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:10px;line-height:1.6">同じ氏名が複数登録されている場合、最初の1件だけ残して削除します。</div>
             <button id="btn-push-fs" onclick="pushAllToFirestore(this)" style="width:100%;padding:11px;background:#1565c0;color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:4px">📤 このPCのデータをクラウドに強制アップロード</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">他の端末に表示されない場合に使用。このPCのデータをFirestoreに上書き保存します。</div>
@@ -9434,11 +9435,13 @@ function importStaffCSV(headers,rows){
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
   const cs=getCustomStaff();const ss=getStaffSettings();
-  let added=0;
+  const existingNames=new Set(Object.values(cs).map(s=>_normName(s.name)));
+  let added=0,skipped=0;
   const results=[];
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
+    if(existingNames.has(_normName(name))){skipped++;results.push({name,loginId:'-',pass:'-',note:'スキップ（重複）'});return;}
     const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():generatePassword();
     const roleRaw=(i('role')>=0?String(r[i('role')]||''):'').trim();
     const role=ROLE_DISP[roleRaw]||'care';
@@ -9453,13 +9456,31 @@ function importStaffCSV(headers,rows){
     results.push({name,loginId,pass});
     added++;
   });
-  if(!added){toast('新しい職員データがありません');return;}
+  if(!added){toast(`新しい職員データがありません（重複 ${skipped}名スキップ）`);return;}
   saveCustomStaff(cs);saveStaffSettings(ss);
   // Firebase接続済みなら即時プッシュ
   if(fbReady&&db){_doFsSet('custom_staff',cs);_doFsSet('staff_settings',ss);}
   addAuditLog('職員一括登録',added+'名');
-  toast(`${added}名の職員をインポートしました ✓`);
+  const dupMsg=skipped?` （重複 ${skipped}名スキップ）`:'';
+  toast(`${added}名の職員をインポートしました ✓${dupMsg}`);
   if(results.length)console.table(results);
+}
+// ── 重複職員削除 ──
+function deduplicateCustomStaff(btn){
+  const cs=getCustomStaff();const ss=getStaffSettings();
+  const seen=new Set(),dupKeys=[];
+  for(const [key,staff] of Object.entries(cs)){
+    const k=_normName(staff.name);
+    if(seen.has(k))dupKeys.push(key);
+    else seen.add(k);
+  }
+  if(!dupKeys.length){toast('重複なし（削除対象なし）');return;}
+  dupKeys.forEach(key=>{delete cs[key];delete ss[key];});
+  saveCustomStaff(cs);saveStaffSettings(ss);
+  if(fbReady&&db){_doFsSet('custom_staff',cs);_doFsSet('staff_settings',ss);}
+  toast(`重複職員 ${dupKeys.length}名を削除しました ✓`);
+  if(btn){btn.textContent=`✅ ${dupKeys.length}名削除済み`;setTimeout(()=>{if(btn)btn.textContent='🔧 重複職員をまとめて削除';},4000);}
+  _renderCurrentScreen();
 }
 
 // ─── Excel テンプレートDL ─────────────────────────────────
