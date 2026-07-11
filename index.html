@@ -4714,6 +4714,7 @@ function openVitalRanges(){
   document.getElementById('vr-reason').value='';
   document.getElementById('vr-history').style.display='none';
   document.getElementById('modal-vital-ranges').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveVitalRanges(){
   const reason=document.getElementById('vr-reason').value.trim();
@@ -4773,6 +4774,7 @@ function openTemplatePicker(type){
   if(sharedChk)sharedChk.checked=false;
   document.getElementById('tpl-new-name').value='';
   document.getElementById('modal-tpl-picker').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function _tplRow(t){
   return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)">
@@ -4987,6 +4989,7 @@ function openProposalForm(){
   document.querySelector('input[name="prop-pri"][value="low"]').checked=true;
   document.getElementById('prop-cat').value='ui';
   document.getElementById('modal-proposal').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function submitProposal(){
   const title=document.getElementById('prop-title').value.trim();
@@ -5110,6 +5113,7 @@ function openProposalDetail(id){
     actionsEl.innerHTML='';
   }
   document.getElementById('modal-proposal-detail').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function reviewProposal(id,status){
   const proposals=getProposals();
@@ -7619,6 +7623,7 @@ function openSvcSetting(){
   document.getElementById('ss-com').checked=svcs.includes('commute');
   document.getElementById('ss-vis').checked=svcs.includes('visit');
   document.getElementById('modal-svc-setting').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveSvcSetting(){
   const res=getResidents();
@@ -7762,6 +7767,7 @@ function openModal(id){
     }else if(pv){pv.style.display='none';}
   }
   document.getElementById(id).classList.add('on');
+  _noCloseUntil=Date.now()+350;
   // 記録日時セレクターを注入（対象モーダルのみ）
   const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight'];
   if(recModals.includes(id)){
@@ -7803,18 +7809,10 @@ function getRecordTs(){
   }
   return new Date().toISOString();
 }
-const _modalOpenAt={};
-document.addEventListener('DOMContentLoaded',()=>{
-  document.querySelectorAll('.overlay').forEach(el=>{
-    new MutationObserver(muts=>{
-      muts.forEach(m=>{if(m.attributeName==='class'&&el.classList.contains('on'))_modalOpenAt[el.id]=performance.now();});
-    }).observe(el,{attributes:true});
-  });
-});
+let _noCloseUntil=0;
 function closeModal(id,e){
   if(e&&e.target!==document.getElementById(id))return;
-  if(e&&_modalOpenAt[id]&&(performance.now()-_modalOpenAt[id])<500)return;
-  delete _modalOpenAt[id];
+  if(e&&Date.now()<_noCloseUntil)return;
   document.getElementById(id).classList.remove('on');
   stopVoice();
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
@@ -8038,6 +8036,7 @@ function openEditHandover(id){
   if(priEl)priEl.checked=true;
   document.getElementById('ho-content').value=entry.content||'';
   document.getElementById('modal-handover').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function deleteHandover(id){
   const h=getHandovers();
@@ -8987,6 +8986,7 @@ function openAttendance(){
   document.getElementById('att-time-to').value='';
   document.getElementById('att-note').value='';
   document.getElementById('modal-attendance').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveAttendance(){
   const timeFrom=document.getElementById('att-time-from').value;
@@ -9024,6 +9024,7 @@ function openVisitReportModal(editIdx=-1, presetRid=null){
     document.getElementById('vr-staff').value=S.user||'';
   }
   document.getElementById('modal-visit-report').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveVisitReport(){
   const rid=document.getElementById('vr-resident').value;
@@ -9827,6 +9828,7 @@ function openEditResident(){
   if(r.photo){prev.innerHTML=`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`;prev.dataset.photo=r.photo;if(clrBtn)clrBtn.style.display='';}
   else{prev.innerHTML='👤';prev.dataset.photo='';if(clrBtn)clrBtn.style.display='none';}
   document.getElementById('modal-edit-res').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function openAddResident(){
   if(!isAdmin()&&!isFacilityAdmin()){toast('権限がありません');return;}
@@ -9847,6 +9849,7 @@ function openAddResident(){
   const clrBtn=document.getElementById('er-photo-clear');
   prev.innerHTML='👤';prev.dataset.photo='';if(clrBtn)clrBtn.style.display='none';
   document.getElementById('modal-edit-res').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveEditResident(){
   const mode=document.getElementById('er-mode').value;
@@ -10854,6 +10857,7 @@ function openBoardHandover(section,editIdx=-1,presetRid=null){
     if(expSel)expSel.value='24h';
   }
   document.getElementById('modal-board-ho').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveBoardHandover(){
   const content=document.getElementById('bho-content').value.trim();
@@ -11258,6 +11262,7 @@ function openVisitEntryNew(){
   document.getElementById('ve-delete-btn').style.display='none';
   populateVisitDataLists();
   document.getElementById('modal-visit-entry').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function openVisitEntryEdit(dateStr,idx){
   const v=getVisitSched(dateStr)[idx];if(!v)return;
@@ -11274,6 +11279,7 @@ function openVisitEntryEdit(dateStr,idx){
   document.getElementById('ve-delete-btn').style.display='';
   populateVisitDataLists();
   document.getElementById('modal-visit-entry').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function populateVisitDataLists(){
   const staffSet=new Set(Object.values(STAFF_INFO).map(s=>s.name));
@@ -11384,6 +11390,7 @@ function openSchAdd(){
   document.getElementById('sch-end').value='';
   document.getElementById('sch-note').value='';
   document.getElementById('modal-sch-add').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function saveScheduleEvent(){
   const title=document.getElementById('sch-title').value.trim();
@@ -11813,6 +11820,7 @@ function openFacesheet(){
   document.querySelector('#modal-facesheet .tab').classList.add('on');
   document.getElementById('fst-contact').classList.add('on');
   document.getElementById('modal-facesheet').classList.add('on');
+  _noCloseUntil=Date.now()+350;
   // inject mic buttons on first open
   setTimeout(addFsVoiceButtons, 50);
 }
@@ -12887,6 +12895,7 @@ function openIncidentModal(editId=''){
   if(editId){const inc=getIncidents().find(i=>i.id===editId);if(inc&&sel)sel.value=inc.rid||'';}
   else if(S.currentRes&&sel)sel.value=S.currentRes;
   document.getElementById('modal-incident').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 
 function saveIncident(){
@@ -13155,6 +13164,7 @@ function openInfectionModal(editIdx=-1){
     _populateInfSvcTable({});
   }
   document.getElementById('modal-infection').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 function _populateInfSvcTable(sr){
   const tbody=document.getElementById('inf-svc-tbody');if(!tbody)return;
@@ -13256,6 +13266,7 @@ function openFamilyReport(){
     new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   regenerateFamilyReport();
   document.getElementById('modal-family-report').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 
 function regenerateFamilyReport(){
@@ -13517,6 +13528,7 @@ function openMonthlyReport(){
   const monthSel=document.getElementById('report-month');
   if(monthSel)monthSel.value=now.getMonth()+1;
   document.getElementById('modal-monthly-report').classList.add('on');
+  _noCloseUntil=Date.now()+350;
   generateMonthlyReport();
 }
 
@@ -13613,6 +13625,7 @@ function openResidentQR(){
     wrap.innerHTML=`<div style="font-size:12px;color:var(--sub);padding:20px">QRコード生成エラー</div>`;
   }
   document.getElementById('modal-qrcode').classList.add('on');
+  _noCloseUntil=Date.now()+350;
 }
 
 function checkUrlHash(){
