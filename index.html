@@ -4460,6 +4460,20 @@ async function login(){
   checkUrlHash();
   updateBnAcct();
   startUpdateChecker();
+  // ログイン直後に新バージョンチェック → あれば即リロード（まだ入力前なので安全）
+  (async()=>{
+    try{
+      if('serviceWorker' in navigator){
+        const reg=await navigator.serviceWorker.getRegistration();
+        if(reg) reg.update();
+      }
+      const url=location.href.split('?')[0].split('#')[0];
+      const r=await fetch(url,{method:'HEAD',cache:'no-store'});
+      const tag=r.headers.get('etag')||r.headers.get('last-modified')||'';
+      if(tag&&_initEtag&&tag!==_initEtag){forceReload();return;}
+      if(tag) _initEtag=tag;
+    }catch(e){}
+  })();
   // Firebase Auth（職員ごと）でサインイン → Firestoreアクセスを確立
   try{
     await _ensureFirebaseAuth(staffKey,inputPass);
