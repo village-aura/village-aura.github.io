@@ -12,7 +12,7 @@ window._loginFallback=function(){
   else{var er=document.getElementById('login-err');if(er){er.style.display='block';er.innerHTML='読み込みに問題があります。<br><button onclick="location.reload(true)" style="margin-top:6px;padding:5px 14px;background:#b71c1c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700">再読み込み</button>';}}
 };
 </script>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,6 +25,7 @@ window._loginFallback=function(){
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -115,6 +116,15 @@ a{color:var(--p);text-decoration:none}
 .man-item code{background:#f0f4ff;color:var(--p);border-radius:4px;padding:1px 5px;font-size:12px}
 .ai-wrap{display:flex;flex-direction:column;height:calc(100vh - 170px)}
 .ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.ai-msg{max-width:86%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.65;word-break:break-word}
+.ai-msg.user{background:var(--p);color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.ai-msg.ai{background:var(--card);color:var(--txt);align-self:flex-start;border-radius:16px 16px 16px 4px;box-shadow:var(--sh)}
+.ai-msg.typing{background:var(--card);color:var(--sub);align-self:flex-start;font-style:italic;box-shadow:var(--sh);border-radius:16px}
+.ai-input-row{display:flex;gap:8px;padding:10px 12px;background:var(--bg);border-top:1px solid var(--bdr);padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+.ai-input{flex:1;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:24px;font-size:15px;background:#fff;resize:none;height:44px;overflow:hidden}
+.ai-send{background:var(--p);color:#fff;border-radius:50%;width:44px;height:44px;font-size:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.ai-send:disabled{background:var(--bdr)}
+.ai-key-notice{margin:12px;padding:12px 14px;background:#fff3e0;border:1.5px solid #FB8C00;border-radius:var(--r);font-size:13px;line-height:1.6}
 
 /* ── LOGIN ── */
 #scr-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:0;background:#091929;position:relative;overflow:hidden}
@@ -190,22 +200,14 @@ a{color:var(--p);text-decoration:none}
 .filter-chips::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s}
 .chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
-.sort-chip{flex-shrink:0;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s;cursor:pointer;touch-action:manipulation}
-.sort-chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
 .res-list{padding:0 12px}
-.res-card{background:var(--card);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
-.res-avatar{width:42px;height:42px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
+.res-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px}
+.res-avatar{width:44px;height:44px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
 .res-avatar.male{background:#e3f2fd}
-.res-info{flex:1;min-width:0}
-.res-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.res-meta{font-size:11px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.res-tags{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
-.res-metrics{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0}
-.res-metric{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;line-height:1.4}
-.rm-ok{background:#e8f5e9;color:#2e7d32}
-.rm-warn{background:#fff3e0;color:#e65100}
-.rm-ng{background:#fce4ec;color:#c62828}
-.rm-sub{background:var(--bg);color:var(--sub);border:1px solid var(--bdr)}
+.res-info{flex:1}
+.res-name{font-size:16px;font-weight:700}
+.res-meta{font-size:12px;color:var(--sub);margin-top:2px}
+.res-tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
 .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
 .tag-resident{background:#e8f5e9;color:#2e7d32}
 .tag-commute{background:#e3f2fd;color:#1565c0}
@@ -363,8 +365,8 @@ a{color:var(--p);text-decoration:none}
 .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
 
 /* ── TOAST ── */
-#toast{position:fixed;bottom:50vh;left:0;right:0;margin:0 auto;width:fit-content;max-width:80%;background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:2147483647;display:none;pointer-events:none;white-space:normal;text-align:center}
-#toast.on{display:block}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1c2340;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:normal;max-width:80%;text-align:center}
+#toast.on{opacity:1}
 .req{color:var(--ng);margin-left:3px;font-weight:800}
 .field input.err,.field textarea.err{border-color:var(--ng)!important;background:#fff5f5!important}
 
@@ -416,8 +418,8 @@ a{color:var(--p);text-decoration:none}
 @media(min-width:768px){
   body{max-width:none}
   .quick-grid{grid-template-columns:repeat(4,1fr)}
-  .res-list{display:block;padding:0 12px}
-  .res-list .res-card{margin-bottom:8px}
+  .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
+  .res-list .res-card{margin-bottom:0}
   .inp-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
   #scr-handover-board.on{padding:4px 0}
   #scr-handover-board .card{margin-bottom:0}
@@ -512,7 +514,7 @@ a{color:var(--p);text-decoration:none}
   /* resident list */
   #scr-residents{padding:0}
   .search-bar{top:56px;padding:16px 16px 8px}
-  .res-list{display:block;padding:0 16px 16px}
+  .res-list{grid-template-columns:repeat(3,1fr);padding:0 16px 16px}
   /* detail 2-col */
   .detail-mobile-tabs{display:none}
   .detail-col-right.dtab-hidden{display:block!important}
@@ -911,7 +913,6 @@ a{color:var(--p);text-decoration:none}
         <input type="search" id="search-inp" placeholder="名前・フリガナで検索..." oninput="renderResList()">
       </div>
       <button id="btn-add-resident" onclick="openAddResident()" style="display:none;flex-shrink:0;background:var(--p);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(61,122,181,.35);touch-action:manipulation;white-space:nowrap">＋ 利用者</button>
-      <button onclick="reloadFromCloud(this)" style="flex-shrink:0;background:var(--card);border:1.5px solid var(--bdr);color:var(--sub);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;touch-action:manipulation;white-space:nowrap">🔄 再読込</button>
     </div>
     <div class="filter-chips" id="filter-chips">
       <button class="chip on" data-f="all" onclick="setFilter('all')">全員</button>
@@ -920,15 +921,6 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" data-f="stay" onclick="setFilter('stay')">小多機</button>
       <button class="chip" data-f="visit" onclick="setFilter('visit')">訪問</button>
       <button class="chip" data-f="nursing" onclick="setFilter('nursing')">訪問看護</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;padding:0 12px 8px">
-      <span style="font-size:11px;color:var(--sub);flex-shrink:0">並替:</span>
-      <div style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">
-        <button class="sort-chip on" data-s="kana" onclick="setResSort('kana')">かな順</button>
-        <button class="sort-chip" data-s="room" onclick="setResSort('room')">居室順</button>
-        <button class="sort-chip" data-s="age" onclick="setResSort('age')">年齢順</button>
-        <button class="sort-chip" data-s="unrecorded" onclick="setResSort('unrecorded')">未記録優先</button>
-      </div>
     </div>
     <div class="res-list" id="res-list"></div>
   </div>
@@ -1014,26 +1006,21 @@ a{color:var(--p);text-decoration:none}
         <div class="preview-wrap"><table class="preview-table" id="preview-table"></table></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 Excelテンプレート</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
           <button onclick="downloadResExcelTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
         </div>
-        <div style="font-size:11px;color:#e65100;background:#fff3e0;border-radius:6px;padding:4px 8px;margin-bottom:6px">💻 テンプレートのダウンロード・入力はPCで行ってください</div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">氏名, ふりがな, 性別, 生年月日, 要介護度, 居室, サービス種別, 事業所
 山田 花子, ヤマダ ハナコ, 女性, 1935/04/19, 要介護2, 101, 居住, サ高住</code>
       </div>
-      <!-- フェイスシートExcelインポート -->
       <div style="margin-top:10px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:4px">📋 フェイスシート一括インポート</div>
-        <div style="font-size:11px;color:#e65100;background:#fff3e0;border-radius:6px;padding:5px 8px;margin-bottom:8px">💻 テンプレートのダウンロード・入力はPCで行ってください</div>
-        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">テンプレートExcelを入力して取り込むか、convert_facesheet.py出力のJSONで取り込めます</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-          <input type="file" id="fs-xl-inp" accept=".xlsx,.xls" style="display:none" onchange="handleFacesheetExcel(this)">
-          <button onclick="document.getElementById('fs-xl-inp').click()" style="padding:9px 16px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📊 Excelで取込</button>
+        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:6px">📋 フェイスシートJSON一括インポート</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">convert_facesheet.py が出力した facesheet_import.json を選択</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input type="file" id="fs-json-inp" accept=".json" style="display:none" onchange="handleFacesheetJSON(this)">
-          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONで取込</button>
+          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONを選択</button>
+          <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
         </div>
-        <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
       </div>
     </div>
 
@@ -1053,11 +1040,10 @@ a{color:var(--p);text-decoration:none}
         <div class="preview-wrap"><table class="preview-table" id="staff-preview-table"></table></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 Excelテンプレート</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
           <button onclick="downloadStaffExcelTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
         </div>
-        <div style="font-size:11px;color:#e65100;background:#fff3e0;border-radius:6px;padding:4px 8px;margin-bottom:6px">💻 テンプレートのダウンロード・入力はPCで行ってください</div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">氏名, ふりがな, 職種, 事業所
 田中 花子, タナカ ハナコ, 介護職, サ高住</code>
         <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.8">
@@ -1232,7 +1218,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── 入浴記録モーダル ─── -->
-  <div class="overlay" id="modal-bath">
+  <div class="overlay" id="modal-bath" onclick="closeModal('modal-bath',event)">
     <div class="sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
       <div class="sheet-title">🛁 入浴記録</div>
@@ -1255,7 +1241,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── 服薬登録モーダル ─── -->
-  <div class="overlay" id="modal-med-reg">
+  <div class="overlay" id="modal-med-reg" onclick="closeModal('modal-med-reg',event)">
     <div class="sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
       <div class="sheet-title">💊 服薬登録</div>
@@ -1273,7 +1259,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── BOARD TRASH MODAL ─── -->
-  <div class="overlay" id="modal-board-trash">
+  <div class="overlay" id="modal-board-trash" onclick="closeModal('modal-board-trash',event)">
     <div class="modal-inner" onclick="event.stopPropagation()" style="max-width:500px">
       <div style="font-size:16px;font-weight:800;margin-bottom:2px">🗑️ 削除ゴミ箱</div>
       <div style="font-size:12px;color:var(--sub);margin-bottom:14px">30日以内の削除データを復元できます</div>
@@ -1626,16 +1612,6 @@ a{color:var(--p);text-decoration:none}
           </button>
           <div class="acc-body"><div class="acc-inner">
             <div id="admin-staff-list"></div>
-            <!-- 職員エクスポート -->
-            <div style="margin-top:16px;border-top:1px solid var(--bdr);padding-top:14px">
-              <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">📤 職員一覧エクスポート</div>
-              <div style="display:flex;gap:8px;margin-bottom:10px">
-                <button onclick="staffExportSelectAll(true)" style="flex:1;padding:7px;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:8px;font-size:12px;font-weight:700">全選択</button>
-                <button onclick="staffExportSelectAll(false)" style="flex:1;padding:7px;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);border-radius:8px;font-size:12px;font-weight:700">全解除</button>
-              </div>
-              <div id="staff-export-list" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin-bottom:10px"></div>
-              <button onclick="exportSelectedStaff()" style="width:100%;padding:11px;background:#1565c0;color:#fff;border-radius:8px;font-size:14px;font-weight:700">📥 選択した職員をCSVダウンロード</button>
-            </div>
           </div></div>
         </div>
 
@@ -1678,16 +1654,6 @@ a{color:var(--p);text-decoration:none}
             <i class="acc-arrow">›</i>
           </button>
           <div class="acc-body"><div class="acc-inner">
-            <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">☁️ クラウド同期</div>
-            <div id="sync-status" style="background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;line-height:1.8;color:var(--fg)">
-              📊 ローカル: <b id="ss-local-res">--</b>名 ／ クラウド: <b id="ss-cloud-res">--</b>名
-              <button onclick="refreshSyncStatus()" style="margin-left:8px;padding:2px 8px;font-size:11px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);cursor:pointer">確認</button>
-            </div>
-            <button onclick="deduplicateResidents(this)" style="width:100%;padding:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:4px;border:1px solid #a5d6a7">🔧 重複利用者をまとめて削除</button>
-            <button onclick="deduplicateCustomStaff(this)" style="width:100%;padding:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px;border:1px solid #a5d6a7">🔧 重複職員をまとめて削除</button>
-            <div style="font-size:11px;color:var(--sub);margin-bottom:10px;line-height:1.6">同じ氏名が複数登録されている場合、最初の1件だけ残して削除します。</div>
-            <button id="btn-push-fs" onclick="pushAllToFirestore(this)" style="width:100%;padding:11px;background:#1565c0;color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:4px">📤 このPCのデータをクラウドに強制アップロード</button>
-            <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">他の端末に表示されない場合に使用。このPCのデータをFirestoreに上書き保存します。</div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 手動バックアップ</div>
             <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px">バックアップをダウンロード（JSON）</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。管理者ログイン時、前回から24時間以上経過している場合は自動でダウンロードされます。</div>
@@ -1741,6 +1707,23 @@ a{color:var(--p);text-decoration:none}
             </div>
           </div></div>
         </div>
+
+        <!-- AI設定 -->
+        <div class="acc-item" id="acc-ai">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">🤖</span>
+            <span class="acc-ttl">AI FAQ設定（Groq）</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-inner">
+            <div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:10px">Groqの無料APIキーを入力するとAI FAQが使えます。<br><a href="https://console.groq.com" target="_blank" style="color:var(--p)">console.groq.com</a> でキーを取得してください。</div>
+            <input type="password" id="ai-api-key-input" placeholder="gsk_..." style="width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--txt);margin-bottom:8px">
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <button onclick="saveAIKey()" style="flex:1;padding:10px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700">保存</button>
+              <button onclick="clearAIKey()" style="padding:10px 14px;background:var(--bg);color:var(--ng);border-radius:8px;font-size:14px;font-weight:700;border:1px solid var(--bdr)">削除</button>
+            </div>
+            <div id="ai-key-status" style="font-size:12px;color:var(--sub);text-align:center"></div>
+          </div></div>
         </div>
 
         <!-- 提案管理 -->
@@ -1947,7 +1930,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ATTENDANCE MODAL -->
-<div class="overlay" id="modal-attendance">
+<div class="overlay" id="modal-attendance" onclick="closeModal('modal-attendance',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="att-modal-title">🕐 来所・退所時間</div>
@@ -1966,7 +1949,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
   <!-- VISIT REPORT MODAL -->
-<div class="overlay" id="modal-visit-report">
+<div class="overlay" id="modal-visit-report" onclick="closeModal('modal-visit-report',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="vr-edit-idx" value="-1">
@@ -2199,6 +2182,7 @@ a{color:var(--p);text-decoration:none}
         <button id="htab-tasks" onclick="showHelpTab('tasks')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">📌<br>タスク</button>
         <button id="htab-settings" onclick="showHelpTab('settings')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">⚙️<br>設定</button>
         <button id="htab-faq" onclick="showHelpTab('faq')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">❓<br>Q&amp;A</button>
+        <button id="htab-ai" onclick="showHelpTab('ai')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4">🤖<br>AI FAQ</button>
         <button id="htab-updates" onclick="showHelpTab('updates')" class="help-ltab" style="padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);background:none;border:none;border-radius:8px;margin:2px 6px;cursor:pointer;line-height:1.4;position:relative">🆕<br>更新履歴<span id="updates-new-dot" style="display:none;position:absolute;top:6px;right:8px;width:6px;height:6px;background:#ff5252;border-radius:50%"></span></button>
       </div>
       <!-- 右コンテンツ -->
@@ -2717,13 +2701,32 @@ a{color:var(--p);text-decoration:none}
           </div>
         </div>
 
+        <div id="hsec-ai" class="help-sec" style="display:none;padding:0">
+          <div id="ai-key-notice" class="ai-key-notice" style="display:none">
+        🔑 AI FAQを使うにはAnthropicのAPIキーが必要です。<br>
+        <b>設定</b>画面 →「AI FAQ APIキー」に入力してください。<br>
+        <span style="font-size:11px;color:var(--sub)">APIキーは端末内にのみ保存されます。</span>
+      </div>
+      <div class="ai-wrap">
+        <div class="ai-messages" id="ai-messages">
+          <div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>
+        </div>
+        <div class="ai-input-row">
+          <input class="ai-input" id="ai-input" type="text" placeholder="質問を入力…" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendAIMessage();}">
+          <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">➤</button>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   </div><!-- /main-content-wrap -->
 </div>
 
 <!-- ═══════════ MODALS ═══════════ -->
 
 <!-- VITAL -->
-<div class="overlay" id="modal-vital">
+<div class="overlay" id="modal-vital" onclick="closeModal('modal-vital',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🌡️ バイタル入力</div>
@@ -2757,7 +2760,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- MEAL -->
-<div class="overlay" id="modal-meal">
+<div class="overlay" id="modal-meal" onclick="closeModal('modal-meal',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="meal-modal-title">🍚 食事・飲水</div>
@@ -2820,7 +2823,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- EXCRETION -->
-<div class="overlay" id="modal-excretion">
+<div class="overlay" id="modal-excretion" onclick="closeModal('modal-excretion',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="excretion-modal-title">💧 排泄記録</div>
@@ -2854,7 +2857,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- CHRONOLOGICAL -->
-<div class="overlay" id="modal-chrono">
+<div class="overlay" id="modal-chrono" onclick="closeModal('modal-chrono',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">📝 経時記録</div>
@@ -2912,7 +2915,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- WEIGHT -->
-<div class="overlay" id="modal-weight">
+<div class="overlay" id="modal-weight" onclick="closeModal('modal-weight',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">⚖️ 体重測定</div>
@@ -2924,7 +2927,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- HANDOVER -->
-<div class="overlay" id="modal-handover">
+<div class="overlay" id="modal-handover" onclick="closeModal('modal-handover',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="ho-edit-id" value="">
@@ -2958,7 +2961,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- SERVICE SETTING -->
-<div class="overlay" id="modal-svc-setting">
+<div class="overlay" id="modal-svc-setting" onclick="closeModal('modal-svc-setting',event)">
   <div class="sheet" onclick="event.stopPropagation()" style="padding-bottom:calc(20px + env(safe-area-inset-bottom))">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🔧 利用サービスを編集</div>
@@ -2987,7 +2990,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- EDIT RESIDENT -->
-<div class="overlay" id="modal-edit-res">
+<div class="overlay" id="modal-edit-res" onclick="closeModal('modal-edit-res',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="er-mode" value="edit">
@@ -3044,7 +3047,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- VITAL RANGES -->
-<div class="overlay" id="modal-vital-ranges">
+<div class="overlay" id="modal-vital-ranges" onclick="closeModal('modal-vital-ranges',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">⚙️ バイタル基準値設定</div>
@@ -3075,7 +3078,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- TEMPLATE PICKER -->
-<div class="overlay" id="modal-tpl-picker">
+<div class="overlay" id="modal-tpl-picker" onclick="closeModal('modal-tpl-picker',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="tpl-picker-title">📝 テンプレート</div>
@@ -3095,7 +3098,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- INCIDENT REPORT MODAL -->
-<div class="overlay" id="modal-incident">
+<div class="overlay" id="modal-incident" onclick="closeModal('modal-incident',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <input type="hidden" id="inc-edit-id" value="">
@@ -3160,7 +3163,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- FAMILY REPORT MODAL -->
-<div class="overlay" id="modal-family-report">
+<div class="overlay" id="modal-family-report" onclick="closeModal('modal-family-report',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -3177,7 +3180,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- QR CODE MODAL -->
-<div class="overlay" id="modal-qrcode">
+<div class="overlay" id="modal-qrcode" onclick="closeModal('modal-qrcode',event)">
   <div class="sheet" onclick="event.stopPropagation()" style="text-align:center">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="qr-modal-title">📲 QRコード</div>
@@ -3212,7 +3215,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- FACE SHEET -->
-<div class="overlay" id="modal-facesheet">
+<div class="overlay" id="modal-facesheet" onclick="closeModal('modal-facesheet',event)">
   <div class="sheet" style="max-height:96vh" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -3481,7 +3484,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- INFECTION MODAL -->
-<div class="overlay" id="modal-infection">
+<div class="overlay" id="modal-infection" onclick="closeModal('modal-infection',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="inf-modal-title">🦠 感染・隔離登録</div>
@@ -3567,7 +3570,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- VISIT ENTRY -->
-<div class="overlay" id="modal-visit-entry">
+<div class="overlay" id="modal-visit-entry" onclick="closeModal('modal-visit-entry',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="visit-modal-title">訪問予定を追加</div>
@@ -3599,7 +3602,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- BOARD HANDOVER -->
-<div class="overlay" id="modal-board-ho">
+<div class="overlay" id="modal-board-ho" onclick="closeModal('modal-board-ho',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="board-ho-title">📣 申し送り追加</div>
@@ -3646,7 +3649,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- DOCTOR ORDER -->
-<div class="overlay" id="modal-doctor-order">
+<div class="overlay" id="modal-doctor-order" onclick="closeModal('modal-doctor-order',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🩺 医師指示の追加</div>
@@ -3675,7 +3678,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- PROPOSAL FORM -->
-<div class="overlay" id="modal-proposal">
+<div class="overlay" id="modal-proposal" onclick="closeModal('modal-proposal',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">💡 改善提案</div>
@@ -3707,7 +3710,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- PROPOSAL DETAIL (admin) -->
-<div class="overlay" id="modal-proposal-detail">
+<div class="overlay" id="modal-proposal-detail" onclick="closeModal('modal-proposal-detail',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="pdetail-title">提案詳細</div>
@@ -3723,7 +3726,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- TASK MODAL -->
-<div class="overlay" id="modal-task">
+<div class="overlay" id="modal-task" onclick="closeModal('modal-task',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="task-modal-title">📌 タスクを追加</div>
@@ -3754,7 +3757,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- MONTHLY GOAL EDIT -->
-<div class="overlay" id="modal-monthly-goal">
+<div class="overlay" id="modal-monthly-goal" onclick="closeModal('modal-monthly-goal',event)">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="sheet-title">🎯 今月の目標を設定</div>
@@ -3781,7 +3784,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- SCHEDULE ADD -->
-<div class="sheet-modal-auto" id="modal-sch-add">
+<div class="sheet-modal-auto" id="modal-sch-add" onclick="closeModal('modal-sch-add',event)">
   <div class="modal-inner" onclick="event.stopPropagation()">
     <div class="sheet-title">📅 スケジュール追加</div>
     <!-- 音声入力バー -->
@@ -4104,16 +4107,15 @@ const STAFF_INFO = {
   s3:{name:'前原 明子',role:'care',loginId:'1003',hidden:true},
   s4:{name:'鈴木 健太',role:'care',loginId:'1004',hidden:true},
   s5:{name:'中村 由美',role:'nurse',loginId:'1005',hidden:true},
-  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'0001',pass:'06419008',admin:true},
+  s6:{name:'稲田 崇志',role:'super_admin_doctor',loginId:'06419008',admin:true,hidden:true},
   s7:{name:'佐藤 真理',role:'home_care',loginId:'1007',hidden:true},
   s8:{name:'木村 誠司',role:'doctor',loginId:'1008',hidden:true},
-  s9:{name:'稲田 真帆',role:'super_admin',loginId:'0002',pass:'aura01',admin:true},
 };
 function getStaffSettings(){return ls('staff_settings')||{};}
-function saveStaffSettings(d){lsSet('staff_settings',d);if(fbReady&&db)_doFsSet('staff_settings',d);else fsSet('staff_settings',d);}
-function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.pass||STAFF_INFO[key]?.loginId||null;}
+function saveStaffSettings(d){lsSet('staff_settings',d);fsSet('staff_settings',d);}
+function getStaffPass(key){const s=getStaffSettings();return s[key]?.pass||STAFF_INFO[key]?.loginId||null;}
 function getStaffLoginId(key){const s=getStaffSettings();return s[key]?.loginId||STAFF_INFO[key]?.loginId||getCustomStaff()[key]?.loginId||'';}
-function getStaffRole(key){const s=getStaffSettings();if(STAFF_INFO[key]?.admin)return STAFF_INFO[key].role;return s[key]?.role||STAFF_INFO[key]?.role||getCustomStaff()[key]?.role||'care';}
+function getStaffRole(key){const s=getStaffSettings();return s[key]?.role||STAFF_INFO[key]?.role||getCustomStaff()[key]?.role||'care';}
 function isStaffDisabled(key){return !!(getStaffSettings()[key]?.disabled);}
 function getStaffInfo(key){return STAFF_INFO[key]||getCustomStaff()[key]||null;}
 function isAdmin(){return !!(Object.values(STAFF_INFO).find(s=>s.name===S.user&&s.admin));}
@@ -4193,6 +4195,7 @@ const FB_CONFIG={
 };
 const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records'];
 let db=null, fbReady=false, fbListeners=[];
+let _aiKey='', _aiKeyUnsub=null;
 
 // HTMLエスケープ（ユーザー入力データをinnerHTMLに挿入する際に必ず使用）
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -4228,33 +4231,27 @@ async function _ensureFirebaseAuth(staffKey,password){
 (async function initFirebase(){
   try{
     firebase.initializeApp(FB_CONFIG);
+    firebase.appCheck().activate(
+      new firebase.appCheck.ReCaptchaEnterpriseProvider('6LcastgsAAAAAHFjkxmkwvQ2n_-rmKqDfIpSqjCB'),
+      true
+    );
     db=firebase.firestore();
     db.enablePersistence({synchronizeTabs:true}).catch(e=>{
       if(e.code==='unimplemented') console.warn('Offline persistence not supported');
     });
-    // 未認証時は匿名サインイン（ログイン画面・セッション復元フォールバック共用）
+    // 未認証時は匿名サインイン（ログイン画面でstaff_settingsを読むため）
     firebase.auth().onAuthStateChanged(user=>{
       if(!user) firebase.auth().signInAnonymously().catch(e=>console.warn('Anon auth:',e));
     });
   }catch(e){console.warn('Firebase init error:',e);}
 })();
 
-const _fsPendingQueue=new Map();
 function fsSet(key,value){
-  if(!fbReady){_fsPendingQueue.set(key,value);return;}
-  _doFsSet(key,value);
-}
-function _doFsSet(key,value){
+  if(!fbReady)return;
   db.collection('va_data').doc(key).set({
     data:value,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   }).catch(e=>console.warn('fsSet:',e));
-}
-function flushFsQueue(){
-  if(!fbReady||!db||!_fsPendingQueue.size)return;
-  _fsPendingQueue.forEach((val,key)=>_doFsSet(key,val));
-  console.log('fsQueue flushed:',_fsPendingQueue.size,'keys');
-  _fsPendingQueue.clear();
 }
 
 // records 月別キーヘルパー
@@ -4280,20 +4277,10 @@ async function loadFromFirebase(){
   const allKeys=[...FB_SYNC_KEYS,..._activeRecordKeys()];
   await Promise.all(allKeys.map(async key=>{
     try{
-      let doc;
-      try{doc=await db.collection('va_data').doc(key).get({source:'server'});}
-      catch(e2){doc=await db.collection('va_data').doc(key).get();}
+      const doc=await db.collection('va_data').doc(key).get();
       if(doc.exists&&doc.data()?.data!==undefined){
-        const serverVal=doc.data().data;
-        const localVal=ls(key);
-        // 配列データはローカルの件数が多い場合はローカルを優先し、Firestoreへ逆アップロード
-        if(Array.isArray(serverVal)&&Array.isArray(localVal)&&localVal.length>serverVal.length){
-          console.log('fbLoad conflict: local('+localVal.length+') > server('+serverVal.length+') for '+key+' → pushing local');
-          _doFsSet(key,localVal);
-        }else{
-          lsSet(key,serverVal);
-          _distributeAggregated(key,serverVal);
-        }
+        lsSet(key,doc.data().data);
+        _distributeAggregated(key,doc.data().data);
       }
     }catch(e){console.warn('fbLoad:',key,e);}
   }));
@@ -4383,7 +4370,7 @@ function _dec(b64){
     for(let i=0;i<b.length;i++)o[i]=b[i]^k.charCodeAt(i%k.length);
     return new TextDecoder().decode(o);}catch{return null;}
 }
-const _NOENC=new Set(['enc_ver']);
+const _NOENC=new Set(['enc_ver','ai_api_key']);
 function ls(k){
   if(_NOENC.has(k)){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
   const ev=localStorage.getItem('e_'+k);
@@ -4412,19 +4399,14 @@ function saveRecords(r){
 }
 function saveHandovers(h){lsSet('handovers',h);fsSet('handovers',h);}
 
-// 管理者アカウントのloginId・passをSTAFF_INFO基準で毎回確定
+// 管理者パスワードを毎回 loginId で確定（フラグなし・Firestore上書き防止）
 (function ensureAdminPass(){
   const s=getStaffSettings();
   let changed=false;
   Object.keys(STAFF_INFO).forEach(k=>{
     if(!s[k])s[k]={};
     if(STAFF_INFO[k].admin){
-      const expectedPass=STAFF_INFO[k].pass||STAFF_INFO[k].loginId;
-      const expectedId=STAFF_INFO[k].loginId;
-      const expectedRole=STAFF_INFO[k].role;
-      if(s[k].pass!==expectedPass){s[k].pass=expectedPass;changed=true;}
-      if(s[k].loginId!==expectedId){s[k].loginId=expectedId;changed=true;}
-      if(s[k].role!==expectedRole){s[k].role=expectedRole;changed=true;}
+      if(s[k].pass!==STAFF_INFO[k].loginId){s[k].pass=STAFF_INFO[k].loginId;changed=true;}
     } else if(!s[k].pass){
       s[k].pass='aura01';changed=true;
     }
@@ -4445,31 +4427,20 @@ async function login(){
     errEl.style.display='block';
     return;
   }
-  // 新端末ブートストラップ: staff_settings/custom_staffがローカルになければFirestoreから取得
-  if(db&&(!ls('staff_settings')||!ls('custom_staff'))){
-    await Promise.all([
-      (async()=>{
-        if(ls('staff_settings'))return;
-        try{
-          const doc=await db.collection('va_data').doc('staff_settings').get();
-          if(doc.exists&&doc.data()?.data){
-            const d=doc.data().data;
-            Object.keys(STAFF_INFO).forEach(k=>{
-              if(STAFF_INFO[k].admin){if(!d[k])d[k]={};d[k].pass=STAFF_INFO[k].pass||STAFF_INFO[k].loginId;}
-              else if(!d[k]?.pass){if(!d[k])d[k]={};d[k].pass='aura01';}
-            });
-            lsSet('staff_settings',d);
-          }
-        }catch(e){}
-      })(),
-      (async()=>{
-        if(ls('custom_staff'))return;
-        try{
-          const doc=await db.collection('va_data').doc('custom_staff').get();
-          if(doc.exists&&doc.data()?.data)lsSet('custom_staff',doc.data().data);
-        }catch(e){}
-      })(),
-    ]);
+  // 新端末ブートストラップ: staff_settingsがローカルになければFirestoreから取得
+  if(!ls('staff_settings')&&db){
+    try{
+      const doc=await db.collection('va_data').doc('staff_settings').get();
+      if(doc.exists&&doc.data()?.data){
+        const d=doc.data().data;
+        // Firestoreの古いpassを上書き（adminは必ずloginId）
+        Object.keys(STAFF_INFO).forEach(k=>{
+          if(STAFF_INFO[k].admin){if(!d[k])d[k]={};d[k].pass=STAFF_INFO[k].loginId;}
+          else if(!d[k]?.pass){if(!d[k])d[k]={};d[k].pass='aura01';}
+        });
+        lsSet('staff_settings',d);
+      }
+    }catch(e){}
   }
   const csEntries=getCustomStaff();
   const staffKey=
@@ -4513,6 +4484,9 @@ async function login(){
   document.getElementById('app').style.display='block';
   const sbU=document.getElementById('sb-user');if(sbU)sbU.textContent=S.user;
   const sbT=document.getElementById('sb-time');if(sbT)sbT.textContent=S.loginTime+' ログイン';
+  aiHistory=[];
+  const aiEl=document.getElementById('ai-messages');
+  if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   resetLockTimer();
   updateDoctorNav();
   showScr('scr-dashboard');
@@ -4520,29 +4494,13 @@ async function login(){
   checkUrlHash();
   updateBnAcct();
   startUpdateChecker();
-  // ログイン直後に新バージョンチェック → あれば即リロード（まだ入力前なので安全）
-  (async()=>{
-    try{
-      if('serviceWorker' in navigator){
-        const reg=await navigator.serviceWorker.getRegistration();
-        if(reg) reg.update();
-      }
-      const url=location.href.split('?')[0].split('#')[0];
-      const r=await fetch(url,{method:'HEAD',cache:'no-store'});
-      const tag=r.headers.get('etag')||r.headers.get('last-modified')||'';
-      if(tag&&_initEtag&&tag!==_initEtag){forceReload();return;}
-      if(tag) _initEtag=tag;
-    }catch(e){}
-  })();
   // Firebase Auth（職員ごと）でサインイン → Firestoreアクセスを確立
   try{
     await _ensureFirebaseAuth(staffKey,inputPass);
-    try{
-      if(firebase.auth().currentUser)
-        await firebase.auth().currentUser.getIdToken(true);
-    }catch(e2){console.warn('getIdToken failed (non-fatal):',e2);}
+    if(firebase.auth().currentUser){
+      await firebase.auth().currentUser.getIdToken(true);
+    }
     fbReady=true;
-    flushFsQueue(); // ログイン前にキューされた書き込みを一括送信
     // Firestoreから端末設定・Wi-Fi設定を先に同期
     for(const k of ['device_settings','wifi_settings']){
       try{
@@ -4571,7 +4529,7 @@ async function login(){
   addAuditLog('ログイン','ID: '+inputId);
   localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey,loginTs:Date.now()}));
   loadFromFirebase().then(async ()=>{
-    renderDashboard();setupRealtimeSync();_renderCurrentScreen();
+    renderDashboard();setupRealtimeSync();
     if(isAdmin()){
       // localStorage破損チェック（利用者が0人 かつ Firestoreにバックアップあり）
       if(getResidents().length===0&&fbReady&&db){
@@ -4598,6 +4556,7 @@ async function login(){
       }
     }
   });
+  startAIKeySync();
   setTimeout(showTutorial, 600);
 }
 function logout(){
@@ -4610,12 +4569,17 @@ function _doLogout(){
   localStorage.removeItem('va_session');
   fbReady=false;
   clearTimeout(lockTimer);clearTimeout(lockWarnTimer);
+  aiHistory=[];
+  const aiEl=document.getElementById('ai-messages');
+  if(aiEl)aiEl.innerHTML='<div class="ai-msg ai">こんにちは！Village Aura サポートAIです。システムの使い方について何でもご質問ください😊</div>';
   S.user=null;
   document.getElementById('app').style.display='none';
   document.getElementById('scr-login').style.display='flex';
   document.getElementById('login-id').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').style.display='none';
+  if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
+  _aiKey='';
 }
 
 // ═══════════ PHOTO ═══════════
@@ -4714,7 +4678,6 @@ function openVitalRanges(){
   document.getElementById('vr-reason').value='';
   document.getElementById('vr-history').style.display='none';
   document.getElementById('modal-vital-ranges').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveVitalRanges(){
   const reason=document.getElementById('vr-reason').value.trim();
@@ -4774,7 +4737,6 @@ function openTemplatePicker(type){
   if(sharedChk)sharedChk.checked=false;
   document.getElementById('tpl-new-name').value='';
   document.getElementById('modal-tpl-picker').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function _tplRow(t){
   return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)">
@@ -4934,8 +4896,33 @@ function exportVitalsCSV(){
   _csvDL(rows,'vitals_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv');
   toast('バイタル記録をCSVで出力しました ✓');
 }
+// ═══════════ AI KEY SYNC ═══════════
+function startAIKeySync(){
+  if(!db)return;
+  if(_aiKeyUnsub){_aiKeyUnsub();_aiKeyUnsub=null;}
+  _aiKeyUnsub=db.collection('va_data').doc('__config').onSnapshot(snap=>{
+    _aiKey=(snap.exists&&snap.data().ai_api_key)||'';
+    const inp=document.getElementById('ai-api-key-input');
+    const sts=document.getElementById('ai-key-status');
+    const notice=document.getElementById('ai-key-notice');
+    if(inp)inp.value=_aiKey?'••••••••••••'+_aiKey.slice(-4):'';
+    if(sts)sts.textContent=_aiKey?'✓ APIキー登録済み（全端末共通）':'未登録';
+    if(notice)notice.style.display=_aiKey?'none':'block';
+  },()=>{});
+}
 
-function initHelpScreen(){showHelpTab('login');}
+// ═══════════ HELP / AI FAQ ═══════════
+const AI_SYSTEM=`あなたは「Village Aura」複合介護施設記録システム（メディケアビレッジかしわじま・こはる日和）のサポートAIです。
+主な機能：ログイン（職員ID+PW）、ホーム（バイタル未記録アラート・準緊急申し送り）、利用者一覧・詳細、バイタル・食事・排泄・経時記録・体重の入力（音声一括入力・実施日時指定対応）、申し送りボード、スケジュール（全体・個別・訪問介護ガントチャート）、設定（PW変更・管理者による職員管理）。
+職員ロール：統括管理者・サ高住管理者・デイ管理者・小多機管理者・訪問管理者・居宅管理者・看護師・介護職員・医療事務・居宅職員。
+介護スタッフ向けに丁寧・簡潔な日本語で回答してください。`;
+let aiHistory=[];
+function initHelpScreen(){
+  showHelpTab('login');
+  const key=_aiKey;
+  const notice=document.getElementById('ai-key-notice');
+  if(notice)notice.style.display=key?'none':'block';
+}
 // ═══════════ TUTORIAL ═══════════
 const TUT_STEPS=[
   {ico:'🌟',title:'Village Aura へようこそ！',body:'介護記録・申し送り・タスク管理・帳票出力をスマホひとつで管理できます。\n初めての方向けに基本操作をご案内します。',tip:'初期パスワードは職員IDと同じです。ログイン後すぐに設定 → パスワード変更で変更してください'},
@@ -4945,7 +4932,7 @@ const TUT_STEPS=[
   {ico:'📌',title:'タスク管理',body:'メニューの「📌 タスク」からスタッフへのタスク割り当てができます。\n事業所・担当者・ステータスでフィルタリング可能。\n完了したタスクはチェックして管理します。',tip:'各事業所管理者は担当事業所のタスクが自動表示され、担当範囲のタスク削除も可能です'},
   {ico:'📣',title:'2種類の申し送り',body:'・ボード申し送り：シフト間の当日引き継ぎ（申し送りボード）\n・カルテ申し送り：長期的な医療・ケア情報（利用者詳細）',tip:'利用者詳細 → 「今シフトの申し送り」で両方を一覧確認できます'},
   {ico:'📊',title:'業務日誌・帳票出力',body:'業務日誌タブ（☰ メニュー内）から事業所ごとに帳票をプレビュー・印刷できます。\n入力した記録が自動的に帳票に反映されます。',tip:'個人記録・訪問介護記録は利用者選択と月指定が必要です'},
-  {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\n'},
+  {ico:'🚀',title:'さあ、はじめましょう！',body:'操作で困ったときはメニューの「📖 ヘルプ」をご確認ください。\nAI FAQにも質問できます（APIキー登録後）。'},
 ];
 let S_tut_step=0;
 function showTutorial(force=false){
@@ -4976,6 +4963,62 @@ function skipTutorial(){
   localStorage.setItem('tutorial_done_'+(S.user||'_'),'1');
   document.getElementById('tutorial-overlay').style.display='none';
 }
+function saveAIKey(){
+  const val=document.getElementById('ai-api-key-input').value.trim();
+  if(!val||val.startsWith('••')){toast('新しいAPIキーを入力してください');return;}
+  if(!db){toast('Firebaseに接続できません');return;}
+  db.collection('va_data').doc('__config').set({ai_api_key:val},{merge:true})
+    .then(()=>toast('APIキーを保存しました（全端末に反映） ✓'))
+    .catch(e=>toast('保存エラー: '+e.message));
+}
+function clearAIKey(){
+  if(!confirm('APIキーを削除しますか？全端末から削除されます。'))return;
+  if(!db){toast('Firebaseに接続できません');return;}
+  db.collection('va_data').doc('__config').update({ai_api_key:firebase.firestore.FieldValue.delete()})
+    .then(()=>toast('APIキーを削除しました'))
+    .catch(e=>toast('削除エラー: '+e.message));
+}
+function appendAIMsg(role,text){
+  const el=document.getElementById('ai-messages');if(!el)return;
+  const div=document.createElement('div');
+  div.className='ai-msg '+role;
+  div.textContent=text;
+  el.appendChild(div);
+  el.scrollTop=el.scrollHeight;
+  return div;
+}
+async function sendAIMessage(){
+  const inp=document.getElementById('ai-input');
+  const text=inp.value.trim();if(!text)return;
+  const key=_aiKey||'';
+  if(!key){toast('設定画面でGroq APIキーを登録してください');return;}
+  inp.value='';
+  appendAIMsg('user',text);
+  aiHistory.push({role:'user',content:text});
+  const btn=document.getElementById('ai-send-btn');
+  btn.disabled=true;
+  const typing=appendAIMsg('typing','考え中…');
+  try{
+    const useKey=_aiKey||'';
+    const messages=[{role:'system',content:AI_SYSTEM},...aiHistory];
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+useKey},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:600,messages})
+    });
+    const data=await res.json();
+    if(data.error){throw new Error(data.error.message||JSON.stringify(data.error));}
+    const reply=data.choices?.[0]?.message?.content||'応答を取得できませんでした';
+    typing.remove();
+    appendAIMsg('ai',reply);
+    aiHistory.push({role:'assistant',content:reply});
+    if(aiHistory.length>20)aiHistory=aiHistory.slice(-20);
+  }catch(e){
+    typing.remove();
+    appendAIMsg('ai','エラーが発生しました：'+e.message);
+  }
+  btn.disabled=false;
+}
 
 // ═══════════ SETTINGS ═══════════
 // ═══════════ PROPOSALS ═══════════
@@ -4989,7 +5032,6 @@ function openProposalForm(){
   document.querySelector('input[name="prop-pri"][value="low"]').checked=true;
   document.getElementById('prop-cat').value='ui';
   document.getElementById('modal-proposal').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function submitProposal(){
   const title=document.getElementById('prop-title').value.trim();
@@ -5059,8 +5101,8 @@ function renderProposalList(){
         <span style="font-size:11px;font-weight:700">${PROP_PRI_LABEL[p.priority]||p.priority}</span>
         <span style="font-size:11px;color:var(--sub);margin-left:auto">${p.by} · ${date}</span>
       </div>
-      <div style="font-size:14px;font-weight:700">${escHtml(p.title)}</div>
-      ${p.detail?`<div style="font-size:12px;color:var(--sub);margin-top:4px;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escHtml(p.detail)}</div>`:''}
+      <div style="font-size:14px;font-weight:700">${p.title}</div>
+      ${p.detail?`<div style="font-size:12px;color:var(--sub);margin-top:4px;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${p.detail}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -5113,7 +5155,6 @@ function openProposalDetail(id){
     actionsEl.innerHTML='';
   }
   document.getElementById('modal-proposal-detail').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function reviewProposal(id,status){
   const proposals=getProposals();
@@ -5221,6 +5262,11 @@ function renderSettings(){
   setFontSize(localStorage.getItem('va_font')||'md');
   ['pw-cur','pw-new','pw-new2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const pwErr=document.getElementById('pw-err');if(pwErr)pwErr.style.display='none';
+  const key=_aiKey||'';
+  const inp=document.getElementById('ai-api-key-input');
+  const sts=document.getElementById('ai-key-status');
+  if(inp)inp.value=key?'••••••••••••'+key.slice(-4):'';
+  if(sts)sts.textContent=key?'✓ APIキー登録済み':'未登録';
   const adminWrap=document.getElementById('acc-admin-wrap');
   const propUser=document.getElementById('acc-proposal-user');
   const facMgrWrap=document.getElementById('acc-facmgr-wrap');
@@ -5384,49 +5430,8 @@ function renderAdminStaffList(){
     const sel=document.getElementById('adm-role-'+key);
     if(sel) sel.value=getStaffRole(key);
   });
-  renderStaffExportList(allEntries);
 }
 
-function renderStaffExportList(allEntries){
-  const el=document.getElementById('staff-export-list');
-  if(!el)return;
-  const exportable=allEntries.filter(([,info])=>!['super_admin','super_admin_doctor'].includes(info.role||getStaffRole(allEntries.find(e=>e[1]===info)?.[0]||'')));
-  el.innerHTML=allEntries
-    .filter(([key])=>!['super_admin','super_admin_doctor'].includes(getStaffRole(key)))
-    .map(([key,info])=>{
-      const loginId=getStaffLoginId(key);
-      const rc=getRoleInfo(getStaffRole(key));
-      return `<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:7px;cursor:pointer">
-        <input type="checkbox" class="staff-export-cb" data-key="${key}" checked style="width:16px;height:16px;flex-shrink:0">
-        <span style="font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(info.name)}</span>
-        <span class="staff-badge" style="background:${rc.bg};font-size:9px;flex-shrink:0">${rc.label}</span>
-        <span style="font-size:11px;color:var(--sub);flex-shrink:0">ID:${escHtml(loginId)}</span>
-      </label>`;
-    }).join('');
-}
-function staffExportSelectAll(val){
-  document.querySelectorAll('.staff-export-cb').forEach(cb=>cb.checked=val);
-}
-function exportSelectedStaff(){
-  const checked=[...document.querySelectorAll('.staff-export-cb:checked')].map(cb=>cb.dataset.key);
-  if(!checked.length){toast('職員を選択してください');return;}
-  const rows=[['氏名','ふりがな','ログインID','パスワード','ロール','事業所']];
-  checked.forEach(key=>{
-    const info=getStaffInfo(key);if(!info)return;
-    const loginId=getStaffLoginId(key);
-    const pass=getStaffPass(key)||loginId;
-    const role=getRoleInfo(getStaffRole(key)).label;
-    rows.push([info.name,info.kana||'',loginId,pass,role,info.jigyousho||'']);
-  });
-  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;
-  a.download='staff-'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();URL.revokeObjectURL(url);
-  addAuditLog('職員エクスポート',checked.length+'名');
-  toast(checked.length+'名をエクスポートしました ✓');
-}
 
 function togglePwShow(key,pw){
   const el=document.getElementById('adm-pw-show-'+key);
@@ -5452,7 +5457,7 @@ function bulkAssignPasswords(){
   const ss=getStaffSettings();
   let count=0;
   Object.keys(cs).forEach(key=>{
-    const pw_=ss[key]?.pass||cs[key]?.pass;const hasPw=pw_&&pw_!=='aura01';
+    const hasPw=ss[key]?.pass||cs[key]?.pass;
     if(!hasPw){
       const pw=generatePassword();
       if(!ss[key])ss[key]={};
@@ -5949,11 +5954,11 @@ function renderMyProposalList(){
   const statusColor={pending:'#9ca3af',in_progress:'#e65100',done:'var(--ok)',approved:'var(--ok)',rejected:'var(--ng)'};
   el.innerHTML=mine.map(p=>`<div style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;background:#fff">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <span style="font-size:14px;font-weight:700">${escHtml(p.title)}</span>
+      <span style="font-size:14px;font-weight:700">${p.title}</span>
       <span style="font-size:11px;font-weight:700;color:${statusColor[p.status]||'#9ca3af'}">${statusLabel[p.status]||p.status}</span>
     </div>
     <div style="font-size:11px;color:var(--sub)">${new Date(p.submittedAt).toLocaleDateString('ja-JP')} · ${PROP_CAT_LABEL[p.category]||p.category}</div>
-    ${p.adminComment?`<div style="margin-top:6px;font-size:12px;color:var(--sub);background:#f8f9fa;border-radius:6px;padding:6px 8px">管理者コメント: ${escHtml(p.adminComment)}</div>`:''}
+    ${p.adminComment?`<div style="margin-top:6px;font-size:12px;color:var(--sub);background:#f8f9fa;border-radius:6px;padding:6px 8px">管理者コメント: ${p.adminComment}</div>`:''}
   </div>`).join('');
 }
 function switchProposalTab2(tab){
@@ -5986,7 +5991,7 @@ function renderProposalList2(){
         <span style="font-size:11px;font-weight:700">${PROP_PRI_LABEL[p.priority]||p.priority}</span>
         <span style="font-size:11px;color:var(--sub);margin-left:auto">${p.by} · ${date}</span>
       </div>
-      <div style="font-size:14px;font-weight:700">${escHtml(p.title)}</div>
+      <div style="font-size:14px;font-weight:700">${p.title}</div>
     </div>`;
   }).join('');
 }
@@ -5999,74 +6004,6 @@ function toggleAuditLog(){
     el.innerHTML='<div style="padding:12px;text-align:center;color:var(--sub);font-size:12px">🔄 読み込み中...</div>';
     fetchAndMergeAuditLogs(()=>renderAuditLog());
   }
-}
-// ── クラウド同期状態確認 ──
-async function refreshSyncStatus(){
-  const localEl=document.getElementById('ss-local-res');
-  const cloudEl=document.getElementById('ss-cloud-res');
-  const localRes=ls('residents');
-  const localCount=Array.isArray(localRes)?localRes.length:0;
-  if(localEl)localEl.textContent=localCount;
-  if(!fbReady||!db){if(cloudEl)cloudEl.textContent='未接続';return;}
-  try{
-    const doc=await db.collection('va_data').doc('residents').get({source:'server'});
-    const serverRes=doc.exists?doc.data()?.data:null;
-    const serverCount=Array.isArray(serverRes)?serverRes.length:0;
-    if(cloudEl)cloudEl.textContent=serverCount;
-  }catch(e){if(cloudEl)cloudEl.textContent='読取失敗';}
-}
-// ── 重複利用者削除 ──
-function deduplicateResidents(btn){
-  const rs=getResidents();
-  const seen=new Set(),deduped=[];
-  for(const r of rs){const k=_normName(r.name);if(!seen.has(k)){seen.add(k);deduped.push(r);}}
-  const removed=rs.length-deduped.length;
-  if(!removed){toast('重複なし（削除対象なし）');return;}
-  saveResidents(deduped);
-  if(fbReady&&db)_doFsSet('residents',deduped);
-  toast(`重複 ${removed}名を削除しました ✓ 残 ${deduped.length}名`);
-  if(btn){btn.textContent=`✅ ${removed}名削除済み`;setTimeout(()=>{if(btn)btn.textContent='🔧 重複利用者をまとめて削除';},4000);}
-  _renderCurrentScreen();
-}
-// ── クラウド強制アップロード ──
-async function pushAllToFirestore(btn){
-  if(!fbReady||!db){
-    if(btn)btn.textContent='⏳ Firebase接続試行中...';
-    // 今すぐ匿名サインインを試みる
-    try{
-      await firebase.auth().signInAnonymously();
-      fbReady=true;
-    }catch(e){
-      const msg='⚠️ 認証エラー: '+e.code;
-      console.error('signInAnonymously failed:',e);
-      if(btn){btn.textContent=msg;setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},8000);}
-      toast(msg);
-      return;
-    }
-    if(!fbReady){
-      if(btn){btn.textContent='⚠️ Firebase未接続';setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},4000);}
-      return;
-    }
-  }
-  if(btn){btn.disabled=true;btn.textContent='⏳ アップロード中...';}
-  const keys=[...FB_SYNC_KEYS,..._activeRecordKeys()];
-  let ok=0,skip=0;
-  await Promise.all(keys.map(async key=>{
-    const val=ls(key);
-    if(val===null||val===undefined){skip++;return;}
-    try{
-      await db.collection('va_data').doc(key).set({
-        data:val,
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
-      ok++;
-    }catch(e){console.warn('push failed:',key,e);skip++;}
-  }));
-  const resCount=(()=>{const r=ls('residents');return Array.isArray(r)?r.length:0;})();
-  const staffCount=(()=>{const c=ls('custom_staff');return c?Object.keys(c).length:0;})();
-  addAuditLog('強制クラウドアップロード',ok+'項目アップロード・'+skip+'項目スキップ');
-  if(btn){btn.disabled=false;btn.textContent=`✅ 完了（利用者${resCount}名・職員${staffCount}名 含む${ok}項目）`;}
-  setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},6000);
 }
 // ── データエクスポート ──
 function exportData(){
@@ -6684,7 +6621,7 @@ function renderDrOrderPane(){
         ${o.resident?`<span style="font-size:10px;background:#e8f0fb;color:#1565c0;border-radius:5px;padding:2px 7px;font-weight:700">👤 ${o.resident}</span>`:''}
         <span style="font-size:10px;color:var(--sub);margin-left:auto">${o.doctor||'──'} ${o.time||''}</span>
       </div>
-      <div style="font-size:13px;font-weight:600;line-height:1.6;white-space:pre-wrap;margin-bottom:5px">${escHtml(o.content)}</div>
+      <div style="font-size:13px;font-weight:600;line-height:1.6;white-space:pre-wrap;margin-bottom:5px">${o.content}</div>
       ${o.editedBy?`<div style="font-size:10px;color:var(--sub)">編集: ${o.editedBy} ${o.editedTime||''}</div>`:''}
       <div style="display:flex;gap:5px;margin-top:7px">
         <button onclick="editDoctorOrder(${i})" style="padding:4px 10px;border-radius:7px;background:var(--bg);color:var(--sub);border:1px solid var(--bdr);font-size:11px;cursor:pointer;touch-action:manipulation">✏️ 編集</button>
@@ -6703,7 +6640,7 @@ function renderDrOrderPane(){
         ${isRead?`<span style="font-size:10px;color:var(--ok);font-weight:700">✓ 既読</span>`:'<span style="font-size:10px;color:#1565c0;font-weight:700">●未読</span>'}
         <span style="font-size:10px;color:var(--sub);margin-left:auto">${h.by||'──'} ${h.time||''}</span>
       </div>
-      <div style="font-size:13px;line-height:1.6;white-space:pre-wrap;margin-bottom:5px">${escHtml(h.content)}</div>
+      <div style="font-size:13px;line-height:1.6;white-space:pre-wrap;margin-bottom:5px">${h.content}</div>
       ${isRead?`<div style="font-size:10px;color:var(--sub)">既読: ${h.readBy} ${h.readTime||''}</div>`:
         `<button onclick="markDoctorToRead(${i})" style="padding:4px 10px;border-radius:7px;background:#1565c0;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">✓ 既読にする</button>`}
     </div>`;
@@ -7243,22 +7180,6 @@ function setFilter(f){
   });
   renderResList();
 }
-let _resSort='kana';
-function setResSort(s){
-  _resSort=s;
-  document.querySelectorAll('.sort-chip').forEach(c=>{
-    c.classList.toggle('on',c.dataset.s===s);
-  });
-  renderResList();
-}
-async function reloadFromCloud(btn){
-  if(!fbReady||!db){toast('Firebase未接続');return;}
-  if(btn){btn.disabled=true;btn.textContent='⏳ 読込中...';}
-  await loadFromFirebase();
-  _renderCurrentScreen();
-  if(btn){btn.disabled=false;btn.textContent='🔄 再読込';}
-  toast('クラウドから再読み込みしました ✓');
-}
 function hiraToKata(s){return s.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
 function renderResList(){
   const addBtn=document.getElementById('btn-add-resident');
@@ -7269,55 +7190,39 @@ function renderResList(){
   const res=allResidents.filter(r=>{
     const kana=(r.kana||'').toLowerCase();
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
-    const matchF=S.filter==='all'||(r.services||[]).includes(S.filter);
+    const matchF=S.filter==='all'||r.services.includes(S.filter);
     return matchQ&&matchF;
-  });
+  }).sort((a,b)=>a.kana.localeCompare(b.kana,'ja'));
   const recs=getRecords();
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
-  res.sort((a,b)=>{
-    if(_resSort==='room'){
-      const ra=parseInt(a.room)||9999, rb=parseInt(b.room)||9999;
-      return ra!==rb?ra-rb:a.kana.localeCompare(b.kana,'ja');
-    }
-    if(_resSort==='age') return (b.age||0)-(a.age||0)||a.kana.localeCompare(b.kana,'ja');
-    if(_resSort==='unrecorded'){
-      const ua=vitalToday.has(a.id)?1:0, ub=vitalToday.has(b.id)?1:0;
-      return ua!==ub?ua-ub:a.kana.localeCompare(b.kana,'ja');
-    }
-    return a.kana.localeCompare(b.kana,'ja'); // kana（デフォルト）
-  });
   const fluidByRes={};
   recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).forEach(r=>{fluidByRes[r.rid]=(fluidByRes[r.rid]||0)+(r.data.fluid||0);});
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
-  const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問',nursing:'訪看'};
+  const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
   document.getElementById('res-list').innerHTML=res.map(r=>{
     const ok=vitalToday.has(r.id);
     const stoolDays=getStoolDays(r.id,recs);
+    const stoolWarn=stoolDays===null||stoolDays>=3;
     const fluid=fluidByRes[r.id]||0;
-    const tags=(r.services||[]).map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
-    // 右メトリクス
-    const vitalCls=ok?'rm-ok':'rm-warn';
-    const vitalLbl=ok?'🌡️ 記録済':'🌡️ 未記録';
-    let stoolCls,stoolLbl;
-    if(stoolDays===null){stoolCls='rm-sub';stoolLbl='🚽 ─';}
-    else if(stoolDays===0){stoolCls='rm-ok';stoolLbl='🚽 本日';}
-    else if(stoolDays<=2){stoolCls='rm-ok';stoolLbl=`🚽 ${stoolDays}日前`;}
-    else{stoolCls='rm-ng';stoolLbl=`🚽 ${stoolDays}日前`;}
-    const fluidCls=fluid>=1000?'rm-ok':fluid>=500?'rm-warn':'rm-sub';
-    const fluidLbl=`💧 ${fluid}ml`;
+    const tags=r.services.map(s=>`<span class="tag ${tagClass[s]||''}">${tagLabel[s]||s}</span>`).join('');
+    const badges=[];
+    if(!ok)badges.push('<span style="background:#fff3e0;color:#e65100;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #ffe0b2">🌡️ バイタル未</span>');
+    if(stoolWarn)badges.push(`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #e1bee7">🚽 ${stoolDays===null?'排便未記録':stoolDays+'日'}` + '</span>');
+    const fluidColor=fluid>=1000?'#1b5e20':fluid>=500?'#e65100':'#9e9e9e';
+    badges.push(`<span style="background:#e8f5e9;color:${fluidColor};font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #c8e6c9">💧 ${fluid}ml</span>`);
     return `<div class="res-card" onclick="openResident('${r.id}')">
       <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
-        <div class="res-name">${escHtml(r.name)}<span style="font-size:12px;font-weight:400;color:var(--sub);margin-left:5px">${r.age}歳${r.room?' · '+r.room+'号室':''}</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
-        <div class="res-meta">${escHtml(r.facility)} · ${careLabel(r.care)}</div>
-        <div class="res-tags">${tags}</div>
+        <div class="res-name">${r.name} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
+        <div class="res-meta">${r.room?r.room+'号室・':''} ${careLabel(r.care)} | ${r.facility}</div>
+        <div class="res-tags">${tags}<span class="tag tag-care">${careLabel(r.care)}</span></div>
+        ${badges.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">${badges.join('')}</div>`:''}
       </div>
-      <div class="res-metrics">
-        <div class="res-metric ${vitalCls}">${vitalLbl}</div>
-        <div class="res-metric ${stoolCls}">${stoolLbl}</div>
-        <div class="res-metric ${fluidCls}">${fluidLbl}</div>
+      <div class="res-status">
+        <div class="status-dot ${ok?'ok':'warn'}"></div>
+        <div class="status-label">${ok?'記録済':'未記録'}</div>
       </div>
     </div>`;
   }).join('')||(allResidents.length===0&&isAdmin()
@@ -7401,7 +7306,7 @@ function renderDetail(){
         <div class="detail-meta">${r.age}歳・${r.gender==='female'?'女性':'男性'}${r.room?' | '+r.room+'号室':''}  ${careLabel(r.care)} | ${r.facility}</div>
       </div>
     </div>
-    <div style="margin-bottom:8px">${(r.services||[]).map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
+    <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
       <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;border:none;cursor:pointer">👤 利用者情報詳細</button>
       <button onclick="toggleDetailMenu(event)" id="detail-more-btn" style="width:40px;height:36px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;font-size:20px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;letter-spacing:-.05em">⋯</button>
@@ -7490,7 +7395,7 @@ function renderDetail(){
         <button onclick="openEditHandover('${h.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;color:#9ca3af;flex-shrink:0;touch-action:manipulation">✏️</button>
         ${canDel?`<button onclick="deleteHandover('${h.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;color:#fca5a5;flex-shrink:0;touch-action:manipulation">🗑</button>`:''}
       </div>
-      <div class="handover-text" style="margin-bottom:0">${escHtml(h.content)}</div>
+      <div class="handover-text" style="margin-bottom:0">${h.content}</div>
     </div>`;
   }).join(''):'';
   // ボード申し送り（今シフト）
@@ -7623,7 +7528,6 @@ function openSvcSetting(){
   document.getElementById('ss-com').checked=svcs.includes('commute');
   document.getElementById('ss-vis').checked=svcs.includes('visit');
   document.getElementById('modal-svc-setting').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveSvcSetting(){
   const res=getResidents();
@@ -7767,7 +7671,6 @@ function openModal(id){
     }else if(pv){pv.style.display='none';}
   }
   document.getElementById(id).classList.add('on');
-  _noCloseUntil=Date.now()+350;
   // 記録日時セレクターを注入（対象モーダルのみ）
   const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight'];
   if(recModals.includes(id)){
@@ -7809,10 +7712,8 @@ function getRecordTs(){
   }
   return new Date().toISOString();
 }
-let _noCloseUntil=0;
 function closeModal(id,e){
   if(e&&e.target!==document.getElementById(id))return;
-  if(e&&Date.now()<_noCloseUntil)return;
   document.getElementById(id).classList.remove('on');
   stopVoice();
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
@@ -8036,7 +7937,6 @@ function openEditHandover(id){
   if(priEl)priEl.checked=true;
   document.getElementById('ho-content').value=entry.content||'';
   document.getElementById('modal-handover').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function deleteHandover(id){
   const h=getHandovers();
@@ -8986,7 +8886,6 @@ function openAttendance(){
   document.getElementById('att-time-to').value='';
   document.getElementById('att-note').value='';
   document.getElementById('modal-attendance').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveAttendance(){
   const timeFrom=document.getElementById('att-time-from').value;
@@ -9024,7 +8923,6 @@ function openVisitReportModal(editIdx=-1, presetRid=null){
     document.getElementById('vr-staff').value=S.user||'';
   }
   document.getElementById('modal-visit-report').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveVisitReport(){
   const rid=document.getElementById('vr-resident').value;
@@ -9283,16 +9181,13 @@ const CARE_DISP={'自立':'none','要支援1':'support1','要支援2':'support2'
 const SVC_DISP={'居住':'resident','デイ（通所）':'commute','デイ':'commute','通所':'commute',
   '小多機':'stay','訪問':'visit','訪問看護':'nursing',
   'resident':'resident','commute':'commute','stay':'stay','visit':'visit','nursing':'nursing'};
-const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho','従業員番号':'emp_no',
-  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password','emp_no':'emp_no'};
+const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho',
+  'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password'};
 const ROLE_DISP={'全権管理者':'super_admin','全権管理者 兼 医師':'super_admin_doctor','医師':'doctor','管理者':'facility_manager_resident',
   '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
   'super_admin':'super_admin','doctor':'doctor','care':'care','nurse':'nurse','medical_office':'medical_office',
   'home_care':'home_care','facility_manager_resident':'facility_manager_resident',
-  'facility_manager_commute':'facility_manager_commute','facility_manager_stay':'facility_manager_stay',
-  'facility_manager_visit':'facility_manager_visit','facility_manager_home_care':'facility_manager_home_care',
-  'サ高住管理者':'facility_manager_resident','デイ管理者':'facility_manager_commute',
-  '小多機管理者':'facility_manager_stay','訪問管理者':'facility_manager_visit','居宅管理者':'facility_manager_home_care'};
+  'facility_manager_commute':'facility_manager_commute','facility_manager_stay':'facility_manager_stay'};
 const JIGYOUSHO_DISP={'デイ':'デイサービス'};
 
 // ─── SheetJS ────────────────────────────────────────────
@@ -9356,7 +9251,6 @@ function dropFile(e){
   const f=e.dataTransfer.files[0];
   if(f){const inp=document.getElementById('file-inp');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleFile(inp);}
 }
-function _normName(n){return String(n||'').replace(/\s+/g,' ').replace(/　/g,' ').trim();}
 function importCSV(){
   if(!S.csvData)return;
   const {headers,rows}=S.csvData;
@@ -9364,11 +9258,11 @@ function importCSV(){
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
   const existing=getResidents();
-  const added=[];let skipped=0;
+  const added=[];
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    if(existing.find(e=>_normName(e.name)===_normName(name))){skipped++;return;}
+    if(existing.find(e=>e.name===name))return;
     const birthStr=(i('birth_date')>=0?String(r[i('birth_date')]||''):'').replace(/\//g,'-');
     let age=0;
     if(birthStr)try{age=Math.floor((Date.now()-new Date(birthStr))/(365.25*24*3600*1000));}catch(e){}
@@ -9388,16 +9282,9 @@ function importCSV(){
       allergy:(i('allergies')>=0?String(r[i('allergies')]||''):'').trim()
     });
   });
-  if(!added.length){toast(`新しいデータがありません（重複 ${skipped}名スキップ）`);return;}
-  // マージ後に名前で重複除去（念のため）
-  const raw=[...existing,...added];
-  const seenNames=new Set();
-  const mergedRes=raw.filter(r=>{const k=_normName(r.name);if(seenNames.has(k))return false;seenNames.add(k);return true;});
-  saveResidents(mergedRes);
-  // Firebaseが接続済みなら即時プッシュ（キュー消失防止）
-  if(fbReady&&db) _doFsSet('residents',mergedRes);
-  const dupMsg=skipped?` （重複 ${skipped}名スキップ）`:'';
-  toast(`${added.length}名をインポートしました ✓${dupMsg}`);
+  if(!added.length){toast('新しいデータがありません（重複またはデータなし）');return;}
+  saveResidents([...existing,...added]);
+  toast(`${added.length}名をインポートしました ✓`);
   document.getElementById('csv-preview').style.display='none';
   S.csvData=null;
 }
@@ -9457,71 +9344,30 @@ function importStaffCSV(headers,rows){
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
   const cs=getCustomStaff();const ss=getStaffSettings();
-  // STAFF_INFOの名前は常にスキップ（全権管理者はコードで管理）
-  const staffInfoNames=new Set(Object.values(STAFF_INFO).map(s=>_normName(s.name)));
-  // custom_staff内の既存エントリ: 名前→キー のマップ（UPSERT用）
-  const existingKeyByName={};
-  Object.entries(cs).forEach(([k,s])=>{existingKeyByName[_normName(s.name)]=k;});
-  let added=0,updated=0,skipped=0;
+  let added=0;
   const results=[];
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    if(staffInfoNames.has(_normName(name))){skipped++;return;}
-    const empNoRaw=(i('emp_no')>=0?String(r[i('emp_no')]||''):'').trim();
-    const loginId=empNoRaw?String(parseInt(empNoRaw,10)).padStart(4,'0'):getNextStaffLoginId();
+    const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():generatePassword();
     const roleRaw=(i('role')>=0?String(r[i('role')]||''):'').trim();
     const role=ROLE_DISP[roleRaw]||'care';
-    if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId,note:'スキップ（全権管理者のみ登録可）'});skipped++;return;}
+    if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId:'-',pass:'-',note:'スキップ（全権管理者のみ登録可）'});return;}
     const jRaw=(i('jigyousho')>=0?String(r[i('jigyousho')]||''):'').trim();
     const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
+    const loginId=getNextStaffLoginId();
+    const key='cs'+Date.now()+Math.random();
     const kana=(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim();
-    const existingKey=existingKeyByName[_normName(name)];
-    if(existingKey){
-      // 既存エントリのloginId・role・jigyoushoを更新（パスワードは維持）
-      cs[existingKey]={...cs[existingKey],name,kana:kana||cs[existingKey].kana,role,loginId,jigyousho};
-      ss[existingKey]={...ss[existingKey],loginId};
-      results.push({name,loginId,note:'更新'});
-      updated++;
-    }else{
-      const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():'aura01';
-      const key='cs'+Date.now()+Math.random();
-      cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
-      ss[key]={pass,loginId};
-      results.push({name,loginId,pass,note:'新規'});
-      added++;
-    }
+    cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
+    ss[key]={pass,loginId};
+    results.push({name,loginId,pass});
+    added++;
   });
-  if(!added&&!updated){toast(`変更なし（全権管理者スキップ ${skipped}名）`);return;}
+  if(!added){toast('新しい職員データがありません');return;}
   saveCustomStaff(cs);saveStaffSettings(ss);
-  // Firebase接続済みなら即時プッシュ
-  if(fbReady&&db){_doFsSet('custom_staff',cs);_doFsSet('staff_settings',ss);}
-  addAuditLog('職員一括登録',`新規${added}名・更新${updated}名`);
-  const parts=[];
-  if(added)parts.push(`新規${added}名`);
-  if(updated)parts.push(`ID更新${updated}名`);
-  if(skipped)parts.push(`スキップ${skipped}名`);
-  toast(`職員インポート完了: ${parts.join('・')} ✓`);
+  addAuditLog('職員一括登録',added+'名');
+  toast(`${added}名の職員をインポートしました ✓`);
   if(results.length)console.table(results);
-}
-// ── 重複職員削除 ──
-function deduplicateCustomStaff(btn){
-  const cs=getCustomStaff();const ss=getStaffSettings();
-  // STAFF_INFOと名前が被るエントリも削除対象
-  const staffInfoNames=new Set(Object.values(STAFF_INFO).map(s=>_normName(s.name)));
-  const seen=new Set(),dupKeys=[];
-  for(const [key,staff] of Object.entries(cs)){
-    const k=_normName(staff.name);
-    if(staffInfoNames.has(k)||seen.has(k))dupKeys.push(key);
-    else seen.add(k);
-  }
-  if(!dupKeys.length){toast('重複なし（削除対象なし）');return;}
-  dupKeys.forEach(key=>{delete cs[key];delete ss[key];});
-  saveCustomStaff(cs);saveStaffSettings(ss);
-  if(fbReady&&db){_doFsSet('custom_staff',cs);_doFsSet('staff_settings',ss);}
-  toast(`重複職員 ${dupKeys.length}名を削除しました ✓`);
-  if(btn){btn.textContent=`✅ ${dupKeys.length}名削除済み`;setTimeout(()=>{if(btn)btn.textContent='🔧 重複職員をまとめて削除';},4000);}
-  _renderCurrentScreen();
 }
 
 // ─── Excel テンプレートDL ─────────────────────────────────
@@ -9578,7 +9424,59 @@ async function downloadStaffExcelTemplate(){
   XLSX.writeFile(wb,'職員インポート_テンプレ.xlsx');
   toast('職員Excelテンプレをダウンロードしました ✓');
 }
-const INIT_STAFF_DATA=[];
+const INIT_STAFF_DATA=[
+  {name:"阪本 江都子",kana:"サカモト エツコ",role:'care',jigyousho:"デイサービス",loginId:'0046',pass:'aurawajg'},
+  {name:"中桐 裕次郎",kana:"ナカギリ ユウジロウ",role:'care',jigyousho:"サ高住",loginId:'0037',pass:'aurazx6c'},
+  {name:"渡辺（小松原） 未稀",kana:"ワタナベ ミキ",role:'care',jigyousho:"デイサービス",loginId:'0047',pass:'auraqags'},
+  {name:"山田 宏美",kana:"ヤマダ ヒロミ",role:'care',jigyousho:"サ高住",loginId:'0028',pass:'auraagxt'},
+  {name:"森本 優子",kana:"モリモト ユウコ",role:'care',jigyousho:"サ高住",loginId:'0038',pass:'auragv4a'},
+  {name:"西 恵",kana:"ニシ メグミ",role:'care',jigyousho:"サ高住",loginId:'0056',pass:'aura3yme'},
+  {name:"姫路 智恵美",kana:"ヒメジ チエミ",role:'care',jigyousho:"デイサービス",loginId:'0048',pass:'aura8mcc'},
+  {name:"太田 裕子",kana:"オオタ ユウコ",role:'care',jigyousho:"サ高住",loginId:'0049',pass:'aura5v4z'},
+  {name:"吉田 かおり",kana:"ヨシダ カオリ",role:'care',jigyousho:"小多機",loginId:'0039',pass:'aurat9nu'},
+  {name:"岡本 健志",kana:"オカモト タケシ",role:'facility_manager_resident',jigyousho:"サ高住",loginId:'0029',pass:'aura4w5u'},
+  {name:"柏原 美保",kana:"カシハラ ミホ",role:'care',jigyousho:"小多機",loginId:'0057',pass:'auraybhj'},
+  {name:"橘 沙也佳",kana:"タチバナ サヤカ",role:'nurse',jigyousho:"デイサービス",loginId:'0050',pass:'aurachdj'},
+  {name:"相原 万里子",kana:"アイハラ マリコ",role:'care',jigyousho:"サ高住",loginId:'0040',pass:'aurawnng'},
+  {name:"横山 稔代",kana:"ヨコヤマ トシヨ",role:'care',jigyousho:"サ高住",loginId:'0058',pass:'auraj8xv'},
+  {name:"竹下 律子",kana:"タケシタ リツコ",role:'care',jigyousho:"デイサービス",loginId:'0051',pass:'aurafzfn'},
+  {name:"田野 攻治",kana:"タノ コウジ",role:'care',jigyousho:"サ高住",loginId:'0041',pass:'aura9wuy'},
+  {name:"平野 紗弥",kana:"ヒラノ サヤ",role:'care',jigyousho:"デイサービス",loginId:'0052',pass:'aura53ha'},
+  {name:"玉木 陽子",kana:"タマキ ヨウコ",role:'care',jigyousho:"サ高住",loginId:'0042',pass:'aurakjg8'},
+  {name:"中塚 昭子",kana:"ナカツカ アキコ",role:'care',jigyousho:"デイサービス",loginId:'0053',pass:'aura6kxp'},
+  {name:"保田 安代",kana:"ヤスダ ヤスヨ",role:'nurse',jigyousho:"法人",loginId:'0012',pass:'aura7rjh'},
+  {name:"漆川 富美子",kana:"シツカワ フミコ",role:'care',jigyousho:"小多機",loginId:'0061',pass:'auraujv6'},
+  {name:"原田 正子",kana:"ハラダ マサコ",role:'care',jigyousho:"サ高住",loginId:'0044',pass:'aurapg9s'},
+  {name:"前原 健",kana:"マエハラ タケシ",role:'facility_manager_commute',jigyousho:"デイサービス",loginId:'0045',pass:'auracbdw'},
+  {name:"長谷川 美樹",kana:"ハセガワ ミキ",role:'facility_manager_commute',jigyousho:"訪問介護",loginId:'0035',pass:'aura3qbn'},
+  {name:"今井 光恵",kana:"イマイ ミツエ",role:'nurse',jigyousho:"法人",loginId:'0014',pass:'aura9t95'},
+  {name:"芝崎 千春",kana:"シバザキ チハル",role:'care',jigyousho:"訪問介護",loginId:'0036',pass:'auraazyt'},
+  {name:"稲田 崇志",kana:"イナダ タカシ",role:'super_admin_doctor',jigyousho:"法人",loginId:'0001',pass:'aurajwdq'},
+  {name:"稲田 真帆",kana:"イナダ マホ",role:'super_admin',jigyousho:"法人",loginId:'0002',pass:'aurar86j'},
+  {name:"柚木 愛",kana:"ユノキ ホノカ",role:'medical_office',jigyousho:"法人",loginId:'0069',pass:'aurasf75'},
+  {name:"綾目 紅",kana:"アヤメ コウ",role:'medical_office',jigyousho:"法人",loginId:'0070',pass:'aurakwve'},
+  {name:"小川 萌",kana:"オガワ ハジメ",role:'care',jigyousho:"小多機",loginId:'0075',pass:'aura2t3t'},
+  {name:"藤川 五月",kana:"フジカワ サツキ",role:'care',jigyousho:"小多機",loginId:'0077',pass:'auraama7'},
+  {name:"松尾 紀美代",kana:"マツオ キミヨ",role:'care',jigyousho:"小多機",loginId:'0085',pass:'aura64kb'},
+  {name:"平田 典子",kana:"ヒラタ ノリコ",role:'care',jigyousho:"小多機",loginId:'0086',pass:'aura68cs'},
+  {name:"大久保 直子",kana:"オオクボ ナオコ",role:'care',jigyousho:"小多機",loginId:'0087',pass:'aurac22d'},
+  {name:"佐藤 百合子",kana:"サヨウ ユリコ",role:'care',jigyousho:"小多機",loginId:'0089',pass:'auraruj6'},
+  {name:"山﨑 美和",kana:"ヤマサキ ミワ",role:'care',jigyousho:"小多機",loginId:'0093',pass:'auraqgtz'},
+  {name:"池元 綾乃",kana:"イケモト アヤノ",role:'care',jigyousho:"デイサービス",loginId:'0094',pass:'auragk9x'},
+  {name:"松村 望",kana:"マツムラ ノゾミ",role:'care',jigyousho:"小多機",loginId:'0096',pass:'auraqtdg'},
+  {name:"石原 美保",kana:"イシハラ ミホ",role:'care',jigyousho:"小多機",loginId:'0097',pass:'auramvhg'},
+  {name:"藤井 晃頼",kana:"フジイ アキヨリ",role:'care',jigyousho:"サ高住",loginId:'0099',pass:'auracwh7'},
+  {name:"中桐 芳江",kana:"ナカギリ ヨシエ",role:'nurse',jigyousho:"いなだ医院",loginId:'0016',pass:'aurappgw'},
+  {name:"兼信 真理",kana:"カネノブ マリ",role:'nurse',jigyousho:"いなだ医院",loginId:'0018',pass:'aurafhhe'},
+  {name:"上池 都紀",kana:"カミイケ ミヤキ",role:'nurse',jigyousho:"いなだ医院",loginId:'0010',pass:'aura3cj2'},
+  {name:"播元 恵美子",kana:"ハリモト エミコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0011',pass:'auraptyz'},
+  {name:"桂 詩子",kana:"カツラ ウタコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0013',pass:'aurauc9w'},
+  {name:"小田 悦子",kana:"オダ エツコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0015',pass:'aurasgq2'},
+  {name:"岡 友子",kana:"オカ トモコ",role:'nurse',jigyousho:"いなだ医院",loginId:'0071',pass:'aurawvg4'},
+  {name:"山室 八千代",kana:"ヤマムロ ヤチヨ",role:'nurse',jigyousho:"いなだ医院",loginId:'0073',pass:'aura74n5'},
+  {name:"芦内 薫",kana:"アシウチ カオル",role:'nurse',jigyousho:"いなだ医院",loginId:'0095',pass:'aurap6yg'},
+  {name:"柚木 清美",kana:"ユノキ キヨミ",role:'nurse',jigyousho:"いなだ医院",loginId:'0098',pass:'auraeryf'},
+];
 function initDemoStaff(){
   if(!confirm(`テスト職員を全削除して実際の職員${INIT_STAFF_DATA.length}名を登録しますか？\n\n※この操作は取り消せません`))return;
   saveCustomStaff({});saveStaffSettings({});
@@ -9601,73 +9499,6 @@ function downloadCsv(filename, content){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download=filename;a.click();
   URL.revokeObjectURL(a.href);
-}
-function handleFacesheetExcel(inp){
-  const f=inp.files[0];if(!f)return;
-  const statusEl=document.getElementById('fs-json-status');
-  if(statusEl)statusEl.textContent='読み込み中…';
-  toast('フェイスシートExcelを読み込み中...');
-  loadSheetJS().then(XLSX=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      try{
-        const wb=XLSX.read(e.target.result,{type:'array'});
-        const ws=wb.Sheets[wb.SheetNames[0]];
-        const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
-        // ヘッダー行（行2、0-indexed row1）
-        const headers=(rows[1]||[]).map(h=>String(h||'').trim());
-        const dataRows=rows.slice(3).filter(r=>r.some(c=>String(c||'').trim()!==''));
-        const col=name=>headers.indexOf(name);
-        const v=(row,name)=>String(row[col(name)]||'').trim();
-        const data={};
-        dataRows.forEach(row=>{
-          const name=v(row,'氏名★');
-          if(!name)return;
-          const contacts=[];
-          [1,2,3,4].forEach(n=>{
-            const cn=v(row,`緊急${n}_氏名`);
-            if(cn)contacts.push({name:cn,rel:v(row,`緊急${n}_続柄`),tel:v(row,`緊急${n}_電話`),address:''});
-          });
-          const diseases=v(row,'疾患（カンマ区切り）').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
-          const pensions=v(row,'年金種別（カンマ区切り）').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
-          data[name]={
-            address:        v(row,'住所'),
-            tel:            v(row,'電話番号'),
-            contacts,
-            care_manager:   v(row,'ケアマネ'),
-            family_situation:v(row,'家族状況'),
-            height:         v(row,'身長(cm)'),
-            weight:         v(row,'体重(kg)'),
-            vision:         v(row,'視力'),
-            hearing:        v(row,'聴力'),
-            language:       v(row,'言語'),
-            paralysis:      v(row,'麻痺'),
-            contracture:    v(row,'拘縮'),
-            infection:      v(row,'感染症'),
-            drug_allergy:   v(row,'薬剤アレルギー'),
-            blood_thinner:  v(row,'血液凝固薬'),
-            main_doctor:    v(row,'主治医'),
-            doctor_tel:     v(row,'主治医TEL'),
-            diseases,
-            nyo:            v(row,'排尿')||'あり',
-            ben:            v(row,'排便')||'あり',
-            adl_gishi:      v(row,'義歯等')||'なし',
-            adl_haichuchu:  v(row,'排泄_昼'),
-            adl_haiyakan:   v(row,'排泄_夜'),
-            pension_types:  pensions,
-            notes:          v(row,'備考'),
-            _service_usage_text:'',
-          };
-        });
-        importFacesheetJSON(data);
-      }catch(err){
-        if(statusEl)statusEl.textContent='⚠ 読み込みエラー: '+err.message;
-        toast('Excelの読み込みに失敗しました');
-      }
-    };
-    r.readAsArrayBuffer(f);
-  }).catch(()=>toast('SheetJS読み込みに失敗しました（オンライン環境が必要です）'));
-  inp.value='';
 }
 function handleFacesheetJSON(inp){
   const f=inp.files[0];if(!f)return;
@@ -9821,14 +9652,13 @@ function openEditResident(){
     document.getElementById('er-birth').value=approxYear+'-01-01';
   }
   ['er-sv-res','er-sv-com','er-sv-sta','er-sv-vis'].forEach(id=>{
-    document.getElementById(id).checked=(r.services||[]).includes(document.getElementById(id).value);
+    document.getElementById(id).checked=r.services.includes(document.getElementById(id).value);
   });
   const prev=document.getElementById('er-photo-preview');
   const clrBtn=document.getElementById('er-photo-clear');
   if(r.photo){prev.innerHTML=`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`;prev.dataset.photo=r.photo;if(clrBtn)clrBtn.style.display='';}
   else{prev.innerHTML='👤';prev.dataset.photo='';if(clrBtn)clrBtn.style.display='none';}
   document.getElementById('modal-edit-res').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function openAddResident(){
   if(!isAdmin()&&!isFacilityAdmin()){toast('権限がありません');return;}
@@ -9849,7 +9679,6 @@ function openAddResident(){
   const clrBtn=document.getElementById('er-photo-clear');
   prev.innerHTML='👤';prev.dataset.photo='';if(clrBtn)clrBtn.style.display='none';
   document.getElementById('modal-edit-res').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveEditResident(){
   const mode=document.getElementById('er-mode').value;
@@ -10044,7 +9873,7 @@ function setBvFilter(f){
 function renderBulkVital(){
   const dateEl=document.getElementById('bv-date');
   if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
-  const res=getResidents().filter(r=>_bvFilter==='all'||(r.services||[]).includes(_bvFilter));
+  const res=getResidents().filter(r=>_bvFilter==='all'||r.services.includes(_bvFilter));
   const today=dateEl.value;
   const recs=getRecords();
   const list=document.getElementById('bulk-vital-list');if(!list)return;
@@ -10181,7 +10010,7 @@ function renderBulkMeal(){
   if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
-  const res=getResidents().filter(r=>_bmFilter==='all'||(r.services||[]).includes(_bmFilter));
+  const res=getResidents().filter(r=>_bmFilter==='all'||r.services.includes(_bmFilter));
   const list=document.getElementById('bulk-meal-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const h=new Date().getHours();
@@ -10262,7 +10091,7 @@ function renderBulkExcretion(){
   if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
-  const res=getResidents().filter(r=>_bexFilter==='all'||(r.services||[]).includes(_bexFilter));
+  const res=getResidents().filter(r=>_bexFilter==='all'||r.services.includes(_bexFilter));
   const list=document.getElementById('bulk-excretion-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const stoolLbls={none:'なし',small:'少量',normal:'普通',large:'多量'};
@@ -10543,14 +10372,15 @@ function _compressImage(file,maxPx,quality){
 async function processMedPhoto(input){
   if(!input.files||!input.files[0])return;
   const status=document.getElementById('med-ocr-status');
+  if(!_aiKey){toast('AIキー未設定。設定 → AI設定でGroqキーを入力してください');return;}
   const file=input.files[0];
   if(status){status.style.display='block';status.textContent='📷 画像を圧縮中...';}
   try{
     const base64=await _compressImage(file,1024,0.75);
     if(status)status.textContent='📷 薬手帳を解析中...';
-    const res=await fetch('https://village-aura.inadaiin.com/ai/ocr',{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Authorization':'Bearer '+_aiKey,'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'meta-llama/llama-4-scout-17b-16e-instruct',
         messages:[{role:'user',content:[
@@ -10600,7 +10430,7 @@ function renderTransport(){
   const today=dateEl.value;
   const records=getTransportRecords();
   const todayRecs=records[today]||{};
-  const res=getResidents().filter(r=>(r.services||[]).includes('commute')||(r.services||[]).includes('stay'));
+  const res=getResidents().filter(r=>r.services.includes('commute')||r.services.includes('stay'));
   const list=document.getElementById('transport-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">デイ・小多機の利用者がいません</div>';return;}
   list.innerHTML=res.map(r=>{
@@ -10611,7 +10441,7 @@ function renderTransport(){
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:13px;font-weight:800">${r.name}</div>
-          <div style="font-size:11px;color:var(--sub)">${r.facility} ${(r.services||[]).includes('commute')?'デイ':'小多機'}</div>
+          <div style="font-size:11px;color:var(--sub)">${r.facility} ${r.services.includes('commute')?'デイ':'小多機'}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           ${done?`<span style="font-size:12px;font-weight:700;color:var(--ok)">✓ ${timeVal}</span>`:''}
@@ -10857,7 +10687,6 @@ function openBoardHandover(section,editIdx=-1,presetRid=null){
     if(expSel)expSel.value='24h';
   }
   document.getElementById('modal-board-ho').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveBoardHandover(){
   const content=document.getElementById('bho-content').value.trim();
@@ -11262,7 +11091,6 @@ function openVisitEntryNew(){
   document.getElementById('ve-delete-btn').style.display='none';
   populateVisitDataLists();
   document.getElementById('modal-visit-entry').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function openVisitEntryEdit(dateStr,idx){
   const v=getVisitSched(dateStr)[idx];if(!v)return;
@@ -11279,7 +11107,6 @@ function openVisitEntryEdit(dateStr,idx){
   document.getElementById('ve-delete-btn').style.display='';
   populateVisitDataLists();
   document.getElementById('modal-visit-entry').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function populateVisitDataLists(){
   const staffSet=new Set(Object.values(STAFF_INFO).map(s=>s.name));
@@ -11390,7 +11217,6 @@ function openSchAdd(){
   document.getElementById('sch-end').value='';
   document.getElementById('sch-note').value='';
   document.getElementById('modal-sch-add').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function saveScheduleEvent(){
   const title=document.getElementById('sch-title').value.trim();
@@ -11820,7 +11646,6 @@ function openFacesheet(){
   document.querySelector('#modal-facesheet .tab').classList.add('on');
   document.getElementById('fst-contact').classList.add('on');
   document.getElementById('modal-facesheet').classList.add('on');
-  _noCloseUntil=Date.now()+350;
   // inject mic buttons on first open
   setTimeout(addFsVoiceButtons, 50);
 }
@@ -12280,14 +12105,10 @@ function handleFsFile(inp,mode){
 // ═══════════ TOAST ═══════════
 let toastTimer;
 function toast(msg){
-  try{
-    clearTimeout(toastTimer);
-    let el=document.getElementById('_t');
-    if(!el){el=document.createElement('div');el.id='_t';el.style.cssText='position:fixed;bottom:calc(50vh + 20px);left:10%;right:10%;background:rgba(28,35,64,.95);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;z-index:10000;text-align:center;pointer-events:none;display:none';document.body.appendChild(el);}
-    el.textContent=msg;
-    el.style.display='block';
-    toastTimer=setTimeout(()=>{el.style.display='none';},2500);
-  }catch(ex){}
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('on'),2500);
 }
 
 // ═══════════ RESET ═══════════
@@ -12507,24 +12328,12 @@ function loadMayDemoData(){
 
 function deleteAllResidents(){
   if(!isSuperAdminRole()){toast('全権管理者のみ実行できます');return;}
-  const typed=prompt('【警告】この操作は取り消せません。\n全利用者・全記録が完全に削除されます。\n\n続行するには「削除」と入力してください：');
-  if(typed!=='削除'){toast('削除をキャンセルしました');return;}
-  // 削除前に自動バックアップ
-  try{
-    const data={exportedAt:new Date().toISOString(),exportedBy:S.user,appVersion:APP_VERSION,residents:getResidents(),records:getRecords(),handovers:getHandovers(),auditLog:ls('audit_log')||[]};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download='village-aura-backup-before-delete-'+new Date().toISOString().slice(0,10)+'.json';
-    a.click();URL.revokeObjectURL(url);
-    uploadBackupToFirestore(data);
-    addAuditLog('削除前バックアップ','全利用者削除前の自動バックアップ');
-  }catch(e){console.warn('backup failed',e);}
+  if(!confirm('全利用者・全記録を削除します。\nこの操作は取り消せません。\n\nよろしいですか？'))return;
   const keys=['residents','records'];
   keys.forEach(k=>{lsSet(k,[]);fsSet(k,[]);});
   Object.keys(localStorage).filter(k=>k.startsWith('records_')||k.startsWith('e_records_')||k.startsWith('fs_')||k.startsWith('e_fs_')||k.startsWith('vital_confirmed')||k.startsWith('e_vital_confirmed')).forEach(k=>localStorage.removeItem(k));
   addAuditLog('全利用者削除','全利用者・記録を削除');
-  toast('バックアップ完了後、全利用者・記録を削除しました ✓');
+  toast('全利用者・記録を削除しました ✓');
   renderDashboard();
 }
 function resetDemo(){
@@ -12556,7 +12365,6 @@ function resetLockTimer(){
 }
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
-
 
 // ── スワイプナビゲーション ──
 let _swX=0,_swY=0,_swActive=false;
@@ -12895,7 +12703,6 @@ function openIncidentModal(editId=''){
   if(editId){const inc=getIncidents().find(i=>i.id===editId);if(inc&&sel)sel.value=inc.rid||'';}
   else if(S.currentRes&&sel)sel.value=S.currentRes;
   document.getElementById('modal-incident').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 
 function saveIncident(){
@@ -13164,7 +12971,6 @@ function openInfectionModal(editIdx=-1){
     _populateInfSvcTable({});
   }
   document.getElementById('modal-infection').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 function _populateInfSvcTable(sr){
   const tbody=document.getElementById('inf-svc-tbody');if(!tbody)return;
@@ -13261,12 +13067,11 @@ function renderDashboardInfection(){
 
 // ═══════════ FEATURE 6: 家族向け連絡帳自動生成 ═══════════
 function openFamilyReport(){
-  if(!S.currentRes)return;
+  if(!S.currentRes){toast('利用者を選択してください');return;}
   document.getElementById('family-report-date').textContent=
     new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   regenerateFamilyReport();
   document.getElementById('modal-family-report').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 
 function regenerateFamilyReport(){
@@ -13528,7 +13333,6 @@ function openMonthlyReport(){
   const monthSel=document.getElementById('report-month');
   if(monthSel)monthSel.value=now.getMonth()+1;
   document.getElementById('modal-monthly-report').classList.add('on');
-  _noCloseUntil=Date.now()+350;
   generateMonthlyReport();
 }
 
@@ -13625,7 +13429,6 @@ function openResidentQR(){
     wrap.innerHTML=`<div style="font-size:12px;color:var(--sub);padding:20px">QRコード生成エラー</div>`;
   }
   document.getElementById('modal-qrcode').classList.add('on');
-  _noCloseUntil=Date.now()+350;
 }
 
 function checkUrlHash(){
@@ -13677,18 +13480,16 @@ _startLockTimer();
     checkUrlHash();
     startUpdateChecker();
     resetLockTimer();
-    // Firebase Auth SDKが自動でセッションを復元するのを待つ
-    // メール認証 or 匿名認証どちらでも fbReady=true にする（匿名はフォールバック）
-    let _sessAuthDone=false;
+    // Firebase Auth SDKが自動でセッションを復元するのを待つ（パスワード再入力不要）
     const unsubAuth=firebase.auth().onAuthStateChanged(user=>{
-      if(_sessAuthDone||!user)return;
-      _sessAuthDone=true;
       unsubAuth();
-      fbReady=true;
-      flushFsQueue();
-      loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();_renderCurrentScreen();});
+      if(user&&!user.isAnonymous){
+        fbReady=true;
+        loadFromFirebase().then(()=>{renderDashboard();setupRealtimeSync();});
+        startAIKeySync();
+      }
+      // 非認証 or 匿名の場合はオフラインモードで継続（次回操作時に再ログイン誘導）
     });
-    setTimeout(()=>{if(!_sessAuthDone){_sessAuthDone=true;unsubAuth();}},8000);
   }catch(e){}
 })();
 
