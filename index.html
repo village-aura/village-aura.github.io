@@ -5448,7 +5448,7 @@ function renderAdminStaffList(){
   ].sort((a,b)=>(parseInt(getStaffLoginId(a[0]))||9999)-(parseInt(getStaffLoginId(b[0]))||9999));
   const isCustomKey=key=>!!getCustomStaff()[key];
   // 一括パスワード発行ボタン（super_adminのみ）
-  const bulkPwBtn=isSuperAdmin?'<button onclick="bulkAssignPasswords()" style="width:100%;padding:10px;background:#f3e8ff;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px">🔑 パスワード未設定の職員に一括発行</button>':'';
+  const bulkPwBtn=isSuperAdmin?'<button onclick="bulkAssignPasswords()" style="width:100%;padding:10px;background:#f3e8ff;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:6px">🔑 パスワード未設定の職員に一括発行</button><button onclick="resetAllPasswords()" style="width:100%;padding:10px;background:#fff7ed;color:#c2410c;border:1.5px solid #fdba74;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px">🔄 全職員のパスワードを aura+ID にリセット</button>':'';
   list.innerHTML=bulkPwBtn+'<div style="display:flex;flex-direction:column;gap:4px">'
     +allEntries.map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
@@ -5537,6 +5537,27 @@ function bulkAssignPasswords(){
   addAuditLog('PW一括発行',count+'名');
   renderAdminStaffList();
   toast(count+'名にパスワードを発行しました ✓');
+}
+function resetAllPasswords(){
+  if(!confirm('全職員のパスワードを「aura+ID」形式にリセットします。\n（例: aura0001, aura0037）\nよろしいですか？'))return;
+  const cs=getCustomStaff();
+  const ss=getStaffSettings();
+  let count=0;
+  const allKeys=[...Object.keys(STAFF_INFO),...Object.keys(cs)];
+  allKeys.forEach(key=>{
+    const loginId=getStaffLoginId(key)||ss[key]?.loginId||cs[key]?.loginId||'';
+    if(!loginId)return;
+    const pw='aura'+loginId;
+    if(!ss[key])ss[key]={};
+    ss[key].pass=pw;
+    if(cs[key])cs[key].pass=pw;
+    count++;
+  });
+  saveCustomStaff(cs);
+  saveStaffSettings(ss);
+  addAuditLog('PW全リセット',count+'名をaura+IDに統一');
+  renderAdminStaffList();
+  toast(count+'名のパスワードをリセットしました ✓');
 }
 function deleteCustomStaff(key){
   const cs=getCustomStaff();
