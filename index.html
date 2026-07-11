@@ -1679,8 +1679,12 @@ a{color:var(--p);text-decoration:none}
           </button>
           <div class="acc-body"><div class="acc-inner">
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">☁️ クラウド同期</div>
+            <div id="sync-status" style="background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12px;line-height:1.8;color:var(--fg)">
+              📊 ローカル: <b id="ss-local-res">--</b>名 ／ クラウド: <b id="ss-cloud-res">--</b>名
+              <button onclick="refreshSyncStatus()" style="margin-left:8px;padding:2px 8px;font-size:11px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);cursor:pointer">確認</button>
+            </div>
             <button id="btn-push-fs" onclick="pushAllToFirestore(this)" style="width:100%;padding:11px;background:#1565c0;color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:4px">📤 このPCのデータをクラウドに強制アップロード</button>
-            <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">他の端末に表示されない場合に使用。localStorageの全データをFirestoreに上書き保存します。</div>
+            <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">他の端末に表示されない場合に使用。このPCのデータをFirestoreに上書き保存します。</div>
             <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px;letter-spacing:.04em">💾 手動バックアップ</div>
             <button onclick="exportData()" style="width:100%;padding:11px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:6px">バックアップをダウンロード（JSON）</button>
             <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.6">利用者・記録・操作ログをJSONで保存します。管理者ログイン時、前回から24時間以上経過している場合は自動でダウンロードされます。</div>
@@ -4276,8 +4280,16 @@ async function loadFromFirebase(){
       try{doc=await db.collection('va_data').doc(key).get({source:'server'});}
       catch(e2){doc=await db.collection('va_data').doc(key).get();}
       if(doc.exists&&doc.data()?.data!==undefined){
-        lsSet(key,doc.data().data);
-        _distributeAggregated(key,doc.data().data);
+        const serverVal=doc.data().data;
+        const localVal=ls(key);
+        // 配列データはローカルの件数が多い場合はローカルを優先し、Firestoreへ逆アップロード
+        if(Array.isArray(serverVal)&&Array.isArray(localVal)&&localVal.length>serverVal.length){
+          console.log('fbLoad conflict: local('+localVal.length+') > server('+serverVal.length+') for '+key+' → pushing local');
+          _doFsSet(key,localVal);
+        }else{
+          lsSet(key,serverVal);
+          _distributeAggregated(key,serverVal);
+        }
       }
     }catch(e){console.warn('fbLoad:',key,e);}
   }));
@@ -5974,6 +5986,21 @@ function toggleAuditLog(){
     el.innerHTML='<div style="padding:12px;text-align:center;color:var(--sub);font-size:12px">🔄 読み込み中...</div>';
     fetchAndMergeAuditLogs(()=>renderAuditLog());
   }
+}
+// ── クラウド同期状態確認 ──
+async function refreshSyncStatus(){
+  const localEl=document.getElementById('ss-local-res');
+  const cloudEl=document.getElementById('ss-cloud-res');
+  const localRes=ls('residents');
+  const localCount=Array.isArray(localRes)?localRes.length:0;
+  if(localEl)localEl.textContent=localCount;
+  if(!fbReady||!db){if(cloudEl)cloudEl.textContent='未接続';return;}
+  try{
+    const doc=await db.collection('va_data').doc('residents').get({source:'server'});
+    const serverRes=doc.exists?doc.data()?.data:null;
+    const serverCount=Array.isArray(serverRes)?serverRes.length:0;
+    if(cloudEl)cloudEl.textContent=serverCount;
+  }catch(e){if(cloudEl)cloudEl.textContent='読取失敗';}
 }
 // ── クラウド強制アップロード ──
 async function pushAllToFirestore(btn){
