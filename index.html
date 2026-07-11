@@ -1015,12 +1015,12 @@ a{color:var(--p);text-decoration:none}
 山田 花子, ヤマダ ハナコ, 女性, 1935/04/19, 要介護2, 101, 居住, サ高住</code>
       </div>
       <div style="margin-top:10px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:6px">📋 フェイスシートJSON一括インポート</div>
-        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">convert_facesheet.py が出力した facesheet_import.json を選択</div>
+        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:6px">📋 フェイスシートExcel一括インポート</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">「テンプレDL」タブからExcelをDLして記入後、ここからアップロード</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input type="file" id="fs-json-inp" accept=".json" style="display:none" onchange="handleFacesheetJSON(this)">
-          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONを選択</button>
-          <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
+          <input type="file" id="fs-excel-inp" accept=".xlsx,.xls" style="display:none" onchange="handleFacesheetExcel(this)">
+          <button onclick="document.getElementById('fs-excel-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 Excelを選択</button>
+          <span id="fs-excel-status" style="font-size:12px;color:var(--sub)"></span>
         </div>
       </div>
     </div>
@@ -1076,10 +1076,10 @@ a{color:var(--p);text-decoration:none}
         <div style="padding:16px;background:var(--card);border-radius:14px;border:1.5px solid var(--bdr);display:flex;align-items:center;gap:14px">
           <div style="font-size:32px;flex-shrink:0">📋</div>
           <div style="flex:1;min-width:0">
-            <div style="font-weight:800;font-size:14px;margin-bottom:3px">フェイスシート JSON テンプレ</div>
-            <div style="font-size:11px;color:var(--sub);line-height:1.6">登録済み利用者の名前をキーにした空JSONを生成。値を記入後「利用者取込」タブからインポート</div>
+            <div style="font-weight:800;font-size:14px;margin-bottom:3px">フェイスシート Excel テンプレ</div>
+            <div style="font-size:11px;color:var(--sub);line-height:1.6">登録済み利用者の名前が入ったExcelを生成。必要項目を記入後「利用者取込」タブからアップロード</div>
           </div>
-          <button onclick="downloadFacesheetJSONTemplate()" style="flex-shrink:0;padding:10px 16px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">⬇ DL</button>
+          <button onclick="downloadFacesheetExcelTemplate()" style="flex-shrink:0;padding:10px 16px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">⬇ DL</button>
         </div>
       </div>
       <div style="margin-top:16px;padding:12px 14px;background:#f0f4ff;border-radius:10px;border:1px solid #c7d7ff">
@@ -1088,7 +1088,12 @@ a{color:var(--p);text-decoration:none}
           要介護度: 自立 / 要支援1〜2 / 要介護1〜5<br>
           サービス種別: resident（居住） / commute（デイ） / stay（小多機） / visit（訪問） / nursing（訪問看護）<br>
           事業所: 法人 / サ高住 / デイ / 小多機 / 訪問介護 / 居宅<br>
-          職種: 全権管理者 / 全権管理者 兼 医師 / 医師 / 介護職 / 看護職 / 事務 / サ高住管理者 / デイ管理者 / 小多機管理者
+          職種: 全権管理者 / 全権管理者 兼 医師 / 医師 / 介護職 / 看護職 / 事務 / サ高住管理者 / デイ管理者 / 小多機管理者<br>
+          食事/排泄/着脱/移動ADL: 自立 / 見守り / 声かけ / 一部介助 / 全介助<br>
+          入浴: 個浴 / リフト浴 / 重浴 / チェアイン<br>
+          主食: 米飯 / 全粥 / 五分粥 / 三分粥 / ソフト食 / ミキサー食 / きざみ食<br>
+          視覚障害: なし / あり（眼鏡） / あり　聴覚障害: なし / あり（補聴器） / あり　言語障害: なし / あり<br>
+          認知症: 年相応 / 軽度 / 中度 / 重度
         </div>
       </div>
     </div>
@@ -9707,33 +9712,142 @@ function openFacesheetFromImport(){
   S.currentRes=resId;
   openFacesheet();
 }
-function downloadFacesheetJSONTemplate(){
+async function downloadFacesheetExcelTemplate(){
+  let XLSX;
+  try{XLSX=await loadSheetJS();}catch(e){toast('Excel生成にはオンライン環境が必要です');return;}
   const res=getResidents();
   if(!res.length){toast('先に利用者を登録してください');return;}
-  const empty={
-    address:'',tel:'',
-    contacts:[{name:'',rel:'',tel:''},{name:'',rel:'',tel:''},{name:'',rel:'',tel:''}],
-    family_situation:'',
-    adl_shokuji:'自立',adl_haisetsu:'自立',adl_nyuyoku:'個浴',
-    adl_chakudatsu:'自立',adl_ido:'自立',
-    adl_shushoku:'米飯',adl_fukushoku:'普通',adl_toromi:'なし',adl_seigen:'一般食',
-    adl_gishi:'なし',food_allergy:'',
-    adl_haichuchu:[],adl_haiyakan:[],nyo:'あり',ben:'あり',haisetsu_note:'',
-    ido_tool:[],height:null,weight:null,
-    vision:'none',hearing:'none',language:'none',
-    infection:'',drug_allergy:'',blood_thinner:'',
-    family_hospital:'',family_specialty:'',family_doctor_address:'',
-    main_doctor:'',doctor_tel:'',disability:'',notes:'',
-    burden_level:'',burden_ratio:'',payment_method:''
-  };
-  const tmpl={};
-  res.forEach(r=>{tmpl[r.name]={...empty,contacts:empty.contacts.map(c=>({...c}))};});
-  const blob=new Blob([JSON.stringify(tmpl,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='facesheet_template.json';
-  a.click();
-  toast('テンプレートをダウンロードしました ✓');
+  const headers=['利用者名','住所','TEL',
+    '緊急①氏名','緊急①続柄','緊急①TEL',
+    '緊急②氏名','緊急②続柄','緊急②TEL',
+    '緊急③氏名','緊急③続柄','緊急③TEL',
+    '家族状況',
+    '食事ADL','排泄ADL','入浴','着脱ADL','移動ADL',
+    '主食','副食','トロミ','食事制限','義歯','食品アレルギー',
+    '日中排泄用品','夜間排泄用品','尿意','便意','排泄メモ',
+    '移動用具','身長(cm)','体重(kg)',
+    '視覚障害','聴覚障害','言語障害',
+    '感染症','薬物アレルギー','抗血栓薬','認知症',
+    'かかりつけ病院','かかりつけ科','主治医','医師TEL',
+    '身体障害','備考','負担割合(割)','負担限度額段階'];
+  const defRow=name=>[
+    name,'','',
+    '','','','','','','','','',
+    '',
+    '自立','自立','個浴','自立','自立',
+    '米飯','普通','なし','一般食','なし','',
+    '','','あり','あり','',
+    '','','',
+    'なし','なし','なし',
+    '','','','年相応',
+    '','','','',
+    '','','',''
+  ];
+  const data=[headers,...res.map(r=>defRow(r.name))];
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[
+    {wch:12},{wch:28},{wch:14},
+    {wch:12},{wch:8},{wch:14},{wch:12},{wch:8},{wch:14},{wch:12},{wch:8},{wch:14},
+    {wch:30},
+    {wch:8},{wch:8},{wch:10},{wch:8},{wch:8},
+    {wch:10},{wch:8},{wch:6},{wch:10},{wch:12},{wch:14},
+    {wch:14},{wch:14},{wch:5},{wch:5},{wch:20},
+    {wch:22},{wch:8},{wch:8},
+    {wch:12},{wch:12},{wch:8},
+    {wch:14},{wch:14},{wch:12},{wch:8},
+    {wch:14},{wch:12},{wch:10},{wch:14},
+    {wch:14},{wch:30},{wch:8},{wch:12}
+  ];
+  const help=[
+    ['フィールド','選択肢（そのまま入力）','備考'],
+    ['食事ADL / 排泄ADL / 着脱ADL / 移動ADL','自立 / 見守り / 声かけ / 一部介助 / 全介助',''],
+    ['入浴','個浴 / リフト浴 / 重浴 / チェアイン',''],
+    ['主食','米飯 / 全粥 / 五分粥 / 三分粥 / ソフト食 / ミキサー食 / きざみ食',''],
+    ['副食','普通 / きざみ / ソフト / ミキサー / ペースト',''],
+    ['トロミ','なし / 少量 / 中量 / 多量',''],
+    ['食事制限','一般食 / 減塩 / 糖尿 / 腎臓 / 嚥下',''],
+    ['義歯','なし / 部分義歯 / 総義歯（上） / 総義歯（下） / 総義歯（上下）',''],
+    ['日中排泄用品 / 夜間排泄用品','布パンツ / 尿取りパット / リハパン / おむつ / 留置カテーテル','複数はカンマ区切り例: リハパン,尿取りパット'],
+    ['尿意 / 便意','あり / なし',''],
+    ['移動用具','車椅子 / リクライニング / T字杖 / ロフストランド / 歩行器 / 歩行補助車 / センサーマット / その他','複数はカンマ区切り'],
+    ['視覚障害','なし / あり（眼鏡） / あり',''],
+    ['聴覚障害','なし / あり（補聴器） / あり',''],
+    ['言語障害','なし / あり',''],
+    ['認知症','年相応 / 軽度 / 中度 / 重度',''],
+    ['負担割合(割)','1 / 2 / 3（数字のみ）',''],
+    ['負担限度額段階','1〜4段階または空欄',''],
+  ];
+  XLSX.utils.book_append_sheet(wb,ws,'フェイスシート');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(help),'選択肢一覧');
+  XLSX.writeFile(wb,'フェイスシート_テンプレ.xlsx');
+  toast('フェイスシートExcelテンプレをダウンロードしました ✓');
+}
+function handleFacesheetExcel(inp){
+  if(!inp.files?.length)return;
+  const f=inp.files[0];
+  inp.value='';
+  const st=document.getElementById('fs-excel-status');
+  if(st)st.textContent='読み込み中…';
+  loadSheetJS().then(XLSX=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
+        if(data.length<2){toast('データが空です');return;}
+        const [headers,...rows]=data;
+        importFacesheetExcel(headers,rows);
+      }catch(err){toast('読み込みエラー: '+err.message);if(st)st.textContent='エラー';}
+    };
+    reader.readAsArrayBuffer(f);
+  }).catch(()=>toast('SheetJS読み込み失敗（オンライン環境が必要です）'));
+}
+function importFacesheetExcel(headers,rows){
+  const VIS={'なし':'none','あり（眼鏡）':'glasses','あり（眼鏡)':'glasses','あり':'yes','none':'none','glasses':'glasses','yes':'yes'};
+  const HEAR={'なし':'none','あり（補聴器）':'aid','あり（補聴器)':'aid','あり':'yes','none':'none','aid':'aid','yes':'yes'};
+  const LANG={'なし':'none','あり':'yes','none':'none','yes':'yes'};
+  const COG={'年相応':'normal','軽度':'mild','中度':'moderate','重度':'severe','normal':'normal','mild':'mild','moderate':'moderate','severe':'severe'};
+  const ci=h=>headers.indexOf(h);
+  const v=(r,h)=>{const i=ci(h);return i>=0?String(r[i]??'').trim():'';};
+  const toArr=s=>s?s.split(/[,，、]/).map(x=>x.trim()).filter(Boolean):[];
+  const jsonData={};
+  for(const r of rows){
+    const name=v(r,'利用者名');
+    if(!name)continue;
+    jsonData[name]={
+      address:v(r,'住所'),tel:v(r,'TEL'),
+      contacts:[
+        {name:v(r,'緊急①氏名'),rel:v(r,'緊急①続柄'),tel:v(r,'緊急①TEL')},
+        {name:v(r,'緊急②氏名'),rel:v(r,'緊急②続柄'),tel:v(r,'緊急②TEL')},
+        {name:v(r,'緊急③氏名'),rel:v(r,'緊急③続柄'),tel:v(r,'緊急③TEL')},
+      ],
+      family_situation:v(r,'家族状況'),
+      adl_shokuji:v(r,'食事ADL')||'自立',adl_haisetsu:v(r,'排泄ADL')||'自立',
+      adl_nyuyoku:v(r,'入浴')||'個浴',adl_chakudatsu:v(r,'着脱ADL')||'自立',adl_ido:v(r,'移動ADL')||'自立',
+      adl_shushoku:v(r,'主食')||'米飯',adl_fukushoku:v(r,'副食')||'普通',
+      adl_toromi:v(r,'トロミ')||'なし',adl_seigen:v(r,'食事制限')||'一般食',
+      adl_gishi:v(r,'義歯')||'なし',food_allergy:v(r,'食品アレルギー'),
+      adl_haichuchu:toArr(v(r,'日中排泄用品')),adl_haiyakan:toArr(v(r,'夜間排泄用品')),
+      nyo:v(r,'尿意')||'あり',ben:v(r,'便意')||'あり',haisetsu_note:v(r,'排泄メモ'),
+      ido_tool:toArr(v(r,'移動用具')),
+      height:v(r,'身長(cm)')?parseFloat(v(r,'身長(cm)'))||null:null,
+      weight:v(r,'体重(kg)')?parseFloat(v(r,'体重(kg)'))||null:null,
+      vision:VIS[v(r,'視覚障害')]||'none',hearing:HEAR[v(r,'聴覚障害')]||'none',language:LANG[v(r,'言語障害')]||'none',
+      infection:v(r,'感染症'),drug_allergy:v(r,'薬物アレルギー'),blood_thinner:v(r,'抗血栓薬'),
+      cog:COG[v(r,'認知症')]||'normal',
+      family_hospital:v(r,'かかりつけ病院'),family_specialty:v(r,'かかりつけ科'),
+      main_doctor:v(r,'主治医'),doctor_tel:v(r,'医師TEL'),
+      disability:v(r,'身体障害'),notes:v(r,'備考'),
+      burden_ratio:v(r,'負担割合(割)'),burden_level:v(r,'負担限度額段階'),
+    };
+  }
+  const count=Object.keys(jsonData).length;
+  if(!count){toast('有効なデータがありませんでした');return;}
+  importFacesheetJSON(jsonData);
+  const st=document.getElementById('fs-excel-status');
+  if(st)st.textContent=`✓ ${count}名分インポート完了`;
 }
 function genMsPass(){
   const el=document.getElementById('ms-pass');
