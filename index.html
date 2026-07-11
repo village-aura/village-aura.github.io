@@ -5416,7 +5416,9 @@ function changePassword(){
   const nw2=document.getElementById('pw-new2').value;
   const errEl=document.getElementById('pw-err');
   errEl.style.display='none';
-  const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].name===S.user);
+  const cs=getCustomStaff();
+  const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].name===S.user)
+    ||Object.keys(cs).find(k=>cs[k].name===S.user);
   if(!staffKey){errEl.textContent='ユーザー情報が見つかりません';errEl.style.display='block';return;}
   if(getStaffPass(staffKey)!==cur){errEl.textContent='現在のパスワードが正しくありません';errEl.style.display='block';return;}
   if(nw.length<6){errEl.textContent='新しいパスワードは6文字以上にしてください';errEl.style.display='block';return;}
@@ -5426,7 +5428,7 @@ function changePassword(){
   if(!settings[staffKey]) settings[staffKey]={};
   settings[staffKey].pass=nw;
   saveStaffSettings(settings);
-  // Firebase Auth のパスワードも同期更新（次回以降のセッション復元に必要）
+  if(cs[staffKey]){cs[staffKey].pass=nw;saveCustomStaff(cs);}
   firebase.auth().currentUser?.updatePassword(nw).catch(e=>console.warn('Firebase PW update:',e));
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
   addAuditLog('パスワード変更',S.user+' が自身のパスワードを変更');
@@ -5523,7 +5525,7 @@ function bulkAssignPasswords(){
   Object.keys(cs).forEach(key=>{
     const hasPw=ss[key]?.pass||cs[key]?.pass;
     if(!hasPw){
-      const pw=generatePassword();
+      const pw='aura'+(getStaffLoginId(key)||cs[key]?.loginId||'0000');
       if(!ss[key])ss[key]={};
       ss[key].pass=pw;
       cs[key].pass=pw;
@@ -9587,7 +9589,14 @@ function importFacesheetJSON(data){
     const res=residents.find(r=>r.name===resNo);
     if(!res)return;
     const prev=getFacesheet(res.id)||{};
-    lsFsSet(res.id,{...prev,...fs,updatedAt:new Date().toISOString()});
+    const merged={...prev};
+    Object.entries(fs).forEach(([k,v])=>{
+      if(v===null||v===undefined||v==='')return;
+      if(Array.isArray(v)&&v.length===0)return;
+      merged[k]=v;
+    });
+    merged.updatedAt=new Date().toISOString();
+    lsFsSet(res.id,merged);
     count++;
   });
   if(!count){
