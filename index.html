@@ -4548,7 +4548,6 @@ async function login(){
   const inputPass=document.getElementById('login-pass').value;
   const errEl=document.getElementById('login-err');
   errEl.style.display='none';
-  if(_checkLock()){_startLockTimer();return;}
   if(!inputId||!inputPass){
     errEl.textContent='職員IDとパスワードを入力してください';
     errEl.style.display='block';
@@ -4592,9 +4591,8 @@ async function login(){
       }catch(e){}finally{if(btnEl)btnEl.textContent='ログイン';}
     }
     if(!retryOk){
-      const rem=_recordFail();
-      if(_checkLock()){_startLockTimer();return;}
-      errEl.textContent='職員IDまたはパスワードが正しくありません'+(rem>0?'（あと'+rem+'回失敗するとロックされます）':'');
+      const fails=_recordFail();
+      errEl.textContent='職員IDまたはパスワードが正しくありません（'+fails+'回失敗）';
       errEl.style.display='block';
       document.getElementById('login-pass').value='';
       return;
@@ -4919,34 +4917,10 @@ function deleteTpl(id){
   });
 }
 // ═══════════ LOGIN LOCKOUT ═══════════
-const _LOCK_KEY='va_lock_until', _FAIL_KEY='va_login_fails', _MAX_FAILS=5, _LOCK_MIN=15;
-function _checkLock(){
-  const until=parseInt(localStorage.getItem(_LOCK_KEY)||'0');
-  if(until>Date.now()){const m=Math.ceil((until-Date.now())/60000);return m;}
-  return 0;
-}
-function _recordFail(){
-  if(parseInt(localStorage.getItem(_LOCK_KEY)||'0')>Date.now()) return;
-  const f=parseInt(localStorage.getItem(_FAIL_KEY)||'0')+1;
-  if(f>=_MAX_FAILS){localStorage.setItem(_LOCK_KEY,Date.now()+_LOCK_MIN*60000);localStorage.removeItem(_FAIL_KEY);}
-  else localStorage.setItem(_FAIL_KEY,f);
-  return _MAX_FAILS-f;
-}
-function _clearLock(){localStorage.removeItem(_LOCK_KEY);localStorage.removeItem(_FAIL_KEY);}
-function _startLockTimer(){
-  const msg=document.getElementById('login-lock-msg');
-  const btn=document.getElementById('btn-login');
-  const t=setInterval(()=>{
-    const m=_checkLock();
-    if(!m){clearInterval(t);msg.style.display='none';btn.disabled=false;btn.style.opacity='';return;}
-    msg.style.display='block';
-    msg.textContent='🔒 ログインを'+_MAX_FAILS+'回失敗しました。あと'+m+'分後に再試行できます。';
-    btn.disabled=true;btn.style.opacity='.5';
-  },10000);
-  // 即時実行
-  const m=_checkLock();
-  if(m){msg.style.display='block';msg.textContent='🔒 ログインを'+_MAX_FAILS+'回失敗しました。あと'+m+'分後に再試行できます。';btn.disabled=true;btn.style.opacity='.5';}
-}
+const _FAIL_KEY='va_login_fails';
+function _recordFail(){const f=parseInt(localStorage.getItem(_FAIL_KEY)||'0')+1;localStorage.setItem(_FAIL_KEY,f);return f;}
+function _clearLock(){localStorage.removeItem(_FAIL_KEY);}
+function _startLockTimer(){}
 // ═══════════ DISPLAY PREFS ═══════════
 function toggleDarkMode(on){
   document.body.classList.toggle('dark-mode',on);
