@@ -5416,18 +5416,16 @@ function changePassword(){
   const nw2=document.getElementById('pw-new2').value;
   const errEl=document.getElementById('pw-err');
   errEl.style.display='none';
-  const cs=getCustomStaff();
-  const staffKey=Object.keys(STAFF_INFO).find(k=>STAFF_INFO[k].name===S.user)
-    ||Object.keys(cs).find(k=>cs[k].name===S.user);
-  if(!staffKey){errEl.textContent='ユーザー情報が見つかりません';errEl.style.display='block';return;}
+  const staffKey=S.staffKey;
+  if(!staffKey){errEl.textContent='ログイン情報が見つかりません（再ログインしてください）';errEl.style.display='block';return;}
   if(getStaffPass(staffKey)!==cur){errEl.textContent='現在のパスワードが正しくありません';errEl.style.display='block';return;}
-  if(nw.length<6){errEl.textContent='新しいパスワードは6文字以上にしてください';errEl.style.display='block';return;}
-  if(!/[a-zA-Z]/.test(nw)||!/[0-9]/.test(nw)){errEl.textContent='英字と数字を両方含めてください';errEl.style.display='block';return;}
+  if(nw.length<4){errEl.textContent='新しいパスワードは4文字以上にしてください';errEl.style.display='block';return;}
   if(nw!==nw2){errEl.textContent='新しいパスワードが一致しません';errEl.style.display='block';return;}
   const settings=getStaffSettings();
   if(!settings[staffKey]) settings[staffKey]={};
   settings[staffKey].pass=nw;
   saveStaffSettings(settings);
+  const cs=getCustomStaff();
   if(cs[staffKey]){cs[staffKey].pass=nw;saveCustomStaff(cs);}
   firebase.auth().currentUser?.updatePassword(nw).catch(e=>console.warn('Firebase PW update:',e));
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
