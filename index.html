@@ -4522,9 +4522,10 @@ async function login(){
   // Firebase Auth（職員ごと）でサインイン → Firestoreアクセスを確立
   try{
     await _ensureFirebaseAuth(staffKey,inputPass);
-    if(firebase.auth().currentUser){
-      await firebase.auth().currentUser.getIdToken(true);
-    }
+    try{
+      if(firebase.auth().currentUser)
+        await firebase.auth().currentUser.getIdToken(true);
+    }catch(e2){console.warn('getIdToken failed (non-fatal):',e2);}
     fbReady=true;
     flushFsQueue(); // ログイン前にキューされた書き込みを一括送信
     // Firestoreから端末設定・Wi-Fi設定を先に同期
@@ -5983,8 +5984,11 @@ function toggleAuditLog(){
 // ── クラウド強制アップロード ──
 async function pushAllToFirestore(btn){
   if(!fbReady||!db){
-    if(btn)btn.textContent='⚠️ Firebase未接続';
-    setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},3000);
+    const u=firebase.auth().currentUser;
+    const msg='⚠️ Firebase未接続 (fbReady:'+fbReady+' db:'+(!!db)+' user:'+(u?u.email||u.uid:'none')+')';
+    console.warn(msg);
+    if(btn){btn.textContent=msg;setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},6000);}
+    toast(msg);
     return;
   }
   if(btn){btn.disabled=true;btn.textContent='⏳ アップロード中...';}
