@@ -5535,8 +5535,8 @@ function renderAdminStaffList(){
     .map(([r,v])=>'<option value="'+r+'">'+v.label+'</option>')
     .join('');
   const allEntries=[
-    ...Object.entries(STAFF_INFO).filter(([,s])=>!s.hidden),
-    ...Object.entries(getCustomStaff())
+    ...Object.entries(STAFF_INFO).filter(([k,s])=>!s.hidden||k===S.staffKey),
+    ...Object.entries(getCustomStaff()).filter(([k])=>k!==S.staffKey||!STAFF_INFO[S.staffKey])
   ].sort((a,b)=>(parseInt(getStaffLoginId(a[0]))||9999)-(parseInt(getStaffLoginId(b[0]))||9999));
   const isCustomKey=key=>!!getCustomStaff()[key];
   // 一括パスワード発行ボタン（super_adminのみ）
