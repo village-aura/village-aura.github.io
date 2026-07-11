@@ -12561,8 +12561,12 @@ document.addEventListener('touchend',function(e){
 document.addEventListener('click',function(e){
   _dbgC++;
   let info='';
-  try{info=e.target.tagName+(e.target.id?'#'+e.target.id:'');}catch(e2){}
+  try{
+    const t=e.target;
+    info=t.tagName+(t.id?'#'+t.id:'')+(t.className&&typeof t.className==='string'?'.'+t.className.trim().split(/\s+/)[0]:'');
+  }catch(e2){}
   _dbgBanner(info);
+  toast('C:'+_dbgC+' '+info);
 },true);
 
 // ── スワイプナビゲーション ──
