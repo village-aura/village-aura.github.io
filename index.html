@@ -5978,12 +5978,22 @@ function toggleAuditLog(){
 // ── クラウド強制アップロード ──
 async function pushAllToFirestore(btn){
   if(!fbReady||!db){
-    const u=firebase.auth().currentUser;
-    const msg='⚠️ Firebase未接続 (fbReady:'+fbReady+' db:'+(!!db)+' user:'+(u?u.email||u.uid:'none')+')';
-    console.warn(msg);
-    if(btn){btn.textContent=msg;setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},6000);}
-    toast(msg);
-    return;
+    if(btn)btn.textContent='⏳ Firebase接続試行中...';
+    // 今すぐ匿名サインインを試みる
+    try{
+      await firebase.auth().signInAnonymously();
+      fbReady=true;
+    }catch(e){
+      const msg='⚠️ 認証エラー: '+e.code;
+      console.error('signInAnonymously failed:',e);
+      if(btn){btn.textContent=msg;setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},8000);}
+      toast(msg);
+      return;
+    }
+    if(!fbReady){
+      if(btn){btn.textContent='⚠️ Firebase未接続';setTimeout(()=>{if(btn)btn.textContent='📤 このPCのデータをクラウドに強制アップロード';},4000);}
+      return;
+    }
   }
   if(btn){btn.disabled=true;btn.textContent='⏳ アップロード中...';}
   const keys=[...FB_SYNC_KEYS,..._activeRecordKeys()];
