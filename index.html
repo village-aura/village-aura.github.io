@@ -12540,6 +12540,13 @@ function resetLockTimer(){
 document.addEventListener('touchstart',resetLockTimer);
 document.addEventListener('click',resetLockTimer);
 
+// ── デバッグ: タップ先要素の特定 ──
+document.addEventListener('click',function(e){
+  const t=e.target;
+  const info=t.tagName+(t.id?'#'+t.id:'')+(t.className&&typeof t.className==='string'?'.'+t.className.trim().split(/\s+/)[0]:'');
+  toast('TAP→'+info+' / onclick='+(t.getAttribute('onclick')||'none').substr(0,30));
+},true);
+
 // ── スワイプナビゲーション ──
 let _swX=0,_swY=0,_swActive=false;
 document.addEventListener('touchstart',e=>{
