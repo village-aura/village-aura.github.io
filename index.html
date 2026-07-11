@@ -988,6 +988,7 @@ a{color:var(--p);text-decoration:none}
       <button class="tab on" data-tab="tab-res-import" onclick="switchTab(this)">👤 利用者取込</button>
       <button class="tab" id="tab-staff-import-btn" data-tab="tab-staff-import" onclick="switchTab(this)">🏥 職員取込</button>
       <button class="tab" data-tab="tab-manual" onclick="switchTab(this)">✏️ 手入力</button>
+      <button class="tab" data-tab="tab-template-dl" onclick="switchTab(this)">📥 テンプレDL</button>
     </div>
 
     <!-- ─── 利用者取込 ─── -->
@@ -1053,10 +1054,50 @@ a{color:var(--p);text-decoration:none}
         </div>
       </div>
     </div>
+    <div id="tab-template-dl" class="tab-panel">
+      <div style="padding:4px 0 14px;font-size:13px;color:var(--sub)">各種インポート用のテンプレートをダウンロードできます</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="padding:16px;background:var(--card);border-radius:14px;border:1.5px solid var(--bdr);display:flex;align-items:center;gap:14px">
+          <div style="font-size:32px;flex-shrink:0">👤</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:14px;margin-bottom:3px">利用者インポート Excel</div>
+            <div style="font-size:11px;color:var(--sub);line-height:1.6">氏名・ふりがな・生年月日・要介護度・居室・サービス種別・事業所を一括登録</div>
+          </div>
+          <button onclick="downloadResExcelTemplate()" style="flex-shrink:0;padding:10px 16px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">⬇ DL</button>
+        </div>
+        <div style="padding:16px;background:var(--card);border-radius:14px;border:1.5px solid var(--bdr);display:flex;align-items:center;gap:14px">
+          <div style="font-size:32px;flex-shrink:0">🏥</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:14px;margin-bottom:3px">職員インポート Excel</div>
+            <div style="font-size:11px;color:var(--sub);line-height:1.6">氏名・ふりがな・従業員番号・職種・事業所を一括登録。パスワードは自動割当</div>
+          </div>
+          <button onclick="downloadStaffExcelTemplate()" style="flex-shrink:0;padding:10px 16px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">⬇ DL</button>
+        </div>
+        <div style="padding:16px;background:var(--card);border-radius:14px;border:1.5px solid var(--bdr);display:flex;align-items:center;gap:14px">
+          <div style="font-size:32px;flex-shrink:0">📋</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:14px;margin-bottom:3px">フェイスシート JSON テンプレ</div>
+            <div style="font-size:11px;color:var(--sub);line-height:1.6">登録済み利用者の名前をキーにした空JSONを生成。値を記入後「利用者取込」タブからインポート</div>
+          </div>
+          <button onclick="downloadFacesheetJSONTemplate()" style="flex-shrink:0;padding:10px 16px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">⬇ DL</button>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px 14px;background:#f0f4ff;border-radius:10px;border:1px solid #c7d7ff">
+        <div style="font-size:12px;font-weight:700;color:#1a3a8a;margin-bottom:6px">📌 フィールド値の選択肢</div>
+        <div style="font-size:11px;color:#2a4aaa;line-height:1.9">
+          要介護度: 自立 / 要支援1〜2 / 要介護1〜5<br>
+          サービス種別: resident（居住） / commute（デイ） / stay（小多機） / visit（訪問） / nursing（訪問看護）<br>
+          事業所: 法人 / サ高住 / デイ / 小多機 / 訪問介護 / 居宅<br>
+          職種: 全権管理者 / 全権管理者 兼 医師 / 医師 / 介護職 / 看護職 / 事務 / サ高住管理者 / デイ管理者 / 小多機管理者
+        </div>
+      </div>
+    </div>
+
     <div id="tab-manual" class="tab-panel">
       <div style="margin-bottom:12px">
         <button class="tab on" data-mt="mt-res" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;margin-right:6px">利用者</button>
-        <button class="tab" id="tab-mt-staff-btn" data-mt="mt-staff" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">職員</button>
+        <button class="tab" id="tab-mt-staff-btn" data-mt="mt-staff" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;margin-right:6px">職員</button>
+        <button class="tab" data-mt="mt-facesheet" onclick="switchManualTab(this)" style="border:1.5px solid var(--bdr);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700">フェイスシート</button>
       </div>
       <div id="mt-res">
         <div class="field-row">
@@ -1137,6 +1178,16 @@ a{color:var(--p);text-decoration:none}
           <div style="font-size:11px;color:var(--sub);margin-top:4px">初回ログイン後に本人が変更してください</div>
         </div>
         <button class="btn-primary" onclick="addManualStaff()">職員を登録</button>
+      </div>
+      <div id="mt-facesheet" style="display:none">
+        <div style="font-size:13px;color:var(--sub);margin-bottom:14px">利用者を選んでフェイスシートを直接入力・編集します</div>
+        <div class="field">
+          <label>利用者</label>
+          <select id="import-fs-res-select">
+            <option value="">─ 利用者を選択 ─</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="openFacesheetFromImport()" style="margin-top:4px">📋 フェイスシートを開く</button>
       </div>
     </div>
   </div>
@@ -9639,9 +9690,50 @@ function switchTab(btn){
 function switchManualTab(btn){
   document.querySelectorAll('[data-mt]').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  const panels=['mt-res','mt-staff'];
+  const panels=['mt-res','mt-staff','mt-facesheet'];
   panels.forEach(id=>{document.getElementById(id).style.display=id===btn.dataset.mt?'block':'none';});
   if(btn.dataset.mt==='mt-staff'){renderStaffRoleDropdown();genMsPass();}
+  if(btn.dataset.mt==='mt-facesheet'){renderImportFacesheetPicker();}
+}
+function renderImportFacesheetPicker(){
+  const sel=document.getElementById('import-fs-res-select');if(!sel)return;
+  const res=getResidents();
+  sel.innerHTML='<option value="">─ 利用者を選択 ─</option>'+
+    res.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+}
+function openFacesheetFromImport(){
+  const resId=document.getElementById('import-fs-res-select')?.value;
+  if(!resId){toast('利用者を選択してください');return;}
+  S.currentRes=resId;
+  openFacesheet();
+}
+function downloadFacesheetJSONTemplate(){
+  const res=getResidents();
+  if(!res.length){toast('先に利用者を登録してください');return;}
+  const empty={
+    address:'',tel:'',
+    contacts:[{name:'',rel:'',tel:''},{name:'',rel:'',tel:''},{name:'',rel:'',tel:''}],
+    family_situation:'',
+    adl_shokuji:'自立',adl_haisetsu:'自立',adl_nyuyoku:'個浴',
+    adl_chakudatsu:'自立',adl_ido:'自立',
+    adl_shushoku:'米飯',adl_fukushoku:'普通',adl_toromi:'なし',adl_seigen:'一般食',
+    adl_gishi:'なし',food_allergy:'',
+    adl_haichuchu:[],adl_haiyakan:[],nyo:'あり',ben:'あり',haisetsu_note:'',
+    ido_tool:[],height:null,weight:null,
+    vision:'none',hearing:'none',language:'none',
+    infection:'',drug_allergy:'',blood_thinner:'',
+    family_hospital:'',family_specialty:'',family_doctor_address:'',
+    main_doctor:'',doctor_tel:'',disability:'',notes:'',
+    burden_level:'',burden_ratio:'',payment_method:''
+  };
+  const tmpl={};
+  res.forEach(r=>{tmpl[r.name]={...empty,contacts:empty.contacts.map(c=>({...c}))};});
+  const blob=new Blob([JSON.stringify(tmpl,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='facesheet_template.json';
+  a.click();
+  toast('テンプレートをダウンロードしました ✓');
 }
 function genMsPass(){
   const el=document.getElementById('ms-pass');
