@@ -1006,21 +1006,26 @@ a{color:var(--p);text-decoration:none}
         <div class="preview-wrap"><table class="preview-table" id="preview-table"></table></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 Excelテンプレート</div>
           <button onclick="downloadResExcelTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
         </div>
+        <div style="font-size:11px;color:#e65100;background:#fff3e0;border-radius:6px;padding:4px 8px;margin-bottom:6px">💻 テンプレートのダウンロード・入力はPCで行ってください</div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">氏名, ふりがな, 性別, 生年月日, 要介護度, 居室, サービス種別, 事業所
 山田 花子, ヤマダ ハナコ, 女性, 1935/04/19, 要介護2, 101, 居住, サ高住</code>
       </div>
+      <!-- フェイスシートExcelインポート -->
       <div style="margin-top:10px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:6px">📋 フェイスシートJSON一括インポート</div>
-        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">convert_facesheet.py が出力した facesheet_import.json を選択</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:4px">📋 フェイスシート一括インポート</div>
+        <div style="font-size:11px;color:#e65100;background:#fff3e0;border-radius:6px;padding:5px 8px;margin-bottom:8px">💻 テンプレートのダウンロード・入力はPCで行ってください</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">テンプレートExcelを入力して取り込むか、convert_facesheet.py出力のJSONで取り込めます</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+          <input type="file" id="fs-xl-inp" accept=".xlsx,.xls" style="display:none" onchange="handleFacesheetExcel(this)">
+          <button onclick="document.getElementById('fs-xl-inp').click()" style="padding:9px 16px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📊 Excelで取込</button>
           <input type="file" id="fs-json-inp" accept=".json" style="display:none" onchange="handleFacesheetJSON(this)">
-          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONを選択</button>
-          <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
+          <button onclick="document.getElementById('fs-json-inp').click()" style="padding:9px 16px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 JSONで取込</button>
         </div>
+        <span id="fs-json-status" style="font-size:12px;color:var(--sub)"></span>
       </div>
     </div>
 
@@ -1040,10 +1045,11 @@ a{color:var(--p);text-decoration:none}
         <div class="preview-wrap"><table class="preview-table" id="staff-preview-table"></table></div>
       </div>
       <div style="margin-top:14px;padding:12px 14px;background:var(--card);border-radius:12px;border:1.5px solid var(--bdr)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 CSVフォーマット</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-weight:700;font-size:12px;color:var(--sub)">📌 Excelテンプレート</div>
           <button onclick="downloadStaffExcelTemplate()" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none">⬇ テンプレをDL</button>
         </div>
+        <div style="font-size:11px;color:#e65100;background:#fff3e0;border-radius:6px;padding:4px 8px;margin-bottom:6px">💻 テンプレートのダウンロード・入力はPCで行ってください</div>
         <code style="background:#f3f4f6;display:block;padding:8px;border-radius:6px;font-size:10px;overflow-x:auto;white-space:pre">氏名, ふりがな, 職種, 事業所
 田中 花子, タナカ ハナコ, 介護職, サ高住</code>
         <div style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.8">
@@ -9550,6 +9556,73 @@ function downloadCsv(filename, content){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download=filename;a.click();
   URL.revokeObjectURL(a.href);
+}
+function handleFacesheetExcel(inp){
+  const f=inp.files[0];if(!f)return;
+  const statusEl=document.getElementById('fs-json-status');
+  if(statusEl)statusEl.textContent='読み込み中…';
+  toast('フェイスシートExcelを読み込み中...');
+  loadSheetJS().then(XLSX=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+        // ヘッダー行（行2、0-indexed row1）
+        const headers=(rows[1]||[]).map(h=>String(h||'').trim());
+        const dataRows=rows.slice(3).filter(r=>r.some(c=>String(c||'').trim()!==''));
+        const col=name=>headers.indexOf(name);
+        const v=(row,name)=>String(row[col(name)]||'').trim();
+        const data={};
+        dataRows.forEach(row=>{
+          const name=v(row,'氏名★');
+          if(!name)return;
+          const contacts=[];
+          [1,2,3,4].forEach(n=>{
+            const cn=v(row,`緊急${n}_氏名`);
+            if(cn)contacts.push({name:cn,rel:v(row,`緊急${n}_続柄`),tel:v(row,`緊急${n}_電話`),address:''});
+          });
+          const diseases=v(row,'疾患（カンマ区切り）').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+          const pensions=v(row,'年金種別（カンマ区切り）').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+          data[name]={
+            address:        v(row,'住所'),
+            tel:            v(row,'電話番号'),
+            contacts,
+            care_manager:   v(row,'ケアマネ'),
+            family_situation:v(row,'家族状況'),
+            height:         v(row,'身長(cm)'),
+            weight:         v(row,'体重(kg)'),
+            vision:         v(row,'視力'),
+            hearing:        v(row,'聴力'),
+            language:       v(row,'言語'),
+            paralysis:      v(row,'麻痺'),
+            contracture:    v(row,'拘縮'),
+            infection:      v(row,'感染症'),
+            drug_allergy:   v(row,'薬剤アレルギー'),
+            blood_thinner:  v(row,'血液凝固薬'),
+            main_doctor:    v(row,'主治医'),
+            doctor_tel:     v(row,'主治医TEL'),
+            diseases,
+            nyo:            v(row,'排尿')||'あり',
+            ben:            v(row,'排便')||'あり',
+            adl_gishi:      v(row,'義歯等')||'なし',
+            adl_haichuchu:  v(row,'排泄_昼'),
+            adl_haiyakan:   v(row,'排泄_夜'),
+            pension_types:  pensions,
+            notes:          v(row,'備考'),
+            _service_usage_text:'',
+          };
+        });
+        importFacesheetJSON(data);
+      }catch(err){
+        if(statusEl)statusEl.textContent='⚠ 読み込みエラー: '+err.message;
+        toast('Excelの読み込みに失敗しました');
+      }
+    };
+    r.readAsArrayBuffer(f);
+  }).catch(()=>toast('SheetJS読み込みに失敗しました（オンライン環境が必要です）'));
+  inp.value='';
 }
 function handleFacesheetJSON(inp){
   const f=inp.files[0];if(!f)return;
