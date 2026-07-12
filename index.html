@@ -5516,9 +5516,14 @@ function renderAdminStaffList(){
     .filter(([r])=>isSuperAdminRole()||!STAFF_ADMIN_ROLES.includes(r))
     .map(([r,v])=>'<option value="'+r+'">'+v.label+'</option>')
     .join('');
+  const staffInfoNames=new Set(Object.values(STAFF_INFO).map(s=>(s.name||'').replace(/\s/g,'')));
   const allEntries=[
     ...Object.entries(STAFF_INFO).filter(([k,s])=>!s.hidden||k===S.staffKey),
-    ...Object.entries(getCustomStaff()).filter(([k])=>k!==S.staffKey||!STAFF_INFO[S.staffKey])
+    ...Object.entries(getCustomStaff()).filter(([k,s])=>{
+      // STAFF_INFOに同名がいればcustom_staffからは除外（重複防止）
+      if(staffInfoNames.has((s.name||'').replace(/\s/g,'')))return false;
+      return k!==S.staffKey||!STAFF_INFO[S.staffKey];
+    })
   ].sort((a,b)=>(parseInt(getStaffLoginId(a[0]))||9999)-(parseInt(getStaffLoginId(b[0]))||9999));
   const isCustomKey=key=>!!getCustomStaff()[key];
   // 一括パスワード発行ボタン（super_adminのみ）
