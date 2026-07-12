@@ -4444,6 +4444,7 @@ let S = {
   schedYear: _now.getFullYear(), schedMonth: _now.getMonth(), schedDay: _now.getDate(),
   currentService: null,
   editRecId: null,
+  showHidden: false, vitalFilter: 'all',
 };
 let navStack=[], navForward=[], _navSkipPush=false, _navDir=null;
 let _vitalFocusedField=null;
@@ -4487,8 +4488,9 @@ function getHandovers(){return ls('handovers')||INIT_HANDOVERS}
 function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
 function showResCardMenu(id,btnEl){
   document.querySelectorAll('.res-card-menu').forEach(m=>m.remove());
+  const _r=getAllResidents().find(x=>x.id===id);
   const items=[];
-  if(isManagerOrAbove())items.push({label:'👁️ 非表示にする',fn:`hideResident('${id}')`});
+  if(isManagerOrAbove())items.push(_r?.hidden?{label:'👁️ 再表示する',fn:`unhideResident('${id}')`}:{label:'👁️ 非表示にする',fn:`hideResident('${id}')`});
   if(isSuperAdminRole())items.push({label:'🗑️ 完全削除',fn:`deleteResidentPermanently('${id}')`});
   if(!items.length)return;
   const menu=document.createElement('div');
@@ -4510,6 +4512,7 @@ function showHiddenResMenu(id,btnEl){
   menu.className='res-card-menu';
   menu.style.cssText='position:fixed;z-index:600;background:var(--card);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);overflow:hidden;min-width:148px';
   menu.innerHTML=items.map((it,i)=>`<button onclick="document.querySelectorAll('.res-card-menu').forEach(m=>m.remove());${it.fn}" style="display:block;width:100%;padding:11px 16px;text-align:left;font-size:13px;background:none;border:none;${i<items.length-1?'border-bottom:1px solid var(--bdr);':''}cursor:pointer;touch-action:manipulation;color:var(--txt)">${it.label}</button>`).join('');
+  if(!btnEl)return;
   const rect=btnEl.getBoundingClientRect();
   menu.style.top=(rect.bottom+4)+'px';
   menu.style.right=(window.innerWidth-rect.right)+'px';
@@ -7453,13 +7456,13 @@ function renderResList(){
     ?`<div class="empty"><div class="e-ico">👥</div><p>利用者が登録されていません</p></div>`
     :'<div class="empty"><div class="e-ico">🔍</div><p>該当する利用者がいません</p></div>');
 
-  // 管理者以上: 非表示利用者セクション（トグルON時はメインリストに統合済みのためスキップ）
-  if(canHide&&!S.showHidden){
+  // 管理者以上: 非表示利用者セクション
+  if(canHide){
     const hiddenList=getAllResidents().filter(r=>r.hidden);
     const el=document.getElementById('res-list');
     if(hiddenList.length){
       const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
-      const hdHtml=`<div style="margin-top:24px;padding:0 0 4px">
+      const hdHtml=`<div style="margin-top:24px;padding:0 0 4px;grid-column:1/-1">
         <div style="font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;padding:0 2px 10px">👁️‍🗨️ 非表示の利用者（${hiddenList.length}名）</div>
         ${hiddenList.map(r=>`<div class="res-card" style="opacity:.65;border:1.5px solid var(--bdr);position:relative;pointer-events:auto" onclick="">
           <button onclick="event.stopPropagation();showHiddenResMenu('${r.id}',this)" style="position:absolute;top:6px;right:6px;font-size:15px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;cursor:pointer;touch-action:manipulation;padding:2px 7px;line-height:1.4;color:var(--sub);font-weight:700" title="メニュー">⋯</button>
