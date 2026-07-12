@@ -9506,11 +9506,41 @@ function handleStaffFile(inp){
   }
 }
 function showStaffPreview(headers,rows){
-  S.staffCsvData={headers,rows};
-  document.getElementById('staff-csv-count').innerHTML=`<b>${rows.length} 名の職員データが見つかりました</b>`;
+  // 重複チェック: 従業員番号または氏名が既存と一致するものをフラグ
+  const normed=headers.map(h=>STAFF_COL[h]||h);
+  const nameIdx=normed.indexOf('name');
+  const empIdx=headers.findIndex(h=>h.trim()==='従業員番号');
+  const allStaff={...STAFF_INFO,...getCustomStaff()};
+  const ss=getStaffSettings();
+  const existIds=new Set(Object.keys(allStaff).map(k=>(ss[k]?.loginId||allStaff[k].loginId||'').toLowerCase()));
+  const existNames=new Set(Object.keys(allStaff).map(k=>(allStaff[k].name||'').replace(/\s/g,'')));
+  const dupFlags=rows.map(r=>{
+    const name=(nameIdx>=0?String(r[nameIdx]||''):'').trim().replace(/\s/g,'');
+    const empRaw=empIdx>=0?String(r[empIdx]??'').trim():'';
+    const lid=empRaw&&parseInt(empRaw)>0?String(parseInt(empRaw)).padStart(4,'0'):'';
+    return (lid&&existIds.has(lid))||(name&&existNames.has(name));
+  });
+  const dupCount=dupFlags.filter(Boolean).length;
+  const newCount=rows.length-dupCount;
+  S.staffCsvData={headers,rows,dupFlags};
+  const countEl=document.getElementById('staff-csv-count');
+  if(dupCount>0){
+    countEl.innerHTML=`<b>${rows.length}名中 <span style="color:#2e7d32">${newCount}名が新規</span> / <span style="color:#f57c00">${dupCount}名は既登録（スキップ）</span></b>`;
+  }else{
+    countEl.innerHTML=`<b>${rows.length}名の職員データが見つかりました</b>`;
+  }
+  const btn=document.querySelector('#staff-csv-preview .btn-primary');
+  if(btn)btn.textContent=newCount>0?`新規${newCount}名をインポート`:'インポート対象なし';
   const th=headers.map(h=>`<th>${h}</th>`).join('');
-  const tbody=rows.slice(0,5).map(r=>`<tr>${r.map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join('');
-  document.getElementById('staff-preview-table').innerHTML=`<thead><tr>${th}</tr></thead><tbody>${tbody}</tbody>`;
+  const PREVIEW_MAX=8;
+  const tbody=rows.slice(0,PREVIEW_MAX).map((r,i)=>{
+    const isDup=dupFlags[i];
+    const bg=isDup?'background:rgba(245,124,0,.08)':'';
+    const badge=isDup?'<td style="color:#f57c00;font-size:11px;font-weight:700">既登録</td>':'<td style="color:#2e7d32;font-size:11px;font-weight:700">新規</td>';
+    return `<tr style="${bg}">${r.map(c=>`<td>${c??''}</td>`).join('')}${badge}</tr>`;
+  }).join('');
+  const moreRow=rows.length>PREVIEW_MAX?`<tr><td colspan="${headers.length+1}" style="text-align:center;color:var(--sub);font-size:11px">… 他 ${rows.length-PREVIEW_MAX} 名</td></tr>`:'';
+  document.getElementById('staff-preview-table').innerHTML=`<thead><tr>${th}<th>状態</th></tr></thead><tbody>${tbody}${moreRow}</tbody>`;
   document.getElementById('staff-csv-preview').style.display='block';
 }
 function dragOverStaff(e){e.preventDefault();document.getElementById('upload-area-staff').classList.add('drag');}
@@ -9522,8 +9552,11 @@ function dropFileStaff(e){
 function importStaffCSVFromPreview(){
   if(!isSuperAdminRole()&&!isFacilityAdmin()&&!isAdmin()){toast('職員登録は管理者以上のみ実行できます');return;}
   if(!S.staffCsvData)return;
-  const {headers,rows}=S.staffCsvData;
-  importStaffCSV(headers,rows);
+  const {headers,rows,dupFlags}=S.staffCsvData;
+  // 重複行をスキップして新規のみインポート
+  const newRows=rows.filter((_,i)=>!dupFlags||!dupFlags[i]);
+  if(!newRows.length){toast('インポート対象の新規職員がいません');return;}
+  importStaffCSV(headers,newRows);
   document.getElementById('staff-csv-preview').style.display='none';
   S.staffCsvData=null;
 }
