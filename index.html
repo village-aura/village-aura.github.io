@@ -444,11 +444,11 @@ a{color:var(--p);text-decoration:none}
 }
 /* ── PORTRAIT SCROLL FIX（iOS タブレット縦向き）── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
-  body{overflow:hidden;height:100vh}
-  #main-content-wrap{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  body{overflow:hidden;height:100vh;height:-webkit-fill-available}
+  #main-content-wrap{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;overflow:hidden}
   .hd{flex-shrink:0}
   .bnav{position:relative!important;flex-shrink:0}
-  .scr.on{flex:1;height:0;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px!important}
+  #main-content-wrap .scr.on{flex:1;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px!important}
   .search-bar{top:0!important}
   .sch-bar{top:0!important}
   .detail-mobile-tabs{top:0!important}
@@ -688,7 +688,7 @@ a{color:var(--p);text-decoration:none}
   <!-- HEADER -->
   <header class="hd" id="hd">
     <button id="hd-menu" onclick="toggleMobileMenu()">☰</button>
-    <button id="hd-sb-toggle" onclick="toggleSidebar()" style="display:none;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;color:#fff;font-weight:700;padding:5px 10px;flex-shrink:0;align-items:center;gap:5px;flex-direction:column;line-height:1.2"><span id="hd-sb-ico" style="font-size:15px">▶</span><span style="font-size:9px;font-weight:600;opacity:.85;letter-spacing:.03em">メニュー</span></button>
+    <button id="hd-sb-toggle" onclick="toggleSidebar()" style="display:none;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:7px;color:#fff;font-size:20px;padding:5px 12px;flex-shrink:0;line-height:1"><span id="hd-sb-ico">☰</span></button>
     <button class="hd-back" id="hd-back" onclick="goBack()" style="display:none">◀ 戻る</button>
     <div style="flex:1">
       <div class="hd-title" id="hd-title">ホーム</div>
@@ -6474,7 +6474,7 @@ function _syncSbBtns(closed){
   const t=document.getElementById('sb-toggle');
   const ico=document.getElementById('hd-sb-ico');
   if(t)t.textContent=closed?'▶':'◀';
-  if(ico)ico.textContent=closed?'▶':'◀';
+  if(ico)ico.textContent=closed?'☰':'✕';
 }
 let _sbScrollY=0;
 function toggleSidebar(){
@@ -7457,6 +7457,7 @@ function renderDetail(){
     <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
       <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;border:none;cursor:pointer">👤 フェイスシート</button>
+      ${isManagerOrAbove()?'<button onclick="openEditResident()" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,.4);cursor:pointer;touch-action:manipulation">✏️ 利用者情報・編集</button>':''}
       <button onclick="toggleDetailMenu(event)" id="detail-more-btn" style="width:40px;height:36px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;font-size:20px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;letter-spacing:-.05em">⋯</button>
     </div>
     <div style="display:flex;gap:5px">
@@ -7465,7 +7466,6 @@ function renderDetail(){
       <button onclick="openFamilyReport()" style="flex:1;background:rgba(255,255,255,.15);color:#fff;border-radius:9px;padding:7px 4px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.3);cursor:pointer;touch-action:manipulation">📮 家族連絡帳</button>
     </div>
     <div id="detail-more-menu" style="display:none;position:absolute;right:12px;top:calc(100% - 8px);background:#fff;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:100;min-width:180px;overflow:hidden">
-      ${isManagerOrAbove()?`<button onclick="openEditResident();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">✏️ 利用者情報を編集</button>`:''}
       <button onclick="openVitalRanges();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">⚙️ バイタル基準値${r.vitalRanges?' ★':''}</button>
       <button onclick="toggleRepoNeeded('${r.id}');closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:${r.repoNeeded?'var(--p)':'var(--txt)'};background:${r.repoNeeded?'var(--ps)':'none'};border:none;border-bottom:1px solid var(--bdr);cursor:pointer">🔄 体交${r.repoNeeded?' ON ●':' OFF'}</button>
       <button onclick="openResidentQR();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;${S.userRole==='doctor'?'border-bottom:1px solid var(--bdr);':''}cursor:pointer">📲 QR コード</button>
