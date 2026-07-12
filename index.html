@@ -5517,18 +5517,27 @@ function renderAdminStaffList(){
     .map(([r,v])=>'<option value="'+r+'">'+v.label+'</option>')
     .join('');
   const staffInfoNames=new Set(Object.values(STAFF_INFO).map(s=>(s.name||'').replace(/\s/g,'')));
+  const cs=getCustomStaff();
+  // STAFF_INFOと重複するcustom_staffエントリ（表示用・削除可能）
+  const dupEntries=Object.entries(cs).filter(([k,s])=>staffInfoNames.has((s.name||'').replace(/\s/g,'')));
   const allEntries=[
     ...Object.entries(STAFF_INFO).filter(([k,s])=>!s.hidden||k===S.staffKey),
-    ...Object.entries(getCustomStaff()).filter(([k,s])=>{
-      // STAFF_INFOに同名がいればcustom_staffからは除外（重複防止）
+    ...Object.entries(cs).filter(([k,s])=>{
       if(staffInfoNames.has((s.name||'').replace(/\s/g,'')))return false;
       return k!==S.staffKey||!STAFF_INFO[S.staffKey];
     })
   ].sort((a,b)=>(parseInt(getStaffLoginId(a[0]))||9999)-(parseInt(getStaffLoginId(b[0]))||9999));
   const isCustomKey=key=>!!getCustomStaff()[key];
   // 一括パスワード発行ボタン（super_adminのみ）
+  const dupWarning=isSuperAdmin&&dupEntries.length?`<div style="margin-bottom:8px;padding:10px 12px;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:10px;font-size:12px">`+
+    `<div style="font-weight:700;color:#e65100;margin-bottom:6px">⚠️ STAFF_INFOと重複する職員データ（${dupEntries.length}件）</div>`+
+    dupEntries.map(([k,s])=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0">`+
+      `<span style="color:#5d4037">${s.name} (ID:${getStaffLoginId(k)||'-'})</span>`+
+      `<button onclick="deleteCustomStaffDup('${k}')" style="padding:3px 10px;background:#d32f2f;color:#fff;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none">削除</button>`+
+    `</div>`).join('')+
+    `</div>`:'';
   const bulkPwBtn=isSuperAdmin?'<button onclick="bulkAssignPasswords()" style="width:100%;padding:10px;background:#f3e8ff;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:6px">🔑 パスワード未設定の職員に一括発行</button><button onclick="resetAllPasswords()" style="width:100%;padding:10px;background:#fff7ed;color:#c2410c;border:1.5px solid #fdba74;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:10px">🔄 全職員のパスワードを aura+ID にリセット</button>':'';
-  list.innerHTML=bulkPwBtn+'<div style="display:flex;flex-direction:column;gap:4px">'
+  list.innerHTML=bulkPwBtn+dupWarning+'<div style="display:flex;flex-direction:column;gap:4px">'
     +allEntries.map(([key,info])=>{
     const disabled=!!(settings[key]?.disabled);
     const isMe=info.name===S.user;
@@ -5653,6 +5662,16 @@ function deleteCustomStaff(key){
   const ss=getStaffSettings();delete ss[key];saveStaffSettings(ss);
   addAuditLog('職員削除',info.name+' (ID:'+info.loginId+')');
   toast(info.name+' を削除しました ✓');
+  renderAdminStaffList();
+}
+function deleteCustomStaffDup(key){
+  const cs=getCustomStaff();
+  const info=cs[key];if(!info)return;
+  if(!confirm(info.name+' の重複データを削除しますか？'))return;
+  delete cs[key];saveCustomStaff(cs);
+  const ss=getStaffSettings();delete ss[key];saveStaffSettings(ss);
+  addAuditLog('重複職員削除',info.name);
+  toast(info.name+' の重複データを削除しました ✓');
   renderAdminStaffList();
 }
 function toggleAdmEdit(id){
