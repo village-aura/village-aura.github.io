@@ -206,6 +206,12 @@ a{color:var(--p);text-decoration:none}
 .filter-chips::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid var(--bdr);background:var(--card);color:var(--sub);transition:all .15s}
 .chip.on{background:var(--ps);border-color:var(--p);color:var(--p)}
+.sort-filter-bar{display:flex;align-items:center;gap:8px;padding:0 12px 10px;flex-wrap:wrap}
+.sfc-lbl{font-size:11px;color:var(--sub);font-weight:700;white-space:nowrap}
+.sfc-sel{font-size:12px;font-weight:700;padding:5px 26px 5px 10px;border:1.5px solid var(--bdr);border-radius:10px;background:var(--card);color:var(--txt);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.sfc-divider{width:1px;height:20px;background:var(--bdr);flex-shrink:0}
+.sfc-toggle{font-size:11px;font-weight:700;padding:5px 11px;border:1.5px solid var(--bdr);border-radius:10px;background:var(--card);color:var(--sub);cursor:pointer;white-space:nowrap;transition:all .15s}
+.sfc-toggle.on{background:#fff3e0;border-color:#fb8c00;color:#e65100}
 .res-list{padding:0 12px}
 .res-card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;position:relative}
 .res-avatar{width:44px;height:44px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
@@ -903,6 +909,31 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" data-f="stay" onclick="setFilter('stay')">小多機</button>
       <button class="chip" data-f="visit" onclick="setFilter('visit')">訪問</button>
       <button class="chip" data-f="nursing" onclick="setFilter('nursing')">訪問看護</button>
+    </div>
+    <div class="sort-filter-bar">
+      <span class="sfc-lbl">ソート</span>
+      <select id="res-sort" class="sfc-sel" onchange="renderResList()">
+        <option value="kana">ふりがな順</option>
+        <option value="room">部屋番号順</option>
+        <option value="care_asc">要介護（軽→重）</option>
+        <option value="care_desc">要介護（重→軽）</option>
+        <option value="vital">未記録を先頭</option>
+      </select>
+      <div class="sfc-divider"></div>
+      <span class="sfc-lbl">要介護度</span>
+      <select id="res-care-filter" class="sfc-sel" onchange="renderResList()">
+        <option value="all">すべて</option>
+        <option value="none">自立</option>
+        <option value="support1">要支援1</option>
+        <option value="support2">要支援2</option>
+        <option value="care1">要介護1</option>
+        <option value="care2">要介護2</option>
+        <option value="care3">要介護3</option>
+        <option value="care4">要介護4</option>
+        <option value="care5">要介護5</option>
+      </select>
+      <div class="sfc-divider"></div>
+      <button id="btn-vital-filter" class="sfc-toggle" onclick="toggleVitalFilter()">🌡️ 未記録のみ</button>
     </div>
     <div class="res-list" id="res-list"></div>
   </div>
@@ -7383,23 +7414,41 @@ function setFilter(f){
   renderResList();
 }
 function hiraToKata(s){return s.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
+function toggleVitalFilter(){
+  S.vitalFilter=S.vitalFilter==='unrecorded'?'all':'unrecorded';
+  const btn=document.getElementById('btn-vital-filter');
+  if(btn)btn.classList.toggle('on',S.vitalFilter==='unrecorded');
+  renderResList();
+}
 function renderResList(){
   const addBtn=document.getElementById('btn-add-resident');
   if(addBtn)addBtn.style.display=(isAdmin()||isFacilityAdmin())?'block':'none';
   const q=(document.getElementById('search-inp').value||'').toLowerCase();
   const qk=hiraToKata(q);
   const allResidents=getResidents();
-  const res=allResidents.filter(r=>{
-    const kana=(r.kana||'').toLowerCase();
-    const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
-    const matchF=S.filter==='all'||r.services.includes(S.filter);
-    return matchQ&&matchF;
-  }).sort((a,b)=>a.kana.localeCompare(b.kana,'ja'));
   const recs=getRecords();
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
   const fluidByRes={};
   recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).forEach(r=>{fluidByRes[r.rid]=(fluidByRes[r.rid]||0)+(r.data.fluid||0);});
+  const sortKey=(document.getElementById('res-sort')?.value)||'kana';
+  const careFilterVal=(document.getElementById('res-care-filter')?.value)||'all';
+  const vitalFilterOn=S.vitalFilter==='unrecorded';
+  const careOrder={none:0,support1:1,support2:2,care1:3,care2:4,care3:5,care4:6,care5:7};
+  const res=allResidents.filter(r=>{
+    const kana=(r.kana||'').toLowerCase();
+    const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
+    const matchF=S.filter==='all'||r.services.includes(S.filter);
+    const matchC=careFilterVal==='all'||r.care===careFilterVal;
+    const matchV=!vitalFilterOn||!vitalToday.has(r.id);
+    return matchQ&&matchF&&matchC&&matchV;
+  }).sort((a,b)=>{
+    if(sortKey==='room'){const ra=parseInt(a.room)||9999,rb=parseInt(b.room)||9999;return ra-rb||a.kana.localeCompare(b.kana,'ja');}
+    if(sortKey==='care_asc')return (careOrder[a.care]||0)-(careOrder[b.care]||0)||a.kana.localeCompare(b.kana,'ja');
+    if(sortKey==='care_desc')return (careOrder[b.care]||0)-(careOrder[a.care]||0)||a.kana.localeCompare(b.kana,'ja');
+    if(sortKey==='vital'){const av=vitalToday.has(a.id)?1:0,bv=vitalToday.has(b.id)?1:0;return av-bv||a.kana.localeCompare(b.kana,'ja');}
+    return a.kana.localeCompare(b.kana,'ja');
+  });
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
   const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
