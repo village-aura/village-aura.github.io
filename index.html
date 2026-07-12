@@ -1183,7 +1183,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <!-- 医師指示追加（管理者のみ表示） -->
     <div id="hb-admin-bar" style="display:none;padding:0 12px 6px">
-      <button onclick="const e=document.getElementById('do-edit-idx');if(e)e.value=-1;document.getElementById('do-content').value='';openModal('modal-doctor-order')" style="width:100%;padding:7px;background:#fef2f2;color:#c62828;border:1.5px solid #fca5a5;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 医師指示を追加</button>
+      <button onclick="openDoctorOrderFor('')" style="width:100%;padding:7px;background:#fef2f2;color:#c62828;border:1.5px solid #fca5a5;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 医師指示を追加</button>
     </div>
     <!-- 検索バー -->
     <div style="padding:0 12px 6px">
@@ -4464,13 +4464,13 @@ function saveResidents(r){lsSet('residents',r);fsSet('residents',r);}
 function showResCardMenu(id,btnEl){
   document.querySelectorAll('.res-card-menu').forEach(m=>m.remove());
   const items=[];
-  if(isManagerOrAbove())items.push({label:'👁️ 非表示にする',action:()=>hideResident(id)});
-  if(isSuperAdminRole())items.push({label:'🗑️ 完全削除',action:()=>deleteResidentPermanently(id)});
+  if(isManagerOrAbove())items.push({label:'👁️ 非表示にする',fn:`hideResident('${id}')`});
+  if(isSuperAdminRole())items.push({label:'🗑️ 完全削除',fn:`deleteResidentPermanently('${id}')`});
   if(!items.length)return;
   const menu=document.createElement('div');
   menu.className='res-card-menu';
   menu.style.cssText='position:fixed;z-index:600;background:var(--card);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);overflow:hidden;min-width:148px';
-  menu.innerHTML=items.map((it,i)=>`<button onclick="this.closest('.res-card-menu').remove();(${it.action.toString()})()" style="display:block;width:100%;padding:11px 16px;text-align:left;font-size:13px;background:none;border:none;${i<items.length-1?'border-bottom:1px solid var(--bdr);':''}cursor:pointer;touch-action:manipulation;color:var(--txt)">${it.label}</button>`).join('');
+  menu.innerHTML=items.map((it,i)=>`<button onclick="document.querySelectorAll('.res-card-menu').forEach(m=>m.remove());${it.fn}" style="display:block;width:100%;padding:11px 16px;text-align:left;font-size:13px;background:none;border:none;${i<items.length-1?'border-bottom:1px solid var(--bdr);':''}cursor:pointer;touch-action:manipulation;color:var(--txt)">${it.label}</button>`).join('');
   const rect=btnEl.getBoundingClientRect();
   menu.style.top=(rect.bottom+4)+'px';
   menu.style.right=(window.innerWidth-rect.right)+'px';
@@ -4669,10 +4669,10 @@ async function login(){
           }
         }catch(e){console.warn('Auto-restore check failed:',e);}
       }
-      // 24h経過で自動バックアップDL
+      // 24h経過でFirestoreへサイレントバックアップ
       const bst=getBackupStatus();
       if(bst.days===null||bst.days>=1){
-        setTimeout(()=>{ exportData(); },3000);
+        setTimeout(()=>{ silentBackup(); },3000);
       }
     }
   });
@@ -6145,6 +6145,13 @@ function toggleAuditLog(){
     fetchAndMergeAuditLogs(()=>renderAuditLog());
   }
 }
+async function silentBackup(){
+  const data={exportedAt:new Date().toISOString(),exportedBy:S.user,appVersion:APP_VERSION,residents:getResidents(),records:getRecords(),handovers:getHandovers(),auditLog:ls('audit_log')||[]};
+  await uploadBackupToFirestore(data);
+  localStorage.setItem('last_backup',new Date().toISOString());
+  addAuditLog('自動バックアップ','Firestoreへサイレント保存');
+  renderBackupBanner();
+}
 // ── データエクスポート ──
 function exportData(){
   if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
@@ -7449,7 +7456,7 @@ function renderDetail(){
     </div>
     <div style="margin-bottom:8px">${r.services.map(s=>`<span class="dtag">${tagLabel[s]||s}</span>`).join('')}</div>
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-      <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;border:none;cursor:pointer">👤 利用者情報詳細</button>
+      <button onclick="openFacesheet()" style="flex:1;background:rgba(255,255,255,.9);color:var(--p);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:800;border:none;cursor:pointer">👤 フェイスシート</button>
       <button onclick="toggleDetailMenu(event)" id="detail-more-btn" style="width:40px;height:36px;background:rgba(255,255,255,.2);color:#fff;border-radius:10px;font-size:20px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;letter-spacing:-.05em">⋯</button>
     </div>
     <div style="display:flex;gap:5px">
