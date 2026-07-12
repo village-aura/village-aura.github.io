@@ -2153,6 +2153,7 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" id="bv-f-commute" onclick="setBvFilter('commute')">デイ</button>
       <button class="chip" id="bv-f-stay" onclick="setBvFilter('stay')">小多機</button>
     </div>
+    <div style="padding:0 12px 6px"><div class="search-wrap"><span class="search-ico">🔍</span><input type="search" id="bv-search" placeholder="名前・フリガナで絞り込み..." oninput="renderBulkVital()" style="flex:1;border:none;background:none;font-size:14px;color:var(--txt);outline:none;width:100%"></div></div>
     <div id="bulk-vital-list" style="padding:0 12px 80px"></div>
   </div>
 
@@ -2172,6 +2173,7 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" id="bm-f-commute" onclick="setBmFilter('commute')">デイ</button>
       <button class="chip" id="bm-f-stay" onclick="setBmFilter('stay')">小多機</button>
     </div>
+    <div style="padding:0 12px 6px"><div class="search-wrap"><span class="search-ico">🔍</span><input type="search" id="bm-search" placeholder="名前・フリガナで絞り込み..." oninput="renderBulkMeal()" style="flex:1;border:none;background:none;font-size:14px;color:var(--txt);outline:none;width:100%"></div></div>
     <div id="bulk-meal-list" style="padding:0 12px 80px"></div>
   </div>
 
@@ -2190,6 +2192,7 @@ a{color:var(--p);text-decoration:none}
       <button class="chip" id="bex-f-commute" onclick="setBexFilter('commute')">デイ</button>
       <button class="chip" id="bex-f-stay" onclick="setBexFilter('stay')">小多機</button>
     </div>
+    <div style="padding:0 12px 6px"><div class="search-wrap"><span class="search-ico">🔍</span><input type="search" id="bex-search" placeholder="名前・フリガナで絞り込み..." oninput="renderBulkExcretion()" style="flex:1;border:none;background:none;font-size:14px;color:var(--txt);outline:none;width:100%"></div></div>
     <div id="bulk-excretion-list" style="padding:0 12px 80px"></div>
   </div>
 
@@ -2208,6 +2211,7 @@ a{color:var(--p);text-decoration:none}
       <button id="med-slot-evening" onclick="setMedSlot('evening')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">夕<br><span style="font-size:9px">食前/後</span></button>
       <button id="med-slot-bedtime" onclick="setMedSlot('bedtime')" style="flex:1;padding:8px 4px;border-radius:10px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;line-height:1.2">眠前</button>
     </div>
+    <div style="padding:0 12px 6px"><div class="search-wrap"><span class="search-ico">🔍</span><input type="search" id="med-search" placeholder="名前・フリガナで絞り込み..." oninput="renderMedication()" style="flex:1;border:none;background:none;font-size:14px;color:var(--txt);outline:none;width:100%"></div></div>
     <div id="medication-list" style="padding:0 12px 80px"></div>
   </div>
 
@@ -2224,6 +2228,7 @@ a{color:var(--p);text-decoration:none}
       <button id="tr-tab-out" onclick="setTrTab('out')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer">🚌 出発</button>
       <button id="tr-tab-in"  onclick="setTrTab('in')"  style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer">🏠 帰宅</button>
     </div>
+    <div style="padding:4px 12px 6px"><div class="search-wrap"><span class="search-ico">🔍</span><input type="search" id="tr-search" placeholder="名前・フリガナで絞り込み..." oninput="renderTransport()" style="flex:1;border:none;background:none;font-size:14px;color:var(--txt);outline:none;width:100%"></div></div>
     <div id="transport-list" style="padding:0 12px 80px"></div>
   </div>
 
@@ -4458,6 +4463,14 @@ function lsSet(k,v){
 }
 function getAllResidents(){return ls('residents')||INIT_RESIDENTS;}
 function getResidents(){return getAllResidents().filter(r=>!r.hidden);}
+function filterSortRes(filterFn,searchQ){
+  const q=(searchQ||'').toLowerCase();
+  const qk=q?hiraToKata(q):'';
+  return getResidents()
+    .filter(r=>filterFn?filterFn(r):true)
+    .filter(r=>!q||r.name.toLowerCase().includes(q)||(r.kana||'').toLowerCase().includes(q)||(r.kana||'').toLowerCase().includes(qk))
+    .sort((a,b)=>(a.kana||a.name||'').localeCompare((b.kana||b.name||''),'ja'));
+}
 function getRecords(){
   const all=_activeRecordKeys().flatMap(k=>ls(k)||[]);
   return all.length?all:[...INIT_RECORDS,...MARCH_RECORDS];
@@ -10206,7 +10219,7 @@ function setBvFilter(f){
 function renderBulkVital(){
   const dateEl=document.getElementById('bv-date');
   if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
-  const res=getResidents().filter(r=>_bvFilter==='all'||r.services.includes(_bvFilter));
+  const res=filterSortRes(r=>_bvFilter==='all'||r.services.includes(_bvFilter),document.getElementById('bv-search')?.value);
   const today=dateEl.value;
   const recs=getRecords();
   const list=document.getElementById('bulk-vital-list');if(!list)return;
@@ -10343,7 +10356,7 @@ function renderBulkMeal(){
   if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
-  const res=getResidents().filter(r=>_bmFilter==='all'||r.services.includes(_bmFilter));
+  const res=filterSortRes(r=>_bmFilter==='all'||r.services.includes(_bmFilter),document.getElementById('bm-search')?.value);
   const list=document.getElementById('bulk-meal-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const h=new Date().getHours();
@@ -10424,7 +10437,7 @@ function renderBulkExcretion(){
   if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
-  const res=getResidents().filter(r=>_bexFilter==='all'||r.services.includes(_bexFilter));
+  const res=filterSortRes(r=>_bexFilter==='all'||r.services.includes(_bexFilter),document.getElementById('bex-search')?.value);
   const list=document.getElementById('bulk-excretion-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const stoolLbls={none:'なし',small:'少量',normal:'普通',large:'多量'};
@@ -10522,7 +10535,7 @@ function renderMedication(){
   const checks=getMedicationChecks();
   const checkKey=today+'_'+_medSlot;
   const todayChecks=checks[checkKey]||{};
-  const res=getResidents().filter(r=>r.services&&r.services.length);
+  const res=filterSortRes(r=>r.services&&r.services.length,document.getElementById('med-search')?.value);
   const list=document.getElementById('medication-list');if(!list)return;
   const rows=res.map(r=>{
     const slotGroup=MED_SLOT_GROUP[_medSlot]||[_medSlot];
@@ -10763,7 +10776,7 @@ function renderTransport(){
   const today=dateEl.value;
   const records=getTransportRecords();
   const todayRecs=records[today]||{};
-  const res=getResidents().filter(r=>r.services.includes('commute')||r.services.includes('stay'));
+  const res=filterSortRes(r=>r.services.includes('commute')||r.services.includes('stay'),document.getElementById('tr-search')?.value);
   const list=document.getElementById('transport-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">デイ・小多機の利用者がいません</div>';return;}
   list.innerHTML=res.map(r=>{
@@ -12840,8 +12853,7 @@ function renderRoundsList(){
   const data=getRoundsData();
   const key=_roundsKey();
   const checks=data[key]||{};
-  const allRes=getResidents();
-  const residents=_roundsFacility==='all'?allRes:allRes.filter(r=>(r.services||[]).includes(_roundsFacility));
+  const residents=filterSortRes(_roundsFacility==='all'?null:r=>(r.services||[]).includes(_roundsFacility));
   let totalTasks=0,doneTasks=0;
   const html=residents.map(r=>{
     const rChecks=checks[r.id]||{};
