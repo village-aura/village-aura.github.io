@@ -265,10 +265,13 @@ a{color:var(--p);text-decoration:none}
 .tl-empty{text-align:center;padding:24px;color:var(--sub);font-size:14px}
 
 /* ── MODALS ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;touch-action:none}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;touch-action:none}
 .overlay.on{display:flex;animation:fadeIn .2s}
-.sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:20px 20px 32px;touch-action:pan-y;overscroll-behavior:contain}
-.sheet-handle{width:40px;height:4px;background:var(--bdr);border-radius:4px;margin:0 auto 16px}
+.sheet{background:var(--card);border-radius:16px;width:calc(100% - 32px);max-width:480px;max-height:88vh;overflow-y:auto;padding:20px 20px 32px;touch-action:pan-y;overscroll-behavior:contain;position:relative}
+.sheet-handle{display:none}
+.sheet-close-btn{position:absolute;top:10px;left:10px;font-size:22px;color:var(--sub);background:none;border:none;cursor:pointer;padding:3px;line-height:1;touch-action:manipulation;z-index:2;opacity:.7}
+.sheet-close-btn:active{opacity:1}
+.sheet.has-close-btn .sheet-title{padding-left:34px}
 .sheet-title{font-size:18px;font-weight:800;margin-bottom:4px}
 .sheet-sub{font-size:13px;color:var(--sub);margin-bottom:18px}
 .field{margin-bottom:16px}
@@ -3275,7 +3278,7 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- FACE SHEET -->
-<div class="overlay" id="modal-facesheet" onclick="closeModal('modal-facesheet',event)">
+<div class="overlay" id="modal-facesheet" data-no-close-btn onclick="closeModal('modal-facesheet',event)">
   <div class="sheet" style="max-height:96vh" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -4467,6 +4470,21 @@ function showResCardMenu(id,btnEl){
   if(isManagerOrAbove())items.push({label:'👁️ 非表示にする',fn:`hideResident('${id}')`});
   if(isSuperAdminRole())items.push({label:'🗑️ 完全削除',fn:`deleteResidentPermanently('${id}')`});
   if(!items.length)return;
+  const menu=document.createElement('div');
+  menu.className='res-card-menu';
+  menu.style.cssText='position:fixed;z-index:600;background:var(--card);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);overflow:hidden;min-width:148px';
+  menu.innerHTML=items.map((it,i)=>`<button onclick="document.querySelectorAll('.res-card-menu').forEach(m=>m.remove());${it.fn}" style="display:block;width:100%;padding:11px 16px;text-align:left;font-size:13px;background:none;border:none;${i<items.length-1?'border-bottom:1px solid var(--bdr);':''}cursor:pointer;touch-action:manipulation;color:var(--txt)">${it.label}</button>`).join('');
+  const rect=btnEl.getBoundingClientRect();
+  menu.style.top=(rect.bottom+4)+'px';
+  menu.style.right=(window.innerWidth-rect.right)+'px';
+  document.body.appendChild(menu);
+  setTimeout(()=>document.addEventListener('click',function c(){menu.remove();document.removeEventListener('click',c);},{once:true}),50);
+}
+function showHiddenResMenu(id,btnEl){
+  document.querySelectorAll('.res-card-menu').forEach(m=>m.remove());
+  const items=[];
+  items.push({label:'👁️ 再表示する',fn:`unhideResident('${id}')`});
+  if(isSuperAdminRole())items.push({label:'🗑️ 完全削除',fn:`deleteResidentPermanently('${id}')`});
   const menu=document.createElement('div');
   menu.className='res-card-menu';
   menu.style.cssText='position:fixed;z-index:600;background:var(--card);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);overflow:hidden;min-width:148px';
@@ -7365,12 +7383,17 @@ function renderResList(){
     const hiddenList=getAllResidents().filter(r=>r.hidden);
     const el=document.getElementById('res-list');
     if(hiddenList.length){
-      const hdHtml=`<div style="margin-top:20px;padding:0 0 4px">
-        <div style="font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;padding:0 2px 8px;text-transform:uppercase">👁️‍🗨️ 非表示の利用者（${hiddenList.length}名）</div>
-        ${hiddenList.map(r=>`<div style="background:var(--card);border-radius:10px;padding:11px 14px;margin-bottom:6px;box-shadow:var(--sh);display:flex;align-items:center;gap:10px;opacity:.65;border-left:3px solid var(--bdr)">
-          <div style="flex:1;font-size:14px;font-weight:700">${r.name} <span style="font-size:12px;font-weight:400;color:var(--sub)">${r.age||''}歳</span></div>
-          <button onclick="unhideResident('${r.id}')" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;white-space:nowrap">再表示</button>
-          ${canDel?`<button onclick="deleteResidentPermanently('${r.id}')" style="padding:6px 10px;background:#c62828;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">削除</button>`:''}
+      const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
+      const hdHtml=`<div style="margin-top:24px;padding:0 0 4px">
+        <div style="font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;padding:0 2px 10px">👁️‍🗨️ 非表示の利用者（${hiddenList.length}名）</div>
+        ${hiddenList.map(r=>`<div class="res-card" style="opacity:.65;border:1.5px solid var(--bdr);position:relative;pointer-events:auto" onclick="">
+          <button onclick="event.stopPropagation();showHiddenResMenu('${r.id}',this)" style="position:absolute;top:6px;right:6px;font-size:15px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;cursor:pointer;touch-action:manipulation;padding:2px 7px;line-height:1.4;color:var(--sub);font-weight:700" title="メニュー">⋯</button>
+          <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
+          <div class="res-info">
+            <div class="res-name">${r.name} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age||''}歳</span></div>
+            <div class="res-meta">${r.room?r.room+'号室・':''} ${careLabel(r.care)} | ${r.facility||''}</div>
+          </div>
+          <div class="res-status"><div style="width:8px;height:8px;border-radius:50%;background:#9e9e9e;margin-bottom:3px"></div><div class="status-label" style="color:#9e9e9e">非表示</div></div>
         </div>`).join('')}
       </div>`;
       el.insertAdjacentHTML('beforeend',hdHtml);
@@ -13979,6 +14002,19 @@ function seedDemoData(){
   renderResList();
   toast('デモデータを挿入しました ✓');
 }
+
+// ── 各モーダルに☒閉じるボタンを注入（data-no-close-btn 属性があるものはスキップ） ──
+document.querySelectorAll('.overlay:not([data-no-close-btn])').forEach(overlay=>{
+  const sheet=overlay.querySelector('.sheet');
+  if(!sheet||sheet.querySelector('.sheet-close-btn'))return;
+  const btn=document.createElement('button');
+  btn.className='sheet-close-btn';
+  btn.innerHTML='☒';
+  btn.setAttribute('aria-label','閉じる');
+  btn.onclick=()=>closeModal(overlay.id);
+  sheet.classList.add('has-close-btn');
+  sheet.insertBefore(btn,sheet.firstChild);
+});
 </script>
 <!-- 写真拡大オーバーレイ -->
 <div id="photo-zoom-ov" onclick="closePhotoZoom()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:zoom-out">
