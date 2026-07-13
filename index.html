@@ -10467,8 +10467,9 @@ function renderBulkMeal(){
   const list=document.getElementById('bulk-meal-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   const h=new Date().getHours();
-  const autoMtype=h<10?'breakfast':h<15?'lunch':'dinner';
-  const mtypeLbl={breakfast:'朝食',lunch:'昼食',dinner:'夕食'};
+  const autoMtype=h<10?'breakfast':h<12?'morning_snack':h<15?'lunch':h<17?'snack':'dinner';
+  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
   list.innerHTML=res.map(r=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today));
     const done=todayRecs.length>0;
@@ -10486,8 +10487,8 @@ function renderBulkMeal(){
       <details style="margin-top:0" open>
         <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▼ 入力</span></summary>
         <div style="margin-top:8px">
-          <div style="display:flex;gap:4px;margin-bottom:8px">
-            ${['breakfast','lunch','dinner'].map(t=>`<button id="bm-mtype-${r.id}-${t}" onclick="setBmMtype('${r.id}','${t}')" style="flex:1;padding:6px 2px;border-radius:8px;font-size:12px;font-weight:700;border:1.5px solid;cursor:pointer;touch-action:manipulation;background:${t===autoMtype?'var(--p)':'var(--bg)'};color:${t===autoMtype?'#fff':'var(--sub)'};border-color:${t===autoMtype?'var(--p)':'var(--bdr)'}">${mtypeLbl[t]}</button>`).join('')}
+          <div style="display:flex;gap:3px;margin-bottom:8px">
+            ${MEAL_TYPES.map(t=>`<button id="bm-mtype-${r.id}-${t}" onclick="setBmMtype('${r.id}','${t}')" style="flex:1;padding:6px 1px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;touch-action:manipulation;background:${t===autoMtype?'var(--p)':'var(--bg)'};color:${t===autoMtype?'#fff':'var(--sub)'};border-color:${t===autoMtype?'var(--p)':'var(--bdr)'}">${mtypeLbl[t]}</button>`).join('')}
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
             <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">主食（割）</div><input type="number" inputmode="numeric" min="0" max="10" id="bm-staple-${r.id}" placeholder="10" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
@@ -10505,7 +10506,7 @@ function renderBulkMeal(){
   res.forEach(r=>{ if(!document.getElementById('bm-mtype-cur-'+r.id)){ const d=document.createElement('input'); d.type='hidden'; d.id='bm-mtype-cur-'+r.id; d.value=autoMtype; document.body.appendChild(d); }});
 }
 function setBmMtype(rid,t){
-  ['breakfast','lunch','dinner'].forEach(s=>{
+  ['breakfast','morning_snack','lunch','snack','dinner'].forEach(s=>{
     const b=document.getElementById('bm-mtype-'+rid+'-'+s);
     if(b){b.style.background=s===t?'var(--p)':'var(--bg)';b.style.color=s===t?'#fff':'var(--sub)';b.style.borderColor=s===t?'var(--p)':'var(--bdr)';}
   });
