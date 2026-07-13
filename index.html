@@ -4478,7 +4478,10 @@ function filterSortRes(filterFn,searchQ){
   return getResidents()
     .filter(r=>filterFn?filterFn(r):true)
     .filter(r=>!q||r.name.toLowerCase().includes(q)||(r.kana||'').toLowerCase().includes(q)||(r.kana||'').toLowerCase().includes(qk))
-    .sort((a,b)=>(a.kana||a.name||'').localeCompare((b.kana||b.name||''),'ja'));
+    .sort((a,b)=>{
+      const ra=parseInt(a.room)||9999,rb=parseInt(b.room)||9999;
+      return ra!==rb?ra-rb:(a.kana||a.name||'').localeCompare((b.kana||b.name||''),'ja');
+    });
 }
 function getRecords(){
   const all=_activeRecordKeys().flatMap(k=>ls(k)||[]);
