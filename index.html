@@ -459,8 +459,8 @@ a{color:var(--p);text-decoration:none}
 }
 /* ── PORTRAIT SCROLL FIX（iOS タブレット縦向き）── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
-  body{overflow:hidden;height:100vh;height:-webkit-fill-available}
-  #main-content-wrap{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;overflow:hidden}
+  body{overflow:hidden;height:100vh;height:-webkit-fill-available;height:100dvh}
+  #main-content-wrap{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden}
   .hd{flex-shrink:0}
   .bnav{position:relative!important;flex-shrink:0}
   #main-content-wrap .scr.on{flex:1;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px!important}
@@ -10567,9 +10567,8 @@ function renderBulkExcretion(){
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
             <div>
               <div style="font-size:10px;color:var(--sub);margin-bottom:4px;font-weight:700">排尿</div>
-              <div style="display:flex;gap:4px;align-items:center">
-                <input type="number" inputmode="numeric" id="bex-urine-${r.id}" placeholder="ml" style="width:70px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center">
-                <span style="font-size:11px;color:var(--sub)">ml</span>
+              <div style="display:flex;gap:3px;flex-wrap:wrap">
+                ${Object.entries(stoolLbls).map(([k,l])=>`<button id="bex-urine-${r.id}-${k}" onclick="setBexUrine('${r.id}','${k}')" style="padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">${l}</button>`).join('')}
               </div>
             </div>
             <div>
@@ -10587,6 +10586,9 @@ function renderBulkExcretion(){
               <input type="checkbox" id="bex-portable-${r.id}"> ポータブルトイレ
             </label>
           </div>
+          <div style="margin-bottom:8px">
+            <textarea id="bex-note-${r.id}" placeholder="特記（出血の有無・皮膚状態など）" rows="2" style="width:100%;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;resize:none;box-sizing:border-box;color:var(--txt);background:var(--bg)"></textarea>
+          </div>
           <div style="display:flex;justify-content:flex-end">
             <button onclick="saveBulkExcretion('${r.id}')" style="background:var(--ok);color:#fff;border-radius:8px;padding:7px 20px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
           </div>
@@ -10595,26 +10597,37 @@ function renderBulkExcretion(){
     </div>`;
   }).join('');
 }
-function setBexStool(rid,val){
+function _setBexBtn(prefix,rid,val,color){
   ['none','small','normal','large'].forEach(k=>{
-    const b=document.getElementById('bex-stool-'+rid+'-'+k);
-    if(b){b.style.background=k===val?'var(--ok)':'var(--bg)';b.style.color=k===val?'#fff':'var(--sub)';b.style.borderColor=k===val?'var(--ok)':'var(--bdr)';}
+    const b=document.getElementById(prefix+rid+'-'+k);
+    if(b){b.style.background=k===val?color:'var(--bg)';b.style.color=k===val?'#fff':'var(--sub)';b.style.borderColor=k===val?color:'var(--bdr)';}
   });
+}
+function setBexUrine(rid,val){
+  _setBexBtn('bex-urine-',rid,val,'var(--p)');
+  const cur=document.getElementById('bex-urine-cur-'+rid);
+  if(cur) cur.value=val; else {const d=document.createElement('input');d.type='hidden';d.id='bex-urine-cur-'+rid;d.value=val;document.body.appendChild(d);}
+}
+function setBexStool(rid,val){
+  _setBexBtn('bex-stool-',rid,val,'var(--ok)');
   const cur=document.getElementById('bex-stool-cur-'+rid);
   if(cur) cur.value=val; else {const d=document.createElement('input');d.type='hidden';d.id='bex-stool-cur-'+rid;d.value=val;document.body.appendChild(d);}
 }
 function saveBulkExcretion(rid){
   const dateEl=document.getElementById('bex-date');
-  const urine=_getVal('bex-urine-'+rid);
+  const urine=document.getElementById('bex-urine-cur-'+rid)?.value||'none';
   const stool=document.getElementById('bex-stool-cur-'+rid)?.value||'none';
   const incon=document.getElementById('bex-incon-'+rid)?.checked||false;
   const portable=document.getElementById('bex-portable-'+rid)?.checked||false;
-  if(!urine&&stool==='none'&&!incon){toast('値を入力してください');return;}
-  const etype=urine&&stool&&stool!=='none'?'both':stool&&stool!=='none'?'stool':'urine';
+  const note=(document.getElementById('bex-note-'+rid)?.value||'').trim();
+  const hasUrine=urine&&urine!=='none';
+  const hasStool=stool&&stool!=='none';
+  if(!hasUrine&&!hasStool&&!incon){toast('値を入力してください');return;}
+  const etype=hasUrine&&hasStool?'both':hasStool?'stool':'urine';
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
   const recs=getRecords();
   recs.push({id:'r'+Date.now(),rid,type:'excretion',ts,by:S.user||'──',
-    data:{etype,urine:urine||'',stool:stool==='none'?'':stool,portable,incon,lax:false,note:''}});
+    data:{etype,urine:hasUrine?urine:'',stool:hasStool?stool:'',portable,incon,lax:false,note}});
   saveRecords(recs);
   toast('排泄記録を保存しました ✓');
   renderBulkExcretion();
@@ -12884,6 +12897,25 @@ document.addEventListener('visibilitychange',()=>{
 window.addEventListener('pageshow',e=>{
   // iOS Safariのbfcache復帰対応
   if(e.persisted&&fbReady&&S.user){setupRealtimeSync();_renderCurrentScreen();}
+});
+// タブレット向き変更後の表示崩れ修正（iOS Safari 100vh bug）
+let _rszTimer;
+window.addEventListener('resize',function(){
+  clearTimeout(_rszTimer);
+  _rszTimer=setTimeout(function(){
+    const mcw=document.getElementById('main-content-wrap');
+    const scr=mcw&&mcw.querySelector('.scr.on');
+    if(!scr)return;
+    // スクロール位置を保持しながら強制リフロー
+    scr.style.minHeight='';
+    void scr.offsetHeight;
+    scr.style.minHeight='';
+    // 一括入力画面は内容を再描画
+    const id=scr.id;
+    if(id==='scr-bulk-vital')renderBulkVital();
+    else if(id==='scr-bulk-meal')renderBulkMeal();
+    else if(id==='scr-bulk-excretion')renderBulkExcretion();
+  },250);
 });
 function _renderCurrentScreen(){
   const s=S.screen;
