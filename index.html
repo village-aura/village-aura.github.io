@@ -945,6 +945,7 @@ a{color:var(--p);text-decoration:none}
     <div class="detail-mobile-tabs">
       <button class="detail-tab-btn on" id="dtab-input" onclick="switchDetailTab('input')">📝 記録入力</button>
       <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
+      <button class="detail-tab-btn" id="dtab-life" onclick="switchDetailTab('life')">📊 生活シート</button>
     </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
@@ -960,6 +961,7 @@ a{color:var(--p);text-decoration:none}
     <div class="summary-row" id="summary-row"></div>
     <div id="stool-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#f3e5f5;border-left:4px solid #7b1fa2;border-radius:8px;font-size:12px;font-weight:700;color:#6a1b9a"></div>
     <div id="allergy-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#fff3e0;border-left:4px solid #e65100;border-radius:8px;font-size:12px;font-weight:700;color:#bf360c;cursor:pointer" onclick="openFacesheet()"></div>
+    <div id="fluid-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border-left:4px solid #1565c0" onclick="editFluidTarget()"></div>
     <div id="vital-time-bar" style="text-align:right;font-size:10px;color:var(--sub);padding:2px 14px 2px"></div>
     <div id="vital-graph-card" style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -994,6 +996,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     </div><!-- /detail-col-right -->
     </div><!-- /detail-content-grid -->
+    <div id="life-sheet-area" style="display:none;padding:0 12px 80px"></div>
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -7437,7 +7440,8 @@ function renderResList(){
     const badges=[];
     if(!ok)badges.push('<span style="background:#fff3e0;color:#e65100;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #ffe0b2">🌡️ バイタル未</span>');
     if(stoolWarn)badges.push(`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #e1bee7">🚽 ${stoolDays===null?'排便未記録':stoolDays+'日'}` + '</span>');
-    const fluidColor=fluid>=1000?'#1b5e20':fluid>=500?'#e65100':'#9e9e9e';
+    const fluidTarget=getFluidTarget(r.id);
+    const fluidColor=fluid>=fluidTarget?'#1b5e20':fluid>=fluidTarget*0.5?'#e65100':'#9e9e9e';
     badges.push(`<span style="background:#e8f5e9;color:${fluidColor};font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;border:1px solid #c8e6c9">💧 ${fluid}ml</span>`);
     const moreBtn=(canHide||canDel)?`<button onclick="event.stopPropagation();showResCardMenu('${r.id}',this)" style="position:absolute;top:6px;right:6px;font-size:15px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;cursor:pointer;touch-action:manipulation;padding:2px 7px;line-height:1.4;color:var(--sub);font-weight:700" title="メニュー">⋯</button>`:'';
     const hiddenStyle=r.hidden?'opacity:.6;border:1.5px dashed var(--bdr);':'';
@@ -7533,6 +7537,7 @@ function openResident(id){
   S.currentRes=id;
   trackRecentResident(id);
   S.tlOffset=0;
+  _lifeOffset=0;
   S.currentService=null;
   showScr('scr-detail');
   switchDetailTab('input');
@@ -7571,6 +7576,7 @@ function renderDetail(){
     </div>
     <div id="detail-more-menu" style="display:none;position:absolute;right:12px;top:calc(100% - 8px);background:#fff;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.2);z-index:100;min-width:180px;overflow:hidden">
       <button onclick="openVitalRanges();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">⚙️ バイタル基準値${r.vitalRanges?' ★':''}</button>
+      <button onclick="editFluidTarget();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:#1565c0;background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">💧 水分目標: ${getFluidTarget(r.id)}ml</button>
       <button onclick="toggleRepoNeeded('${r.id}');closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:${r.repoNeeded?'var(--p)':'var(--txt)'};background:${r.repoNeeded?'var(--ps)':'none'};border:none;border-bottom:1px solid var(--bdr);cursor:pointer">🔄 体交${r.repoNeeded?' ON ●':' OFF'}</button>
       <button onclick="openResidentQR();closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:var(--txt);background:none;border:none;border-bottom:1px solid var(--bdr);cursor:pointer">📲 QR コード</button>
       ${isManagerOrAbove()?`<button onclick="hideResident('${r.id}');closeDetailMenu()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:13px;font-weight:600;color:#7b1fa2;background:none;border:none;${S.userRole==='doctor'?'border-bottom:1px solid var(--bdr);':''}cursor:pointer">👁️ 非表示にする</button>`:''}
@@ -7629,6 +7635,19 @@ function renderDetail(){
     if(fs.notes)parts.push('注意: '+fs.notes);
     if(parts.length){allergyChip.style.display='block';allergyChip.textContent='⚠️ '+parts.join(' ／ ');}
     else{allergyChip.style.display='none';}
+  }
+  const fluidChip=document.getElementById('fluid-alert-chip');
+  if(fluidChip){
+    const ft=getFluidTarget(r.id);
+    const pct=ft>0?Math.round(fluidToday/ft*100):100;
+    const clr=pct>=80?'#2e7d32':pct>=50?'#e65100':'#c62828';
+    const bg=pct>=80?'#e8f5e9':pct>=50?'#fff3e0':'#ffebee';
+    const bc=pct>=80?'#43a047':pct>=50?'#e65100':'#e53935';
+    fluidChip.style.display='block';
+    fluidChip.style.background=bg;
+    fluidChip.style.color=clr;
+    fluidChip.style.borderLeftColor=bc;
+    fluidChip.textContent=`💧 本日の水分: ${fluidToday}ml / 目標 ${ft}ml (${pct}%) ✏️ タップで目標変更`;
   }
   // グラフ範囲切替ボタン
   const ranges=[{k:'today',l:'当日'},{k:'3days',l:'直近3日'},{k:'week',l:'1週間'}];
@@ -7735,10 +7754,18 @@ function renderDetail(){
 function switchDetailTab(tab){
   document.getElementById('dtab-input').classList.toggle('on',tab==='input');
   document.getElementById('dtab-timeline').classList.toggle('on',tab==='timeline');
+  document.getElementById('dtab-life').classList.toggle('on',tab==='life');
   const right=document.querySelector('.detail-col-right');
   if(right)right.classList.toggle('dtab-hidden',tab==='input');
   const left=document.querySelector('.detail-col-left');
-  if(left)left.style.display=tab==='timeline'?'none':'';
+  if(left)left.style.display=(tab==='timeline'||tab==='life')?'none':'';
+  const grid=document.querySelector('.detail-content-grid');
+  if(grid)grid.style.display=tab==='life'?'none':'';
+  const lifeArea=document.getElementById('life-sheet-area');
+  if(lifeArea){
+    lifeArea.style.display=tab==='life'?'':'none';
+    if(tab==='life')renderLifeSheet(S.currentRes);
+  }
 }
 function openVitalFocused(focusField){
   _vitalFocusedField=focusField||null;
@@ -10946,6 +10973,113 @@ function getFluidTarget(rid){
   const r=getResidents().find(x=>x.id===rid);
   return r?.fluidTarget||1500;
 }
+function editFluidTarget(){
+  const r=getAllResidents().find(x=>x.id===S.currentRes);
+  if(!r)return;
+  const cur=r.fluidTarget||1500;
+  const val=prompt('水分目標（ml）を入力\n（デフォルト: 1500ml）',cur);
+  if(val===null)return;
+  const n=parseInt(val);
+  if(isNaN(n)||n<100||n>5000){toast('100〜5000の数値を入力してください');return;}
+  const res=getAllResidents();
+  const t=res.find(x=>x.id===S.currentRes);
+  if(t){t.fluidTarget=n;saveResidents(res);toast('水分目標を更新しました ✓');renderDetail();}
+}
+
+// ═══════════ 24時間生活シート ═══════════
+let _lifeOffset=0;
+function renderLifeSheet(rid){
+  const area=document.getElementById('life-sheet-area');
+  if(!area||!rid)return;
+  const r=getResidents().find(x=>x.id===rid);
+  if(!r)return;
+  const d=new Date();
+  d.setDate(d.getDate()+_lifeOffset);
+  const dateStr=_localDs(d);
+  const dateLbl=d.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  const recs=getRecords().filter(rc=>rc.rid===rid&&rc.ts.startsWith(dateStr));
+  recs.sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  const typeInfo={
+    vital:{icon:'🌡️',label:'バイタル',color:'#1565c0',bg:'#e3f2fd'},
+    meal:{icon:'🍽️',label:'食事',color:'#2e7d32',bg:'#e8f5e9'},
+    excretion:{icon:'🚽',label:'排泄',color:'#6a1b9a',bg:'#f3e5f5'},
+    chrono:{icon:'📝',label:'経時記録',color:'#e65100',bg:'#fff3e0'},
+    weight:{icon:'⚖️',label:'体重',color:'#00695c',bg:'#e0f2f1'},
+  };
+  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  const amtLbl=['','─','2割','3割','4割','5割','6割','7割','全量'];
+  const qtyLbl={none:'なし',small:'少量',normal:'普通',large:'多量'};
+  function fmtRec(rc){
+    const d=rc.data||{};
+    if(rc.type==='vital'){
+      const p=[];
+      if(d.sys)p.push('BP '+d.sys+'/'+d.dia);
+      if(d.pulse)p.push('脈 '+d.pulse);
+      if(d.temp)p.push('体温 '+d.temp+'℃');
+      if(d.spo2)p.push('SpO2 '+d.spo2+'%');
+      return p.join('　');
+    }else if(rc.type==='meal'){
+      const p=['【'+(mtypeLbl[d.mtype]||d.mtype||'食事')+'】'];
+      if(d.staple!==undefined&&d.staple!=='')p.push('主'+(amtLbl[d.staple]||d.staple));
+      if(d.side!==undefined&&d.side!=='')p.push('副'+(amtLbl[d.side]||d.side));
+      if(d.fluid)p.push('水分 '+d.fluid+'ml');
+      return p.join('　');
+    }else if(rc.type==='excretion'){
+      const p=[];
+      if(d.urine&&d.urine!=='none')p.push('排尿: '+(qtyLbl[d.urine]||d.urine));
+      if(d.stool&&d.stool!=='none')p.push('排便: '+(qtyLbl[d.stool]||d.stool));
+      if(d.portable)p.push('ポータブル');
+      if(d.incon)p.push('失禁');
+      if(d.lax)p.push('下剤使用');
+      if(d.note)p.push('備考: '+d.note);
+      return p.length?p.join('　'):'排泄記録';
+    }else if(rc.type==='chrono'){
+      return d.content||'';
+    }else if(rc.type==='weight'){
+      return '体重 '+d.val+'kg';
+    }
+    return '';
+  }
+  const fluidTotal=recs.filter(rc=>rc.type==='meal').reduce((s,rc)=>s+(rc.data.fluid||0),0);
+  const ft=getFluidTarget(rid);
+  const fpct=ft>0?Math.min(100,Math.round(fluidTotal/ft*100)):100;
+  const fclr=fpct>=80?'#43a047':fpct>=50?'#e65100':'#e53935';
+  const recRows=recs.length
+    ?recs.map(rc=>{
+      const ti=typeInfo[rc.type]||{icon:'📌',label:rc.type,color:'var(--sub)',bg:'var(--bg)'};
+      const tstr=new Date(rc.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+      const txt=fmtRec(rc);
+      return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--bdr)">
+        <div style="font-size:11px;color:var(--sub);white-space:nowrap;min-width:38px;padding-top:3px">${tstr}</div>
+        <div style="flex-shrink:0;width:26px;height:26px;border-radius:6px;background:${ti.bg};display:flex;align-items:center;justify-content:center;font-size:15px">${ti.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10px;color:${ti.color};font-weight:700;margin-bottom:1px">${ti.label}</div>
+          <div style="font-size:12px;color:var(--txt);line-height:1.5;word-break:break-all">${escHtml(txt)}</div>
+        </div>
+      </div>`;
+    }).join('')
+    :'<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">この日の記録はありません</div>';
+  area.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0 10px">
+      <button onclick="_lifeOffset--;renderLifeSheet('${rid}')" style="padding:6px 16px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg);font-size:13px;cursor:pointer;touch-action:manipulation">◀ 前日</button>
+      <div style="font-size:13px;font-weight:700;color:var(--txt)">${dateLbl}</div>
+      <button onclick="_lifeOffset++;renderLifeSheet('${rid}')" style="padding:6px 16px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg);font-size:13px;cursor:pointer;touch-action:manipulation${_lifeOffset>=0?';opacity:.4':''}" ${_lifeOffset>=0?'disabled':''}>翌日 ▶</button>
+    </div>
+    <div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)">
+      <div style="font-size:10px;color:var(--sub);font-weight:700;margin-bottom:6px">💧 本日の水分摂取</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:8px;background:var(--bdr);border-radius:4px;overflow:hidden">
+          <div style="height:100%;background:${fclr};width:${fpct}%;transition:width .3s;border-radius:4px"></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:${fclr};white-space:nowrap">${fluidTotal}/${ft}ml (${fpct}%)</div>
+      </div>
+    </div>
+    <div style="background:var(--card);border-radius:10px;padding:12px;box-shadow:var(--sh)">
+      <div style="font-size:10px;color:var(--sub);font-weight:700;margin-bottom:4px">⏰ 時系列記録（${recs.length}件）</div>
+      ${recRows}
+    </div>
+  `;
+}
 
 function closePostRegister(){
   document.getElementById('post-register-sheet').style.display='none';
@@ -11075,6 +11209,7 @@ function renderHbList(){
   const priOrder={urgent:0,important:1,normal:2};
   all.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
   if(!all.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">申し送りはありません</div>';return;}
+  const _hbReads=getHandoverReads();
   el.innerHTML=all.map(h=>{
     const si=HB_SEC_INFO[h._sec]||{label:h._sec,emoji:'📝',bg:'#f5f5f5',tc:'#666'};
     const priClass=h.pri==='urgent'?'pri-urgent':h.pri==='important'?'pri-important':'';
@@ -11096,6 +11231,12 @@ function renderHbList(){
       ?`<button onclick="event.stopPropagation();deleteBoardHandover('${h._sec}',${h._origIdx},'${h._shift||''}')" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`
       :`<button onclick="event.stopPropagation();deleteDoctorOrder(${h._origIdx})" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`):'';
     const cardClick=_res?`onclick="openResident('${_res.id}')" style="cursor:pointer"`:'';
+    const _itemKey=h.id||null;
+    const _myRead=_itemKey&&_hbReads[_itemKey]&&_hbReads[_itemKey].includes(S.user);
+    const _readCnt=_itemKey?(_hbReads[_itemKey]||[]).length:0;
+    const readBtn=_itemKey
+      ?`<button onclick="event.stopPropagation();markHandoverRead('${_itemKey}')" style="padding:3px 10px;border-radius:6px;border:1px solid ${_myRead?'#43a047':'#90caf9'};background:${_myRead?'#e8f5e9':'#e3f2fd'};color:${_myRead?'#2e7d32':'#1565c0'};font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">${_myRead?'✓ 既読':'👁 読んだよ'}${_readCnt>0?' ('+_readCnt+'名)':''}</button>`
+      :'';
     return `<div class="hb-card ${priClass}" ${cardClick}>
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px">
         ${priBadge}${secTag}${resChip}
@@ -11106,7 +11247,8 @@ function renderHbList(){
         <span>${h.by||''}</span><span>·</span><span>${h.date?h.date+' ':''}${h.time||''}</span>
         <span>·</span><span style="color:${expiryColor}">${expiryTxt}</span>
         ${editedMark?`<span style="color:var(--sub)">${editedMark}</span>`:''}
-        ${_res?`<span style="margin-left:auto;font-size:10px;color:var(--p);font-weight:700">→ カルテ</span>`:''}
+        <span style="margin-left:auto">${readBtn}</span>
+        ${_res&&!readBtn?`<span style="font-size:10px;color:var(--p);font-weight:700">→ カルテ</span>`:''}
       </div>
     </div>`;
   }).join('');
