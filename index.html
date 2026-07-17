@@ -7500,11 +7500,9 @@ function renderResList(){
   const res=allResidents.filter(r=>{
     const kana=(r.kana||'').toLowerCase();
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
-    // デイフィルター: スケジュールに今日のcommuteがある人のみ（未登録の場合はservicesで代替）
+    // デイフィルター: スケジュールに今日のcommuteがある人のみ
     const matchF=S.filter==='all'||
-      (S.filter==='commute'
-        ?(todayCommuteRids.size>0?todayCommuteRids.has(r.id):r.services.includes('commute'))
-        :r.services.includes(S.filter));
+      (S.filter==='commute'?todayCommuteRids.has(r.id):r.services.includes(S.filter));
     const matchC=careFilterVal==='all'||r.care===careFilterVal;
     const matchV=!vitalFilterOn||!vitalToday.has(r.id);
     return matchQ&&matchF&&matchC&&matchV;
@@ -11040,9 +11038,7 @@ function renderTransport(){
 function _getTodayDayResidents(){
   const todayDs=_localDs(new Date());
   const scheduledRids=new Set(getSchedules().filter(ev=>ev.date===todayDs&&ev.type==='commute').map(ev=>ev.rid));
-  const allCommuteRes=getResidents().filter(r=>r.services&&r.services.includes('commute'));
-  // スケジュール登録がある場合はその人のみ、ない場合は全デイ利用者をフォールバック
-  return scheduledRids.size>0?allCommuteRes.filter(r=>scheduledRids.has(r.id)):allCommuteRes;
+  return getResidents().filter(r=>scheduledRids.has(r.id));
 }
 function renderDayToday(){
   const listEl=document.getElementById('day-today-list');
