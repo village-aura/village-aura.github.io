@@ -7427,9 +7427,15 @@ function renderResList(){
   const allResidents=S.showHidden&&canManage?getAllResidents():getResidents();
   const recs=getRecords();
   const todayStr=new Date().toDateString();
+  const todayDs=_localDs(new Date());
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
   const fluidByRes={};
   recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).forEach(r=>{fluidByRes[r.rid]=(fluidByRes[r.rid]||0)+(r.data.fluid||0);});
+  // 当日デイ来所者セット（スケジュールに今日の commute イベントがある利用者）
+  const todayCommuteRids=new Set(getSchedules().filter(ev=>ev.date===todayDs&&ev.type==='commute').map(ev=>ev.rid));
+  // チップラベル更新
+  const dayChip=document.querySelector('.chip[data-f="commute"]');
+  if(dayChip)dayChip.textContent=`デイ${todayCommuteRids.size>0?' (今日'+todayCommuteRids.size+'名)':''}`;
   const sortKey=(document.getElementById('res-sort')?.value)||'kana';
   const careFilterVal=(document.getElementById('res-care-filter')?.value)||'all';
   const vitalFilterOn=S.vitalFilter==='unrecorded';
@@ -7437,7 +7443,11 @@ function renderResList(){
   const res=allResidents.filter(r=>{
     const kana=(r.kana||'').toLowerCase();
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
-    const matchF=S.filter==='all'||r.services.includes(S.filter);
+    // デイフィルター: スケジュールに今日のcommuteがある人のみ（未登録の場合はservicesで代替）
+    const matchF=S.filter==='all'||
+      (S.filter==='commute'
+        ?(todayCommuteRids.size>0?todayCommuteRids.has(r.id):r.services.includes('commute'))
+        :r.services.includes(S.filter));
     const matchC=careFilterVal==='all'||r.care===careFilterVal;
     const matchV=!vitalFilterOn||!vitalToday.has(r.id);
     return matchQ&&matchF&&matchC&&matchV;
