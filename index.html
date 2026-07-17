@@ -2265,7 +2265,10 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;color:#1565c0">🚌 今日のデイ利用者</div>
         <div id="day-today-date" style="font-size:11px;color:var(--sub);margin-top:3px"></div>
       </div>
-      <span id="day-today-count" style="background:var(--p);color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:800">0名</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span id="day-today-count" style="background:var(--p);color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:800">0名</span>
+        <button onclick="openDayTodayRegModal()" style="background:var(--p);color:#fff;border:none;border-radius:10px;padding:8px 13px;font-size:13px;font-weight:800;cursor:pointer;touch-action:manipulation;white-space:nowrap">＋ 登録</button>
+      </div>
     </div>
     <div style="padding:4px 12px 0;display:flex;gap:6px;align-items:center">
       <div id="day-today-status" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
@@ -3894,6 +3897,16 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- SCHEDULE ADD -->
+<div class="overlay" id="modal-day-today-reg" onclick="closeModal('modal-day-today-reg',event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px">
+    <div class="sheet-title">🚌 今日の来所者を登録</div>
+    <div id="dtr-date-label" style="font-size:12px;color:var(--sub);margin-bottom:10px"></div>
+    <div id="dtr-list" style="max-height:55vh;overflow-y:auto;margin-bottom:12px"></div>
+    <button class="btn-primary" onclick="saveDayTodayReg()">✓ 登録する</button>
+    <button class="btn-cancel" onclick="closeModal('modal-day-today-reg')">キャンセル</button>
+  </div>
+</div>
+
 <div class="overlay" id="modal-day-recur" onclick="closeModal('modal-day-recur',event)">
   <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px">
     <div class="sheet-title">📅 デイ定期スケジュール登録</div>
@@ -12004,6 +12017,44 @@ function openSchAdd(){
   document.getElementById('sch-note').value='';
   document.getElementById('modal-sch-add').classList.add('on');
 }
+// ═══════════ 今日の来所者登録 ═══════════
+function openDayTodayRegModal(){
+  const todayDs=_localDs(new Date());
+  const already=new Set(getSchedules().filter(ev=>ev.date===todayDs&&ev.type==='commute').map(ev=>ev.rid));
+  const allDay=getResidents().filter(r=>r.services&&r.services.includes('commute'));
+  const lbl=document.getElementById('dtr-date-label');
+  if(lbl)lbl.textContent=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  const list=document.getElementById('dtr-list');
+  if(!list)return;
+  if(!allDay.length){list.innerHTML='<div style="color:var(--sub);text-align:center;padding:20px">デイ利用者が登録されていません</div>';document.getElementById('modal-day-today-reg').classList.add('on');return;}
+  const careLabel={none:'自立',support1:'要支援1',support2:'要支援2',care1:'要介護1',care2:'要介護2',care3:'要介護3',care4:'要介護4',care5:'要介護5'};
+  list.innerHTML=allDay.map(r=>{
+    const done=already.has(r.id);
+    return `<label style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--bdr);cursor:pointer">
+      <input type="checkbox" data-rid="${r.id}" ${done?'checked disabled':''} style="width:20px;height:20px;accent-color:var(--p);flex-shrink:0">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:${done?'var(--ok)':'var(--txt)'}">${r.name}${done?' <span style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:1px 6px">登録済</span>':''}</div>
+        <div style="font-size:11px;color:var(--sub)">${careLabel[r.care]||''}${r.facility?' ・ '+r.facility:''}</div>
+      </div>
+    </label>`;
+  }).join('');
+  document.getElementById('modal-day-today-reg').classList.add('on');
+}
+function saveDayTodayReg(){
+  const todayDs=_localDs(new Date());
+  const scheds=getSchedules();
+  const already=new Set(scheds.filter(ev=>ev.date===todayDs&&ev.type==='commute').map(ev=>ev.rid));
+  const checked=[...document.querySelectorAll('#dtr-list input[type=checkbox]:checked:not(:disabled)')].map(el=>el.dataset.rid);
+  if(!checked.length){toast('来所者を選択してください');return;}
+  const newEvs=checked.filter(rid=>!already.has(rid)).map(rid=>({
+    id:'ev'+Date.now()+'-'+rid,rid,title:'デイサービス',type:'commute',date:todayDs,start:'09:00',end:'17:00',note:''
+  }));
+  if(newEvs.length)saveSchedules([...scheds,...newEvs]);
+  closeModal('modal-day-today-reg');
+  toast(`${newEvs.length}名を登録しました ✓`);
+  renderDayToday();
+}
+
 // ═══════════ デイ定期スケジュール登録 ═══════════
 let _drDays=new Set();
 function toggleDrDay(d){
