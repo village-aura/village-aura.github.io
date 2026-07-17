@@ -1363,6 +1363,7 @@ a{color:var(--p);text-decoration:none}
     <div class="sch-bar" id="sch-control-bar" style="border-radius:0"></div>
     <div id="sch-content" style="padding:0 0 16px"></div>
     <button class="sch-fab" onclick="openSchAdd()">＋</button>
+    <button onclick="openDayRecurModal()" style="position:fixed;bottom:90px;right:80px;padding:9px 14px;border-radius:20px;background:#fff;color:var(--p);border:2px solid var(--p);font-size:12px;font-weight:800;box-shadow:0 3px 12px rgba(61,122,181,.25);z-index:50;cursor:pointer;touch-action:manipulation;white-space:nowrap">📅 定期設定</button>
   </div>
 
   <!-- ─── URGENT REC ─── -->
@@ -2266,8 +2267,11 @@ a{color:var(--p);text-decoration:none}
       </div>
       <span id="day-today-count" style="background:var(--p);color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:800">0名</span>
     </div>
-    <div id="day-today-status" style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap"></div>
-    <div id="day-today-list" style="padding:4px 12px 80px"></div>
+    <div style="padding:4px 12px 0;display:flex;gap:6px;align-items:center">
+      <div id="day-today-status" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+      <button onclick="openDayRecurModal()" style="flex-shrink:0;padding:7px 12px;border-radius:8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation;white-space:nowrap">📅 定期設定</button>
+    </div>
+    <div id="day-today-list" style="padding:8px 12px 80px"></div>
   </div>
 
   <!-- HELP SCREEN -->
@@ -3890,6 +3894,39 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- SCHEDULE ADD -->
+<div class="overlay" id="modal-day-recur" onclick="closeModal('modal-day-recur',event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px">
+    <div class="sheet-title">📅 デイ定期スケジュール登録</div>
+    <div class="field">
+      <label>利用者</label>
+      <select id="dr-rid" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;background:var(--card)"></select>
+    </div>
+    <div class="field">
+      <label>来所曜日（複数選択可）</label>
+      <div style="display:flex;gap:5px;margin-top:4px" id="dr-days-row">
+        <button type="button" data-d="1" onclick="toggleDrDay(1)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">月</button>
+        <button type="button" data-d="2" onclick="toggleDrDay(2)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">火</button>
+        <button type="button" data-d="3" onclick="toggleDrDay(3)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">水</button>
+        <button type="button" data-d="4" onclick="toggleDrDay(4)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">木</button>
+        <button type="button" data-d="5" onclick="toggleDrDay(5)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">金</button>
+        <button type="button" data-d="6" onclick="toggleDrDay(6)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:#e53935;cursor:pointer;touch-action:manipulation">土</button>
+        <button type="button" data-d="0" onclick="toggleDrDay(0)" class="dr-day-btn" style="flex:1;padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:#e53935;cursor:pointer;touch-action:manipulation">日</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>開始日</label><input type="date" id="dr-from"></div>
+      <div class="field"><label>終了日</label><input type="date" id="dr-to"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>来所時刻</label><input type="time" id="dr-start" value="09:00" step="300"></div>
+      <div class="field"><label>帰宅時刻</label><input type="time" id="dr-end" value="17:00" step="300"></div>
+    </div>
+    <div id="dr-preview" style="margin-bottom:10px;font-size:12px;color:var(--sub);min-height:16px"></div>
+    <button class="btn-primary" onclick="saveRecurDaySchedule()">📅 一括登録</button>
+    <button class="btn-cancel" onclick="closeModal('modal-day-recur')">キャンセル</button>
+  </div>
+</div>
+
 <div class="sheet-modal-auto" id="modal-sch-add" onclick="closeModal('modal-sch-add',event)">
   <div class="modal-inner" onclick="event.stopPropagation()">
     <div class="sheet-title">📅 スケジュール追加</div>
@@ -11971,6 +12008,79 @@ function openSchAdd(){
   document.getElementById('sch-note').value='';
   document.getElementById('modal-sch-add').classList.add('on');
 }
+// ═══════════ デイ定期スケジュール登録 ═══════════
+let _drDays=new Set();
+function toggleDrDay(d){
+  if(_drDays.has(d))_drDays.delete(d);else _drDays.add(d);
+  document.querySelectorAll('.dr-day-btn').forEach(btn=>{
+    const bd=parseInt(btn.dataset.d);
+    const on=_drDays.has(bd);
+    btn.style.background=on?'var(--p)':'var(--bg)';
+    btn.style.color=on?'#fff':(bd===0||bd===6)?'#e53935':'var(--sub)';
+    btn.style.borderColor=on?'var(--p)':'var(--bdr)';
+  });
+  _updateDrPreview();
+}
+function _updateDrPreview(){
+  const from=document.getElementById('dr-from')?.value;
+  const to=document.getElementById('dr-to')?.value;
+  const prev=document.getElementById('dr-preview');
+  if(!prev)return;
+  if(!from||!to||!_drDays.size){prev.textContent='曜日と期間を選択すると登録件数が表示されます';return;}
+  let cnt=0;const d=new Date(from+'T00:00:00');const end=new Date(to+'T00:00:00');
+  while(d<=end){if(_drDays.has(d.getDay()))cnt++;d.setDate(d.getDate()+1);}
+  prev.textContent=`登録予定: ${cnt}件`;prev.style.color=cnt>0?'var(--p)':'var(--sub)';
+}
+function openDayRecurModal(presetRid){
+  _drDays=new Set();
+  document.querySelectorAll('.dr-day-btn').forEach(btn=>{
+    btn.style.background='var(--bg)';
+    const bd=parseInt(btn.dataset.d);
+    btn.style.color=(bd===0||bd===6)?'#e53935':'var(--sub)';
+    btn.style.borderColor='var(--bdr)';
+  });
+  const res=getResidents().filter(r=>r.services&&r.services.includes('commute'));
+  const ridSel=document.getElementById('dr-rid');
+  ridSel.innerHTML=res.map(r=>`<option value="${r.id}"${r.id===(presetRid||S.currentRes||S.schedRid)?'selected':''}>${r.name}</option>`).join('');
+  const now=new Date();
+  document.getElementById('dr-from').value=_localDs(now);
+  const m1=new Date(now);m1.setMonth(m1.getMonth()+1);
+  document.getElementById('dr-to').value=_localDs(m1);
+  document.getElementById('dr-start').value='09:00';
+  document.getElementById('dr-end').value='17:00';
+  const prev=document.getElementById('dr-preview');
+  if(prev)prev.textContent='曜日と期間を選択すると登録件数が表示されます';
+  document.getElementById('modal-day-recur').classList.add('on');
+}
+function saveRecurDaySchedule(){
+  if(!_drDays.size){toast('曜日を選択してください');return;}
+  const from=document.getElementById('dr-from').value;
+  const to=document.getElementById('dr-to').value;
+  if(!from||!to){toast('期間を入力してください');return;}
+  if(from>to){toast('終了日は開始日以降にしてください');return;}
+  const rid=document.getElementById('dr-rid').value;
+  const start=document.getElementById('dr-start').value;
+  const end=document.getElementById('dr-end').value;
+  const scheds=getSchedules();
+  const existKeys=new Set(scheds.filter(ev=>ev.rid===rid&&ev.type==='commute').map(ev=>ev.date));
+  const newEvs=[];
+  const d=new Date(from+'T00:00:00');
+  const endD=new Date(to+'T00:00:00');
+  while(d<=endD){
+    if(_drDays.has(d.getDay())){
+      const ds=_localDs(d);
+      if(!existKeys.has(ds))newEvs.push({id:'ev'+Date.now()+'-'+ds,rid,title:'デイサービス',type:'commute',date:ds,start,end,note:''});
+    }
+    d.setDate(d.getDate()+1);
+  }
+  if(!newEvs.length){toast('登録できる予定がありません（重複または期間外）');return;}
+  saveSchedules([...scheds,...newEvs]);
+  closeModal('modal-day-recur');
+  toast(`${newEvs.length}件のデイスケジュールを登録しました ✓`);
+  if(S.screen==='scr-schedule')renderSchedule();
+  if(S.screen==='scr-day-today')renderDayToday();
+}
+
 function saveScheduleEvent(){
   const title=document.getElementById('sch-title').value.trim();
   if(!title){toast('タイトルを入力してください');return;}
