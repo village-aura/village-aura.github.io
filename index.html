@@ -3899,8 +3899,9 @@ a{color:var(--p);text-decoration:none}
   <div class="sheet" onclick="event.stopPropagation()" style="max-width:600px;width:100%;border-radius:16px 16px 0 0;max-height:82vh">
     <div style="width:36px;height:4px;background:var(--bdr);border-radius:2px;margin:0 auto 14px"></div>
     <div class="sheet-title">🚌 今日の来所者を登録</div>
-    <div id="dtr-date-label" style="font-size:12px;color:var(--sub);margin-bottom:10px"></div>
-    <div id="dtr-list" style="overflow-y:auto;margin-bottom:12px;max-height:50vh"></div>
+    <div id="dtr-date-label" style="font-size:12px;color:var(--sub);margin-bottom:4px"></div>
+    <div id="dtr-selected-cnt" style="font-size:12px;color:var(--p);font-weight:700;margin-bottom:10px">来所者をタップして選択</div>
+    <div id="dtr-list" style="overflow-y:auto;margin-bottom:12px;max-height:52vh"></div>
     <button class="btn-primary" onclick="saveDayTodayReg()">✓ 登録する</button>
     <button class="btn-cancel" onclick="closeModal('modal-day-today-reg')">キャンセル</button>
   </div>
@@ -4031,6 +4032,7 @@ const INIT_RECORDS = [
   {id:'pv14',type:'vital',rid:'r1',staffId:'s2',ts:pastDay(7,'18:00'),data:{sys:132,dia:75,pulse:68,temp:36.3,spo2:98,cons:'alert',note:''}},
 ];
 function _localDs(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function _dayLabel(d){const days=['日','月','火','水','木','金','土'];return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${days[d.getDay()]}）`;}
 function today(time){const d=new Date();const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return `${_localDs(d)}T${time}:00.000`;}
 function pastDay(ago,time){const d=new Date();d.setDate(d.getDate()-ago);const [h,m]=time.split(':');d.setHours(+h,+m,0,0);return `${_localDs(d)}T${time}:00.000`;}
 
@@ -11060,8 +11062,7 @@ function renderDayToday(){
   const statusEl=document.getElementById('day-today-status');
   if(!listEl)return;
   const today=_localDs(new Date());
-  const dateLabel=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-  if(dateEl)dateEl.textContent=dateLabel;
+  if(dateEl)dateEl.textContent=_dayLabel(new Date());
   const res=_getTodayDayResidents();
   if(countEl)countEl.textContent=res.length+'名';
   // ダッシュボードカウントも更新
@@ -12018,40 +12019,61 @@ function openSchAdd(){
   document.getElementById('modal-sch-add').classList.add('on');
 }
 // ═══════════ 今日の来所者登録 ═══════════
-function openDayTodayRegModal(){
+let _dtrSelected=new Set();
+function _renderDtrList(){
   const todayDs=_localDs(new Date());
   const already=new Set(getSchedules().filter(ev=>ev.date===todayDs&&ev.type==='commute').map(ev=>ev.rid));
   const allDay=getResidents().filter(r=>r.services&&r.services.includes('commute'));
-  const lbl=document.getElementById('dtr-date-label');
-  if(lbl)lbl.textContent=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   const list=document.getElementById('dtr-list');
   if(!list)return;
-  if(!allDay.length){list.innerHTML='<div style="color:var(--sub);text-align:center;padding:20px">デイ利用者が登録されていません</div>';document.getElementById('modal-day-today-reg').classList.add('on');return;}
   const careLabel={none:'自立',support1:'要支援1',support2:'要支援2',care1:'要介護1',care2:'要介護2',care3:'要介護3',care4:'要介護4',care5:'要介護5'};
+  if(!allDay.length){list.innerHTML='<div style="color:var(--sub);text-align:center;padding:20px">デイ利用者が登録されていません</div>';return;}
   list.innerHTML=allDay.map(r=>{
     const done=already.has(r.id);
-    return `<label style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--bdr);cursor:pointer">
-      <input type="checkbox" data-rid="${r.id}" ${done?'checked disabled':''} style="width:20px;height:20px;accent-color:var(--p);flex-shrink:0">
-      <div>
-        <div style="font-size:14px;font-weight:700;color:${done?'var(--ok)':'var(--txt)'}">${r.name}${done?' <span style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:1px 6px">登録済</span>':''}</div>
+    const sel=_dtrSelected.has(r.id);
+    const bdr=done?'#43a047':sel?'var(--p)':'var(--bdr)';
+    const bg=done?'#f1f8e9':sel?'var(--ps)':'var(--card)';
+    const icoFill=done||sel;
+    const icoColor=done?'#43a047':'var(--p)';
+    return `<div onclick="${done?'void 0':("toggleDtrCard('"+r.id+"')")}" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;margin-bottom:6px;border:2px solid ${bdr};background:${bg};cursor:${done?'default':'pointer'}">
+      <span style="width:26px;height:26px;border-radius:50%;border:2px solid ${done?'#43a047':sel?'var(--p)':'var(--bdr)'};background:${icoFill?icoColor:'transparent'};color:${icoFill?'#fff':'var(--bdr)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0">${icoFill?'✓':'＋'}</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:${done?'#2e7d32':sel?'var(--p)':'var(--txt)'}">${r.name}${done?' <span style="font-size:10px;color:#43a047;margin-left:4px">登録済</span>':''}</div>
         <div style="font-size:11px;color:var(--sub)">${careLabel[r.care]||''}${r.facility?' ・ '+r.facility:''}</div>
       </div>
-    </label>`;
+    </div>`;
   }).join('');
+  const cnt=_dtrSelected.size;
+  const cntEl=document.getElementById('dtr-selected-cnt');
+  if(cntEl)cntEl.textContent=cnt>0?cnt+'名を選択中':'来所者をタップして選択';
+}
+function toggleDtrCard(rid){
+  if(_dtrSelected.has(rid))_dtrSelected.delete(rid);else _dtrSelected.add(rid);
+  _renderDtrList();
+}
+function openDayTodayRegModal(){
+  _dtrSelected=new Set();
+  const lbl=document.getElementById('dtr-date-label');
+  if(lbl)lbl.textContent=_dayLabel(new Date());
+  const cntEl=document.getElementById('dtr-selected-cnt');
+  if(cntEl)cntEl.textContent='来所者をタップして選択';
+  _renderDtrList();
   document.getElementById('modal-day-today-reg').classList.add('on');
 }
 function saveDayTodayReg(){
+  if(!_dtrSelected.size){toast('来所者を選択してください');return;}
   const todayDs=_localDs(new Date());
   const scheds=getSchedules();
   const already=new Set(scheds.filter(ev=>ev.date===todayDs&&ev.type==='commute').map(ev=>ev.rid));
-  const checked=[...document.querySelectorAll('#dtr-list input[type=checkbox]:checked:not(:disabled)')].map(el=>el.dataset.rid);
-  if(!checked.length){toast('来所者を選択してください');return;}
-  const newEvs=checked.filter(rid=>!already.has(rid)).map(rid=>({
-    id:'ev'+Date.now()+'-'+rid,rid,title:'デイサービス',type:'commute',date:todayDs,start:'09:00',end:'17:00',note:''
+  const toAdd=[..._dtrSelected].filter(rid=>!already.has(rid));
+  if(!toAdd.length){toast('選択した方はすでに登録済みです');return;}
+  const t=Date.now();
+  const newEvs=toAdd.map((rid,i)=>({
+    id:'ev'+(t+i)+'-'+rid,rid,title:'デイサービス',type:'commute',date:todayDs,start:'09:00',end:'17:00',note:''
   }));
-  if(newEvs.length)saveSchedules([...scheds,...newEvs]);
+  saveSchedules([...scheds,...newEvs]);
   closeModal('modal-day-today-reg');
-  toast(`${newEvs.length}名を登録しました ✓`);
+  toast(toAdd.length+'名を登録しました ✓');
   renderDayToday();
 }
 
