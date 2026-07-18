@@ -682,6 +682,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <span class="sb-lbl">業務ツール</span>
+      <button class="sbn" id="sbn-shift" onclick="showScr('scr-shift')">📆　シフト表</button>
       <button class="sbn" id="sbn-manual" onclick="showScr('scr-manual')">📚　マニュアル</button>
       <span class="sb-lbl">システム</span>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　利用者・職員登録</button>
@@ -2275,6 +2276,31 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div id="day-today-list" style="padding:8px 12px 80px"></div>
     <button onclick="openDayTodayRegModal()" style="position:fixed;bottom:90px;right:20px;padding:0 18px;height:52px;border-radius:26px;background:var(--p);color:#fff;font-size:15px;font-weight:800;border:none;box-shadow:0 4px 16px rgba(61,122,181,.4);z-index:50;cursor:pointer;touch-action:manipulation;white-space:nowrap;display:flex;align-items:center;gap:6px">＋ 今日の来所者を登録</button>
+  </div>
+
+  <!-- ─── シフト表 ─── -->
+  <div id="scr-shift" class="scr" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 56px)">
+    <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <div style="font-size:16px;font-weight:800;color:var(--txt)">📆 シフト表</div>
+      <span id="shift-month-badge" style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px"></span>
+      <a id="shift-open-link" href="#" target="_blank" style="margin-left:auto;font-size:11px;color:var(--p);text-decoration:none;padding:5px 10px;border:1.5px solid var(--p);border-radius:8px;font-weight:700;white-space:nowrap">別タブで開く ↗</a>
+    </div>
+    <div id="shift-tabs" style="display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 8px;-webkit-overflow-scrolling:touch"></div>
+    <div id="shift-frame-wrap" style="flex:1;position:relative;overflow:hidden">
+      <iframe id="shift-iframe" style="width:100%;height:100%;border:none" src="about:blank"></iframe>
+      <div id="shift-no-embed" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:var(--bg);text-align:center">
+        <div style="font-size:44px">📄</div>
+        <div style="font-size:14px;font-weight:700;color:var(--txt)">このファイルはアプリ内で表示できません</div>
+        <div style="font-size:12px;color:var(--sub)">PDF・Excel は Google Drive で直接ご確認ください</div>
+        <a id="shift-drive-link" href="#" target="_blank" style="font-size:12px;color:var(--p);font-weight:700;padding:8px 16px;border:1.5px solid var(--p);border-radius:8px;text-decoration:none">Google Drive で開く ↗</a>
+      </div>
+      <div id="shift-share-notice" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:var(--bg);text-align:center">
+        <div style="font-size:44px">🔒</div>
+        <div style="font-size:14px;font-weight:700;color:var(--txt)">共有設定が必要です</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.7">Google Sheets の共有設定を<br>「リンクを知っている全員が閲覧可」<br>に変更してください</div>
+        <a id="shift-sheet-edit-link" href="#" target="_blank" style="font-size:12px;color:var(--p);font-weight:700;padding:8px 16px;border:1.5px solid var(--p);border-radius:8px;text-decoration:none">Sheets を開いて設定する ↗</a>
+      </div>
+    </div>
   </div>
 
   <!-- ─── 業務マニュアル ─── -->
@@ -6560,7 +6586,9 @@ function showScr(id){
     'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理',
     'scr-bulk-vital':'一括バイタル入力','scr-bulk-meal':'一括食事・水分','scr-bulk-excretion':'一括排泄','scr-medication':'服薬チェック','scr-day-today':'今日のデイ利用者',
     'scr-transport':'送迎チェック',
-    'scr-doctor':'医師ページ'
+    'scr-doctor':'医師ページ',
+    'scr-shift':'シフト表',
+    'scr-manual':'業務マニュアル'
   };
   document.getElementById('hd-title').textContent=titles[id]||id;
   const back=document.getElementById('hd-back');
@@ -6571,7 +6599,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-import') initImportScr();
@@ -6597,6 +6625,7 @@ function showScr(id){
   if(id==='scr-medication') renderMedication();
   if(id==='scr-transport') renderTransport();
   if(id==='scr-day-today') renderDayToday();
+  if(id==='scr-shift') renderShift();
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
@@ -14629,6 +14658,60 @@ function seedDemoData(){
   S.currentRes=rid;
   renderResList();
   toast('デモデータを挿入しました ✓');
+}
+
+// ═══════════ シフト表 ═══════════
+const SHIFT_DATA={
+  '2026-07':{
+    label:'2026年7月',
+    tabs:[
+      {key:'commute',label:'デイ',type:'sheets',id:'13Ya3Cz6mAyKd3cwxNL2dxlVDeaznnIZ9qvuS0rv33bY'},
+      {key:'sahoju',label:'サ高住',type:'sheets',id:'1wFm4c5WO7DEwRO66ePj_SCfL6g_I9vDbccSNF5lT-Hw'},
+      {key:'kotaki',label:'小規模',type:'none'},
+      {key:'nurse',label:'看護師',type:'none'},
+      {key:'visit',label:'訪問介護',type:'sheets',id:'1yUhQnG23iNuKGwKoStMEBWBHq7w8cZkjs1Hws4Bjq7s'},
+      {key:'kyotaku',label:'居宅',type:'none'},
+    ]
+  }
+};
+let _shiftTabKey=null;
+let _shiftMonth='2026-07';
+function renderShift(){
+  const data=SHIFT_DATA[_shiftMonth];
+  if(!data)return;
+  const badge=document.getElementById('shift-month-badge');
+  if(badge)badge.textContent=data.label;
+  const tabsEl=document.getElementById('shift-tabs');
+  if(tabsEl)tabsEl.innerHTML=data.tabs.map(t=>`<button onclick="switchShiftTab('${t.key}')" data-stab="${t.key}" style="flex-shrink:0;padding:10px 14px;font-size:12px;font-weight:700;color:${_shiftTabKey===t.key?'var(--p)':'var(--sub)'};background:transparent;border:none;border-bottom:2px solid ${_shiftTabKey===t.key?'var(--p)':'transparent'};cursor:pointer;touch-action:manipulation;white-space:nowrap">${t.label}</button>`).join('');
+  if(!_shiftTabKey||!data.tabs.find(t=>t.key===_shiftTabKey))switchShiftTab(data.tabs[0].key);
+  else switchShiftTab(_shiftTabKey);
+}
+function switchShiftTab(key){
+  _shiftTabKey=key;
+  const data=SHIFT_DATA[_shiftMonth];
+  if(!data)return;
+  const tab=data.tabs.find(t=>t.key===key);
+  if(!tab)return;
+  document.querySelectorAll('[data-stab]').forEach(b=>{
+    const on=b.dataset.stab===key;
+    b.style.color=on?'var(--p)':'var(--sub)';
+    b.style.borderBottomColor=on?'var(--p)':'transparent';
+  });
+  const iframe=document.getElementById('shift-iframe');
+  const noEmbed=document.getElementById('shift-no-embed');
+  const openLink=document.getElementById('shift-open-link');
+  if(tab.type==='sheets'){
+    const editUrl=`https://docs.google.com/spreadsheets/d/${tab.id}/edit`;
+    if(iframe){iframe.style.display='';iframe.src=`https://docs.google.com/spreadsheets/d/${tab.id}/preview`;}
+    if(noEmbed)noEmbed.style.display='none';
+    if(openLink){openLink.href=editUrl;openLink.style.display='';}
+    const el=document.getElementById('shift-sheet-edit-link');
+    if(el)el.href=editUrl;
+  }else{
+    if(iframe){iframe.style.display='none';iframe.src='about:blank';}
+    if(noEmbed)noEmbed.style.display='flex';
+    if(openLink)openLink.style.display='none';
+  }
 }
 
 // ── 各モーダルに☒閉じるボタンを注入（data-no-close-btn 属性があるものはスキップ） ──
