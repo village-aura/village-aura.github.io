@@ -53,6 +53,7 @@ a{color:var(--p);text-decoration:none}
 /* ── SCREENS ── */
 .scr{display:none;min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));animation:fadeIn .2s}
 .scr.on{display:block}
+#scr-shift.on,#scr-manual.on{display:flex!important;flex-direction:column;height:calc(100vh - 56px);min-height:0;padding-bottom:0!important}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes slideInRight{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 @keyframes slideInLeft{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
@@ -2279,7 +2280,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── シフト表 ─── -->
-  <div id="scr-shift" class="scr" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 56px)">
+  <div id="scr-shift" class="scr" style="padding:0">
     <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
       <div style="font-size:16px;font-weight:800;color:var(--txt)">📆 シフト表</div>
       <span id="shift-month-badge" style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px"></span>
@@ -2295,7 +2296,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── 業務マニュアル ─── -->
-  <div id="scr-manual" class="scr" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 56px)">
+  <div id="scr-manual" class="scr" style="padding:0">
     <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0">
       <div style="font-size:16px;font-weight:800;color:var(--txt)">📚 業務マニュアル</div>
     </div>
@@ -6661,7 +6662,7 @@ function showScr(id){
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor','scr-shift','scr-manual'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
