@@ -681,6 +681,8 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
       <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
+      <span class="sb-lbl">業務ツール</span>
+      <button class="sbn" id="sbn-manual" onclick="showScr('scr-manual')">📚　マニュアル</button>
       <span class="sb-lbl">システム</span>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　利用者・職員登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
@@ -2273,6 +2275,15 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div id="day-today-list" style="padding:8px 12px 80px"></div>
     <button onclick="openDayTodayRegModal()" style="position:fixed;bottom:90px;right:20px;padding:0 18px;height:52px;border-radius:26px;background:var(--p);color:#fff;font-size:15px;font-weight:800;border:none;box-shadow:0 4px 16px rgba(61,122,181,.4);z-index:50;cursor:pointer;touch-action:manipulation;white-space:nowrap;display:flex;align-items:center;gap:6px">＋ 今日の来所者を登録</button>
+  </div>
+
+  <!-- ─── 業務マニュアル ─── -->
+  <div id="scr-manual" class="scr" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 56px)">
+    <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <div style="font-size:16px;font-weight:800;color:var(--txt)">📚 業務マニュアル</div>
+      <a href="https://inadain.github.io/jigyosho-manual/" target="_blank" style="margin-left:auto;font-size:11px;color:var(--p);text-decoration:none;padding:5px 10px;border:1.5px solid var(--p);border-radius:8px;font-weight:700;white-space:nowrap">別タブで開く ↗</a>
+    </div>
+    <iframe src="https://inadain.github.io/jigyosho-manual/" style="flex:1;border:none;width:100%" allow="fullscreen" title="業務マニュアル"></iframe>
   </div>
 
   <!-- HELP SCREEN -->
@@ -6560,7 +6571,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-import') initImportScr();
