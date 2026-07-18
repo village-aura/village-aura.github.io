@@ -2283,22 +2283,13 @@ a{color:var(--p);text-decoration:none}
     <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
       <div style="font-size:16px;font-weight:800;color:var(--txt)">📆 シフト表</div>
       <span id="shift-month-badge" style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px"></span>
-      <a id="shift-open-link" href="#" target="_blank" style="margin-left:auto;font-size:11px;color:var(--p);text-decoration:none;padding:5px 10px;border:1.5px solid var(--p);border-radius:8px;font-weight:700;white-space:nowrap">別タブで開く ↗</a>
     </div>
-    <div id="shift-tabs" style="display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 8px;-webkit-overflow-scrolling:touch"></div>
-    <div id="shift-frame-wrap" style="flex:1;position:relative;overflow:hidden">
-      <iframe id="shift-iframe" style="width:100%;height:100%;border:none" src="about:blank"></iframe>
-      <div id="shift-no-embed" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:var(--bg);text-align:center">
-        <div style="font-size:44px">📄</div>
-        <div style="font-size:14px;font-weight:700;color:var(--txt)">このファイルはアプリ内で表示できません</div>
-        <div style="font-size:12px;color:var(--sub)">PDF・Excel は Google Drive で直接ご確認ください</div>
-        <a id="shift-drive-link" href="#" target="_blank" style="font-size:12px;color:var(--p);font-weight:700;padding:8px 16px;border:1.5px solid var(--p);border-radius:8px;text-decoration:none">Google Drive で開く ↗</a>
-      </div>
-      <div id="shift-share-notice" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:var(--bg);text-align:center">
-        <div style="font-size:44px">🔒</div>
-        <div style="font-size:14px;font-weight:700;color:var(--txt)">共有設定が必要です</div>
-        <div style="font-size:12px;color:var(--sub);line-height:1.7">Google Sheets の共有設定を<br>「リンクを知っている全員が閲覧可」<br>に変更してください</div>
-        <a id="shift-sheet-edit-link" href="#" target="_blank" style="font-size:12px;color:var(--p);font-weight:700;padding:8px 16px;border:1.5px solid var(--p);border-radius:8px;text-decoration:none">Sheets を開いて設定する ↗</a>
+    <div id="shift-tabs" style="display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+    <div id="shift-table-wrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch">
+      <div id="shift-table-area"></div>
+      <div id="shift-no-data" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 24px;text-align:center">
+        <div style="font-size:44px">📅</div>
+        <div style="font-size:14px;font-weight:700;color:var(--txt)">このタブのデータがありません</div>
       </div>
     </div>
   </div>
@@ -14661,21 +14652,84 @@ function seedDemoData(){
 }
 
 // ═══════════ シフト表 ═══════════
-const SHIFT_DATA={
-  '2026-07':{
-    label:'2026年7月',
-    tabs:[
-      {key:'commute',label:'デイ',type:'sheets',id:'13Ya3Cz6mAyKd3cwxNL2dxlVDeaznnIZ9qvuS0rv33bY'},
-      {key:'sahoju',label:'サ高住',type:'sheets',id:'1wFm4c5WO7DEwRO66ePj_SCfL6g_I9vDbccSNF5lT-Hw'},
-      {key:'kotaki',label:'小規模',type:'none'},
-      {key:'nurse',label:'看護師',type:'none'},
-      {key:'visit',label:'訪問介護',type:'sheets',id:'1yUhQnG23iNuKGwKoStMEBWBHq7w8cZkjs1Hws4Bjq7s'},
-      {key:'kyotaku',label:'居宅',type:'none'},
-    ]
-  }
+const _SHIFT_COLORS={
+  '日':{bg:'#e3f2fd',c:'#1565c0'},
+  '早①':{bg:'#e0f7fa',c:'#006064'},'早②':{bg:'#e0f7fa',c:'#006064'},
+  '遅①':{bg:'#fff3e0',c:'#e65100'},'遅②':{bg:'#fff3e0',c:'#e65100'},
+  '夜':{bg:'#1a237e',c:'#fff'},'明':{bg:'#ede7f6',c:'#4527a0'},
+  '休':{bg:'#f0f0f0',c:'#9e9e9e'},'／':{bg:'#f0f0f0',c:'#9e9e9e'},
+  '有':{bg:'#e8f5e9',c:'#2e7d32'},'有給':{bg:'#e8f5e9',c:'#2e7d32'},
+  '①':{bg:'#e3f2fd',c:'#1565c0'},'②':{bg:'#e0f2f1',c:'#00695c'},
+  '③':{bg:'#fff3e0',c:'#e65100'},'④':{bg:'#fce4ec',c:'#c62828'},
+  '⑤':{bg:'#f3e5f5',c:'#6a1b9a'},
+  'A1':{bg:'#e8eaf6',c:'#283593'},'A2':{bg:'#e8eaf6',c:'#283593'},
+  'B1':{bg:'#e0f2f1',c:'#00695c'},'B2':{bg:'#e0f2f1',c:'#00695c'},
+  'MT':{bg:'#fff8e1',c:'#f57f17'},'会':{bg:'#fff8e1',c:'#f57f17'},
 };
+function _shiftStyle(code){
+  if(!code)return 'background:transparent';
+  const c=_SHIFT_COLORS[code];
+  if(c)return `background:${c.bg};color:${c.c}`;
+  if(code.startsWith('早'))return 'background:#e0f7fa;color:#006064';
+  if(code.startsWith('遅'))return 'background:#fff3e0;color:#e65100';
+  if(code==='/')return 'background:#f0f0f0;color:#9e9e9e';
+  return 'background:#e3f2fd;color:#1565c0';
+}
+function renderShiftTable(tab){
+  const area=document.getElementById('shift-table-area');
+  const noData=document.getElementById('shift-no-data');
+  if(!tab.staff||!tab.staff.length){
+    area.innerHTML='';area.style.display='none';
+    if(noData){noData.style.display='flex';}
+    return;
+  }
+  area.style.display='';
+  if(noData)noData.style.display='none';
+  const now=new Date();
+  const todayN=now.getDate(),todayM=now.getMonth()+1,todayY=now.getFullYear();
+  const isToday=(n)=>tab.year===todayY&&tab.month===todayM&&n===todayN;
+  const isSat=(dow)=>dow==='土',isSun=(dow)=>dow==='日';
+  const COL_W=32,NAME_W=80,ROLE_W=72;
+  let h=`<div style="padding:8px 0 80px"><table style="border-collapse:collapse;font-size:11px;white-space:nowrap;min-width:100%">`;
+  // ヘッダー
+  h+=`<thead><tr style="position:sticky;top:0;z-index:10;background:var(--card)">`;
+  h+=`<th style="position:sticky;left:0;z-index:11;background:var(--card);padding:4px 6px;font-size:10px;color:var(--sub);text-align:left;border-right:2px solid var(--bdr);border-bottom:1.5px solid var(--bdr);min-width:${ROLE_W}px;max-width:${ROLE_W}px">役職</th>`;
+  h+=`<th style="position:sticky;left:${ROLE_W}px;z-index:11;background:var(--card);padding:4px 6px;font-size:11px;font-weight:800;color:var(--txt);text-align:left;border-right:2px solid var(--bdr);border-bottom:1.5px solid var(--bdr);min-width:${NAME_W}px;max-width:${NAME_W}px">氏名</th>`;
+  for(const d of tab.days){
+    const td=isToday(d.n);
+    const sat=isSat(d.dow),sun=isSun(d.dow);
+    const bg=td?'#fff3e0':sat?'#e3f2fd':sun?'#fce4ec':'var(--card)';
+    const dc=sun?'#c62828':sat?'#1565c0':'var(--sub)';
+    h+=`<th style="padding:3px 1px;text-align:center;background:${bg};border-bottom:1.5px solid var(--bdr);min-width:${COL_W}px;width:${COL_W}px${td?';border-left:2px solid #f57c00;border-right:2px solid #f57c00':''}">`;
+    h+=`<div style="font-size:11px;font-weight:${td?'900':'700'};color:${td?'#e65100':dc}">${d.n}</div>`;
+    h+=`<div style="font-size:9px;color:${dc}">${d.dow}</div></th>`;
+  }
+  h+=`</tr></thead><tbody>`;
+  // スタッフ行
+  for(let ri=0;ri<tab.staff.length;ri++){
+    const p=tab.staff[ri];
+    const rowBg=ri%2===0?'var(--bg)':'var(--card)';
+    h+=`<tr>`;
+    h+=`<td style="position:sticky;left:0;z-index:5;background:${rowBg};padding:4px 5px;font-size:10px;color:var(--sub);border-right:2px solid var(--bdr);border-bottom:1px solid var(--bdr);min-width:${ROLE_W}px;max-width:${ROLE_W}px;overflow:hidden;text-overflow:ellipsis">${p.role||''}</td>`;
+    h+=`<td style="position:sticky;left:${ROLE_W}px;z-index:5;background:${rowBg};padding:4px 6px;font-size:11px;font-weight:700;color:var(--txt);border-right:2px solid var(--bdr);border-bottom:1px solid var(--bdr);min-width:${NAME_W}px;max-width:${NAME_W}px">${p.name}</td>`;
+    for(let di=0;di<tab.days.length;di++){
+      const d=tab.days[di];const s=p.shifts[di]||'';
+      const td=isToday(d.n);
+      const sat=isSat(d.dow),sun=isSun(d.dow);
+      const cellBg=s?'':td?'#fff8f0':sat?'#f0f7ff':sun?'#fff0f0':rowBg;
+      const sc=_shiftStyle(s);
+      h+=`<td style="padding:1px;text-align:center;background:${cellBg};border-bottom:1px solid var(--bdr);${td?'border-left:2px solid #f57c00;border-right:2px solid #f57c00':''}min-width:${COL_W}px;width:${COL_W}px">`;
+      if(s)h+=`<span style="${sc};display:inline-block;border-radius:4px;padding:2px 0;width:100%;font-weight:700;font-size:10px">${s}</span>`;
+      h+=`</td>`;
+    }
+    h+=`</tr>`;
+  }
+  h+=`</tbody></table></div>`;
+  area.innerHTML=h;
+}
+const SHIFT_DATA={"2026-07":{"label":"2026年7月","tabs":[{"key":"デイ","label":"デイ","type":"data","year":2026,"month":7,"days":[{"n":1,"dow":"水"},{"n":2,"dow":"木"},{"n":3,"dow":"金"},{"n":4,"dow":"土"},{"n":5,"dow":"日"},{"n":6,"dow":"月"},{"n":7,"dow":"火"},{"n":8,"dow":"水"},{"n":9,"dow":"木"},{"n":10,"dow":"金"},{"n":11,"dow":"土"},{"n":12,"dow":"日"},{"n":13,"dow":"月"},{"n":14,"dow":"火"},{"n":15,"dow":"水"},{"n":16,"dow":"木"},{"n":17,"dow":"金"},{"n":18,"dow":"土"},{"n":19,"dow":"日"},{"n":20,"dow":"月"},{"n":21,"dow":"火"},{"n":22,"dow":"水"},{"n":23,"dow":"木"},{"n":24,"dow":"金"},{"n":25,"dow":"土"},{"n":26,"dow":"日"},{"n":27,"dow":"月"},{"n":28,"dow":"火"},{"n":29,"dow":"水"},{"n":30,"dow":"木"},{"n":31,"dow":"金"}],"staff":[{"role":"生活相談員","name":"前原健","shifts":["①","①","①","休","休","4","①","①","①","①","休","休","①","①","①","休","①","①","休","①","①","①","休","①","①","休","休","①","①","①","①"]},{"role":"介護職員","name":"渡辺未稀","shifts":["①","①","①","①","休","","①","休","①","①","","休","①","休","①","","①","休","休","①","①","①","","①","休","休","","休","①","①","①"]},{"role":"介護職員","name":"阪本江都子","shifts":["①","①","①","休","休","①","①","①","①","①","休","休","①","①","休","①","①","休","休","①","①","①","①","①","休","休","①","①","①","①","①"]},{"role":"介護職員","name":"姫路智恵美","shifts":["①","休","①","①","休","①","①","①","①","①","休","休","①","①","①","①","休","①","休","①","①","①","①","①","休","休","①","①","休","①","①"]},{"role":"介護職員","name":"池元綾乃","shifts":["①","①","①","休","休","①","①","①","①","①","休","休","①","①","①","①","①","休","休","①","①","①","①","①","休","休","①","①","①","①","休"]},{"role":"介護職員","name":"太田裕子","shifts":["休","①","①","①","休","①","①","①","①","①","休","休","①","①","休","①","①","①","休","①","休","①","①","①","休","休","①","①","①","①","①"]},{"role":"介護職員","name":"竹下律子","shifts":["②","②","②","休","休","②","休","②","②","②","②","休","②","②","②","②","②","休","休","②","②","②","②","休","②","休","②","休","②","②","②"]},{"role":"介護職員","name":"平野紗弥","shifts":["②","②","②","休","休","②","②","②","②","休","②","休","②","②","②","②","②","休","休","②","②","休","②","②","②","休","休","②","②","②","②"]},{"role":"介護職員","name":"中塚昭子","shifts":["③","休","休","休","休","休","③","③","休","休","休","休","休","③","②","休","③","休","休","休","③","③","休","③","休","休","③","②","③","休","③"]},{"role":"看護職員","name":"橘沙也佳","shifts":["休","④","④","休","休","休","④","④","④","④","④","休","④","④","休","④","④","休","休","休","④","④","④","④","休","休","休","④","④","休","④"]},{"role":"看護職員","name":"岡友子","shifts":["⑤","","","⑤","","⑤","","⑤","","⑤","","","⑤","","⑤","","","⑤","","⑤","","⑤","休","","⑤","","⑤","","","⑤",""]}]},{"key":"サ高住","label":"サ高住","type":"data","year":2026,"month":7,"days":[{"n":1,"dow":"水"},{"n":2,"dow":"木"},{"n":3,"dow":"金"},{"n":4,"dow":"土"},{"n":5,"dow":"日"},{"n":6,"dow":"月"},{"n":7,"dow":"火"},{"n":8,"dow":"水"},{"n":9,"dow":"木"},{"n":10,"dow":"金"},{"n":11,"dow":"土"},{"n":12,"dow":"日"},{"n":13,"dow":"月"},{"n":14,"dow":"火"},{"n":15,"dow":"水"},{"n":16,"dow":"木"},{"n":17,"dow":"金"},{"n":18,"dow":"土"},{"n":19,"dow":"日"},{"n":20,"dow":"月"},{"n":21,"dow":"火"},{"n":22,"dow":"水"},{"n":23,"dow":"木"},{"n":24,"dow":"金"},{"n":25,"dow":"土"},{"n":26,"dow":"日"},{"n":27,"dow":"月"},{"n":28,"dow":"火"},{"n":29,"dow":"水"},{"n":30,"dow":"木"},{"n":31,"dow":"金"}],"staff":[{"role":"サ高管理者（サ訪）","name":"岡本 健志","shifts":["日","日","日","／","日","日","日","有","／","日","日","／","日","日","日","日","／","／","日","日","日","／","日","日","日","／","日","日","／","日","／"]},{"role":"相談員（常）","name":"山田 宏美","shifts":["日","日","／","日","／","／","日","日","日","／","日","日","日","有","／","日","日","日","／","日","日","日","／","日","日","日","／","日","日","／","日"]},{"role":"介護（常・サ訪）","name":"森本 優子","shifts":["明","／","／","早①","遅①","夜","明","／","遅①","／","／","遅①","夜","明","／","早②","日","夜","明","／","有","早①","夜","明","／","早①","遅①","夜","明","／","日"]},{"role":"介護（常・サ訪）","name":"相原 万里子","shifts":["早①","遅①","夜","明","／","／","遅①","夜","明","／","早②","早①","／","／","早①","／","夜","明","／","早①","日","有","遅①","夜","明","／","日","／","早①","遅①","夜"]},{"role":"介護（常・サ訪）","name":"玉木 陽子","shifts":["夜","明","／","／","早①","早①","夜","明","／","早①","遅①","夜","明","／","日","遅①","／","遅①","夜","明","／","／","早②","遅①","夜","明","／","日","／","有","早②"]},{"role":"介護（常・サ訪）","name":"田野 攻治","shifts":["早②","夜","明","／","早②","遅①","／","／","日","早②","夜","明","／","日","遅①","夜","明","／","／","遅①","夜","明","／","有","早②","早②","／","遅①","夜","明","／"]},{"role":"介護（常・サ訪）","name":"中桐 裕次郎","shifts":["／","早②","有","夜","明","／","早②","早①","夜","明","／","／","早①","遅①","夜","明","／","／","日","夜","明","／","日","早②","／","遅①","夜","明","／","早①","遅①"]},{"role":"介護（常・サ訪）","name":"西 恵","shifts":["／","／","遅①","日","夜","明","／","有","早②","夜","明","／","遅①","夜","明","／","早②","日","早①","／","早②","夜","明","／","遅①","夜","明","／","遅①","／","早①"]},{"role":"介護（常・サ訪）","name":"原田 正子","shifts":["遅①","／","早①","早②","／","早②","早①","遅①","／","日","早①","早②","／","早②1H","早②","早①","遅①","／","／","早②","早①","遅①","／","早①","日","／","／","早①","早②","日","有"]},{"role":"介護（派）","name":"脇 さとみ","shifts":["／","早①","早②","遅①","日","／","／","早②","早①","遅①","日","／","早②","早①","／","／","早①","早②","遅①","／","遅①","日","早①","／","早①","日","早②","／","日","早②","／"]},{"role":"介護（常）","name":"横山 稔代","shifts":["早①","早②","／","早①","早②","遅①","／","早①","早②","遅①","／","日","遅①","（夜","明）","／","／","早①","早②","有","／","早②","（夜","明）","／","／","早①","早②","／","夜","明"]},{"role":"介護（常）","name":"藤井 晃頼","shifts":["日","早①","早①","／","早①","早②","早②","／","早①","早②","遅①","／","早①","早②","遅①","／","／","遅①","遅①","／","早②","早①","／","早②","遅①","遅①","／","／","早①","遅①","遅①"]},{"role":"訪問管理者（常）","name":"長谷川 美樹","shifts":["日","日","日","／","／","日","日","日","／","日","日","／","日","有","有","日","日","日","／","日","日","日","／","日","日","／","／","日","日","／","日"]},{"role":"訪問（常）","name":"芝崎 千春","shifts":["日","日","日","／","／","／","日","日","日","日","／","／","日","日","日","日","日","／","／","日","日","日/有","日","日","／","／","日","日","日","日","日"]},{"role":"看護（常）","name":"兼信 真理","shifts":["／","B1","B1","A1","B1","／","B1","A1","B1","A1","B1","／","B1","A1","／","B1","B1","／","A1","A1","B1","／","B1","／","B1","B1","A1","／","／","B1","B1"]},{"role":"看護（常）","name":"中桐 芳江","shifts":["有","有","有","／","／","有","有","有","有","有","／","／","有","有","有","有","有","／","／","／","有","有","有","有","／","／","有","有","有","有","有"]},{"role":"看護（常）","name":"芦内 薫","shifts":["A1","A1","A1","／","A1","A1","A1","／","A1","／","A1","A1","A1","／","A1","A1","A1","A1","／","／","A1","A1","A1","A1","／","A1","／","A1","A1","A1","／"]},{"role":"看護（常）","name":"柚木 清美","shifts":["A1","A1","A1","／","／","A1","A1","A1","A1","A1","／","／","A1","A1","A1","／","A1","A1","A1","／","A1","A1","A1","／","A1","／","A1","A1","A1","／","A1"]},{"role":"看護（パ）","name":"山室 八千代","shifts":["B1","／","／","B1","／","B1","／","B1","B1","B1","／","B1","／","B1","B1","／","／","B1","B1","B1","／","B1","／","B1","／","／","B1","B1","B1","／","／"]}]},{"key":"訪問介護","label":"訪問介護","type":"data","year":2026,"month":7,"days":[{"n":1,"dow":"水"},{"n":2,"dow":"木"},{"n":3,"dow":"金"},{"n":4,"dow":"土"},{"n":5,"dow":"日"},{"n":6,"dow":"月"},{"n":7,"dow":"火"},{"n":8,"dow":"水"},{"n":9,"dow":"木"},{"n":10,"dow":"金"},{"n":11,"dow":"土"},{"n":12,"dow":"日"},{"n":13,"dow":"月"},{"n":14,"dow":"火"},{"n":15,"dow":"水"},{"n":16,"dow":"木"},{"n":17,"dow":"金"},{"n":18,"dow":"土"},{"n":19,"dow":"日"},{"n":20,"dow":"月"},{"n":21,"dow":"火"},{"n":22,"dow":"水"},{"n":23,"dow":"木"},{"n":24,"dow":"金"},{"n":25,"dow":"土"},{"n":26,"dow":"日"},{"n":27,"dow":"月"},{"n":28,"dow":"火"},{"n":29,"dow":"水"},{"n":30,"dow":"木"},{"n":31,"dow":"金"}],"staff":[{"role":"訪問管理者","name":"長谷川美樹","shifts":["日","日","日","休","休","日","日","日","休","日","日","休","日","有","有","日","日","日","休","日","日","日","休","日","日","休","休","日","日","休","日"]},{"role":"訪問介護員","name":"芝崎千春","shifts":["日","日","日","休","休","休","日","日","日","日","休","休","日","日","日","日","日","休","休","日","日","日/有","日","日","休","休","日","日","日","日","日"]}]},{"key":"小規模","label":"小規模","type":"data","year":2026,"month":7,"days":[{"n":1,"dow":"水"},{"n":2,"dow":"木"},{"n":3,"dow":"金"},{"n":4,"dow":"土"},{"n":5,"dow":"日"},{"n":6,"dow":"月"},{"n":7,"dow":"火"},{"n":8,"dow":"水"},{"n":9,"dow":"木"},{"n":10,"dow":"金"},{"n":11,"dow":"土"},{"n":12,"dow":"日"},{"n":13,"dow":"月"},{"n":14,"dow":"火"},{"n":15,"dow":"水"},{"n":16,"dow":"木"},{"n":17,"dow":"金"},{"n":18,"dow":"土"},{"n":19,"dow":"日"},{"n":20,"dow":"月"},{"n":21,"dow":"火"},{"n":22,"dow":"水"},{"n":23,"dow":"木"},{"n":24,"dow":"金"},{"n":25,"dow":"土"},{"n":26,"dow":"日"},{"n":27,"dow":"月"},{"n":28,"dow":"火"},{"n":29,"dow":"水"},{"n":30,"dow":"木"},{"n":31,"dow":"金"}],"staff":[{"role":"A","name":"小川萌","shifts":["日","休","夜","明","休","日","日","日","日","休","日","日","日","夜","明","休","休","有","早","日","休","日","日","日","休","休","早","夜","明","休","日"]},{"role":"A","name":"柏原美保","shifts":["日","早","休","夜","明","休","休","日","夜","明","休","早","夜","明","休","早","日","休","日","夜","明","休","日","夜","明","休","休","早","日","夜","明"]},{"role":"A","name":"吉田かおり","shifts":["明","休","休","日","早","夜","明","休","日","早","夜","明","休","休","日","日","夜","明","休","日","夜","明","休","有","日","夜","明","休","休","日","早"]},{"role":"A","name":"藤川五月","shifts":["休","夜","明","休","日","早","夜","明","休","日","早","夜","明","休","休","日","日","夜","明","休","日","日","夜","明","休","日","夜","明","休","早","日"]},{"role":"A","name":"大久保直子","shifts":["休","休","早","日","夜","明","休","日","日","夜","明","休","日","早","日","夜","明","休","夜","明","休","休","日","早","夜","明","休","休","早","日","夜"]},{"role":"A","name":"山﨑美和","shifts":["休","日","日","早","休","日","日","早","日","休","休","日","早","日","休","日","早","日","日","休","日","早","日","休","日","早","日","日","休","休","日"]},{"role":"A","name":"漆川 富美子","shifts":["早","日","日","休","日","日","早","休","休","日","日","休","休","日","早","日","休","早","日","早","日","休","早","日","日","休","有","日","日","日","休"]},{"role":"C","name":"松尾紀美代","shifts":["夜","明","休","休","休","休","休","夜","明","休","休","休","休","休","夜","明","休","休","休","休","休","夜","明","休","休","休","休","休","夜","明","休"]},{"role":"A","name":"平田典子","shifts":["日","日","休","休","休","休","日","日","早","休","日","日","休","日","休","休","休","日","休","休","早","日","休","日","早","日","休","日","休","休","休"]},{"role":"A","name":"松村望","shifts":["日","日","休","日","休","日","日","日","休","日","日","休","日","日","日","休","日","日","日","日","休","日","日","休","休","日","日","日","日","休","日"]},{"role":"A","name":"石原美保","shifts":["日","日","日","休","日","日","日","休","日","日","休","日","日","日","休","日","日","休","休","日","日","日","休","日","日","日","日","休","休","日","日"]},{"role":"C","name":"佐藤百合子","shifts":["Ｇ","休","G","G","休","休","休","G","休","G","G","休","休","休","G","休","G","G","休","G","G","G","休","G","G","G","休","休","G","休","休"]},{"role":"外部訪問","name":"日","shifts":["：","8：30～17：30(休憩1時間)","","","","","","","","","Ｅ","：","12：30～16：30","","","","","","","","J","：","8：30～12：00","","","","","","","",""]},{"role":"サ高住","name":"Ａ","shifts":["：","8：00～17：00(休憩1時間)","","","","","","","","","Ｆ","：","13：30～17：30","","","","","","","","K","：","13：00～16：00","","","","","","","",""]},{"role":"フロア","name":"Ｂ","shifts":["：","8：30～17：00(休憩1時間)","","","","","","","","","G","：","9：30～16：30","","","","","","","","L","：","8：30～16：30(休憩1時間)","","","","","","","",""]},{"role":"入浴","name":"Ｃ","shifts":["：","9：00～16：00(休憩1時間)","","","","","","","","","H","：","9：00～14：00","","","","","","","","夜","：","16：30～9：30(休憩1時間)","","","","","","","",""]},{"role":"宿直待機","name":"Ｄ","shifts":["：","8：30～12：30","","","","","","","","","I","：","9：00～17：00(休憩1時間)","","","","","","","","N","：","9:00～12：00","","","","","","","",""]},{"role":"","name":"M","shifts":["：","13：00～17：00","","","","","","","","","O","：","13：30～17：30","","","","","","","","Ｐ","：","8：00～12：00","","","","","","","",""]}]}]}};
 let _shiftTabKey=null;
-let _shiftMonth='2026-07';
+let _shiftMonth=Object.keys(SHIFT_DATA)[0]||'2026-07';
 function renderShift(){
   const data=SHIFT_DATA[_shiftMonth];
   if(!data)return;
@@ -14683,7 +14737,8 @@ function renderShift(){
   if(badge)badge.textContent=data.label;
   const tabsEl=document.getElementById('shift-tabs');
   if(tabsEl)tabsEl.innerHTML=data.tabs.map(t=>`<button onclick="switchShiftTab('${t.key}')" data-stab="${t.key}" style="flex-shrink:0;padding:10px 14px;font-size:12px;font-weight:700;color:${_shiftTabKey===t.key?'var(--p)':'var(--sub)'};background:transparent;border:none;border-bottom:2px solid ${_shiftTabKey===t.key?'var(--p)':'transparent'};cursor:pointer;touch-action:manipulation;white-space:nowrap">${t.label}</button>`).join('');
-  if(!_shiftTabKey||!data.tabs.find(t=>t.key===_shiftTabKey))switchShiftTab(data.tabs[0].key);
+  const first=data.tabs.find(t=>t.type==='data')||data.tabs[0];
+  if(!_shiftTabKey||!data.tabs.find(t=>t.key===_shiftTabKey))switchShiftTab(first.key);
   else switchShiftTab(_shiftTabKey);
 }
 function switchShiftTab(key){
@@ -14697,21 +14752,10 @@ function switchShiftTab(key){
     b.style.color=on?'var(--p)':'var(--sub)';
     b.style.borderBottomColor=on?'var(--p)':'transparent';
   });
-  const iframe=document.getElementById('shift-iframe');
-  const noEmbed=document.getElementById('shift-no-embed');
-  const openLink=document.getElementById('shift-open-link');
-  if(tab.type==='sheets'){
-    const editUrl=`https://docs.google.com/spreadsheets/d/${tab.id}/edit`;
-    if(iframe){iframe.style.display='';iframe.src=`https://docs.google.com/spreadsheets/d/${tab.id}/preview`;}
-    if(noEmbed)noEmbed.style.display='none';
-    if(openLink){openLink.href=editUrl;openLink.style.display='';}
-    const el=document.getElementById('shift-sheet-edit-link');
-    if(el)el.href=editUrl;
-  }else{
-    if(iframe){iframe.style.display='none';iframe.src='about:blank';}
-    if(noEmbed)noEmbed.style.display='flex';
-    if(openLink)openLink.style.display='none';
-  }
+  renderShiftTable(tab);
+  // スクロールを先頭に戻す
+  const wrap=document.getElementById('shift-table-wrap');
+  if(wrap)wrap.scrollTo(0,0);
 }
 
 // ── 各モーダルに☒閉じるボタンを注入（data-no-close-btn 属性があるものはスキップ） ──
