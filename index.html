@@ -53,7 +53,6 @@ a{color:var(--p);text-decoration:none}
 /* ── SCREENS ── */
 .scr{display:none;min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));animation:fadeIn .2s}
 .scr.on{display:block}
-#scr-shift.on,#scr-manual.on{display:flex!important;flex-direction:column;height:calc(100vh - 56px);min-height:0;padding-bottom:0!important}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes slideInRight{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 @keyframes slideInLeft{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
@@ -2281,22 +2280,25 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── シフト表 ─── -->
   <div id="scr-shift" class="scr" style="padding:0">
-    <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
-      <div style="font-size:16px;font-weight:800;color:var(--txt)">📆 シフト表</div>
-      <span id="shift-month-badge" style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px"></span>
-    </div>
-    <div id="shift-tabs" style="display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
-    <div id="shift-table-wrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch">
-      <div id="shift-table-area"></div>
-      <div id="shift-no-data" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 24px;text-align:center">
-        <div style="font-size:44px">📅</div>
-        <div style="font-size:14px;font-weight:700;color:var(--txt)">このタブのデータがありません</div>
+    <div style="display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden">
+      <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div style="font-size:16px;font-weight:800;color:var(--txt)">📆 シフト表</div>
+        <span id="shift-month-badge" style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px"></span>
+      </div>
+      <div id="shift-tabs" style="display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+      <div id="shift-table-wrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch">
+        <div id="shift-table-area"></div>
+        <div id="shift-no-data" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 24px;text-align:center">
+          <div style="font-size:44px">📅</div>
+          <div style="font-size:14px;font-weight:700;color:var(--txt)">このタブのデータがありません</div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ─── 業務マニュアル ─── -->
   <div id="scr-manual" class="scr" style="padding:0">
+    <div style="display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden">
     <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-shrink:0">
       <div style="font-size:16px;font-weight:800;color:var(--txt)">📚 業務マニュアル</div>
     </div>
@@ -2341,6 +2343,7 @@ a{color:var(--p);text-decoration:none}
           </a>
         </div>
       </div>
+    </div>
     </div>
   </div>
 
@@ -6665,8 +6668,14 @@ function showScr(id){
   const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor','scr-shift','scr-manual'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
-  if(isOps){ document.body.classList.add('sb-closed'); _syncSbBtns(true); }
-  else if(wasOps && window.innerWidth>=1024){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
+  if(isOps){
+    const sbWasOpen=!document.body.classList.contains('sb-closed');
+    if(sbWasOpen && window.innerWidth<1024){
+      document.body.style.position='';document.body.style.top='';document.body.style.width='';
+      window.scrollTo(0,_sbScrollY);
+    }
+    document.body.classList.add('sb-closed'); _syncSbBtns(true);
+  } else if(wasOps && window.innerWidth>=1024){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
 }
 function goBack(){
   if(navStack.length>0){
