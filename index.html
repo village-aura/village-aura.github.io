@@ -456,6 +456,8 @@ a{color:var(--p);text-decoration:none}
   #sidebar{display:flex}
   body.sb-closed #sidebar{display:none}
   body:not(.sb-closed) #sb-backdrop{display:block}
+  body:not(.sb-closed) #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
+  body.sb-closed #main-content-wrap{margin-left:0;transition:margin-left .22s ease}
 }
 /* ── PORTRAIT SCROLL FIX（iOS タブレット縦向き）── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
@@ -962,7 +964,6 @@ a{color:var(--p);text-decoration:none}
       <button class="detail-tab-btn on" id="dtab-input" onclick="switchDetailTab('input')">📝 記録入力</button>
       <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
       <button class="detail-tab-btn" id="dtab-life" onclick="switchDetailTab('life')">📊 生活シート</button>
-      <button class="detail-tab-btn" id="dtab-temp" onclick="switchDetailTab('temp')">🌡️ 温度板</button>
     </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
@@ -1003,7 +1004,9 @@ a{color:var(--p);text-decoration:none}
     <div class="timeline-sec">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
         <span style="font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em">タイムライン</span>
-        <div id="tl-nav" style="display:flex;align-items:center;gap:6px"></div>
+        <div id="tl-nav" style="display:flex;align-items:center;gap:6px">
+          <button onclick="openTempBoardModal()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🌡️ 温度板</button>
+        </div>
       </div>
       <div style="display:flex;gap:5px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
         <button id="tlf-all" class="hb-filter-btn on" onclick="setTlFilter('all')" style="flex-shrink:0">すべて</button>
@@ -1018,7 +1021,6 @@ a{color:var(--p);text-decoration:none}
     </div><!-- /detail-col-right -->
     </div><!-- /detail-content-grid -->
     <div id="life-sheet-area" style="display:none;padding:0 12px 80px"></div>
-    <div id="temp-board-area" style="display:none;padding:0 0 80px;overflow-x:auto"></div>
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -1258,6 +1260,11 @@ a{color:var(--p);text-decoration:none}
         <input id="hb-search-inp" type="text" placeholder="キーワード検索..." oninput="setHbSearch(this.value)" style="flex:1;padding:10px 8px;border:none;outline:none;font-size:14px;background:none">
         <button onclick="setHbSearch('');document.getElementById('hb-search-inp').value=''" style="color:var(--sub);font-size:14px;background:none;border:none;padding:4px;display:none" id="hb-search-clear">✕</button>
       </div>
+    </div>
+    <!-- 未確認 / 確認済みタブ -->
+    <div style="display:flex;padding:6px 12px 8px;gap:8px">
+      <button id="hbtab-unread" onclick="setHbTab('unread')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;border:none;background:var(--p);color:#fff;cursor:pointer;touch-action:manipulation">📬 未確認<span id="hb-tab-unread-cnt" style="margin-left:5px;background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:11px"></span></button>
+      <button id="hbtab-confirmed" onclick="setHbTab('confirmed')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">✅ 確認済み</button>
     </div>
     <!-- フィルター：緊急度ボタン + 事業所ドロップダウン -->
     <div style="padding:0 12px 6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -3692,6 +3699,18 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div id="kisan-graph-body" style="overflow-x:auto"></div>
+  </div>
+</div>
+
+<!-- TEMP BOARD MODAL -->
+<div class="overlay" id="modal-temp-board" onclick="closeModal('modal-temp-board',event)">
+  <div class="sheet" style="max-height:96vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="sheet-title" style="margin-bottom:0">🌡️ 温度板（直近14日）</div>
+      <button onclick="closeModal('modal-temp-board')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
+    </div>
+    <div id="temp-board-modal-body" style="overflow-x:auto"></div>
   </div>
 </div>
 
@@ -6669,7 +6688,7 @@ function showScr(id){
   if(id==='scr-import') initImportScr();
   if(id==='scr-dashboard') renderDashboard();
   if(id==='scr-residents') renderResList();
-  if(id==='scr-handover-board'){renderHandoverBoard();setTimeout(markAllHandoverRead,800);}
+  if(id==='scr-handover-board'){_hbTab='unread';setHbTab('unread');renderHandoverBoard();}
   if(id==='scr-schedule') renderSchedule();
   if(id==='scr-diary') renderDiary();
   if(id==='scr-svc-entry') renderSvcEntry();
@@ -7965,30 +7984,31 @@ function renderDetail(){
   renderTimeline();
 }
 function switchDetailTab(tab){
-  ['input','timeline','life','temp'].forEach(t=>{
+  ['input','timeline','life'].forEach(t=>{
     const btn=document.getElementById('dtab-'+t);
     if(btn)btn.classList.toggle('on',t===tab);
   });
   const right=document.querySelector('.detail-col-right');
   if(right)right.classList.toggle('dtab-hidden',tab==='input');
   const left=document.querySelector('.detail-col-left');
-  if(left)left.style.display=(tab==='timeline'||tab==='life'||tab==='temp')?'none':'';
+  if(left)left.style.display=(tab==='timeline'||tab==='life')?'none':'';
   const grid=document.querySelector('.detail-content-grid');
-  if(grid)grid.style.display=(tab==='life'||tab==='temp')?'none':'';
+  if(grid)grid.style.display=tab==='life'?'none':'';
   const lifeArea=document.getElementById('life-sheet-area');
   if(lifeArea){
     lifeArea.style.display=tab==='life'?'':'none';
     if(tab==='life')renderLifeSheet(S.currentRes);
   }
-  const tempArea=document.getElementById('temp-board-area');
-  if(tempArea){
-    tempArea.style.display=tab==='temp'?'':'none';
-    if(tab==='temp')renderTempBoard(S.currentRes);
-  }
 }
 // ─── 温度板ビュー ───
-function renderTempBoard(resId){
-  const area=document.getElementById('temp-board-area');
+function openTempBoardModal(){
+  const resId=S.currentRes;
+  if(!resId)return;
+  renderTempBoard(resId,'temp-board-modal-body');
+  document.getElementById('modal-temp-board').classList.add('on');
+}
+function renderTempBoard(resId, targetId){
+  const area=document.getElementById(targetId||'temp-board-modal-body');
   if(!area)return;
   const recs=getRecords().filter(r=>r.rid===resId);
   // 直近14日を生成
@@ -11750,8 +11770,17 @@ function formatExpiry(expiresAt){
   return d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'まで';
 }
 // ── 掲示板スタイル申し送りボード ──
+let _hbTab='unread';
 let _hbFilter='all';
 let _hbSearch='';
+function setHbTab(t){
+  _hbTab=t;
+  const bu=document.getElementById('hbtab-unread');
+  const bc=document.getElementById('hbtab-confirmed');
+  if(bu){bu.style.background=t==='unread'?'var(--p)':'var(--bg)';bu.style.color=t==='unread'?'#fff':'var(--sub)';bu.style.border=t==='unread'?'none':'1.5px solid var(--bdr)';}
+  if(bc){bc.style.background=t==='confirmed'?'var(--p)':'var(--bg)';bc.style.color=t==='confirmed'?'#fff':'var(--sub)';bc.style.border=t==='confirmed'?'none':'1.5px solid var(--bdr)';}
+  renderHbList();
+}
 function setHbSearch(v){
   _hbSearch=v.trim();
   const clr=document.getElementById('hb-search-clear');
@@ -11799,8 +11828,14 @@ function renderHbList(){
   }
   const priOrder={urgent:0,important:1,normal:2};
   all.sort((a,b)=>(priOrder[a.pri]??2)-(priOrder[b.pri]??2));
-  if(!all.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:32px 0">申し送りはありません</div>';return;}
   const _hbReads=getHandoverReads();
+  if(_hbTab==='unread'){
+    all=all.filter(h=>{const k=h.id||null;if(!k)return true;return !(_hbReads[k]||[]).includes(S.user);});
+  } else {
+    all=all.filter(h=>{const k=h.id||null;if(!k)return false;return (_hbReads[k]||[]).includes(S.user);});
+  }
+  const emptyMsg=_hbTab==='confirmed'?'確認済みの申し送りはありません':'申し送りはありません';
+  if(!all.length){el.innerHTML=`<div style="color:var(--sub);font-size:13px;text-align:center;padding:48px 0"><div style="font-size:36px;margin-bottom:10px">${_hbTab==='confirmed'?'✅':'📬'}</div>${emptyMsg}</div>`;return;}
   el.innerHTML=all.map(h=>{
     const si=HB_SEC_INFO[h._sec]||{label:h._sec,emoji:'📝',bg:'#f5f5f5',tc:'#666'};
     const priClass=h.pri==='urgent'?'pri-urgent':h.pri==='important'?'pri-important':'';
@@ -11830,11 +11865,15 @@ function renderHbList(){
     const _allStaffCnt=_getAllStaffNames().size;
     const _allRead=_allStaffCnt>0&&_readCnt>=_allStaffCnt;
     const readBtn=_itemKey
-      ?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-          <button onclick="event.stopPropagation();markHandoverRead('${_itemKey}')" style="padding:3px 10px;border-radius:6px;border:1px solid ${_myRead?'#43a047':'#90caf9'};background:${_myRead?'#e8f5e9':'#e3f2fd'};color:${_myRead?'#2e7d32':'#1565c0'};font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">${_myRead?'✓ 確認済':'👁 確認する'}${_readCnt>0?' ('+_readCnt+'名)':''}</button>
-          ${_readCnt>0?`<span style="font-size:9px;color:var(--sub);white-space:nowrap">${_readerPreview}</span>`:''}
-          ${_allRead?`<span style="font-size:9px;color:#2e7d32;font-weight:700">✅ 全員確認済み</span>`:''}
-        </div>`
+      ?(_hbTab==='confirmed'
+        ?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+            <span style="padding:3px 10px;border-radius:6px;background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;white-space:nowrap">✓ 確認済み</span>
+            ${_allRead?`<span style="font-size:9px;color:#2e7d32;font-weight:700">✅ 全員確認済み</span>`:''}
+          </div>`
+        :`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+            <button onclick="event.stopPropagation();markHandoverRead('${_itemKey}')" style="padding:3px 10px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">👁 確認する${_readCnt>0?' ('+_readCnt+'名)':''}</button>
+            ${_readCnt>0?`<span style="font-size:9px;color:var(--sub);white-space:nowrap">${_readerPreview}</span>`:''}
+          </div>`)
       :'';
     const _cardOpacity=_allRead?'opacity:.55;':'';
     return `<div class="hb-card ${priClass}" style="${_cardOpacity}" ${cardClick}>
@@ -14765,7 +14804,7 @@ function markHandoverRead(itemKey){
   if(!data[itemKey].includes(S.user)){
     data[itemKey].push(S.user);
     saveHandoverReads(data);
-    toast('既読にしました ✓');
+    toast('確認しました ✓  確認済みフォルダへ移動しました');
     renderHandoverBoard();
     updateHandoverUnreadBadge();
   }
@@ -14801,6 +14840,8 @@ function updateHandoverUnreadBadge(){
   const txt=unread>9?'9+':String(unread);
   if(badge){badge.style.display=unread>0?'block':'none';if(unread>0)badge.textContent=txt;}
   if(sbnBadge){sbnBadge.style.display=unread>0?'':'none';if(unread>0)sbnBadge.textContent=txt;}
+  const tabCnt=document.getElementById('hb-tab-unread-cnt');
+  if(tabCnt)tabCnt.textContent=unread>0?unread:'';
 }
 
 // ═══════════ FEATURE 9: 月次レポート自動生成 ═══════════
