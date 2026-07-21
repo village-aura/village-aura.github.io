@@ -962,6 +962,7 @@ a{color:var(--p);text-decoration:none}
       <button class="detail-tab-btn on" id="dtab-input" onclick="switchDetailTab('input')">📝 記録入力</button>
       <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
       <button class="detail-tab-btn" id="dtab-life" onclick="switchDetailTab('life')">📊 生活シート</button>
+      <button class="detail-tab-btn" id="dtab-temp" onclick="switchDetailTab('temp')">🌡️ 温度板</button>
     </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
@@ -1017,6 +1018,7 @@ a{color:var(--p);text-decoration:none}
     </div><!-- /detail-col-right -->
     </div><!-- /detail-content-grid -->
     <div id="life-sheet-area" style="display:none;padding:0 12px 80px"></div>
+    <div id="temp-board-area" style="display:none;padding:0 0 80px;overflow-x:auto"></div>
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -2069,7 +2071,15 @@ a{color:var(--p);text-decoration:none}
         <input type="time" id="vr-time-to" style="flex:1;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px">
       </div>
     </div>
-    <div class="field"><label>業務内容</label>
+    <div class="field">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <label style="margin:0">業務内容</label>
+        <button onclick="toggleVisitPatternPicker()" style="font-size:11px;font-weight:700;color:var(--p);background:var(--ps);border:1.5px solid var(--p);border-radius:8px;padding:3px 10px;cursor:pointer;touch-action:manipulation">📋 パターンから選択</button>
+      </div>
+      <div id="visit-pattern-picker" style="display:none;margin-bottom:8px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;padding:8px;max-height:180px;overflow-y:auto">
+        <div id="visit-pattern-list"></div>
+        <button onclick="openAddVisitPattern()" style="width:100%;margin-top:6px;padding:6px;border-radius:6px;border:1.5px dashed var(--bdr);background:none;color:var(--sub);font-size:11px;cursor:pointer;touch-action:manipulation">＋ パターンを追加</button>
+      </div>
       <textarea id="vr-content" rows="3" placeholder="身体介護：入浴介助、更衣介助など" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;resize:none"></textarea>
     </div>
     <div class="field"><label>担当者</label>
@@ -2938,6 +2948,7 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="field"><label>備考</label><textarea id="v-note" placeholder="特記事項..."></textarea>
+    <div class="photo-attach-row" data-modal="vital"></div>
       <button class="btn-voice" onclick="startVoice('v-note',this)">🎤 音声入力</button>
     </div>
     <button class="btn-primary" onclick="saveRecord('vital')">保存</button>
@@ -3001,6 +3012,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="field"><label>水分摂取量（ml）</label><input type="number" inputmode="numeric" id="m-fluid" placeholder="200"></div>
     <div class="field"><label>コメント</label><textarea id="m-note" placeholder="食欲の様子など..."></textarea>
+    <div class="photo-attach-row" data-modal="meal"></div>
       <button class="btn-voice" onclick="startVoice('m-note',this)">🎤 音声入力</button>
     </div>
     <button class="btn-primary" onclick="saveRecord('meal')">保存</button>
@@ -3036,7 +3048,8 @@ a{color:var(--p);text-decoration:none}
         <label><input type="checkbox" id="ex-laxative"> 下剤使用</label>
       </div>
     </div>
-    <div class="field"><label>メモ</label><textarea id="ex-note" placeholder="特記事項..."></textarea></div>
+    <div class="field"><label>メモ</label><textarea id="ex-note" placeholder="特記事項..."></textarea>
+    <div class="photo-attach-row" data-modal="excretion"></div></div>
     <button class="btn-primary" onclick="saveRecord('excretion')">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-excretion')">キャンセル</button>
   </div>
@@ -3095,6 +3108,7 @@ a{color:var(--p);text-decoration:none}
       <input type="checkbox" id="c-handover" style="width:18px;height:18px;accent-color:var(--p)">
       <label for="c-handover" style="font-size:14px">申し送りにも転記する</label>
     </div>
+    <div class="photo-attach-row" data-modal="chrono"></div>
     <button class="btn-primary" onclick="saveRecord('chrono')">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-chrono')">キャンセル</button>
   </div>
@@ -3411,6 +3425,7 @@ a{color:var(--p);text-decoration:none}
           <div id="fs-res-name" style="font-size:12px;color:var(--sub)"></div>
           <div id="fs-updated-at" style="font-size:10px;color:var(--sub)"></div>
         </div>
+        <button onclick="openKisanGraph()" style="display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--p);background:var(--ps);color:var(--p);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">📊 持参グラフ</button>
         <button onclick="closeModal('modal-facesheet')" style="display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">← 戻る</button>
       </div>
     </div>
@@ -3666,6 +3681,21 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     </div>
+  </div>
+</div>
+
+<!-- KISAN GRAPH MODAL -->
+<div class="overlay" id="modal-kisan-graph" onclick="closeModal('modal-kisan-graph',event)">
+  <div class="sheet" style="max-height:96vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="sheet-title" style="margin-bottom:0">📊 持参グラフ（直近14日）</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="window.print()" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">🖨️ 印刷</button>
+        <button onclick="closeModal('modal-kisan-graph')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
+      </div>
+    </div>
+    <div id="kisan-graph-body" style="overflow-x:auto"></div>
   </div>
 </div>
 
@@ -7939,20 +7969,116 @@ function renderDetail(){
   renderTimeline();
 }
 function switchDetailTab(tab){
-  document.getElementById('dtab-input').classList.toggle('on',tab==='input');
-  document.getElementById('dtab-timeline').classList.toggle('on',tab==='timeline');
-  document.getElementById('dtab-life').classList.toggle('on',tab==='life');
+  ['input','timeline','life','temp'].forEach(t=>{
+    const btn=document.getElementById('dtab-'+t);
+    if(btn)btn.classList.toggle('on',t===tab);
+  });
   const right=document.querySelector('.detail-col-right');
   if(right)right.classList.toggle('dtab-hidden',tab==='input');
   const left=document.querySelector('.detail-col-left');
-  if(left)left.style.display=(tab==='timeline'||tab==='life')?'none':'';
+  if(left)left.style.display=(tab==='timeline'||tab==='life'||tab==='temp')?'none':'';
   const grid=document.querySelector('.detail-content-grid');
-  if(grid)grid.style.display=tab==='life'?'none':'';
+  if(grid)grid.style.display=(tab==='life'||tab==='temp')?'none':'';
   const lifeArea=document.getElementById('life-sheet-area');
   if(lifeArea){
     lifeArea.style.display=tab==='life'?'':'none';
     if(tab==='life')renderLifeSheet(S.currentRes);
   }
+  const tempArea=document.getElementById('temp-board-area');
+  if(tempArea){
+    tempArea.style.display=tab==='temp'?'':'none';
+    if(tab==='temp')renderTempBoard(S.currentRes);
+  }
+}
+// ─── 温度板ビュー ───
+function renderTempBoard(resId){
+  const area=document.getElementById('temp-board-area');
+  if(!area)return;
+  const recs=getRecords().filter(r=>r.rid===resId);
+  // 直近14日を生成
+  const days=[];
+  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d);}
+  const dayStr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  // 日付→記録マップ
+  const byDay={};
+  recs.forEach(r=>{
+    const ds=r.ts?dayStr(new Date(r.ts)):'';
+    if(!ds)return;
+    if(!byDay[ds])byDay[ds]=[];
+    byDay[ds].push(r);
+  });
+  // 排便累積日数
+  let stoolDays=0;
+  const COLS=[
+    {key:'date',label:'日付',w:'72px'},
+    {key:'bp',label:'血圧',w:'88px'},
+    {key:'pulse',label:'脈拍',w:'56px'},
+    {key:'temp',label:'体温',w:'60px'},
+    {key:'spo2',label:'SpO2',w:'60px'},
+    {key:'meal',label:'食事',w:'72px'},
+    {key:'fluid',label:'水分',w:'60px'},
+    {key:'stool',label:'排便',w:'60px'},
+    {key:'urine',label:'排尿',w:'56px'},
+    {key:'weight',label:'体重',w:'60px'},
+    {key:'note',label:'特記',w:'140px'},
+  ];
+  const cell=(val,bg,bold)=>`<td style="padding:5px 6px;font-size:11px;border:1px solid var(--bdr);text-align:center;white-space:nowrap;${bg?'background:'+bg+';':''}${bold?'font-weight:700;':''}">${val||'─'}</td>`;
+  const thead=`<thead style="position:sticky;top:0;z-index:5"><tr style="background:var(--p);color:#fff">${COLS.map(c=>`<th style="padding:7px 6px;font-size:11px;font-weight:700;min-width:${c.w};white-space:nowrap;border:1px solid rgba(255,255,255,.3)">${c.label}</th>`).join('')}</tr></thead>`;
+  const rows=days.map(d=>{
+    const ds=dayStr(d);
+    const dayRecs=byDay[ds]||[];
+    const vitals=dayRecs.filter(r=>r.type==='vital');
+    const meals=dayRecs.filter(r=>r.type==='meal');
+    const exs=dayRecs.filter(r=>r.type==='excretion');
+    const wts=dayRecs.filter(r=>r.type==='weight');
+    const chronos=dayRecs.filter(r=>r.type==='chrono');
+    // バイタル（最新値）
+    const latestV=vitals.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+    const bpVal=latestV?`${latestV.data.sys||'?'}/${latestV.data.dia||'?'}`:'';
+    const pulseVal=latestV?latestV.data.pulse||'':'';
+    const tempVal=latestV?latestV.data.temp||'':'';
+    const spo2Val=latestV?latestV.data.spo2||'':'';
+    // 食事（合計）
+    const mealSets=meals.filter(m=>!m.data.fluidOnly);
+    const mealVal=mealSets.length?mealSets.map(m=>{const lbl=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','完食'];return lbl[m.data.staple]||m.data.staple+'割';}).join('/') :'';
+    // 水分
+    const totalFluid=meals.reduce((s,m)=>s+(m.data.fluid||0),0);
+    const fluidVal=totalFluid?totalFluid+'ml':'';
+    // 排便・排尿
+    const stools=exs.filter(e=>e.data.stool&&e.data.stool!=='なし');
+    const urines=exs.filter(e=>e.data.etype==='urine'||e.data.urine);
+    if(stools.length)stoolDays=0; else stoolDays++;
+    const stoolVal=stools.length?stools.map(s=>s.data.stool).join(' '):'';
+    const urineVal=urines.length?urines.length+'回':'';
+    // 体重
+    const lastWt=wts.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+    const wtVal=lastWt?lastWt.data.val+'kg':'';
+    // 特記（経時記録）
+    const noteVal=chronos.map(c=>c.data.content||'').join(' / ').substring(0,40)+(chronos.map(c=>c.data.content||'').join(' / ').length>40?'…':'');
+    const isToday=ds===dayStr(new Date());
+    const rowBg=isToday?'rgba(var(--p-rgb,59,130,246),.06)':'';
+    const stoolBg=stoolDays>=3?'#fee2e2':'';
+    const dateLabel=`${d.getMonth()+1}/${d.getDate()}（${'日月火水木金土'[d.getDay()]}）`;
+    return `<tr style="${rowBg?'background:'+rowBg:''}">
+      <td style="padding:5px 6px;font-size:11px;border:1px solid var(--bdr);text-align:center;white-space:nowrap;${isToday?'font-weight:700;color:var(--p)':''}">${dateLabel}</td>
+      ${cell(bpVal,'',bpVal&&(parseInt(bpVal)>159||parseInt(bpVal)<90))}
+      ${cell(pulseVal,'')}
+      ${cell(tempVal?tempVal+'℃':'',tempVal>=37.5?'#fff3e0':'')}
+      ${cell(spo2Val?spo2Val+'%':'',spo2Val&&spo2Val<94?'#ffe0e0':'')}
+      ${cell(mealVal,'')}
+      ${cell(fluidVal,'')}
+      ${cell(stoolVal,stoolBg,stoolDays>=3)}
+      ${cell(urineVal,'')}
+      ${cell(wtVal,'')}
+      <td style="padding:5px 6px;font-size:10px;border:1px solid var(--bdr);color:var(--sub);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(noteVal)||'─'}</td>
+    </tr>`;
+  }).join('');
+  const res=getResidents().find(r=>r.id===resId);
+  area.innerHTML=`<div style="padding:10px 12px 6px;font-size:12px;font-weight:700;color:var(--sub)">🌡️ 温度板 — ${res?res.name+' 様':''}（直近14日）</div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="border-collapse:collapse;min-width:100%;font-variant-numeric:tabular-nums">${thead}<tbody>${rows}</tbody></table>
+    </div>
+    <div style="padding:8px 14px 4px;font-size:10px;color:var(--sub)">🔴 SpO2≤93% / 体温≥37.5℃ は背景色表示　🔴 排便3日以上なしは赤セル</div>`;
 }
 function openVitalFocused(focusField){
   _vitalFocusedField=focusField||null;
@@ -8010,6 +8136,57 @@ function saveSvcSetting(){
   closeModal('modal-svc-setting');
   renderDetail();
   toast('サービス設定を更新しました ✓');
+}
+// ─── 写真添付 ───
+let _pendingPhoto=null;
+function _initPhotoRows(){
+  document.querySelectorAll('.photo-attach-row').forEach(row=>{
+    if(row.dataset.init)return;
+    row.dataset.init='1';
+    const modalKey=row.dataset.modal||'';
+    row.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:8px;border:1.5px dashed var(--bdr);font-size:12px;font-weight:700;color:var(--sub);touch-action:manipulation">
+        📷 写真を添付
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="_handlePhotoCapture(this,'${modalKey}')">
+      </label>
+      <div id="photo-preview-${modalKey}" style="display:flex;align-items:center;gap:6px"></div>
+    </div>`;
+  });
+}
+function _handlePhotoCapture(input,modalKey){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=600;
+      const canvas=document.createElement('canvas');
+      const ratio=Math.min(MAX/img.width,MAX/img.height,1);
+      canvas.width=Math.round(img.width*ratio);
+      canvas.height=Math.round(img.height*ratio);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      _pendingPhoto=canvas.toDataURL('image/jpeg',0.75);
+      const prev=document.getElementById('photo-preview-'+modalKey);
+      if(prev)prev.innerHTML=`<img src="${_pendingPhoto}" style="height:48px;width:64px;object-fit:cover;border-radius:6px;border:1px solid var(--bdr)"><button onclick="_clearPendingPhoto('${modalKey}')" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;touch-action:manipulation">✕</button>`;
+      toast('写真を添付しました ✓');
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function _clearPendingPhoto(modalKey){
+  _pendingPhoto=null;
+  const prev=document.getElementById('photo-preview-'+modalKey);
+  if(prev)prev.innerHTML='';
+}
+function viewRecordPhoto(id){
+  const rec=getRecords().find(r=>r.id===id);
+  if(!rec||!rec.data.photo)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:20000;display:flex;align-items:center;justify-content:center';
+  ov.onclick=()=>ov.remove();
+  ov.innerHTML=`<img src="${rec.data.photo}" style="max-width:95vw;max-height:90vh;border-radius:8px;object-fit:contain"><button style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer" onclick="this.parentElement.remove()">✕</button>`;
+  document.body.appendChild(ov);
 }
 let _tlFilter='all';
 function setTlFilter(f){
@@ -8077,6 +8254,7 @@ function renderTimeline(){
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
         ${r.type==='vital'?vitalChips(r):`<div class="tl-val">${summarizeRecord(r)}</div>`}
         ${r.data.note||r.data.content?(()=>{const txt=r.data.note||r.data.content||'';const isChrono=r.type==='chrono';const short=!isChrono&&!isChronoMode&&txt.length>60;return `<div class="tl-note" id="tln-${r.id}">${short?escHtml(txt.substring(0,60))+'…':escHtml(txt)}${short?`<button onclick="expandTlNote('${r.id}',this)" style="margin-left:4px;background:none;border:none;color:var(--p);font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">続きを見る</button>`:''}</div>`;})():''}
+        ${r.data.photo?`<div style="margin-top:5px"><img src="${r.data.photo}" onclick="viewRecordPhoto('${r.id}')" style="height:60px;width:80px;object-fit:cover;border-radius:7px;border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation" title="写真を拡大"></div>`:''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
         <div class="tl-staff" style="display:flex;align-items:center;gap:4px">${badge}${staffName}${r.editedBy?`<span style="font-size:9px;color:var(--sub);margin-left:4px">✏️${r.editedBy}${r.editedAt?' '+new Date(r.editedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>`:''}<div style="margin-left:auto;display:flex;gap:3px">${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;cursor:pointer;touch-action:manipulation" title="修正">✏️</button>`:''}<button onclick="deleteTimelineRecord('${r.id}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;color:var(--ng);cursor:pointer;touch-action:manipulation" title="削除">🗑️</button></div></div>
       </div>
@@ -8139,6 +8317,8 @@ function openModal(id){
     }else if(pv){pv.style.display='none';}
   }
   document.getElementById(id).classList.add('on');
+  _pendingPhoto=null;
+  setTimeout(()=>_initPhotoRows(),0);
   // 記録日時セレクターを注入（対象モーダルのみ）
   const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight'];
   if(recModals.includes(id)){
@@ -8183,6 +8363,7 @@ function getRecordTs(){
 function closeModal(id,e){
   if(e&&e.target!==document.getElementById(id))return;
   document.getElementById(id).classList.remove('on');
+  _pendingPhoto=null;
   stopVoice();
   const vsBtn=document.querySelector('#'+id+' .btn-voice-smart');
   if(vsBtn){vsBtn.classList.remove('recording');vsBtn.textContent='🎤 音声で一括入力';}
@@ -8292,6 +8473,7 @@ function saveRecord(type){
     }
     const vwarn=vitalSanityWarn(data);
     if(vwarn.length&&!confirm('入力値が通常範囲外です:\n'+vwarn.join(' / ')+'\n\nこのまま保存しますか？'))return;
+    if(_pendingPhoto){data.photo=_pendingPhoto;}
     closeModal('modal-vital');
   }else if(type==='meal'){
     const fluidOnly=document.getElementById('m-fluid-only')?.checked||false;
@@ -8301,6 +8483,7 @@ function saveRecord(type){
       side:fluidOnly?0:+document.getElementById('side-sl').value,
       fluid:+document.getElementById('m-fluid').value||0,
       note:document.getElementById('m-note').value};
+    if(_pendingPhoto){data.photo=_pendingPhoto;}
     closeModal('modal-meal');
   }else if(type==='excretion'){
     data={etype:document.querySelector('[name=ex-type]:checked')?.value||'urine',
@@ -8310,6 +8493,7 @@ function saveRecord(type){
       incon:document.getElementById('ex-incontinent').checked,
       lax:document.getElementById('ex-laxative').checked,
       note:document.getElementById('ex-note').value};
+    if(_pendingPhoto){data.photo=_pendingPhoto;}
     closeModal('modal-excretion');
   }else if(type==='chrono'){
     const content=document.getElementById('c-content').value.trim();
@@ -8326,6 +8510,7 @@ function saveRecord(type){
     const triage=manualTriage.length?manualTriage:autoTriage;
     data={tags,priority:document.querySelector('[name=priority]:checked')?.value||'normal',
       content,handover:document.getElementById('c-handover').checked,triage};
+    if(_pendingPhoto){data.photo=_pendingPhoto;}
     if(data.handover) addHandover(S.currentRes,content,'other',data.priority);
     closeModal('modal-chrono');
   }else if(type==='weight'){
@@ -8545,22 +8730,32 @@ function _renderVisitList(){
   const el=document.getElementById('diary-visit-list');
   if(!el)return;
   if(!reports.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:24px 4px;text-align:center">この日の訪問記録はありません</div>';return;}
-  el.innerHTML=reports.map((r,idx)=>`
-    <div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)">
+  const dateStr=getDiaryDateStr();
+  el.innerHTML=reports.map((r,idx)=>{
+    const conf=r.confirmed;
+    const borderColor=conf?'#43a047':'var(--bdr)';
+    const confBadge=conf?`<span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;border-radius:10px;padding:2px 8px;border:1px solid #a5d6a7">✅ 確定済 ${r.confirmedBy||''}</span>`:'';
+    const confBtn=conf
+      ?`<button onclick="unconfirmVisitReport('${dateStr}',${idx})" style="background:#f5f5f5;color:var(--sub);border:1px solid var(--bdr);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;touch-action:manipulation">取消</button>`
+      :`<button onclick="confirmVisitReport('${dateStr}',${idx})" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;touch-action:manipulation">✅ 確定</button>`;
+    return `<div style="background:var(--card);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--sh);border-left:4px solid ${borderColor}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
         <div>
           <span style="font-size:13px;font-weight:700;color:var(--p)">${idx+1}. ${r.resName}様</span>
           <span style="font-size:11px;color:var(--sub);margin-left:8px">${r.timeFrom||''}〜${r.timeTo||''}</span>
         </div>
-        <div style="display:flex;gap:4px">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+          ${confBtn}
           <button onclick="openVisitReportModal(${idx})" style="background:#f0f4ff;color:var(--p);border:1px solid var(--p);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;touch-action:manipulation">✏️</button>
           <button onclick="deleteVisitReport(${idx})" style="background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:16px;padding:2px 8px;font-size:10px;font-weight:700;touch-action:manipulation">🗑</button>
         </div>
       </div>
+      ${confBadge?`<div style="margin-bottom:6px">${confBadge}</div>`:''}
       <div style="font-size:11px;color:#0891b2;font-weight:700;margin-bottom:3px">${r.service||''}</div>
-      <div style="font-size:13px;line-height:1.5;margin-bottom:4px">${r.content||''}</div>
+      <div style="font-size:13px;line-height:1.5;margin-bottom:4px">${escHtml(r.content||'')}</div>
       <div style="font-size:11px;color:var(--sub)">担当：${r.staff||''}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 // ═══════════ REPORT PREVIEW ═══════════
 function previewReport(id){
@@ -9392,6 +9587,65 @@ function openVisitReportModal(editIdx=-1, presetRid=null){
   }
   document.getElementById('modal-visit-report').classList.add('on');
 }
+const DEFAULT_VISIT_PATTERNS=[
+  {id:'vp1',service:'身体介護',name:'全介助（入浴・更衣）',content:'入浴介助：洗身・洗髪・浴槽への移乗介助。更衣介助：上下着脱全介助。体位変換・移動介助。'},
+  {id:'vp2',service:'身体介護',name:'一部介助（清拭・更衣）',content:'清拭：顔・手足・陰部を清拭。更衣介助：上衣の着脱を一部介助。排泄誘導・後始末介助。'},
+  {id:'vp3',service:'生活援助',name:'掃除・洗濯',content:'居室の掃除（掃き・拭き）。洗濯物の洗濯・干し・取り込み・たたみ。'},
+  {id:'vp4',service:'生活援助',name:'調理・買い物',content:'昼食の調理（主食・副食・汁物）。食器洗い・後片付け。冷蔵庫の整理。'},
+  {id:'vp5',service:'身体介護',name:'服薬介助・バイタル確認',content:'バイタルサイン確認（体温・血圧・脈拍）。服薬確認・介助（朝薬の服用確認）。'},
+];
+function getVisitCarePatterns(){
+  const custom=ls('visit_care_patterns')||[];
+  return [...DEFAULT_VISIT_PATTERNS,...custom];
+}
+function saveVisitCarePatterns(arr){lsSet('visit_care_patterns',arr);}
+function toggleVisitPatternPicker(){
+  const el=document.getElementById('visit-pattern-picker');
+  if(!el)return;
+  const isOpen=el.style.display!=='none';
+  el.style.display=isOpen?'none':'';
+  if(!isOpen)renderVisitPatternList();
+}
+function renderVisitPatternList(){
+  const el=document.getElementById('visit-pattern-list');if(!el)return;
+  const patterns=getVisitCarePatterns();
+  el.innerHTML=patterns.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--bdr)">
+      <div style="flex:1;cursor:pointer" onclick="applyVisitPattern('${p.id}')">
+        <div style="font-size:12px;font-weight:700;color:var(--txt)">${p.name}</div>
+        <div style="font-size:10px;color:var(--sub)">${p.service}</div>
+      </div>
+      <button onclick="applyVisitPattern('${p.id}')" style="flex-shrink:0;padding:4px 10px;background:var(--p);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">適用</button>
+      ${i>=DEFAULT_VISIT_PATTERNS.length?`<button onclick="deleteVisitPattern(${i-DEFAULT_VISIT_PATTERNS.length})" style="flex-shrink:0;padding:4px 8px;background:#fff0f0;color:var(--ng);border:1px solid var(--ng);border-radius:6px;font-size:11px;cursor:pointer;touch-action:manipulation">✕</button>`:''}
+    </div>`).join('');
+}
+function applyVisitPattern(id){
+  const p=getVisitCarePatterns().find(x=>x.id===id);if(!p)return;
+  const svcEl=document.getElementById('vr-service');
+  const cEl=document.getElementById('vr-content');
+  if(svcEl){const opts=[...svcEl.options];const o=opts.find(o=>o.value===p.service);if(o)svcEl.value=p.service;}
+  if(cEl)cEl.value=p.content;
+  document.getElementById('visit-pattern-picker').style.display='none';
+  toast('パターンを適用しました');
+}
+function openAddVisitPattern(){
+  const name=prompt('パターン名（例：夜間排泄介助）');if(!name)return;
+  const content=document.getElementById('vr-content').value.trim();
+  if(!content){toast('先に業務内容を入力してからパターンとして保存してください');return;}
+  const service=document.getElementById('vr-service').value;
+  const custom=ls('visit_care_patterns')||[];
+  custom.push({id:'vp_c'+Date.now(),name,service,content});
+  saveVisitCarePatterns(custom);
+  renderVisitPatternList();
+  toast('パターンを保存しました ✓');
+}
+function deleteVisitPattern(customIdx){
+  const custom=ls('visit_care_patterns')||[];
+  custom.splice(customIdx,1);
+  saveVisitCarePatterns(custom);
+  renderVisitPatternList();
+  toast('削除しました');
+}
 function saveVisitReport(){
   const rid=document.getElementById('vr-resident').value;
   const res=getResidents().find(r=>r.id===rid);
@@ -9419,6 +9673,27 @@ function saveVisitReport(){
   closeModal('modal-visit-report');
   if(S.screen==='scr-diary') renderDiary();
   toast(isEdit?'更新しました ✓':'訪問介護記録を保存しました ✓');
+}
+function confirmVisitReport(dateStr,idx){
+  const all=getVisitReports();
+  if(!all[dateStr]||!all[dateStr][idx])return;
+  all[dateStr][idx].confirmed=true;
+  all[dateStr][idx].confirmedBy=S.user||'──';
+  all[dateStr][idx].confirmedAt=new Date().toISOString();
+  saveVisitReports(all);
+  renderDiary();
+  toast('確定しました ✓ 請求に反映されます');
+}
+function unconfirmVisitReport(dateStr,idx){
+  if(!isManagerOrAbove()){toast('確定取消は管理者のみ実行できます');return;}
+  const all=getVisitReports();
+  if(!all[dateStr]||!all[dateStr][idx])return;
+  all[dateStr][idx].confirmed=false;
+  delete all[dateStr][idx].confirmedBy;
+  delete all[dateStr][idx].confirmedAt;
+  saveVisitReports(all);
+  renderDiary();
+  toast('確定を取り消しました');
 }
 function deleteVisitReport(idx){
   showDelConfirm('この訪問記録を削除しますか？',()=>{
@@ -11615,13 +11890,17 @@ function renderHbList(){
     const _myRead=_readNames.includes(S.user);
     const _readCnt=_readNames.length;
     const _readerPreview=_readCnt>0?_readNames.slice(0,3).join(' ').trim()+(_readCnt>3?'ほか':''):'';
+    const _allStaffCnt=_getAllStaffNames().size;
+    const _allRead=_allStaffCnt>0&&_readCnt>=_allStaffCnt;
     const readBtn=_itemKey
       ?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
           <button onclick="event.stopPropagation();markHandoverRead('${_itemKey}')" style="padding:3px 10px;border-radius:6px;border:1px solid ${_myRead?'#43a047':'#90caf9'};background:${_myRead?'#e8f5e9':'#e3f2fd'};color:${_myRead?'#2e7d32':'#1565c0'};font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">${_myRead?'✓ 確認済':'👁 確認する'}${_readCnt>0?' ('+_readCnt+'名)':''}</button>
           ${_readCnt>0?`<span style="font-size:9px;color:var(--sub);white-space:nowrap">${_readerPreview}</span>`:''}
+          ${_allRead?`<span style="font-size:9px;color:#2e7d32;font-weight:700">✅ 全員確認済み</span>`:''}
         </div>`
       :'';
-    return `<div class="hb-card ${priClass}" ${cardClick}>
+    const _cardOpacity=_allRead?'opacity:.55;':'';
+    return `<div class="hb-card ${priClass}" style="${_cardOpacity}" ${cardClick}>
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px">
         ${priBadge}${secTag}${resChip}
         <div style="margin-left:auto;display:flex;align-items:center">${editBtn}${delBtn}</div>
@@ -12694,6 +12973,104 @@ function getAdlVal(elId,multi=false){
   return multi?on:(on[0]||'');
 }
 
+// ─── 持参グラフ ───
+function openKisanGraph(){
+  const resId=S.currentRes;
+  const res=getResidents().find(r=>r.id===resId);
+  const recs=getRecords().filter(r=>r.rid===resId);
+  // 直近14日
+  const days=[];
+  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d);}
+  const ds=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const byDay={};
+  recs.forEach(r=>{const k=r.ts?ds(new Date(r.ts)):'';if(k){if(!byDay[k])byDay[k]=[];byDay[k].push(r);}});
+  // バイタル値配列（sparkline用）
+  const sysArr=[], diaArr=[], pulseArr=[], tempArr=[], spo2Arr=[], dateLabels=[];
+  days.forEach(d=>{
+    const k=ds(d);
+    dateLabels.push(`${d.getMonth()+1}/${d.getDate()}`);
+    const vitals=(byDay[k]||[]).filter(r=>r.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    const v=vitals[0];
+    sysArr.push(v&&v.data.sys?v.data.sys:null);
+    diaArr.push(v&&v.data.dia?v.data.dia:null);
+    pulseArr.push(v&&v.data.pulse?v.data.pulse:null);
+    tempArr.push(v&&v.data.temp?v.data.temp:null);
+    spo2Arr.push(v&&v.data.spo2?v.data.spo2:null);
+  });
+  // SVGスパークライン生成
+  function sparkline(arr, min, max, color, h, w){
+    const pts=arr.map((v,i)=>{
+      if(v===null)return null;
+      const x=Math.round(i/(arr.length-1)*(w-8)+4);
+      const y=Math.round((1-(v-min)/(max-min||1))*(h-8)+4);
+      return [x,y];
+    });
+    const valid=pts.filter(Boolean);
+    if(valid.length<1)return `<svg width="${w}" height="${h}"></svg>`;
+    const path=pts.map((p,i)=>{
+      if(!p)return '';
+      const prev=pts.slice(0,i).reverse().find(Boolean);
+      return prev?`L${p[0]},${p[1]}`:`M${p[0]},${p[1]}`;
+    }).join('');
+    const dots=valid.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.5" fill="${color}"/>`).join('');
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path d="${path}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>${dots}</svg>`;
+  }
+  // テーブル行
+  const MEAL_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','完食'];
+  const rows=days.map((d,i)=>{
+    const k=ds(d);
+    const dayRecs=byDay[k]||[];
+    const v=dayRecs.filter(r=>r.type==='vital').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+    const meals=dayRecs.filter(r=>r.type==='meal'&&!r.data.fluidOnly);
+    const exs=dayRecs.filter(r=>r.type==='excretion');
+    const wts=dayRecs.filter(r=>r.type==='weight').sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
+    const totalFluid=dayRecs.filter(r=>r.type==='meal').reduce((s,m)=>s+(m.data.fluid||0),0);
+    const stool=exs.find(e=>e.data.stool&&e.data.stool!=='なし');
+    const sysWarn=v&&(v.data.sys>159||v.data.sys<90);
+    const tempWarn=v&&v.data.temp>=37.5;
+    const spo2Warn=v&&v.data.spo2&&v.data.spo2<94;
+    const isToday=k===ds(new Date());
+    return `<tr style="${isToday?'background:rgba(59,130,246,.07)':''}">
+      <td style="padding:4px 6px;font-size:11px;font-weight:${isToday?'800':'600'};border:1px solid #ddd;white-space:nowrap;color:${isToday?'#2563eb':'#333'}">${dateLabels[i]}（${'日月火水木金土'[d.getDay()]}）</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center;${sysWarn?'background:#fee2e2;font-weight:700':''}"> ${v?`${v.data.sys||'?'}/${v.data.dia||'?'}`:' ─ '}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center">${v&&v.data.pulse?v.data.pulse:'─'}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center;${tempWarn?'background:#fff3e0;font-weight:700':''}">${v&&v.data.temp?v.data.temp+'℃':'─'}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center;${spo2Warn?'background:#fee2e2;font-weight:700':''}">${v&&v.data.spo2?v.data.spo2+'%':'─'}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center">${meals.length?MEAL_LBL[meals[0].data.staple]||'─':'─'}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center">${totalFluid?totalFluid+'ml':'─'}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center">${stool?stool.data.stool:'─'}</td>
+      <td style="padding:4px 6px;font-size:11px;border:1px solid #ddd;text-align:center">${wts?wts.data.val+'kg':'─'}</td>
+    </tr>`;
+  }).join('');
+  const THEAD_STYLE='padding:6px 6px;font-size:11px;font-weight:700;background:#1e3a5f;color:#fff;border:1px solid rgba(255,255,255,.2);text-align:center;white-space:nowrap';
+  const thead=`<thead><tr>
+    <th style="${THEAD_STYLE}">日付</th>
+    <th style="${THEAD_STYLE}">血圧</th>
+    <th style="${THEAD_STYLE}">脈拍</th>
+    <th style="${THEAD_STYLE}">体温</th>
+    <th style="${THEAD_STYLE}">SpO2</th>
+    <th style="${THEAD_STYLE}">食事</th>
+    <th style="${THEAD_STYLE}">水分</th>
+    <th style="${THEAD_STYLE}">排便</th>
+    <th style="${THEAD_STYLE}">体重</th>
+  </tr></thead>`;
+  const W=280, H=70;
+  const sysMin=70, sysMax=200, spo2Min=88, spo2Max=100, tempMin=35, tempMax=40;
+  const graphs=`<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid #ddd">
+    <div><div style="font-size:10px;font-weight:700;color:#1e3a5f;margin-bottom:2px">収縮期血圧（目安60〜180）</div>${sparkline(sysArr,sysMin,sysMax,'#3D7AB5',H,W)}</div>
+    <div><div style="font-size:10px;font-weight:700;color:#1e3a5f;margin-bottom:2px">拡張期血圧（目安40〜120）</div>${sparkline(diaArr,40,120,'#6baed6',H,W)}</div>
+    <div><div style="font-size:10px;font-weight:700;color:#1e3a5f;margin-bottom:2px">脈拍（40〜130）</div>${sparkline(pulseArr,40,130,'#43a047',H,W)}</div>
+    <div><div style="font-size:10px;font-weight:700;color:#1e3a5f;margin-bottom:2px">体温（35〜40℃）</div>${sparkline(tempArr,tempMin,tempMax,'#e53935',H,W)}</div>
+    <div><div style="font-size:10px;font-weight:700;color:#1e3a5f;margin-bottom:2px">SpO2（88〜100%）</div>${sparkline(spo2Arr,spo2Min,spo2Max,'#9c27b0',H,W)}</div>
+  </div>`;
+  const reportDate=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('kisan-graph-body').innerHTML=`
+    <div style="font-size:11px;color:#666;margin-bottom:8px">${res?res.name+' 様':''}　印刷日：${reportDate}</div>
+    ${graphs}
+    <div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums">${thead}<tbody>${rows}</tbody></table></div>
+    <div style="margin-top:8px;font-size:10px;color:#999">🔴 赤背景：収縮期血圧≥160 or ≤89 / SpO2≤93% / 体温≥37.5℃</div>`;
+  document.getElementById('modal-kisan-graph').classList.add('on');
+}
 function openFacesheet(){
   const r=getResidents().find(x=>x.id===S.currentRes);if(!r)return;
   const fs=getFacesheet(S.currentRes);
@@ -14438,6 +14815,12 @@ function deleteTask(id){
 // ═══════════ FEATURE 7: 申し送り読了確認 ═══════════
 function getHandoverReads(){return ls('handover_reads')||{};}
 function saveHandoverReads(d){lsSet('handover_reads',d);fsSet('handover_reads',d);}
+function _getAllStaffNames(){
+  const names=new Set();
+  Object.values(STAFF_INFO).forEach(s=>{if(s.name)names.add(s.name);});
+  Object.values(getCustomStaff()).forEach(s=>{if(s.name&&!s.disabled&&!s.hidden)names.add(s.name);});
+  return names;
+}
 
 function markHandoverRead(itemKey){
   const data=getHandoverReads();
