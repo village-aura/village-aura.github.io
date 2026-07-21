@@ -1240,7 +1240,7 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── HB STATUS MODAL ─── -->
-  <div class="overlay" id="modal-hb-status" onclick="closeModal('modal-hb-status',event)">
+  <div class="overlay" id="modal-hb-status" data-no-close-btn onclick="closeModal('modal-hb-status',event)">
     <div class="sheet" style="max-height:92vh;overflow-y:auto" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -3717,13 +3717,24 @@ a{color:var(--p);text-decoration:none}
 </div>
 
 <!-- TEMP BOARD MODAL -->
-<div class="overlay" id="modal-temp-board" onclick="closeModal('modal-temp-board',event)" style="align-items:center;padding:8px">
+<div class="overlay" id="modal-temp-board" data-no-close-btn onclick="closeModal('modal-temp-board',event)" style="align-items:center;padding:8px">
   <div class="sheet" style="max-width:min(98vw,1020px);width:calc(100vw - 16px);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.28);border-radius:18px" onclick="event.stopPropagation()">
     <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bdr)">
       <div class="sheet-title" style="margin-bottom:0">🌡️ 温度板（直近14日）</div>
       <button onclick="closeModal('modal-temp-board')" style="padding:6px 14px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
     </div>
     <div id="temp-board-modal-body" style="flex:1;overflow-y:auto;min-height:0;padding-top:10px"></div>
+  </div>
+</div>
+
+<!-- TEMP CHART ZOOM MODAL -->
+<div class="overlay" id="modal-temp-chart-zoom" data-no-close-btn onclick="closeModal('modal-temp-chart-zoom',event)" style="z-index:210">
+  <div class="sheet" style="max-width:min(98vw,660px);width:calc(100vw - 16px);overflow:hidden" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="sheet-title" style="margin-bottom:0;font-size:15px" id="temp-zoom-title">グラフ</div>
+      <button onclick="closeModal('modal-temp-chart-zoom')" style="padding:6px 14px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
+    </div>
+    <div id="temp-zoom-body" style="overflow-x:auto"></div>
   </div>
 </div>
 
@@ -8125,20 +8136,23 @@ function renderTempBoard(resId, targetId){
     };
     return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${linePts(sys,'#3b82f6',90,159)}${linePts(dia,'#93c5fd',null,null)}</svg>`;
   }
+  const res=getResidents().find(r=>r.id===resId);
+  _tbChartData={dayData,resName:res?res.name:''};
   const chartCards=[
-    {title:'血圧',unit:'mmHg',note:'青=収縮期 / 薄青=拡張期 / 🔴>159 or <90',svg:mkBP(sysList,diaList,W,H)},
-    {title:'脈拍',unit:'bpm',svg:mkLine(pList,W,H,'#f59e0b',null,null)},
-    {title:'体温',unit:'℃',note:'🔴≥37.5℃',svg:mkLine(tList,W,H,'#ef4444',null,37.5)},
-    {title:'SpO2',unit:'%',note:'🔴≤93%',svg:mkLine(sList,W,H,'#10b981',93,null)},
-    {title:'食事量',unit:'%',note:'主食平均',svg:mkBar(mList,W,H,'#8b5cf6',30)},
-    {title:'水分',unit:'ml',svg:mkBar(fList,W,H,'#0ea5e9',null)},
+    {key:'bp',title:'血圧',unit:'mmHg',note:'青=収縮期 / 薄青=拡張期',svg:mkBP(sysList,diaList,W,H)},
+    {key:'pulse',title:'脈拍',unit:'bpm',svg:mkLine(pList,W,H,'#f59e0b',null,null)},
+    {key:'temp',title:'体温',unit:'℃',note:'🔴≥37.5℃',svg:mkLine(tList,W,H,'#ef4444',null,37.5)},
+    {key:'spo2',title:'SpO2',unit:'%',note:'🔴≤93%',svg:mkLine(sList,W,H,'#10b981',93,null)},
+    {key:'meal',title:'食事量',unit:'%',note:'主食平均',svg:mkBar(mList,W,H,'#8b5cf6',30)},
+    {key:'fluid',title:'水分',unit:'ml',svg:mkBar(fList,W,H,'#0ea5e9',null)},
   ];
   const chartHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px">
-    ${chartCards.map(c=>`<div style="border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;background:var(--card)">
+    ${chartCards.map(c=>`<div onclick="openTempChartZoom('${c.key}')" style="border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;background:var(--card);cursor:pointer;user-select:none;transition:box-shadow .15s" onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseleave="this.style.boxShadow=''" title="クリックで拡大">
       <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:6px">
         <span style="font-size:12px;font-weight:700;color:var(--tx)">${c.title}</span>
         <span style="font-size:10px;color:var(--sub)">${c.unit}</span>
-        ${c.note?`<span style="font-size:9px;color:var(--sub);margin-left:auto">${c.note}</span>`:''}
+        ${c.note?`<span style="font-size:9px;color:var(--sub);flex:1;text-align:right">${c.note}</span>`:'<span style="flex:1"></span>'}
+        <span style="font-size:10px;color:var(--sub);opacity:.6">⛶</span>
       </div>
       <div style="overflow:hidden">${c.svg}</div>
       <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--sub)">
@@ -8180,13 +8194,123 @@ function renderTempBoard(resId, targetId){
       <td style="padding:5px 7px;font-size:10px;border:1px solid var(--bdr);color:var(--sub);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(note.substring(0,50))||'─'}</td>
     </tr>`;
   }).join('');
-  const res=getResidents().find(r=>r.id===resId);
   area.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:12px">${res?escHtml(res.name)+' 様 — ':''} 直近14日間</div>
     ${chartHTML}
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--bdr)">
       <table style="border-collapse:collapse;min-width:100%;font-variant-numeric:tabular-nums">${thead}<tbody>${rows}</tbody></table>
     </div>
     <div style="padding:8px 4px 4px;font-size:10px;color:var(--sub)">🔴 SpO2≤93% / 体温≥37.5℃ / 収縮期BP>159 or <90 は背景・アラートマーカー表示　／　排便3日以上なしは赤セル</div>`;
+}
+let _tbChartData=null;
+function openTempChartZoom(chartKey){
+  if(!_tbChartData)return;
+  const {dayData,resName}=_tbChartData;
+  const W=580,H=200,PL=48,PR=20,PT=20,PB=38;
+  const pw=W-PL-PR,ph=H-PT-PB;
+  const configs={
+    bp:{title:'血圧',unit:'mmHg',color:'#3b82f6',refLines:[{v:159,c:'#ef4444',lbl:'高(159)'},{v:90,c:'#3b82f6',lbl:'低(90)'}]},
+    pulse:{title:'脈拍',unit:'bpm',color:'#f59e0b'},
+    temp:{title:'体温',unit:'℃',color:'#ef4444',refLines:[{v:37.5,c:'#ef4444',lbl:'37.5℃'}]},
+    spo2:{title:'SpO2',unit:'%',color:'#10b981',refLines:[{v:93,c:'#ef4444',lbl:'93%'}]},
+    meal:{title:'食事量（主食平均）',unit:'%',color:'#8b5cf6',type:'bar'},
+    fluid:{title:'水分量',unit:'ml',color:'#0ea5e9',type:'bar'},
+  };
+  const cfg=configs[chartKey]||{title:chartKey,unit:'',color:'#6b7280'};
+  // データ取得
+  const keyMap={pulse:'pulse',temp:'temp',spo2:'spo2',meal:'mealPct',fluid:'fluid'};
+  let series=[];
+  if(chartKey==='bp'){
+    series=[
+      {vals:dayData.map(d=>d.sys),color:'#3b82f6',lbl:'収縮期'},
+      {vals:dayData.map(d=>d.dia),color:'#93c5fd',lbl:'拡張期'},
+    ];
+  } else {
+    series=[{vals:dayData.map(d=>d[keyMap[chartKey]]),color:cfg.color,lbl:cfg.title}];
+  }
+  const allVals=[...series.flatMap(s=>s.vals),...(cfg.refLines||[]).map(r=>r.v)].filter(v=>v!=null);
+  if(!allVals.length){
+    document.getElementById('temp-zoom-body').innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">データがありません</div>';
+    document.getElementById('temp-zoom-title').textContent=cfg.title;
+    openModal('modal-temp-chart-zoom');return;
+  }
+  let vmin=Math.min(...allVals),vmax=Math.max(...allVals);
+  const pad=(vmax-vmin)*0.15||1;
+  vmin-=pad;vmax+=pad;
+  const range=vmax-vmin||1;
+  const sx=i=>PL+i/(dayData.length-1)*pw;
+  const sy=v=>PT+ph-(v-vmin)/range*ph;
+  // グリッド・Y軸ラベル
+  let grid='';
+  for(let i=0;i<=4;i++){
+    const v=vmin+i/4*range;
+    const y=sy(v).toFixed(1);
+    const lbl=cfg.unit==='℃'?v.toFixed(1):Math.round(v)+(cfg.unit==='%'&&chartKey!=='bp'?'%':'');
+    grid+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>
+      <text x="${PL-5}" y="${y}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="#9ca3af">${lbl}</text>`;
+  }
+  // X軸ラベル（2日おき）
+  let xAxis='';
+  dayData.forEach((d,i)=>{
+    if(i%2!==0&&i!==dayData.length-1)return;
+    const x=sx(i).toFixed(1);
+    const lbl=`${d.d.getMonth()+1}/${d.d.getDate()}`;
+    xAxis+=`<text x="${x}" y="${H-PB+14}" text-anchor="middle" font-size="10" fill="#9ca3af">${lbl}</text>`;
+    if(d.isToday)xAxis+=`<text x="${x}" y="${H-PB+26}" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="700">今日</text>`;
+  });
+  // 今日の縦線
+  const todayX=sx(dayData.length-1).toFixed(1);
+  const todayLine=`<line x1="${todayX}" y1="${PT}" x2="${todayX}" y2="${PT+ph}" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4,3" opacity=".35"/>`;
+  // 基準線
+  let refSVG='';
+  (cfg.refLines||[]).forEach(r=>{
+    const y=sy(r.v).toFixed(1);
+    refSVG+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${r.c}" stroke-width="1.5" stroke-dasharray="5,3" opacity=".7"/>
+      <text x="${W-PR+3}" y="${y}" dominant-baseline="middle" font-size="9" fill="${r.c}" font-weight="700">${r.lbl}</text>`;
+  });
+  // データ描画
+  let dataSVG='';
+  if(cfg.type==='bar'){
+    const s=series[0];
+    const bw=Math.max(6,pw/dayData.length-5);
+    dayData.forEach((d,i)=>{
+      const v=s.vals[i];
+      if(v==null||v<=0)return;
+      const bh=Math.max(2,(v-vmin)/range*ph);
+      const x=(sx(i)-bw/2).toFixed(1);
+      const y=(PT+ph-bh).toFixed(1);
+      const refLow=(cfg.refLines||[])[0];
+      const isAlert=refLow&&v<refLow.v;
+      dataSVG+=`<rect x="${x}" y="${y}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="${isAlert?'#dc2626':s.color}" opacity=".85"/>
+        <text x="${sx(i).toFixed(1)}" y="${(parseFloat(y)-4).toFixed(1)}" text-anchor="middle" font-size="9" fill="${isAlert?'#dc2626':'#6b7280'}">${Math.round(v)}${cfg.unit==='%'?'%':''}</text>`;
+    });
+  } else {
+    series.forEach(s=>{
+      const pts=dayData.map((d,i)=>{const v=s.vals[i];return v!=null?{x:sx(i),y:sy(v),v,i}:null;});
+      const valid=pts.filter(Boolean);
+      if(valid.length<2)return;
+      dataSVG+=`<polyline points="${valid.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
+      pts.forEach((p,i)=>{
+        if(!p)return;
+        const refLines=cfg.refLines||[];
+        const isAlert=refLines.some(r=>(r.lbl.includes('高')&&p.v>r.v)||(r.lbl.includes('低')&&p.v<r.v)||(chartKey==='temp'&&p.v>=r.v)||(chartKey==='spo2'&&p.v<=r.v));
+        const dotC=isAlert?'#dc2626':s.color;
+        const r=p.i===dayData.length-1?5:3;
+        dataSVG+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${dotC}" stroke="#fff" stroke-width="1.5"/>`;
+        const vLbl=cfg.unit==='℃'?p.v.toFixed(1):Math.round(p.v)+(cfg.unit==='%'&&chartKey!=='bp'?'%':'');
+        dataSVG+=`<text x="${p.x.toFixed(1)}" y="${(p.y-9).toFixed(1)}" text-anchor="middle" font-size="9" fill="${isAlert?'#dc2626':'#6b7280'}" font-weight="${isAlert?'700':'400'}">${vLbl}</text>`;
+      });
+    });
+  }
+  // 凡例（BP）
+  let legend='';
+  if(chartKey==='bp'){
+    legend=`<text x="${PL}" y="${PT-6}" font-size="10" fill="#3b82f6" font-weight="600">━ 収縮期</text>
+      <text x="${PL+68}" y="${PT-6}" font-size="10" fill="#93c5fd" font-weight="600">━ 拡張期</text>`;
+  }
+  const svg=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block;max-width:${W}px">${grid}${todayLine}${refSVG}${dataSVG}${xAxis}${legend}</svg>`;
+  document.getElementById('temp-zoom-title').textContent=`${cfg.title}（${resName}様・直近14日）`;
+  document.getElementById('temp-zoom-body').innerHTML=svg;
+  openModal('modal-temp-chart-zoom');
 }
 function openVitalFocused(focusField){
   _vitalFocusedField=focusField||null;
