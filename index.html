@@ -4614,7 +4614,8 @@ function setupRealtimeSync(){
       if(key==='schedules'&&S.screen==='scr-schedule')renderSchedule();
       if(key==='infection_data'&&S.screen==='scr-infection')renderInfectionList();
       if((key==='medication_data'||key==='medication_checks')&&S.screen==='scr-medication')renderMedication();
-      if(key==='board_data2'&&S.screen==='scr-handover-board')renderHandoverBoard();
+      if(key==='board_data2'){if(S.screen==='scr-handover-board')renderHandoverBoard();updateHandoverUnreadBadge();}
+      if(key==='handover_reads'){updateHandoverUnreadBadge();if(S.screen==='scr-handover-board')renderHbList();}
       if(key==='tasks_data'&&S.screen==='scr-tasks')renderTasksList();
       if(key==='bath_records'&&S.screen==='scr-detail')renderDetail();
       if(key==='rounds_data'&&S.screen==='scr-rounds')renderRoundsList();
@@ -12221,6 +12222,7 @@ function saveBoardHandover(){
   saveBoardData(d);
   closeModal('modal-board-ho');
   renderHandoverBoard();
+  updateHandoverUnreadBadge();
   if(S.screen==='scr-doctor'&&_drTab==='order') renderDrOrderPane();
 }
 function deleteBoardHandover(section,idx,shift=''){
@@ -12238,6 +12240,7 @@ function deleteBoardHandover(section,idx,shift=''){
     if(section==='sak')d2.sak[sakShift]=items2; else d2[section]=items2;
     saveBoardData(d2);
     renderHandoverBoard();
+    updateHandoverUnreadBadge();
     toast('削除しました');
   });
 }
