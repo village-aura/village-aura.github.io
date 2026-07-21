@@ -1207,11 +1207,32 @@ a{color:var(--p);text-decoration:none}
         </div>
         <div class="field"><label>所属事業所</label>
           <select id="ms-jigyousho">
+            <option value="">─ 選択してください ─</option>
             <option value="サ高住">サ高住</option>
             <option value="小多機">小多機</option>
             <option value="デイサービス">デイサービス</option>
             <option value="訪問介護">訪問介護</option>
+            <option value="訪問看護">訪問看護</option>
             <option value="居宅">居宅</option>
+            <option value="いなだ医院">いなだ医院</option>
+          </select>
+        </div>
+        <div class="field"><label>職種</label>
+          <select id="ms-shokushu">
+            <option value="">─ 選択してください ─</option>
+            <option value="介護士">介護士</option>
+            <option value="介護福祉士">介護福祉士</option>
+            <option value="看護師">看護師</option>
+            <option value="准看護師">准看護師</option>
+            <option value="ケアマネージャー">ケアマネージャー</option>
+            <option value="相談員">相談員</option>
+            <option value="管理者">管理者</option>
+            <option value="事務・受付">事務・受付</option>
+            <option value="理学療法士">理学療法士（PT）</option>
+            <option value="作業療法士">作業療法士（OT）</option>
+            <option value="言語聴覚士">言語聴覚士（ST）</option>
+            <option value="調理師">調理師</option>
+            <option value="その他">その他</option>
           </select>
         </div>
         <div class="field"><label>ログインID（自動採番）</label>
@@ -5786,6 +5807,8 @@ function renderAdminStaffList(){
     const isMe=info.name===S.user;
     const curLoginId=getStaffLoginId(key);
     const curRole=getStaffRole(key);
+    const curJig=getStaffJigyousho(key);
+    const curSho=getStaffShokushu(key);
     const rc=getRoleInfo(curRole);
     const editId='adm-edit-'+key;
     const canDel=isCustomKey(key)&&!isMe;
@@ -5800,6 +5823,8 @@ function renderAdminStaffList(){
           <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(info.name)}${isMe?'<span style="font-size:10px;color:var(--p);margin-left:4px">(あなた)</span>':''}</div>
           <div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">
             <span class="staff-badge" style="background:${rc.bg};font-size:9px">${escHtml(rc.label)}</span>
+            ${curJig?`<span style="background:#e8f0fb;color:#1565c0;font-size:9px;font-weight:700;border-radius:8px;padding:1px 7px">${escHtml(curJig)}</span>`:''}
+            ${curSho?`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:700;border-radius:8px;padding:1px 7px">${escHtml(curSho)}</span>`:''}
             <span style="font-size:11px;color:var(--sub)">ID: ${escHtml(curLoginId)}</span>
             <span style="font-size:10px;font-weight:700;color:${disabled?'var(--ng)':'var(--ok)'}">${disabled?'停止中':'有効'}</span>
           </div>
@@ -5812,6 +5837,22 @@ function renderAdminStaffList(){
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ロール</span>
           <select id="adm-role-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb"${isMe?' disabled':''}>${roleOptions}</select>
           <button onclick="adminSetRole('${key}')" style="padding:6px 10px;background:#7c3aed;color:#fff;border-radius:7px;font-size:11px;font-weight:700"${isMe?' disabled':''}>変更</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">事業所</span>
+          <select id="adm-jig-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb">
+            <option value="">─ 未設定 ─</option>
+            ${JIGYOUSHO_LIST.map(j=>`<option value="${j}"${curJig===j?' selected':''}>${j}</option>`).join('')}
+          </select>
+          <button onclick="adminSetJigyousho('${key}')" style="padding:6px 10px;background:#1565c0;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">職種</span>
+          <select id="adm-sho-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb">
+            <option value="">─ 未設定 ─</option>
+            ${SHOKUSHU_LIST.map(s=>`<option value="${s}"${curSho===s?' selected':''}>${s}</option>`).join('')}
+          </select>
+          <button onclick="adminSetShokushu('${key}')" style="padding:6px 10px;background:#7b1fa2;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ID</span>
@@ -10528,6 +10569,24 @@ function addManualResident(){
 }
 function getCustomStaff(){return ls('custom_staff')||{};}
 function saveCustomStaff(s){lsSet('custom_staff',s);fsSet('custom_staff',s);}
+const JIGYOUSHO_LIST=['サ高住','小多機','デイサービス','訪問介護','訪問看護','居宅','いなだ医院'];
+const SHOKUSHU_LIST=['介護士','介護福祉士','看護師','准看護師','ケアマネージャー','相談員','管理者','事務・受付','理学療法士（PT）','作業療法士（OT）','言語聴覚士（ST）','調理師','その他'];
+function getStaffJigyousho(key){const ss=getStaffSettings();return ss[key]?.jigyousho||getCustomStaff()[key]?.jigyousho||STAFF_INFO[key]?.jigyousho||'';}
+function getStaffShokushu(key){const ss=getStaffSettings();return ss[key]?.shokushu||getCustomStaff()[key]?.shokushu||STAFF_INFO[key]?.shokushu||'';}
+function adminSetJigyousho(key){
+  const val=document.getElementById('adm-jig-'+key)?.value||'';
+  const ss=getStaffSettings();if(!ss[key])ss[key]={};ss[key].jigyousho=val;saveStaffSettings(ss);
+  const cs=getCustomStaff();if(cs[key]){cs[key].jigyousho=val;saveCustomStaff(cs);}
+  addAuditLog('事業所変更',getStaffInfo(key)?.name||key);
+  toast('所属事業所を変更しました ✓');renderAdminStaffList();
+}
+function adminSetShokushu(key){
+  const val=document.getElementById('adm-sho-'+key)?.value||'';
+  const ss=getStaffSettings();if(!ss[key])ss[key]={};ss[key].shokushu=val;saveStaffSettings(ss);
+  const cs=getCustomStaff();if(cs[key]){cs[key].shokushu=val;saveCustomStaff(cs);}
+  addAuditLog('職種変更',getStaffInfo(key)?.name||key);
+  toast('職種を変更しました ✓');renderAdminStaffList();
+}
 function getNextStaffLoginId(){
   const ids=Object.values(getCustomStaff()).map(s=>parseInt(s.loginId)||0).filter(n=>n<10000);
   return String(Math.max(...ids,99)+1).padStart(4,'0');
@@ -10567,6 +10626,7 @@ function addManualStaff(){
   cs[key]={name,sei,mei,kana:kanaSei&&kanaMei?kanaSei+' '+kanaMei:'',
     role,loginId,pass,
     jigyousho:document.getElementById('ms-jigyousho').value,
+    shokushu:document.getElementById('ms-shokushu').value,
     addedBy:S.user,addedAt:new Date().toISOString()};
   saveCustomStaff(cs);
   // staff_settings に pass を書いておく
@@ -10577,6 +10637,8 @@ function addManualStaff(){
   addAuditLog('職員追加',name+' (ID:'+loginId+')');
   toast(name+'を登録しました ✓');
   ['ms-sei','ms-mei','ms-kana-sei','ms-kana-mei'].forEach(id=>document.getElementById(id).value='');
+  const msJig=document.getElementById('ms-jigyousho');if(msJig)msJig.value='';
+  const msSho=document.getElementById('ms-shokushu');if(msSho)msSho.value='';
   renderStaffRoleDropdown();
   genMsPass();
 }
