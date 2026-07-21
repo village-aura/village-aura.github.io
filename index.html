@@ -666,7 +666,7 @@ a{color:var(--p);text-decoration:none}
     <nav style="flex:1;padding:6px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
-      <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')">📣　申し送りボード</button>
+      <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')" style="display:flex;align-items:center;gap:5px">📣　申し送りボード<span id="sbn-hb-badge" style="display:none;background:var(--ng);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;line-height:1.4;flex-shrink:0"></span></button>
       <span class="sb-lbl">業務記録</span>
       <button class="sbn" id="sbn-bulk-vital" onclick="showScr('scr-bulk-vital')">🌡️　一括バイタル</button>
       <button class="sbn" id="sbn-bulk-meal" onclick="showScr('scr-bulk-meal')">🍚　一括食事・水分</button>
@@ -1004,9 +1004,13 @@ a{color:var(--p);text-decoration:none}
         <span style="font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em">タイムライン</span>
         <div id="tl-nav" style="display:flex;align-items:center;gap:6px"></div>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button id="tlf-all" class="hb-filter-btn on" onclick="setTlFilter('all')">すべて</button>
-        <button id="tlf-chrono" class="hb-filter-btn" onclick="setTlFilter('chrono')">📝 経時記録</button>
+      <div style="display:flex;gap:5px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+        <button id="tlf-all" class="hb-filter-btn on" onclick="setTlFilter('all')" style="flex-shrink:0">すべて</button>
+        <button id="tlf-vital" class="hb-filter-btn" onclick="setTlFilter('vital')" style="flex-shrink:0">🌡️ バイタル</button>
+        <button id="tlf-chrono" class="hb-filter-btn" onclick="setTlFilter('chrono')" style="flex-shrink:0">📝 経時記録</button>
+        <button id="tlf-meal" class="hb-filter-btn" onclick="setTlFilter('meal')" style="flex-shrink:0">🍚 食事・水分</button>
+        <button id="tlf-excretion" class="hb-filter-btn" onclick="setTlFilter('excretion')" style="flex-shrink:0">💧 排泄</button>
+        <button id="tlf-weight" class="hb-filter-btn" onclick="setTlFilter('weight')" style="flex-shrink:0">⚖️ 体重</button>
       </div>
       <div id="timeline"></div>
     </div>
@@ -2262,19 +2266,28 @@ a{color:var(--p);text-decoration:none}
   </div>
 
   <!-- ─── 今日のデイ利用者 ─── -->
-  <div id="scr-day-today" class="scr">
-    <div style="padding:14px 12px 0;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:#1565c0">🚌 今日のデイ利用者</div>
-        <div id="day-today-date" style="font-size:11px;color:var(--sub);margin-top:3px"></div>
+  <div id="scr-day-today" class="scr" style="padding:0">
+    <div style="display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden">
+      <div style="padding:10px 12px 0;flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:18px;font-weight:800;color:#1565c0">🚌 今日のデイ利用者</div>
+            <div id="day-today-date" style="font-size:11px;color:var(--sub);margin-top:2px"></div>
+          </div>
+          <span id="day-today-count" style="background:var(--p);color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:800">0名</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+          <div id="day-today-status" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;overflow:hidden"></div>
+          <button onclick="openDayRecurModal()" style="flex-shrink:0;padding:6px 10px;border-radius:8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation;white-space:nowrap">📅 定期設定</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;border-bottom:1px solid var(--bdr);padding-bottom:0">
+          <button id="day-view-list" onclick="setDayView('list')" style="padding:7px 16px;font-size:12px;font-weight:700;border:none;border-bottom:2px solid var(--p);background:none;color:var(--p);cursor:pointer;touch-action:manipulation">リスト</button>
+          <button id="day-view-matrix" onclick="setDayView('matrix')" style="padding:7px 16px;font-size:12px;font-weight:700;border:none;border-bottom:2px solid transparent;background:none;color:var(--sub);cursor:pointer;touch-action:manipulation">📊 マトリクス</button>
+        </div>
       </div>
-      <span id="day-today-count" style="background:var(--p);color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:800">0名</span>
+      <div id="day-today-list" style="flex:1;overflow-y:auto;padding:8px 12px 16px"></div>
+      <div id="day-matrix-wrap" style="display:none;flex:1;overflow:auto;padding-bottom:16px"></div>
     </div>
-    <div style="padding:4px 12px 0;display:flex;gap:6px;align-items:center">
-      <div id="day-today-status" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
-      <button onclick="openDayRecurModal()" style="flex-shrink:0;padding:7px 12px;border-radius:8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);font-size:11px;font-weight:800;cursor:pointer;touch-action:manipulation;white-space:nowrap">📅 定期設定</button>
-    </div>
-    <div id="day-today-list" style="padding:8px 12px 80px"></div>
     <button onclick="openDayTodayRegModal()" style="position:fixed;bottom:90px;right:20px;padding:0 18px;height:52px;border-radius:26px;background:var(--p);color:#fff;font-size:15px;font-weight:800;border:none;box-shadow:0 4px 16px rgba(61,122,181,.4);z-index:50;cursor:pointer;touch-action:manipulation;white-space:nowrap;display:flex;align-items:center;gap:6px">＋ 今日の来所者を登録</button>
   </div>
 
@@ -6649,7 +6662,7 @@ function showScr(id){
   if(id==='scr-bulk-excretion') renderBulkExcretion();
   if(id==='scr-medication') renderMedication();
   if(id==='scr-transport') renderTransport();
-  if(id==='scr-day-today') renderDayToday();
+  if(id==='scr-day-today'){_dayView='list';setDayView('list');renderDayToday();}
   if(id==='scr-shift') renderShift();
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
@@ -7624,7 +7637,7 @@ function renderResList(){
       ${moreBtn}
       <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
-        <div class="res-name">${r.name}${hiddenBadge} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
+        <div class="res-name" style="${r.gender==='male'?'color:#1d4ed8':r.gender==='female'?'color:#dc2626':''}">${r.gender==='male'?'<span style="font-size:9px;vertical-align:middle;margin-right:1px">♂</span>':r.gender==='female'?'<span style="font-size:9px;vertical-align:middle;margin-right:1px">♀</span>':''}${r.name}${hiddenBadge} <span style="font-size:13px;font-weight:400;color:var(--sub)">${r.age}歳</span>${r.vitalRanges?'<span style="font-size:10px;color:#FB8C00;font-weight:700;margin-left:4px">※</span>':''}</div>
         <div class="res-meta">${r.room?r.room+'号室・':''} ${careLabel(r.care)} | ${r.facility}</div>
         <div class="res-tags">${tags}<span class="tag tag-care">${careLabel(r.care)}</span></div>
         ${badges.length&&!r.hidden?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">${badges.join('')}</div>`:''}
@@ -11191,6 +11204,110 @@ function renderDayToday(){
     </div>`;
   }).join('');
 }
+let _dayView='list';
+function setDayView(v){
+  _dayView=v;
+  const listBtn=document.getElementById('day-view-list');
+  const matBtn=document.getElementById('day-view-matrix');
+  const listEl=document.getElementById('day-today-list');
+  const matEl=document.getElementById('day-matrix-wrap');
+  if(listBtn){listBtn.style.borderBottomColor=v==='list'?'var(--p)':'transparent';listBtn.style.color=v==='list'?'var(--p)':'var(--sub)';}
+  if(matBtn){matBtn.style.borderBottomColor=v==='matrix'?'var(--p)':'transparent';matBtn.style.color=v==='matrix'?'var(--p)':'var(--sub)';}
+  if(listEl)listEl.style.display=v==='list'?'':'none';
+  if(matEl)matEl.style.display=v==='matrix'?'':'none';
+  if(v==='matrix')renderDayMatrix();
+}
+function renderDayMatrix(){
+  const el=document.getElementById('day-matrix-wrap');if(!el)return;
+  const today=_localDs(new Date());
+  const res=_getTodayDayResidents();
+  if(!res.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;text-align:center;padding:40px">本日デイ予定の利用者はいません</div>';return;}
+  const recs=getRecords();
+  const todayStr=new Date().toDateString();
+  const todayRecs=recs.filter(r=>new Date(r.ts).toDateString()===todayStr);
+  const byRidType={};
+  todayRecs.forEach(r=>{if(!byRidType[r.rid])byRidType[r.rid]={};if(!byRidType[r.rid][r.type])byRidType[r.rid][r.type]=[];byRidType[r.rid][r.type].push(r);});
+  const cols=[
+    {key:'vital',label:'バイタル',icon:'🌡️'},
+    {key:'meal',label:'食事主食',icon:'🍚'},
+    {key:'meal_side',label:'副食',icon:'🥗'},
+    {key:'meal_fluid',label:'水分',icon:'💧'},
+    {key:'excretion',label:'排泄',icon:'🚽'},
+    {key:'chrono',label:'特記',icon:'📝'},
+  ];
+  const colStyle='min-width:64px;max-width:90px;padding:6px 4px;text-align:center;border-right:1px solid var(--bdr);font-size:11px;font-weight:700;vertical-align:middle';
+  const nameColStyle='min-width:72px;max-width:88px;padding:6px 8px;font-size:11px;font-weight:700;border-right:1px solid var(--bdr);position:sticky;left:0;background:var(--card);z-index:2;word-break:keep-all';
+  let tbl=`<table style="border-collapse:collapse;width:100%;min-width:${72+cols.length*72}px">
+    <thead><tr style="background:var(--card);border-bottom:2px solid var(--bdr)">
+      <th style="${nameColStyle}">利用者</th>
+      ${cols.map(c=>`<th style="${colStyle}">${c.icon}<br>${c.label}</th>`).join('')}
+    </tr></thead><tbody>`;
+  res.forEach(r=>{
+    const rd=byRidType[r.id]||{};
+    const mealRec=rd.meal?rd.meal[rd.meal.length-1]:null;
+    function cellVal(type){
+      switch(type){
+        case'vital':{const v=rd.vital?rd.vital[rd.vital.length-1]:null;if(!v)return null;const d=v.data||{};return d.sys&&d.dia?`${d.sys}/${d.dia}`:(d.temp?d.temp+'℃':(d.spo2?d.spo2+'%':'✓'));}
+        case'meal':{if(!mealRec)return null;const d=mealRec.data||{};const sp=d.staple!=null?d.staple:null;return sp!=null?sp*10+'%':null;}
+        case'meal_side':{if(!mealRec)return null;const d=mealRec.data||{};const sd=d.side!=null?d.side:null;return sd!=null?sd*10+'%':null;}
+        case'meal_fluid':{if(!mealRec)return null;const d=mealRec.data||{};return d.fluid?d.fluid+'ml':null;}
+        case'excretion':{const v=rd.excretion?rd.excretion[rd.excretion.length-1]:null;if(!v)return null;const d=v.data||{};return d.defecation?'🚽'+(d.defBristol||''):( d.urine?'💧':'✓');}
+        case'chrono':{return rd.chrono&&rd.chrono.length?'📝 '+rd.chrono.length+'件':null;}
+        default:return null;
+      }
+    }
+    tbl+=`<tr style="border-bottom:1px solid var(--bdr)" onclick="openResident('${r.id}')">
+      <td style="${nameColStyle};cursor:pointer;color:${r.gender==='male'?'#1d4ed8':r.gender==='female'?'#dc2626':'var(--txt)'}">
+        ${r.gender==='male'?'♂ ':r.gender==='female'?'♀ ':''}${r.name.split(' ')[0]}
+      </td>
+      ${cols.map(c=>{
+        const v=cellVal(c.key);
+        const isEmpty=v===null;
+        const isPartial=!isEmpty&&v==='';
+        const cellBg=isEmpty?'#fee2e2':'var(--bg)';
+        const cellColor=isEmpty?'#dc2626':'var(--txt)';
+        const modal=c.key==='vital'?'modal-vital':c.key.startsWith('meal')?'modal-meal':c.key==='excretion'?'modal-excretion':c.key==='chrono'?'modal-chrono':null;
+        const clickHandler=modal?`event.stopPropagation();S.currentRes='${r.id}';openModal('${modal}')`:`openResident('${r.id}')`;
+        return `<td style="${colStyle};background:${cellBg};color:${cellColor};cursor:pointer" onclick="${clickHandler}">
+          ${isEmpty?'<span style="font-size:10px">未</span>':`<span style="font-size:11px;word-break:break-all">${v}</span>`}
+        </td>`;
+      }).join('')}
+    </tr>`;
+  });
+  tbl+='</tbody></table>';
+  el.innerHTML=`<div style="padding:8px 0 0">
+    <div style="display:flex;gap:6px;padding:0 12px 6px;flex-wrap:wrap">
+      <button onclick="dayMatrixBulk('meal','complete')" style="padding:6px 12px;border-radius:8px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">🍚 一括：完食</button>
+      <button onclick="dayMatrixBulk('fluid','200')" style="padding:6px 12px;border-radius:8px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">💧 一括：水分200ml</button>
+    </div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">${tbl}</div>
+  </div>`;
+}
+function dayMatrixBulk(type,value){
+  const today=_localDs(new Date());
+  const res=_getTodayDayResidents();
+  const recs=getRecords();
+  const todayStr=new Date().toDateString();
+  let count=0;
+  if(type==='meal'){
+    const mealToday=new Set(recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
+    const targets=res.filter(r=>!mealToday.has(r.id));
+    targets.forEach(r=>{
+      const rec={id:'rec'+Date.now()+Math.random().toString(36).slice(2),rid:r.id,type:'meal',ts:new Date().toISOString(),staffName:S.user,staffRole:S.userRole,by:S.user,data:{staple:10,side:10,fluid:0,note:'一括入力（完食）'}};
+      recs.push(rec);count++;
+    });
+  } else if(type==='fluid'){
+    const mealToday=recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr);
+    const mealMap={};mealToday.forEach(r=>{mealMap[r.rid]=r;});
+    const targets=res.filter(r=>!mealMap[r.id]);
+    targets.forEach(r=>{
+      const rec={id:'rec'+Date.now()+Math.random().toString(36).slice(2),rid:r.id,type:'meal',ts:new Date().toISOString(),staffName:S.user,staffRole:S.userRole,by:S.user,data:{staple:null,side:null,fluid:200,note:'一括入力（水分200ml）'}};
+      recs.push(rec);count++;
+    });
+  }
+  if(count>0){saveRecords(recs);renderDayMatrix();toast(count+'名を一括入力しました。個別修正はセルをタップ ✓');}
+  else toast('未記録の利用者はいません');
+}
 function recordDayTransport(rid,date,type){
   const records=getTransportRecords();
   if(!records[date])records[date]={};
@@ -11494,10 +11611,15 @@ function renderHbList(){
       :`<button onclick="event.stopPropagation();deleteDoctorOrder(${h._origIdx})" style="background:none;border:none;cursor:pointer;padding:3px;font-size:15px;color:#e53935;touch-action:manipulation">🗑️</button>`):'';
     const cardClick=_res?`onclick="openResident('${_res.id}')" style="cursor:pointer"`:'';
     const _itemKey=h.id||null;
-    const _myRead=_itemKey&&_hbReads[_itemKey]&&_hbReads[_itemKey].includes(S.user);
-    const _readCnt=_itemKey?(_hbReads[_itemKey]||[]).length:0;
+    const _readNames=_itemKey?(_hbReads[_itemKey]||[]):[];
+    const _myRead=_readNames.includes(S.user);
+    const _readCnt=_readNames.length;
+    const _readerPreview=_readCnt>0?_readNames.slice(0,3).join(' ').trim()+(_readCnt>3?'ほか':''):'';
     const readBtn=_itemKey
-      ?`<button onclick="event.stopPropagation();markHandoverRead('${_itemKey}')" style="padding:3px 10px;border-radius:6px;border:1px solid ${_myRead?'#43a047':'#90caf9'};background:${_myRead?'#e8f5e9':'#e3f2fd'};color:${_myRead?'#2e7d32':'#1565c0'};font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">${_myRead?'✓ 既読':'👁 読んだよ'}${_readCnt>0?' ('+_readCnt+'名)':''}</button>`
+      ?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+          <button onclick="event.stopPropagation();markHandoverRead('${_itemKey}')" style="padding:3px 10px;border-radius:6px;border:1px solid ${_myRead?'#43a047':'#90caf9'};background:${_myRead?'#e8f5e9':'#e3f2fd'};color:${_myRead?'#2e7d32':'#1565c0'};font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">${_myRead?'✓ 確認済':'👁 確認する'}${_readCnt>0?' ('+_readCnt+'名)':''}</button>
+          ${_readCnt>0?`<span style="font-size:9px;color:var(--sub);white-space:nowrap">${_readerPreview}</span>`:''}
+        </div>`
       :'';
     return `<div class="hb-card ${priClass}" ${cardClick}>
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px">
@@ -14344,10 +14466,11 @@ function markAllHandoverRead(){
 }
 
 function updateHandoverUnreadBadge(){
-  const badge=document.getElementById('hb-unread-badge');if(!badge)return;
+  const badge=document.getElementById('hb-unread-badge');
+  const sbnBadge=document.getElementById('sbn-hb-badge');
   const bd=getBoardData();
   const allItems=[
-    ...bd.sak.am,...bd.sak.pm,...bd.doctor,...bd.nurse,...bd.shot,...bd.day,...bd.visit
+    ...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.nurse||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])
   ];
   const reads=getHandoverReads();
   const unread=allItems.filter(h=>{
@@ -14355,12 +14478,9 @@ function updateHandoverUnreadBadge(){
     const key=h.id||'unknown';
     return !(reads[key]||[]).includes(S.user);
   }).length;
-  if(unread>0){
-    badge.style.display='block';
-    badge.textContent=unread>9?'9+':unread;
-  } else {
-    badge.style.display='none';
-  }
+  const txt=unread>9?'9+':String(unread);
+  if(badge){badge.style.display=unread>0?'block':'none';if(unread>0)badge.textContent=txt;}
+  if(sbnBadge){sbnBadge.style.display=unread>0?'':'none';if(unread>0)sbnBadge.textContent=txt;}
 }
 
 // ═══════════ FEATURE 9: 月次レポート自動生成 ═══════════
