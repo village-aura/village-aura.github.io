@@ -12065,11 +12065,11 @@ async function callGemini(prompt){
         generationConfig:{maxOutputTokens:600,temperature:0.3}
       })
     });
-    const d=await res.json();
-    if(!res.ok||d.error){
-      const msg=d?.error?.message||('HTTP '+res.status);
-      throw new Error(msg);
-    }
+    const raw=await res.text();
+    console.log('Gemini raw response:',res.status, raw.substring(0,300));
+    let d;
+    try{d=JSON.parse(raw);}catch(e){throw new Error('非JSON応答 ('+res.status+'): '+raw.substring(0,80));}
+    if(!res.ok||d.error){throw new Error(d?.error?.message||('HTTP '+res.status));}
     return d?.candidates?.[0]?.content?.parts?.[0]?.text||'';
   }catch(e){
     toast('AI エラー: '+e.message);
