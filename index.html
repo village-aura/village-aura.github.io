@@ -451,13 +451,17 @@ a{color:var(--p);text-decoration:none}
 .diary-split.right-expanded .diary-left{width:0!important;min-width:0}
 .diary-split.right-expanded #diary-expand-tap{display:none!important}
 
-/* ── PORTRAIT OVERLAY (768〜1023px 縦) ── */
+/* ── TABLET 768〜1023px 共通 ── */
 @media(min-width:768px) and (max-width:1023px){
   #sidebar{display:flex}
   body.sb-closed #sidebar{display:none}
   #sb-backdrop{display:none!important}
   body:not(.sb-closed) #main-content-wrap{margin-left:240px;transition:margin-left .22s ease}
   body.sb-closed #main-content-wrap{margin-left:0;transition:margin-left .22s ease}
+}
+/* ── タブレット横向き：ボトムナブ非表示・サイドバー優先 ── */
+@media(min-width:768px) and (max-width:1023px) and (orientation:landscape){
+  .bnav{display:none!important}
 }
 /* ── PORTRAIT SCROLL FIX（iOS タブレット縦向き）── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
@@ -809,21 +813,24 @@ a{color:var(--p);text-decoration:none}
     <!-- 今月の目標 -->
     <div id="monthly-goal-card" style="margin:8px 12px 0"></div>
 
-    <!-- 記録入力（事業所） -->
+    <!-- 記録入力（種別選択） -->
     <div style="margin:0 12px 4px">
       <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">記録入力</div>
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
-        <button onclick="openSvcEntry('resident')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #3D7AB5;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:20px">🏠</span><span style="font-size:10px;font-weight:700;color:var(--tx)">サ高住</span>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+        <button onclick="openRecordEntry('vital')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #3b82f6;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">🌡️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">バイタル</span>
         </button>
-        <button onclick="openSvcEntry('commute')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #e65100;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:20px">☀️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">デイ</span>
+        <button onclick="openRecordEntry('meal')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #f59e0b;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">🍚</span><span style="font-size:10px;font-weight:700;color:var(--tx)">食事・水分</span>
         </button>
-        <button onclick="openSvcEntry('stay')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #2e7d32;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:20px">🏡</span><span style="font-size:10px;font-weight:700;color:var(--tx)">小多機</span>
+        <button onclick="openRecordEntry('excretion')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #10b981;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">💧</span><span style="font-size:10px;font-weight:700;color:var(--tx)">排泄</span>
         </button>
-        <button onclick="openSvcEntry('visit')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #6a1b9a;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:20px">🚗</span><span style="font-size:10px;font-weight:700;color:var(--tx)">訪問介護</span>
+        <button onclick="openRecordEntry('chrono')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #8b5cf6;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">📝</span><span style="font-size:10px;font-weight:700;color:var(--tx)">経時記録</span>
+        </button>
+        <button onclick="openRecordEntry('weight')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #6b7280;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">⚖️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">体重</span>
         </button>
       </div>
     </div>
@@ -6846,20 +6853,26 @@ function toggleSidebar(){
   _syncSbBtns(closed);
 }
 function _initSidebarState(){
-  if(window.innerWidth >= 768){
-    document.body.classList.remove('sb-closed');
-    _syncSbBtns(false);
+  const w=window.innerWidth, h=window.innerHeight;
+  const portrait=h>w;
+  if(w>=1024){
+    // デスクトップ: サイドバー開く
+    document.body.classList.remove('sb-closed');_syncSbBtns(false);
+  } else if(w>=768 && portrait){
+    // タブレット縦: サイドバー閉じる
+    document.body.classList.add('sb-closed');_syncSbBtns(true);
+  } else if(w>=768){
+    // タブレット横: サイドバー開く
+    document.body.classList.remove('sb-closed');_syncSbBtns(false);
   } else {
-    document.body.classList.add('sb-closed');
-    _syncSbBtns(true);
+    // スマホ: サイドバー閉じる
+    document.body.classList.add('sb-closed');_syncSbBtns(true);
   }
 }
 try{
-  window.matchMedia('(min-width:768px)').addEventListener('change',e=>{
-    if(e.matches){ document.body.classList.remove('sb-closed'); _syncSbBtns(false); }
-    else { document.body.classList.add('sb-closed'); _syncSbBtns(true); }
-  });
+  window.matchMedia('(min-width:768px)').addEventListener('change',()=>_initSidebarState());
 }catch(e){}
+window.addEventListener('orientationchange',()=>setTimeout(_initSidebarState,150));
 function toggleSvcSheet(){
   const s=document.getElementById('svc-sheet');
   const b=document.getElementById('svc-backdrop');
@@ -7788,6 +7801,53 @@ function renderResList(){
 
 // ═══════════ SERVICE ENTRY ROUTE ═══════════
 let S_svc_entry=null;
+// ── 記録種別先行フロー ──
+let _recPickerType=null;
+const _recPickerMeta={
+  vital:{lbl:'🌡️ バイタル',fn:()=>openVitalFull()},
+  meal:{lbl:'🍚 食事・水分',fn:()=>openModal('modal-meal')},
+  excretion:{lbl:'💧 排泄',fn:()=>openModal('modal-excretion')},
+  chrono:{lbl:'📝 経時記録',fn:()=>openModal('modal-chrono')},
+  weight:{lbl:'⚖️ 体重',fn:()=>openModal('modal-weight')},
+};
+function openRecordEntry(type){
+  _recPickerType=type;
+  const meta=_recPickerMeta[type]||{};
+  const title=document.getElementById('res-picker-title');
+  if(title)title.textContent=(meta.lbl||type)+' — 利用者を選択';
+  const search=document.getElementById('res-picker-search');
+  if(search)search.value='';
+  renderResPicker('');
+  openModal('modal-res-picker');
+}
+function renderResPicker(q){
+  const list=document.getElementById('res-picker-list');
+  if(!list)return;
+  const residents=getResidents().filter(r=>{
+    if(r.status==='inactive')return false;
+    if(!q)return true;
+    return (r.name||'').includes(q)||(r.kana||'').includes(q);
+  });
+  if(!residents.length){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--sub);font-size:14px">該当する利用者が見つかりません</div>';return;}
+  list.innerHTML=residents.map(r=>`
+    <div onclick="pickResidentForRecord('${r.id}')" style="padding:12px 14px;border-radius:10px;background:var(--card);border:1.5px solid var(--bdr);margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;touch-action:manipulation">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700;color:var(--tx)">${escHtml(r.name)} 様</div>
+        ${r.room||r.kana?`<div style="font-size:11px;color:var(--sub);margin-top:2px">${r.room?r.room+'号室 · ':''}${r.kana||''}</div>`:''}
+      </div>
+      <span style="color:var(--sub);font-size:18px;flex-shrink:0">›</span>
+    </div>`).join('');
+}
+function filterResPicker(q){renderResPicker(q);}
+function pickResidentForRecord(rid){
+  const type=_recPickerType;
+  S.currentRes=rid;
+  trackRecentResident&&trackRecentResident(rid);
+  closeModal('modal-res-picker');
+  const meta=_recPickerMeta[type];
+  if(meta)setTimeout(()=>meta.fn(),160);
+}
+
 function openSvcEntry(svc){
   S_svc_entry=svc;
   S.currentService=svc;
@@ -15693,6 +15753,19 @@ document.querySelectorAll('.overlay:not([data-no-close-btn])').forEach(overlay=>
   sheet.insertBefore(btn,sheet.firstChild);
 });
 </script>
+<!-- 利用者ピッカー（記録種別選択後） -->
+<div class="overlay" id="modal-res-picker" data-no-close-btn onclick="closeModal('modal-res-picker',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="sheet-title" style="margin-bottom:0;font-size:15px" id="res-picker-title">利用者を選択</div>
+      <button onclick="closeModal('modal-res-picker')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕</button>
+    </div>
+    <input type="search" id="res-picker-search" placeholder="名前・フリガナで検索..." oninput="filterResPicker(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;background:var(--card);color:var(--tx);margin-bottom:8px">
+    <div id="res-picker-list" style="max-height:55vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- 写真拡大オーバーレイ -->
 <div id="photo-zoom-ov" onclick="closePhotoZoom()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:zoom-out">
   <img id="photo-zoom-img" src="" style="max-width:92vw;max-height:88vh;border-radius:12px;object-fit:contain;box-shadow:0 4px 32px rgba(0,0,0,.5)">
