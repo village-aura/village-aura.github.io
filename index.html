@@ -1282,7 +1282,6 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;color:var(--txt)">📣 申し送りボード</div>
         <div id="hb-date-label" style="font-size:11px;color:var(--sub);margin-top:2px"></div>
       </div>
-      <button id="hb-ai-btn" onclick="aiSummarizeHandover()" style="background:#f5f3ff;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">✨ AI要約</button>
       <button id="hb-status-btn" onclick="openHbStatus()" style="display:none;background:var(--card);color:var(--sub);border:1.5px solid var(--bdr);border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">📊 確認状況</button>
       <button onclick="openBoardHandover('nurse')" style="background:var(--p);color:#fff;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">＋ 追加</button>
       <button onclick="openBoardTrash()" style="background:var(--card);color:var(--sub);border:1.5px solid var(--bdr);border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer">🗑</button>
@@ -2995,7 +2994,6 @@ a{color:var(--p);text-decoration:none}
     <div class="field"><label>備考</label><textarea id="v-note" placeholder="特記事項..."></textarea>
       <button class="btn-voice" onclick="startVoice('v-note',this)">🎤 音声入力</button>
     </div>
-    <button id="ai-vital-btn" onclick="aiCommentVital()" style="width:100%;padding:10px;background:#f5f3ff;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;margin-bottom:6px">✨ AI所見コメント生成</button>
     <button class="btn-primary" onclick="saveRecord('vital')">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-vital')">キャンセル</button>
   </div>
@@ -3131,11 +3129,8 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
     <div class="field"><label>記録内容</label>
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <button onclick="openTemplatePicker('chrono')" style="font-size:12px;color:var(--p);background:var(--ps);border-radius:6px;padding:4px 10px;font-weight:700">📋 テンプレート</button>
-        <button id="ai-chrono-btn" onclick="aiAssistChrono()" style="font-size:12px;color:#7c3aed;background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:6px;padding:4px 10px;font-weight:700;cursor:pointer;touch-action:manipulation">✨ AI補助</button>
-      </div>
-      <textarea id="c-content" placeholder="自由記述…（キーワードを入れてAI補助で文章化できます）" rows="4" oninput="updateTriagePreview()"></textarea>
+      <button onclick="openTemplatePicker('chrono')" style="font-size:12px;color:var(--p);background:var(--ps);border-radius:6px;padding:4px 10px;margin-bottom:6px;font-weight:700">📋 テンプレートから入力</button>
+      <textarea id="c-content" placeholder="自由記述..." rows="4" oninput="updateTriagePreview()"></textarea>
       <button class="btn-voice" id="voice-btn" onclick="startVoice('c-content',this)">🎤 タップして音声入力</button>
       <div style="margin-top:6px;padding:8px 10px;background:#f0f4ff;border-radius:8px;border:1px solid #c7d7f8;font-size:11px;color:#444;line-height:1.7">
         <span style="font-weight:800;color:var(--p)">🎤 話し方の例</span><br>
@@ -12052,126 +12047,6 @@ function openHbStatus(){
   body.innerHTML=`<div style="font-size:12px;color:var(--sub);margin-bottom:10px">申し送り ${allItems.length}件 ／ スタッフ ${staffArr.length}名</div>${html}`;
   openModal('modal-hb-status');
 }
-// ==================== AI 機能 ====================
-let _aiPreviewApply=null;
-
-async function callGemini(prompt){
-  try{
-    const res=await fetch('/ai/gemini',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        contents:[{parts:[{text:prompt}]}],
-        generationConfig:{maxOutputTokens:600,temperature:0.3}
-      })
-    });
-    const raw=await res.text();
-    console.log('Gemini raw response:',res.status, raw.substring(0,300));
-    let d;
-    try{d=JSON.parse(raw);}catch(e){throw new Error('非JSON応答 ('+res.status+'): '+raw.substring(0,80));}
-    if(!res.ok||d.error){throw new Error(d?.error?.message||('HTTP '+res.status));}
-    return d?.candidates?.[0]?.content?.parts?.[0]?.text||'';
-  }catch(e){
-    toast('AI エラー: '+e.message);
-    console.error('Gemini error:',e);
-    return null;
-  }
-}
-
-function openAiPreview(text,onApply){
-  _aiPreviewApply=()=>{onApply(text);closeModal('modal-ai-preview');};
-  const body=document.getElementById('ai-preview-body');
-  if(body)body.textContent=text;
-  openModal('modal-ai-preview');
-}
-
-async function aiAssistChrono(){
-  const txt=document.getElementById('c-content')?.value?.trim();
-  if(!txt){toast('記録内容を入力してから押してください');return;}
-  const tags=Array.from(document.querySelectorAll('#chrono-tags .ttag.on')).map(b=>b.textContent.trim()).join('、')||'なし';
-  const btn=document.getElementById('ai-chrono-btn');
-  if(btn){btn.textContent='⏳...';btn.disabled=true;}
-  const prompt=`あなたは介護施設の記録支援AIです。以下の情報をもとに介護記録として適切な文章に整えてください。
-カテゴリ：${tags}
-入力内容：${txt}
-条件：
-- 150字以内
-- 体言止め・簡潔な文体（です・ます調禁止）
-- 事実のみ記載。推測は「可能性あり」「要観察」と表現
-- 医療介護用語を適切に使用
-整えた記録文のみ出力してください（説明・前置き不要）。`;
-  const result=await callGemini(prompt);
-  if(btn){btn.textContent='✨ AI補助';btn.disabled=false;}
-  if(!result)return;
-  openAiPreview(result,text=>{
-    const el=document.getElementById('c-content');
-    if(el){el.value=text;updateTriagePreview&&updateTriagePreview();}
-  });
-}
-
-async function aiCommentVital(){
-  const sys=document.getElementById('v-sys')?.value;
-  const dia=document.getElementById('v-dia')?.value;
-  const pulse=document.getElementById('v-pulse')?.value;
-  const temp=document.getElementById('v-temp')?.value;
-  const spo2=document.getElementById('v-spo2')?.value;
-  const conscious=document.querySelector('input[name="consciousness"]:checked')?.value||'';
-  const note=document.getElementById('v-note')?.value||'';
-  if(!sys&&!temp&&!spo2){toast('バイタルを入力してから押してください');return;}
-  const btn=document.getElementById('ai-vital-btn');
-  if(btn){btn.textContent='⏳...';btn.disabled=true;}
-  const lines=[];
-  if(sys)lines.push(`血圧 ${sys}${dia?'/'+dia:''} mmHg`);
-  if(pulse)lines.push(`脈拍 ${pulse} 回/分`);
-  if(temp)lines.push(`体温 ${temp} ℃`);
-  if(spo2)lines.push(`SpO2 ${spo2}%`);
-  if(conscious)lines.push(`意識 ${conscious==='alert'?'清明':conscious==='drowsy'?'傾眠':'昏迷'}`);
-  if(note)lines.push(`特記：${note}`);
-  const prompt=`以下のバイタルサインを評価し、介護記録用の所見コメントを生成してください。
-${lines.join('\n')}
-条件：
-- 80字以内
-- 異常値があれば何が問題か・対応方針を端的に
-- 正常範囲なら「バイタル安定」等で簡潔に
-- 体言止め・箇条書き禁止（一文で）
-コメントのみ出力してください。`;
-  const result=await callGemini(prompt);
-  if(btn){btn.textContent='✨ AI所見コメント生成';btn.disabled=false;}
-  if(!result)return;
-  openAiPreview(result,text=>{
-    const el=document.getElementById('v-note');
-    if(el)el.value=(el.value?el.value+'\n':'')+text;
-  });
-}
-
-async function aiSummarizeHandover(){
-  const bd=getBoardData();
-  const allItems=[...(bd.urgent||[]),...(bd.important||[]),...(bd.normal||[])].filter(h=>h&&h.id&&!isExpired(h));
-  if(allItems.length===0){toast('申し送り項目がありません');return;}
-  const btn=document.getElementById('hb-ai-btn');
-  if(btn){btn.textContent='⏳...';btn.disabled=true;}
-  const itemsText=allItems.slice(0,30).map((h,i)=>{
-    const pri=h.priority==='urgent'?'【緊急】':h.priority==='important'?'【重要】':'【通常】';
-    return `${pri}${(h.body||'').substring(0,100)}`;
-  }).join('\n');
-  const prompt=`介護施設の申し送り内容を引き継ぎ担当者向けに要約してください。
-申し送り（${allItems.length}件）：
-${itemsText}
-条件：
-- 5行以内の箇条書き（・で始める）
-- 緊急・重要を優先
-- 具体的な対応が必要なものは「→要対応」と付記
-- 同種の情報はまとめる
-要約のみ出力してください。`;
-  const result=await callGemini(prompt);
-  if(btn){btn.textContent='✨ AI要約';btn.disabled=false;}
-  if(!result)return;
-  const body=document.getElementById('ai-summary-body');
-  if(body)body.textContent=result;
-  openModal('modal-ai-summary');
-}
-// ==================== AI 機能 終 ====================
-
 function linkifyResidents(text){
   let result=text;
   getResidents().forEach(r=>{
@@ -15818,36 +15693,6 @@ document.querySelectorAll('.overlay:not([data-no-close-btn])').forEach(overlay=>
   sheet.insertBefore(btn,sheet.firstChild);
 });
 </script>
-<!-- AI プレビューモーダル -->
-<div class="overlay" id="modal-ai-preview" data-no-close-btn onclick="closeModal('modal-ai-preview',event)" style="z-index:210">
-  <div class="sheet" style="max-width:min(98vw,480px)" onclick="event.stopPropagation()">
-    <div class="sheet-handle"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div style="font-size:15px;font-weight:800;color:var(--tx)">✨ AI生成結果</div>
-      <button onclick="closeModal('modal-ai-preview')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
-    </div>
-    <div id="ai-preview-body" style="background:var(--bg);border-radius:10px;padding:12px;font-size:13px;line-height:1.8;color:var(--tx);white-space:pre-wrap;word-break:break-all;min-height:60px;margin-bottom:12px"></div>
-    <div style="display:flex;gap:8px">
-      <button id="ai-preview-apply-btn" onclick="_aiPreviewApply&&_aiPreviewApply()" style="flex:1;padding:12px;background:var(--p);color:#fff;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation">✅ 採用する</button>
-      <button onclick="closeModal('modal-ai-preview')" style="padding:12px 16px;background:var(--card);border:1.5px solid var(--bdr);color:var(--sub);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation">破棄</button>
-    </div>
-    <div style="margin-top:8px;font-size:10px;color:var(--sub);text-align:center">AIの出力は必ず確認・修正のうえ保存してください</div>
-  </div>
-</div>
-
-<!-- AI申し送り要約モーダル -->
-<div class="overlay" id="modal-ai-summary" data-no-close-btn onclick="closeModal('modal-ai-summary',event)" style="z-index:210">
-  <div class="sheet" style="max-width:min(98vw,480px)" onclick="event.stopPropagation()">
-    <div class="sheet-handle"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div style="font-size:15px;font-weight:800;color:var(--tx)">✨ AI申し送り要約</div>
-      <button onclick="closeModal('modal-ai-summary')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
-    </div>
-    <div id="ai-summary-body" style="background:var(--bg);border-radius:10px;padding:12px;font-size:13px;line-height:1.9;color:var(--tx);white-space:pre-wrap;word-break:break-all;min-height:80px;margin-bottom:12px"></div>
-    <button onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('ai-summary-body').textContent).then(()=>toast('コピーしました ✓'))" style="width:100%;padding:11px;background:var(--card);border:1.5px solid var(--bdr);color:var(--tx);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">📋 クリップボードにコピー</button>
-  </div>
-</div>
-
 <!-- 写真拡大オーバーレイ -->
 <div id="photo-zoom-ov" onclick="closePhotoZoom()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;cursor:zoom-out">
   <img id="photo-zoom-img" src="" style="max-width:92vw;max-height:88vh;border-radius:12px;object-fit:contain;box-shadow:0 4px 32px rgba(0,0,0,.5)">
