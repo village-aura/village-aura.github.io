@@ -416,7 +416,7 @@ a{color:var(--p);text-decoration:none}
 .fs-view-tag{display:inline-block;background:var(--ps);color:var(--p);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:6px}
 
 /* ── SIDEBAR ── */
-#sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15);padding-top:env(safe-area-inset-top);transition:transform .22s ease}
+#sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15);padding-top:env(safe-area-inset-top);transition:transform .22s ease;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sbn{display:block;width:100%;padding:10px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:13px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
 .sb-lbl{padding:12px 16px 3px;font-size:9px;font-weight:800;letter-spacing:.14em;color:rgba(255,255,255,.35);text-transform:uppercase;display:block}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
