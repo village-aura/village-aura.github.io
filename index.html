@@ -258,6 +258,15 @@ a{color:var(--p);text-decoration:none}
 .inp-btn:hover,.inp-btn:active{border-color:var(--p);background:var(--ps)}
 .inp-btn .ib-ico{font-size:22px;line-height:1}
 .inp-btn .ib-lbl{font-size:11px;font-weight:700;color:var(--txt);text-align:center;white-space:nowrap}
+.dr-hdr{font-size:12px;font-weight:800;color:var(--p);display:flex;align-items:center;gap:6px;padding:10px 0 4px;border-top:1px solid var(--bdr);margin-top:4px}
+.dr-code{background:var(--p);color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;letter-spacing:.02em}
+.dr-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.dr-chip{display:flex;align-items:flex-start;gap:6px;padding:7px 10px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);cursor:pointer;font-size:12px;line-height:1.5;touch-action:manipulation;color:var(--sub);-webkit-tap-highlight-color:transparent}
+.dr-chip:has(input:checked){border-color:var(--p);background:var(--ps);color:var(--tx)}
+.dr-chip input[type=radio]{margin-top:3px;flex-shrink:0;accent-color:var(--p)}
+.dr-chip b{color:var(--tx);font-size:12px}
+.dr-chip:has(input:checked) b{color:var(--p)}
+.dr-total{background:var(--p);color:#fff;border-radius:12px;padding:12px 16px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .timeline-sec{padding:0 12px;margin-top:4px}
 .timeline-sec h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0;text-transform:uppercase;letter-spacing:.04em}
 .detail-mobile-tabs{display:flex;background:var(--card);border-bottom:2px solid var(--bdr);position:sticky;top:56px;z-index:10}
@@ -3276,8 +3285,8 @@ a{color:var(--p);text-decoration:none}
     <div id="skin-sub" style="font-size:12px;color:var(--sub);margin:-8px 0 12px;text-align:center"></div>
     <div class="field"><label>区分</label>
       <div style="display:flex;gap:16px;margin-top:4px">
-        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="jokuso" checked onchange="toggleSkinStage()"> 褥瘡</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="skin_finding" onchange="toggleSkinStage()"> 皮膚所見（非褥瘡）</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="jokuso" checked onchange="toggleSkinCategory()"> 褥瘡</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="skin_finding" onchange="toggleSkinCategory()"> 皮膚所見（非褥瘡）</label>
       </div>
     </div>
     <div class="field"><label>部位</label>
@@ -3288,34 +3297,113 @@ a{color:var(--p);text-decoration:none}
         <option>膝部</option><option>下腿部</option><option>足趾部</option><option>その他（メモ参照）</option>
       </select>
     </div>
-    <div class="field" id="sk-stage-row"><label>ステージ</label>
-      <select id="sk-stage" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;background:var(--bg)">
-        <option value="Ⅰ度">Ⅰ度 — 発赤（押すと白くなる）</option>
-        <option value="Ⅱ度">Ⅱ度 — 水疱・びらん（真皮まで）</option>
-        <option value="Ⅲ度">Ⅲ度 — 深い潰瘍（皮下組織まで）</option>
-        <option value="Ⅳ度">Ⅳ度 — 筋肉・腱・骨まで</option>
-        <option value="DTI">DTI — 深部損傷褥瘡疑い</option>
-        <option value="判定不能">判定不能（壊死・ドレッシング除去不可）</option>
-        <option value="改善中">改善中（経過良好）</option>
-        <option value="治癒">治癒</option>
-      </select>
-    </div>
-    <div class="field"><label>大きさ</label>
-      <input type="text" id="sk-size" placeholder="例：2×3cm、直径10mm" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;box-sizing:border-box;background:var(--bg);color:var(--tx)">
-    </div>
-    <div class="field"><label>性状</label>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="発赤">発赤</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="水疱">水疱</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="浸出液">浸出液</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="壊死組織">壊死組織</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="肉芽形成">肉芽形成</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="上皮化">上皮化</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="感染徴候">感染徴候</label>
-        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="乾燥">乾燥</label>
+    <!-- ─ 褥瘡：大きさ（必須） ─ -->
+    <div id="design-r-section">
+      <div class="field"><label>大きさ <span style="font-size:10px;color:#c62828;font-weight:700">必須</span></label>
+        <div style="display:flex;gap:8px;margin:6px 0 0;align-items:flex-end">
+          <div style="flex:1"><div style="font-size:11px;color:var(--sub);margin-bottom:4px">長径 (cm)</div><input type="number" id="sk-size-l" step="0.1" min="0" placeholder="0.0" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;box-sizing:border-box;background:var(--bg);color:var(--tx)" oninput="calcDesignRSize()"></div>
+          <div style="padding-bottom:12px;color:var(--sub);font-weight:700;font-size:18px">×</div>
+          <div style="flex:1"><div style="font-size:11px;color:var(--sub);margin-bottom:4px">短径 (cm)</div><input type="number" id="sk-size-s" step="0.1" min="0" placeholder="0.0" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;box-sizing:border-box;background:var(--bg);color:var(--tx)" oninput="calcDesignRSize()"></div>
+          <div style="flex:1"><div style="font-size:11px;color:var(--sub);margin-bottom:4px">面積</div><div id="sk-size-area" style="padding:10px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;color:var(--p);background:var(--bg)">— cm²</div></div>
+        </div>
+      </div>
+      <!-- DESIGN-R 折りたたみ -->
+      <button type="button" id="dr-toggle-btn" onclick="toggleDesignRSection()" style="width:100%;padding:10px 14px;background:var(--bg);border:1.5px solid #3D7AB5;border-radius:10px;color:#3D7AB5;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;text-align:left;margin-top:6px">▶ DESIGN-R®2020 評価を入力する（任意）</button>
+      <div id="design-r-details" style="display:none">
+        <div style="font-size:11px;color:var(--sub);padding:4px 2px 6px">©日本褥瘡学会 — 深さ（D）の点数は合計に含まない</div>
+        <!-- D -->
+        <div class="dr-hdr"><span class="dr-code">D</span> 深さ <span style="font-size:10px;color:var(--sub);font-weight:400">合計に含まない</span></div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-d" value="d0" checked onchange="calcDesignR()"><span><b>d0</b> 損傷・発赤なし</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="d1" onchange="calcDesignR()"><span><b>d1</b> 持続する発赤</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="d2" onchange="calcDesignR()"><span><b>d2</b> 真皮まで</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="D3" onchange="calcDesignR()"><span><b>D3</b> 皮下組織まで</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="D4" onchange="calcDesignR()"><span><b>D4</b> 皮下組織超える</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="D5" onchange="calcDesignR()"><span><b>D5</b> 関節腔・体腔</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="DDTI" onchange="calcDesignR()"><span><b>DTI</b> 深部損傷疑い</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-d" value="DU" onchange="calcDesignR()"><span><b>U</b> 壊死で判定不能</span></label>
+        </div>
+        <!-- E -->
+        <div class="dr-hdr"><span class="dr-code">E</span> 滲出液</div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-e" value="e0" checked onchange="calcDesignR()"><span><b>e0</b> なし</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-e" value="e1" onchange="calcDesignR()"><span><b>e1</b> 少量（交換不要）</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-e" value="e3" onchange="calcDesignR()"><span><b>e3</b> 中等量（1日1回）</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-e" value="E6" onchange="calcDesignR()"><span><b>E6</b> 多量（1日2回以上）</span></label>
+        </div>
+        <!-- S（大きさ入力から自動反映） -->
+        <div class="dr-hdr"><span class="dr-code">S</span> 大きさスコア <span style="font-size:10px;color:var(--sub);font-weight:400">↑サイズ入力から自動選択</span></div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-s" value="s0" checked onchange="calcDesignR()"><span><b>s0</b> 損傷なし</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-s" value="s3" onchange="calcDesignR()"><span><b>s3</b> 4cm²未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-s" value="s6" onchange="calcDesignR()"><span><b>s6</b> 4〜16未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-s" value="s8" onchange="calcDesignR()"><span><b>s8</b> 16〜36未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-s" value="s9" onchange="calcDesignR()"><span><b>s9</b> 36〜64未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-s" value="s12" onchange="calcDesignR()"><span><b>s12</b> 64〜100未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-s" value="S15" onchange="calcDesignR()"><span><b>S15</b> 100以上</span></label>
+        </div>
+        <!-- I -->
+        <div class="dr-hdr"><span class="dr-code">I</span> 炎症・感染</div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-i" value="i0" checked onchange="calcDesignR()"><span><b>i0</b> 炎症徴候なし</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-i" value="i1" onchange="calcDesignR()"><span><b>i1</b> 発赤・腫脹・熱感・疼痛</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-i" value="I3C" onchange="calcDesignR()"><span><b>3C</b> 臨界的定着疑い</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-i" value="I3" onchange="calcDesignR()"><span><b>3</b> 明らかな感染（膿・悪臭）</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-i" value="I9" onchange="calcDesignR()"><span><b>I9</b> 全身的影響（発熱など）</span></label>
+        </div>
+        <!-- G -->
+        <div class="dr-hdr"><span class="dr-code">G</span> 肉芽組織</div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-g" value="g0" checked onchange="calcDesignR()"><span><b>g0</b> 治癒・浅い創・DTI疑い</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-g" value="g1" onchange="calcDesignR()"><span><b>g1</b> 良性肉芽 90%以上</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-g" value="g3" onchange="calcDesignR()"><span><b>g3</b> 良性肉芽 50〜90%未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-g" value="G4" onchange="calcDesignR()"><span><b>G4</b> 良性肉芽 10〜50%未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-g" value="G5" onchange="calcDesignR()"><span><b>G5</b> 良性肉芽 10%未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-g" value="G6" onchange="calcDesignR()"><span><b>G6</b> 肉芽なし</span></label>
+        </div>
+        <!-- N -->
+        <div class="dr-hdr"><span class="dr-code">N</span> 壊死組織</div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-n" value="n0" checked onchange="calcDesignR()"><span><b>n0</b> 壊死組織なし</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-n" value="N3" onchange="calcDesignR()"><span><b>N3</b> 柔らかい壊死組織</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-n" value="N6" onchange="calcDesignR()"><span><b>N6</b> 硬く厚い壊死組織</span></label>
+        </div>
+        <!-- P -->
+        <div class="dr-hdr"><span class="dr-code">P</span> ポケット（潰瘍面を除いた長径×短径 cm²）</div>
+        <div class="dr-grid">
+          <label class="dr-chip"><input type="radio" name="dr-p" value="p0" checked onchange="calcDesignR()"><span><b>p0</b> ポケットなし</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-p" value="P6" onchange="calcDesignR()"><span><b>P6</b> 4cm²未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-p" value="P9" onchange="calcDesignR()"><span><b>P9</b> 4〜16未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-p" value="P12" onchange="calcDesignR()"><span><b>P12</b> 16〜36未満</span></label>
+          <label class="dr-chip"><input type="radio" name="dr-p" value="P24" onchange="calcDesignR()"><span><b>P24</b> 36以上</span></label>
+        </div>
+        <!-- 合計 -->
+        <div class="dr-total">
+          <div><div style="font-size:12px;opacity:.85;font-weight:700">DESIGN-R® 合計スコア</div><div id="dr-score-detail" style="font-size:10px;margin-top:3px;opacity:.7"></div></div>
+          <div style="font-size:36px;font-weight:800;line-height:1"><span id="dr-total-score">0</span><span style="font-size:14px;font-weight:400;margin-left:3px">点</span></div>
+        </div>
       </div>
     </div>
-    <div class="field"><label>写真</label>
+    <!-- ─ 皮膚所見セクション（褥瘡以外） ─ -->
+    <div id="skin-finding-section" style="display:none">
+      <div class="field"><label>性状</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="発赤">発赤</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="水疱">水疱</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="浸出液">浸出液</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="壊死組織">壊死組織</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="肉芽形成">肉芽形成</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="上皮化">上皮化</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="感染徴候">感染徴候</label>
+          <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="乾燥">乾燥</label>
+        </div>
+      </div>
+      <div class="field"><label>大きさ</label>
+        <input type="text" id="sk-size-text" placeholder="例：2×3cm、直径10mm" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;box-sizing:border-box;background:var(--bg);color:var(--tx)">
+      </div>
+    </div>
+    <!-- 写真 -->
+    <div class="field" style="border-top:1px solid var(--bdr);padding-top:10px;margin-top:4px"><label>写真</label>
       <input type="file" id="sk-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleSkinPhoto(this)">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <button type="button" onclick="document.getElementById('sk-photo-input').click()" style="padding:10px 16px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">📷 撮影・選択</button>
@@ -3323,8 +3411,8 @@ a{color:var(--p);text-decoration:none}
       </div>
       <div id="sk-photo-preview" style="display:none;margin-top:8px"><img id="sk-photo-img" style="max-width:100%;max-height:220px;border-radius:10px;border:1.5px solid var(--bdr);object-fit:contain"></div>
     </div>
-    <div class="field"><label>所見・メモ</label>
-      <textarea id="sk-note" rows="3" placeholder="所見の詳細・処置内容など" style="width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;resize:none;box-sizing:border-box;background:var(--bg);color:var(--tx)"></textarea>
+    <div class="field"><label>所見・処置メモ</label>
+      <textarea id="sk-note" rows="3" placeholder="所見の詳細・処置内容・ドレッシング材など" style="width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;resize:none;box-sizing:border-box;background:var(--bg);color:var(--tx)"></textarea>
     </div>
     <button class="btn-primary" onclick="saveRecord('skin')">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-skin')">キャンセル</button>
@@ -7882,7 +7970,16 @@ function summarizeRecord(r){
   if(r.type==='weight')return `${r.data.val}kg`;
   if(r.type==='handover')return (r.data.content||'').substring(0,30);
   if(r.type==='attendance'){const d=r.data;return `来所${d.timeFrom||'──'}${d.timeTo?'・退所'+d.timeTo:''}`;}
-  if(r.type==='skin'){const d=r.data;return `${d.category==='jokuso'?'褥瘡':'皮膚所見'} ${d.location||''}${d.stage?' ['+d.stage+']':''}${d.size?' '+d.size:''}`;}
+  if(r.type==='skin'){
+    const d=r.data;
+    if(d.category==='jokuso'){
+      const loc=d.location||'';
+      const sz=(d.size_l&&d.size_s)?` ${d.size_l}×${d.size_s}cm`:(d.design_r?` ${d.design_r.size_l||0}×${d.design_r.size_s||0}cm`:'');
+      const dr=d.design_r?` DESIGN-R ${d.design_r.total}点`:'';
+      return `褥瘡 ${loc}${sz}${dr}`;
+    }
+    return `皮膚所見 ${d.location||''}${d.size?' '+d.size:''}`;
+  }
   return '';
 }
 const mealLabel=t=>({breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食'}[t]||t);
@@ -8919,7 +9016,7 @@ function renderTimeline(){
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
-        ${r.type==='vital'?vitalChips(r):r.type==='skin'?`<div class="tl-val">${summarizeRecord(r)}</div>${(r.data.appearance||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${(r.data.appearance||[]).map(a=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fce7f3;color:#9c27b0;font-weight:700;border:1px solid #f48fb1">${a}</span>`).join('')}</div>`:''}`:`<div class="tl-val">${summarizeRecord(r)}</div>`}
+        ${r.type==='vital'?vitalChips(r):r.type==='skin'?`<div class="tl-val">${summarizeRecord(r)}</div>${r.data.design_r?(()=>{const dr=r.data.design_r;const chip=(key,val)=>{const isUpper=val&&val[0]===val[0].toUpperCase()&&val[0]!==val[0].toLowerCase();const isD=key==='d';const bg=isD?'#e3f2fd':isUpper?'#ffebee':'#e8f5e9';const cl=isD?'#1565c0':isUpper?'#c62828':'#2e7d32';return `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${bg};color:${cl};font-weight:700;border:1px solid ${cl}40">${val||key+'0'}</span>`;};return `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${chip('d',dr.d)}${chip('e',dr.e)}${chip('s',dr.s)}${chip('i',dr.i)}${chip('g',dr.g)}${chip('n',dr.n)}${chip('p',dr.p)}<span style="font-size:10px;padding:1px 8px;border-radius:10px;background:var(--p);color:#fff;font-weight:800">${dr.total}点</span></div>`;})():''}${(r.data.appearance||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${(r.data.appearance||[]).map(a=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fce7f3;color:#9c27b0;font-weight:700;border:1px solid #f48fb1">${a}</span>`).join('')}</div>`:''}`:`<div class="tl-val">${summarizeRecord(r)}</div>`}
         ${r.type==='skin'&&r.data.photo?`<div style="margin-top:6px"><img src="data:image/jpeg;base64,${r.data.photo}" onclick="openSkinPhotoFull('${r.id}')" style="max-width:140px;max-height:100px;border-radius:8px;border:1.5px solid var(--bdr);object-fit:cover;cursor:pointer" loading="lazy"></div>`:''}
         ${r.data.note||r.data.content?(()=>{const txt=r.data.note||r.data.content||'';const isChrono=r.type==='chrono';const short=!isChrono&&!isChronoMode&&txt.length>60;return `<div class="tl-note" id="tln-${r.id}">${short?escHtml(txt.substring(0,60))+'…':escHtml(txt)}${short?`<button onclick="expandTlNote('${r.id}',this)" style="margin-left:4px;background:none;border:none;color:var(--p);font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">続きを見る</button>`:''}</div>`;})():''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
@@ -8960,9 +9057,17 @@ function openModal(id){
   });
   if(id==='modal-skin'){
     const joku=document.querySelector('[name=sk-cat][value="jokuso"]');
-    if(joku){joku.checked=true;toggleSkinStage();}
-    const skSize=document.getElementById('sk-size');if(skSize)skSize.value='';
+    if(joku){joku.checked=true;toggleSkinCategory();}
+    const loc=document.getElementById('sk-location');if(loc)loc.selectedIndex=0;
+    const drDet=document.getElementById('design-r-details');if(drDet)drDet.style.display='none';
+    const drBtn=document.getElementById('dr-toggle-btn');if(drBtn)drBtn.textContent='▶ DESIGN-R®2020 評価を入力する（任意）';
+    ['dr-d','dr-e','dr-s','dr-i','dr-g','dr-n','dr-p'].forEach(nm=>{const f=document.querySelector(`[name="${nm}"]`);if(f)f.checked=true;});
+    const sl=document.getElementById('sk-size-l');if(sl)sl.value='';
+    const ss=document.getElementById('sk-size-s');if(ss)ss.value='';
+    const sa=document.getElementById('sk-size-area');if(sa)sa.textContent='— cm²';
+    calcDesignR();
     document.querySelectorAll('[name=sk-app]').forEach(cb=>cb.checked=false);
+    const st=document.getElementById('sk-size-text');if(st)st.value='';
     clearSkinPhoto();
     const skNote=document.getElementById('sk-note');if(skNote)skNote.value='';
   }
@@ -9198,16 +9303,31 @@ function saveRecord(type){
     closeModal('modal-weight');
   }else if(type==='skin'){
     const category=document.querySelector('[name=sk-cat]:checked')?.value||'jokuso';
-    const appearance=[...document.querySelectorAll('[name=sk-app]:checked')].map(cb=>cb.value);
-    data={
-      category,
-      location:document.getElementById('sk-location').value,
-      stage:category==='jokuso'?document.getElementById('sk-stage').value:'',
-      size:document.getElementById('sk-size').value,
-      appearance,
-      photo:_skinPhotoB64||'',
-      note:document.getElementById('sk-note').value,
-    };
+    const location=document.getElementById('sk-location').value;
+    const photo=_skinPhotoB64||'';
+    const note=document.getElementById('sk-note').value;
+    if(category==='jokuso'){
+      const sizeL=parseFloat(document.getElementById('sk-size-l')?.value)||0;
+      const sizeS=parseFloat(document.getElementById('sk-size-s')?.value)||0;
+      const drOpen=document.getElementById('design-r-details')?.style.display!=='none';
+      if(drOpen){
+        const drD=document.querySelector('[name=dr-d]:checked')?.value||'d0';
+        const drE=document.querySelector('[name=dr-e]:checked')?.value||'e0';
+        const drS=document.querySelector('[name=dr-s]:checked')?.value||'s0';
+        const drI=document.querySelector('[name=dr-i]:checked')?.value||'i0';
+        const drG=document.querySelector('[name=dr-g]:checked')?.value||'g0';
+        const drN=document.querySelector('[name=dr-n]:checked')?.value||'n0';
+        const drP=document.querySelector('[name=dr-p]:checked')?.value||'p0';
+        const total=(_DR_SCORE[drE]||0)+(_DR_SCORE[drS]||0)+(_DR_SCORE[drI]||0)+(_DR_SCORE[drG]||0)+(_DR_SCORE[drN]||0)+(_DR_SCORE[drP]||0);
+        data={category,location,photo,note,size_l:sizeL,size_s:sizeS,design_r:{d:drD,e:drE,s:drS,i:drI,g:drG,n:drN,p:drP,size_l:sizeL,size_s:sizeS,total}};
+      } else {
+        data={category,location,photo,note,size_l:sizeL,size_s:sizeS};
+      }
+    } else {
+      const appearance=[...document.querySelectorAll('[name=sk-app]:checked')].map(cb=>cb.value);
+      const sizeText=document.getElementById('sk-size-text')?.value||'';
+      data={category,location,appearance,size:sizeText,photo,note};
+    }
     _skinPhotoB64='';
     closeModal('modal-skin');
   }else if(type==='handover'){
@@ -12184,10 +12304,42 @@ function startVoiceMedName(i,btn){
 }
 function openMedPhotoOCR(){document.getElementById('med-photo-input').click();}
 let _skinPhotoB64='';
-function toggleSkinStage(){
+const _DR_SCORE={'e0':0,'e1':1,'e3':3,'E6':6,'s0':0,'s3':3,'s6':6,'s8':8,'s9':9,'s12':12,'S15':15,'i0':0,'i1':1,'I3C':3,'I3':3,'I9':9,'g0':0,'g1':1,'g3':3,'G4':4,'G5':5,'G6':6,'n0':0,'N3':3,'N6':6,'p0':0,'P6':6,'P9':9,'P12':12,'P24':24};
+function toggleSkinCategory(){
   const cat=document.querySelector('[name=sk-cat]:checked')?.value;
-  const row=document.getElementById('sk-stage-row');
-  if(row)row.style.display=cat==='jokuso'?'':'none';
+  const dr=document.getElementById('design-r-section');
+  const sf=document.getElementById('skin-finding-section');
+  if(dr)dr.style.display=cat==='jokuso'?'':'none';
+  if(sf)sf.style.display=cat==='jokuso'?'none':'';
+}
+function toggleSkinStage(){toggleSkinCategory();}
+function toggleDesignRSection(){
+  const det=document.getElementById('design-r-details');
+  const btn=document.getElementById('dr-toggle-btn');
+  if(!det||!btn)return;
+  const open=det.style.display!=='none';
+  det.style.display=open?'none':'';
+  btn.textContent=open?'▶ DESIGN-R®2020 評価を入力する（任意）':'▼ DESIGN-R®2020 評価を閉じる';
+}
+function calcDesignR(){
+  const v=nm=>document.querySelector(`[name=${nm}]:checked`)?.value||nm.replace('dr-','')+'0';
+  const e=v('dr-e'),s=v('dr-s'),i=v('dr-i'),g=v('dr-g'),n=v('dr-n'),p=v('dr-p');
+  const total=(_DR_SCORE[e]||0)+(_DR_SCORE[s]||0)+(_DR_SCORE[i]||0)+(_DR_SCORE[g]||0)+(_DR_SCORE[n]||0)+(_DR_SCORE[p]||0);
+  const ts=document.getElementById('dr-total-score');if(ts)ts.textContent=total;
+  const d=document.querySelector('[name=dr-d]:checked')?.value||'d0';
+  const detail=document.getElementById('dr-score-detail');
+  if(detail)detail.textContent=`深さ:${d} / E${_DR_SCORE[e]||0} / S${_DR_SCORE[s]||0} / I${_DR_SCORE[i]||0} / G${_DR_SCORE[g]||0} / N${_DR_SCORE[n]||0} / P${_DR_SCORE[p]||0}`;
+}
+function calcDesignRSize(){
+  const l=parseFloat(document.getElementById('sk-size-l')?.value)||0;
+  const s=parseFloat(document.getElementById('sk-size-s')?.value)||0;
+  const area=l*s;
+  const el=document.getElementById('sk-size-area');
+  if(el)el.textContent=area>0?area.toFixed(1)+' cm²':'— cm²';
+  let code='s0';
+  if(area>0){if(area<4)code='s3';else if(area<16)code='s6';else if(area<36)code='s8';else if(area<64)code='s9';else if(area<100)code='s12';else code='S15';}
+  const radio=document.querySelector(`[name=dr-s][value="${code}"]`);
+  if(radio){radio.checked=true;calcDesignR();}
 }
 async function handleSkinPhoto(input){
   if(!input.files||!input.files[0])return;
