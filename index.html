@@ -11145,9 +11145,9 @@ function getNextStaffLoginId(){
   const ids=Object.values(getCustomStaff()).map(s=>parseInt(s.loginId)||0).filter(n=>n<10000);
   return String(Math.max(...ids,99)+1).padStart(4,'0');
 }
-const ROLE_ORDER=['super_admin_doctor','super_admin','facility_manager_resident','facility_manager_commute','facility_manager_stay','facility_manager_visit','facility_manager_home_care','nurse','care','medical_office','home_care'];
+const ROLE_ORDER=['super_admin_doctor','super_admin','doctor','facility_manager_resident','facility_manager_commute','facility_manager_visit','facility_manager_stay','facility_manager_home_care','nurse','staff'];
 const STAFF_ADMIN_ROLES=['super_admin_doctor','super_admin','facility_manager_resident','facility_manager_commute','facility_manager_stay','facility_manager_visit','facility_manager_home_care'];
-const STAFF_GENERAL_ROLES=['doctor','nurse','care','medical_office','home_care'];
+const STAFF_GENERAL_ROLES=['doctor','nurse','staff'];
 function initImportScr(){
   const canStaff=isSuperAdminRole()||isFacilityAdmin()||isAdmin();
   ['tab-staff-import-btn','tab-mt-staff-btn'].forEach(id=>{
