@@ -463,16 +463,9 @@ a{color:var(--p);text-decoration:none}
 @media(min-width:768px) and (max-width:1023px) and (orientation:landscape){
   .bnav{display:none!important}
 }
-/* ── PORTRAIT SCROLL FIX（iOS タブレット縦向き）── */
+/* ── タブレット縦：bnav分の余白確保 ── */
 @media(min-width:768px) and (max-width:1023px) and (orientation:portrait){
-  body{overflow:hidden;height:100vh;height:-webkit-fill-available;height:100dvh}
-  #main-content-wrap{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden}
-  .hd{flex-shrink:0}
-  #main-content-wrap .scr.on{flex:1;min-height:0!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:72px!important}
-  .search-bar{top:0!important}
-  .sch-bar{top:0!important}
-  .detail-mobile-tabs{top:0!important}
-  .diary-right{top:0!important}
+  .scr.on{padding-bottom:72px}
 }
 
 /* ── LANDSCAPE COMPACT（タブレット・大型スマホ横向き）── */
