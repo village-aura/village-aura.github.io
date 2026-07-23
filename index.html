@@ -682,6 +682,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
       <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
+      <button class="sbn" id="sbn-skin-gallery" onclick="showScr('scr-skin-gallery')">🔬　皮膚写真一覧</button>
       <span class="sb-lbl">業務ツール</span>
       <button class="sbn" id="sbn-shift" onclick="showScr('scr-shift')">📆　シフト表</button>
       <button class="sbn" id="sbn-manual" onclick="showScr('scr-manual')">📚　マニュアル</button>
@@ -1057,6 +1058,14 @@ a{color:var(--p);text-decoration:none}
     </div><!-- /detail-col-right -->
     </div><!-- /detail-content-grid -->
     <div id="life-sheet-area" style="display:none;padding:0 12px 80px"></div>
+  </div>
+
+  <!-- ─── SKIN GALLERY ─── -->
+  <div id="scr-skin-gallery" class="scr">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px">
+      <div style="font-size:18px;font-weight:800">🔬 皮膚写真一覧</div>
+    </div>
+    <div id="skin-gallery-content"></div>
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -6933,7 +6942,7 @@ function showScr(id){
     'scr-svc-entry':'事業所から入力','scr-vital-alert':'要注意バイタル一覧','scr-urgent-rec':'重要・緊急記録',
     'scr-stool-alert':'排便未記録一覧',
     'scr-rounds':'巡回チェックリスト','scr-incidents':'インシデント・ヒヤリハット',
-    'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理',
+    'scr-tasks':'タスク管理','scr-infection':'感染・隔離管理','scr-skin-gallery':'皮膚写真一覧',
     'scr-bulk-vital':'一括バイタル入力','scr-bulk-meal':'一括食事・水分','scr-bulk-excretion':'一括排泄','scr-medication':'服薬チェック','scr-day-today':'今日のデイ利用者',
     'scr-transport':'送迎チェック',
     'scr-doctor':'医師ページ',
@@ -6949,7 +6958,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift','scr-skin-gallery':'sbn-skin-gallery'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-import') initImportScr();
@@ -6977,6 +6986,7 @@ function showScr(id){
   if(id==='scr-transport') renderTransport();
   if(id==='scr-day-today'){_dayView='list';setDayView('list');renderDayToday();}
   if(id==='scr-shift') renderShift();
+  if(id==='scr-skin-gallery') renderSkinGallery();
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
@@ -8902,7 +8912,7 @@ function renderTimeline(){
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
         ${r.type==='vital'?vitalChips(r):r.type==='skin'?`<div class="tl-val">${summarizeRecord(r)}</div>${(r.data.appearance||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${(r.data.appearance||[]).map(a=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fce7f3;color:#9c27b0;font-weight:700;border:1px solid #f48fb1">${a}</span>`).join('')}</div>`:''}`:`<div class="tl-val">${summarizeRecord(r)}</div>`}
-        ${r.type==='skin'&&r.data.photo?`<div style="margin-top:6px"><img src="${r.data.photo}" onclick="openSkinPhotoFull('${r.id}')" style="max-width:140px;max-height:100px;border-radius:8px;border:1.5px solid var(--bdr);object-fit:cover;cursor:pointer" loading="lazy"></div>`:''}
+        ${r.type==='skin'&&r.data.photo?`<div style="margin-top:6px"><img src="data:image/jpeg;base64,${r.data.photo}" onclick="openSkinPhotoFull('${r.id}')" style="max-width:140px;max-height:100px;border-radius:8px;border:1.5px solid var(--bdr);object-fit:cover;cursor:pointer" loading="lazy"></div>`:''}
         ${r.data.note||r.data.content?(()=>{const txt=r.data.note||r.data.content||'';const isChrono=r.type==='chrono';const short=!isChrono&&!isChronoMode&&txt.length>60;return `<div class="tl-note" id="tln-${r.id}">${short?escHtml(txt.substring(0,60))+'…':escHtml(txt)}${short?`<button onclick="expandTlNote('${r.id}',this)" style="margin-left:4px;background:none;border:none;color:var(--p);font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">続きを見る</button>`:''}</div>`;})():''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
         <div class="tl-staff" style="display:flex;align-items:center;gap:4px">${badge}${staffName}${r.editedBy?`<span style="font-size:9px;color:var(--sub);margin-left:4px">✏️${r.editedBy}${r.editedAt?' '+new Date(r.editedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>`:''}<div style="margin-left:auto;display:flex;gap:3px">${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;cursor:pointer;touch-action:manipulation" title="修正">✏️</button>`:''}<button onclick="deleteTimelineRecord('${r.id}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;color:var(--ng);cursor:pointer;touch-action:manipulation" title="削除">🗑️</button></div></div>
@@ -12199,13 +12209,62 @@ function openSkinPhotoFull(recId){
   const r=recs.find(x=>x.id===recId);
   if(!r||!r.data?.photo)return;
   const ov=document.createElement('div');
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:pointer';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center';
   ov.onclick=()=>ov.remove();
   const img=document.createElement('img');
   img.src='data:image/jpeg;base64,'+r.data.photo;
-  img.style.cssText='max-width:100vw;max-height:100vh;object-fit:contain';
+  img.style.cssText='max-width:100vw;max-height:calc(100vh - 60px);object-fit:contain';
+  const closeBtn=document.createElement('button');
+  closeBtn.textContent='✕ 閉じる';
+  closeBtn.style.cssText='position:absolute;top:14px;right:14px;background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:20px;padding:8px 18px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;z-index:1';
+  closeBtn.onclick=(e)=>{e.stopPropagation();ov.remove();};
   ov.appendChild(img);
+  ov.appendChild(closeBtn);
   document.body.appendChild(ov);
+}
+function renderSkinGallery(){
+  const el=document.getElementById('skin-gallery-content');
+  if(!el)return;
+  const recs=getRecords().filter(r=>r.type==='skin'&&r.data?.photo).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const residents=getResidents();
+  const resMap=Object.fromEntries(residents.map(r=>[r.id,r.name]));
+  if(!recs.length){el.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub);font-size:14px">写真付きの皮膚記録がまだありません</div>';return;}
+  // 居住者別にフィルタ可能なUIにする
+  const resIds=[...new Set(recs.map(r=>r.rid))];
+  const filterBtns=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+    <button class="hb-filter-btn on" id="sgf-all" onclick="setSgFilter('all')">全員</button>
+    ${resIds.map(rid=>`<button class="hb-filter-btn" id="sgf-${rid}" onclick="setSgFilter('${rid}')">${resMap[rid]||rid}</button>`).join('')}
+  </div>`;
+  const cards=recs.map(r=>{
+    const name=resMap[r.rid]||'不明';
+    const dt=new Date(r.ts);
+    const dateStr=dt.getFullYear()+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getDate().toString().padStart(2,'0');
+    const timeStr=dt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    const catLbl=r.data.category==='jokuso'?'褥瘡':'皮膚所見';
+    const loc=r.data.location||'';
+    const stage=r.data.stage?` [${r.data.stage}]`:'';
+    return`<div class="sg-card" data-rid="${r.rid}" style="background:var(--card);border-radius:12px;overflow:hidden;border:1.5px solid var(--bdr);box-shadow:var(--sh)">
+      <div onclick="openSkinPhotoFull('${r.id}')" style="cursor:pointer;background:#000;display:flex;align-items:center;justify-content:center;height:160px;overflow:hidden">
+        <img src="data:image/jpeg;base64,${r.data.photo}" style="width:100%;height:160px;object-fit:cover" loading="lazy">
+      </div>
+      <div style="padding:8px 10px">
+        <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:2px">${escHtml(name)}</div>
+        <div style="font-size:11px;color:var(--sub)">${dateStr} ${timeStr}</div>
+        <div style="font-size:11px;color:var(--p);font-weight:700;margin-top:3px">${catLbl}　${escHtml(loc)}${escHtml(stage)}</div>
+        ${r.data.note?`<div style="font-size:11px;color:var(--sub);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.data.note)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`${filterBtns}<div id="sg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">${cards}</div>`;
+}
+let _sgFilter='all';
+function setSgFilter(rid){
+  _sgFilter=rid;
+  document.querySelectorAll('[id^="sgf-"]').forEach(b=>b.classList.remove('on'));
+  const btn=document.getElementById('sgf-'+rid);if(btn)btn.classList.add('on');
+  document.querySelectorAll('#sg-grid .sg-card').forEach(card=>{
+    card.style.display=(rid==='all'||card.dataset.rid===rid)?'':'none';
+  });
 }
 function _compressImage(file,maxPx,quality){
   return new Promise(resolve=>{
