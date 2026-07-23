@@ -4739,9 +4739,10 @@ const ROLE_COLORS = {
   facility_manager_stay:     {bg:'#2e7d32',label:'小多機管理者'},
   facility_manager_visit:    {bg:'#6a1b9a',label:'訪問管理者'},
   facility_manager_home_care:{bg:'#00796b',label:'居宅管理者'},
+  nurse:                     {bg:'#00796b',label:'看護師'},
   staff:                     {bg:'#1565c0',label:'スタッフ'},
 };
-const _ROLE_COMPAT={'care':'staff','nurse':'staff','home_care':'staff','medical_office':'staff','kitchen':'staff'};
+const _ROLE_COMPAT={'care':'staff','home_care':'staff','medical_office':'staff','kitchen':'staff'};
 function getRoleInfo(roleKey){
   const k=_ROLE_COMPAT[roleKey]||roleKey;
   return ROLE_COLORS[k]||{bg:'#9ca3af',label:k};
@@ -5994,6 +5995,7 @@ function renderRolePreviewGrid(){
   if(!grid)return;
   const roles=[
     {role:'staff',                    ico:'🤝', label:'スタッフ'},
+    {role:'nurse',                    ico:'🩺', label:'看護師'},
     {role:'doctor',                   ico:'👨‍⚕️', label:'医師'},
     {role:'facility_manager_resident',ico:'🏢', label:'サ高住管理者'},
     {role:'facility_manager_commute', ico:'☀️', label:'デイ管理者'},
