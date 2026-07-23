@@ -56,6 +56,8 @@ a{color:var(--p);text-decoration:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes slideInRight{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 @keyframes slideInLeft{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes hwPushIn{from{opacity:0;transform:translateX(-50%) translateY(-80px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes hwPushOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-80px)}}
 .scr.slide-back.on{animation:slideInRight .22s}
 .scr.slide-fwd.on{animation:slideInLeft .22s}
 
@@ -836,7 +838,7 @@ a{color:var(--p);text-decoration:none}
           <span style="font-size:18px">👥</span><span style="font-size:10px;font-weight:700;color:var(--tx)">利用者<span id="q-count"></span></span>
         </button>
         <button onclick="showScr('scr-day-today')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🚌</span><span style="font-size:10px;font-weight:700;color:#1565c0">デイ<span id="q-day-today-cnt" style="margin-left:2px"></span></span>
+          <span style="font-size:18px">🚌</span><span style="font-size:10px;font-weight:700;color:#1565c0">今日のデイ<span id="q-day-today-cnt" style="margin-left:2px"></span></span>
         </button>
         <button onclick="showScr('scr-schedule')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
           <span style="font-size:18px">📅</span><span style="font-size:10px;font-weight:700;color:var(--tx)">予定表<span id="q-sched-today"></span></span>
@@ -974,7 +976,7 @@ a{color:var(--p);text-decoration:none}
   <div id="scr-floor-map" class="scr">
     <div style="padding:14px 16px 6px;display:flex;align-items:center;justify-content:space-between">
       <div>
-        <div style="font-size:18px;font-weight:800">🗺️ フロアマップ</div>
+        <div style="font-size:18px;font-weight:800">🗺️ サ高住フロアマップ</div>
         <div style="font-size:12px;color:var(--sub)">入居状況・部屋割り一覧</div>
       </div>
       <button onclick="renderFloorMap()" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;touch-action:manipulation">更新</button>
@@ -4610,6 +4612,25 @@ const FB_CONFIG={
 const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records'];
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
+let _knownHwIds=new Set(), _hwNotiReady=false;
+function _initKnownHwIds(){
+  const bd=getBoardData();
+  const all=[...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.nurse||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])];
+  all.forEach(h=>{if(h?.id)_knownHwIds.add(h.id);});
+  _hwNotiReady=true;
+}
+function _showHandoverPush(items){
+  const old=document.getElementById('_hw-push-noti');
+  if(old)old.remove();
+  const el=document.createElement('div');
+  el.id='_hw-push-noti';
+  const preview=items.slice(0,2).map(h=>(h.content||'').substring(0,22)+(((h.content||'').length>22)?'…':'')).join(' / ');
+  el.innerHTML=`<span style="font-size:22px;flex-shrink:0">🔔</span><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;margin-bottom:1px">新しい申し送り ${items.length}件</div><div style="font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${preview}</div></div><button onclick="event.stopPropagation();document.getElementById('_hw-push-noti').remove()" style="flex-shrink:0;background:rgba(255,255,255,.15);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`;
+  el.onclick=()=>{showScr('scr-handover-board');el.remove();};
+  el.style.cssText='position:fixed;top:12px;left:50%;z-index:99999;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);cursor:pointer;max-width:340px;width:calc(100% - 32px);animation:hwPushIn .35s cubic-bezier(.34,1.56,.64,1) forwards';
+  document.body.appendChild(el);
+  setTimeout(()=>{if(el.parentNode){el.style.animation='hwPushOut .3s ease forwards';setTimeout(()=>el.remove(),300);}},6000);
+}
 
 // HTMLエスケープ（ユーザー入力データをinnerHTMLに挿入する際に必ず使用）
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -4726,7 +4747,20 @@ function setupRealtimeSync(){
       if(key==='schedules'&&S.screen==='scr-schedule')renderSchedule();
       if(key==='infection_data'&&S.screen==='scr-infection')renderInfectionList();
       if((key==='medication_data'||key==='medication_checks')&&S.screen==='scr-medication')renderMedication();
-      if(key==='board_data2'){if(S.screen==='scr-handover-board')renderHandoverBoard();updateHandoverUnreadBadge();}
+      if(key==='board_data2'){
+        if(!_hwNotiReady){_initKnownHwIds();}
+        else{
+          const bd2=doc.data().data||{};
+          const all2=[...(bd2.sak?.am||[]),...(bd2.sak?.pm||[]),...(bd2.doctor||[]),...(bd2.doctor_to||[]),...(bd2.nurse||[]),...(bd2.facility_nurse||[]),...(bd2.shot||[]),...(bd2.day||[]),...(bd2.visit||[]),...(bd2.home_care||[])];
+          const rds2=getHandoverReads();
+          const fresh=all2.filter(h=>h?.id&&!_knownHwIds.has(h.id)&&!(rds2[h.id]||[]).includes(S.user));
+          fresh.forEach(h=>_knownHwIds.add(h.id));
+          if(fresh.length)_showHandoverPush(fresh);
+        }
+        if(S.screen==='scr-handover-board')renderHandoverBoard();
+        if(S.screen==='scr-dashboard')renderDashboard();
+        updateHandoverUnreadBadge();
+      }
       if(key==='handover_reads'){updateHandoverUnreadBadge();if(S.screen==='scr-handover-board')renderHbList();}
       if(key==='tasks_data'&&S.screen==='scr-tasks')renderTasksList();
       if(key==='bath_records'&&S.screen==='scr-detail')renderDetail();
@@ -5035,7 +5069,7 @@ async function login(){
   addAuditLog('ログイン','ID: '+inputId);
   localStorage.setItem('va_session',JSON.stringify({user:S.user,userRole:S.userRole,loginTime:S.loginTime,staffKey,loginTs:Date.now()}));
   loadFromFirebase().then(async ()=>{
-    renderDashboard();setupRealtimeSync();
+    renderDashboard();setupRealtimeSync();_initKnownHwIds();
     if(isAdmin()){
       // localStorage破損チェック（利用者が0人 かつ Firestoreにバックアップあり）
       if(getResidents().length===0&&fbReady&&db){
@@ -7545,7 +7579,8 @@ function renderDashboard(){
     }
   }
   // 医師指示行
-  const doctorOrders=getBoardData().doctor||[];
+  const _doReads=getHandoverReads();
+  const doctorOrders=(getBoardData().doctor||[]).filter(o=>!((_doReads[o.id]||[]).includes(S.user)));
   const doRow=document.getElementById('doctor-order-row');
   if(doRow){
     if(doctorOrders.length){
@@ -12048,15 +12083,14 @@ function _compressImage(file,maxPx,quality){
 async function processMedPhoto(input){
   if(!input.files||!input.files[0])return;
   const status=document.getElementById('med-ocr-status');
-  if(!_aiKey){toast('AIキー未設定。設定 → AI設定でGroqキーを入力してください');return;}
   const file=input.files[0];
   if(status){status.style.display='block';status.textContent='📷 画像を圧縮中...';}
   try{
     const base64=await _compressImage(file,1024,0.75);
     if(status)status.textContent='📷 薬手帳を解析中...';
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    const res=await fetch('/ai/ocr',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+_aiKey,'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'meta-llama/llama-4-scout-17b-16e-instruct',
         messages:[{role:'user',content:[
