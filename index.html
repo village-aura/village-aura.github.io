@@ -1000,6 +1000,7 @@ a{color:var(--p);text-decoration:none}
       <button class="detail-tab-btn on" id="dtab-input" onclick="switchDetailTab('input')">📝 記録入力</button>
       <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
       <button class="detail-tab-btn" id="dtab-life" onclick="switchDetailTab('life')">📊 生活シート</button>
+      <button class="detail-tab-btn" id="dtab-photos" onclick="switchDetailTab('photos')">📷 写真</button>
     </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
@@ -1058,6 +1059,7 @@ a{color:var(--p);text-decoration:none}
     </div><!-- /detail-col-right -->
     </div><!-- /detail-content-grid -->
     <div id="life-sheet-area" style="display:none;padding:0 12px 80px"></div>
+    <div id="res-photo-area" style="display:none;padding:12px 12px 80px"></div>
   </div>
 
   <!-- ─── SKIN GALLERY ─── -->
@@ -8486,20 +8488,25 @@ function renderDetail(){
   renderTimeline();
 }
 function switchDetailTab(tab){
-  ['input','timeline','life'].forEach(t=>{
+  ['input','timeline','life','photos'].forEach(t=>{
     const btn=document.getElementById('dtab-'+t);
     if(btn)btn.classList.toggle('on',t===tab);
   });
   const right=document.querySelector('.detail-col-right');
   if(right)right.classList.toggle('dtab-hidden',tab==='input');
   const left=document.querySelector('.detail-col-left');
-  if(left)left.style.display=(tab==='timeline'||tab==='life')?'none':'';
+  if(left)left.style.display=(tab==='timeline'||tab==='life'||tab==='photos')?'none':'';
   const grid=document.querySelector('.detail-content-grid');
-  if(grid)grid.style.display=tab==='life'?'none':'';
+  if(grid)grid.style.display=(tab==='life'||tab==='photos')?'none':'';
   const lifeArea=document.getElementById('life-sheet-area');
   if(lifeArea){
     lifeArea.style.display=tab==='life'?'':'none';
     if(tab==='life')renderLifeSheet(S.currentRes);
+  }
+  const photoArea=document.getElementById('res-photo-area');
+  if(photoArea){
+    photoArea.style.display=tab==='photos'?'':'none';
+    if(tab==='photos')renderResidentPhotos();
   }
 }
 // ─── 温度板ビュー ───
@@ -12222,40 +12229,73 @@ function openSkinPhotoFull(recId){
   ov.appendChild(closeBtn);
   document.body.appendChild(ov);
 }
+function _skinPhotoCard(r,resMap,opts){
+  const {showName=true,showGoBtn=false,showDelBtn=false,onDel=''}=opts||{};
+  const name=resMap[r.rid]||'不明';
+  const dt=new Date(r.ts);
+  const dateStr=dt.getFullYear()+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getDate().toString().padStart(2,'0');
+  const timeStr=dt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  const catLbl=r.data.category==='jokuso'?'褥瘡':'皮膚所見';
+  const loc=r.data.location||'';
+  const stage=r.data.stage?` [${r.data.stage}]`:'';
+  const nameLine=showName?`<div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:2px">${escHtml(name)}</div>`:'';
+  const goBtn=showGoBtn?`<button onclick="event.stopPropagation();openResidentPhotos('${r.rid}')" style="margin-top:6px;width:100%;padding:6px 8px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">→ 利用者ページへ</button>`:'';
+  const delBtn=showDelBtn?`<button onclick="event.stopPropagation();${onDel}" style="margin-top:4px;width:100%;padding:6px 8px;background:#fef2f2;color:#c62828;border:1.5px solid #fca5a5;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🗑️ 削除</button>`:'';
+  return`<div class="sg-card" data-rid="${r.rid}" style="background:var(--card);border-radius:12px;overflow:hidden;border:1.5px solid var(--bdr);box-shadow:var(--sh)">
+    <div onclick="openSkinPhotoFull('${r.id}')" style="cursor:pointer;background:#000;display:flex;align-items:center;justify-content:center;height:160px;overflow:hidden">
+      <img src="data:image/jpeg;base64,${r.data.photo}" style="width:100%;height:160px;object-fit:cover" loading="lazy">
+    </div>
+    <div style="padding:8px 10px">
+      ${nameLine}
+      <div style="font-size:11px;color:var(--sub)">${dateStr} ${timeStr}</div>
+      <div style="font-size:11px;color:var(--p);font-weight:700;margin-top:3px">${catLbl}　${escHtml(loc)}${escHtml(stage)}</div>
+      ${r.data.note?`<div style="font-size:11px;color:var(--sub);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.data.note)}</div>`:''}
+      ${goBtn}${delBtn}
+    </div>
+  </div>`;
+}
 function renderSkinGallery(){
   const el=document.getElementById('skin-gallery-content');
   if(!el)return;
   const recs=getRecords().filter(r=>r.type==='skin'&&r.data?.photo).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
-  const residents=getResidents();
-  const resMap=Object.fromEntries(residents.map(r=>[r.id,r.name]));
+  const resMap=Object.fromEntries(getResidents().map(r=>[r.id,r.name]));
   if(!recs.length){el.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub);font-size:14px">写真付きの皮膚記録がまだありません</div>';return;}
-  // 居住者別にフィルタ可能なUIにする
   const resIds=[...new Set(recs.map(r=>r.rid))];
   const filterBtns=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
     <button class="hb-filter-btn on" id="sgf-all" onclick="setSgFilter('all')">全員</button>
-    ${resIds.map(rid=>`<button class="hb-filter-btn" id="sgf-${rid}" onclick="setSgFilter('${rid}')">${resMap[rid]||rid}</button>`).join('')}
+    ${resIds.map(rid=>`<button class="hb-filter-btn" id="sgf-${rid}" onclick="setSgFilter('${rid}')">${escHtml(resMap[rid]||rid)}</button>`).join('')}
   </div>`;
-  const cards=recs.map(r=>{
-    const name=resMap[r.rid]||'不明';
-    const dt=new Date(r.ts);
-    const dateStr=dt.getFullYear()+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getDate().toString().padStart(2,'0');
-    const timeStr=dt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
-    const catLbl=r.data.category==='jokuso'?'褥瘡':'皮膚所見';
-    const loc=r.data.location||'';
-    const stage=r.data.stage?` [${r.data.stage}]`:'';
-    return`<div class="sg-card" data-rid="${r.rid}" style="background:var(--card);border-radius:12px;overflow:hidden;border:1.5px solid var(--bdr);box-shadow:var(--sh)">
-      <div onclick="openSkinPhotoFull('${r.id}')" style="cursor:pointer;background:#000;display:flex;align-items:center;justify-content:center;height:160px;overflow:hidden">
-        <img src="data:image/jpeg;base64,${r.data.photo}" style="width:100%;height:160px;object-fit:cover" loading="lazy">
-      </div>
-      <div style="padding:8px 10px">
-        <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:2px">${escHtml(name)}</div>
-        <div style="font-size:11px;color:var(--sub)">${dateStr} ${timeStr}</div>
-        <div style="font-size:11px;color:var(--p);font-weight:700;margin-top:3px">${catLbl}　${escHtml(loc)}${escHtml(stage)}</div>
-        ${r.data.note?`<div style="font-size:11px;color:var(--sub);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.data.note)}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
+  const canDel=isManagerOrAbove();
+  const cards=recs.map(r=>_skinPhotoCard(r,resMap,{showName:true,showGoBtn:true,showDelBtn:canDel,onDel:`deleteSkinRecord('${r.id}','gallery')`})).join('');
   el.innerHTML=`${filterBtns}<div id="sg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">${cards}</div>`;
+}
+function renderResidentPhotos(){
+  const el=document.getElementById('res-photo-area');
+  if(!el)return;
+  const recs=getRecords().filter(r=>r.rid===S.currentRes&&r.type==='skin'&&r.data?.photo).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const resMap=Object.fromEntries(getResidents().map(r=>[r.id,r.name]));
+  if(!recs.length){el.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub);font-size:14px">写真付きの皮膚記録がまだありません</div>';return;}
+  const canDel=isManagerOrAbove();
+  const cards=recs.map(r=>_skinPhotoCard(r,resMap,{showName:false,showGoBtn:false,showDelBtn:canDel,onDel:`deleteSkinRecord('${r.id}','res')`})).join('');
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">${cards}</div>`;
+}
+function openResidentPhotos(rid){
+  S.currentRes=rid;
+  trackRecentResident(rid);
+  S.tlOffset=0;_lifeOffset=0;S.currentService=null;
+  showScr('scr-detail');
+  switchDetailTab('photos');
+  renderDetail();
+}
+function deleteSkinRecord(recId,from){
+  showDelConfirm('この皮膚記録（写真含む）を削除しますか？',()=>{
+    const recs=getRecords().filter(r=>r.id!==recId);
+    saveRecords(recs);
+    addAuditLog('皮膚記録削除',recId);
+    toast('削除しました');
+    if(from==='gallery')renderSkinGallery();
+    else renderResidentPhotos();
+  });
 }
 let _sgFilter='all';
 function setSgFilter(rid){
