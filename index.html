@@ -762,12 +762,13 @@ a{color:var(--p);text-decoration:none}
           <span id="doctor-order-arrow" style="color:var(--sub);font-size:14px">›</span>
         </div>
         <!-- バイタル未記録 -->
-        <div id="vital-unrecorded-row" onclick="showScr('scr-residents');setFilter('all')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+        <div id="vital-unrecorded-row" onclick="gotoAlertResidents('vital')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
           <span style="font-size:13px">⚠️</span>
           <div style="flex:1">
             <b id="alert-count" style="font-size:12px;font-weight:700;color:#E65100">バイタル未記録：0名</b>
             <span id="alert-names" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
+          <button onclick="event.stopPropagation();dismissDashAlert('vital')" style="flex-shrink:0;background:none;border:1px solid var(--bdr);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;color:var(--sub);touch-action:manipulation">確認</button>
           <span style="color:var(--sub);font-size:14px">›</span>
         </div>
         <!-- 排便 -->
@@ -777,6 +778,7 @@ a{color:var(--p);text-decoration:none}
             <b id="stool-alert-count" style="font-size:12px;font-weight:700;color:#7b1fa2"></b>
             <span id="stool-alert-names" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
+          <button onclick="event.stopPropagation();dismissDashAlert('stool')" style="flex-shrink:0;background:none;border:1px solid var(--bdr);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;color:var(--sub);touch-action:manipulation">確認</button>
           <span style="color:var(--sub);font-size:14px">›</span>
         </div>
         <!-- 感染・隔離 -->
@@ -789,12 +791,13 @@ a{color:var(--p);text-decoration:none}
           <span style="color:var(--sub);font-size:14px">›</span>
         </div>
         <!-- 入浴未実施 -->
-        <div id="bath-alert-row" onclick="showScr('scr-residents')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
+        <div id="bath-alert-row" onclick="gotoAlertResidents('bath')" style="display:none;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-top:1px solid var(--bdr)">
           <span style="font-size:13px">🛁</span>
           <div style="flex:1">
             <b id="bath-alert-count" style="font-size:12px;font-weight:700;color:#0277bd"></b>
             <span id="bath-alert-names" style="font-size:11px;color:var(--sub);margin-left:6px"></span>
           </div>
+          <button onclick="event.stopPropagation();dismissDashAlert('bath')" style="flex-shrink:0;background:none;border:1px solid var(--bdr);border-radius:6px;padding:2px 8px;font-size:10px;cursor:pointer;color:var(--sub);touch-action:manipulation">確認</button>
           <span style="color:var(--sub);font-size:14px">›</span>
         </div>
         <!-- 問題なし -->
@@ -957,6 +960,10 @@ a{color:var(--p);text-decoration:none}
       <div class="sfc-divider"></div>
       <button id="btn-vital-filter" class="sfc-toggle" onclick="toggleVitalFilter()">🌡️ 未記録のみ</button>
       <button id="btn-hidden-filter" class="sfc-toggle" onclick="toggleHiddenFilter()" style="display:none">👁️ 非表示を含む</button>
+    </div>
+    <div id="alert-res-banner" style="display:none;margin:4px 12px 2px;padding:6px 10px;background:#fff3e0;border:1.5px solid #ffcc80;border-radius:8px;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#e65100">
+      <span id="alert-res-banner-txt"></span>
+      <button onclick="clearAlertResFilter()" style="margin-left:auto;background:none;border:none;color:#e65100;font-weight:700;cursor:pointer;font-size:12px;padding:0;touch-action:manipulation">✕ 解除</button>
     </div>
     <div class="res-list" id="res-list"></div>
   </div>
@@ -7443,9 +7450,10 @@ function renderDashboard(){
   const lastVitalTs={};
   recs.filter(r=>r.type==='vital').forEach(r=>{if(!lastVitalTs[r.rid]||new Date(r.ts)>new Date(lastVitalTs[r.rid]))lastVitalTs[r.rid]=r.ts;});
   const noVital=res.filter(r=>!vitalToday.has(r.id));
+  const _dismissed=getDismissedAlerts();
   const vurRow=document.getElementById('vital-unrecorded-row');
   if(vurRow){
-    if(noVital.length){
+    if(noVital.length&&!_dismissed.has('vital')){
       vurRow.style.display='flex';
       document.getElementById('alert-count').textContent='バイタル未記録：'+noVital.length+'名';
       const nameChips=noVital.slice(0,3).map(r=>{
@@ -7492,23 +7500,25 @@ function renderDashboard(){
   }
   // 排便3日以上なし アラート
   const stoolAlerts=res.filter(r=>{ const d=getStoolDays(r.id,recs); return d===null||d>=3; });
+  S._stoolAlertIds=new Set(stoolAlerts.map(r=>r.id));
   const stoolRow=document.getElementById('stool-alert-row');
   if(stoolRow){
-    if(stoolAlerts.length){
+    if(stoolAlerts.length&&!_dismissed.has('stool')){
       stoolRow.style.display='flex';
       document.getElementById('stool-alert-count').textContent='排便3日以上なし：'+stoolAlerts.length+'名';
       const stoolChips=stoolAlerts.slice(0,3).map(r=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#f3e5f5;color:#7b1fa2;border:1px solid #ce93d8;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}</button>`).join('')+(stoolAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${stoolAlerts.length-3}名</span>`:'');
       document.getElementById('stool-alert-names').innerHTML=stoolChips;
-      stoolRow.onclick=(e)=>{if(!e.target.closest('button'))showScr('scr-stool-alert');};
+      stoolRow.onclick=(e)=>{if(!e.target.closest('button'))gotoAlertResidents('stool');};
     } else {
       stoolRow.style.display='none';
     }
   }
   // 入浴4日以上なし アラート（居住系のみ）
   const bathAlerts=res.filter(r=>r.services&&r.services.includes('resident')).map(r=>({r,days:getLastBathDays(r.id)})).filter(({days})=>days===null||days>=4);
+  S._bathAlertIds=new Set(bathAlerts.map(({r})=>r.id));
   const bathRow=document.getElementById('bath-alert-row');
   if(bathRow){
-    if(bathAlerts.length){
+    if(bathAlerts.length&&!_dismissed.has('bath')){
       bathRow.style.display='flex';
       document.getElementById('bath-alert-count').textContent='入浴4日以上なし：'+bathAlerts.length+'名';
       const bathChips=bathAlerts.slice(0,3).map(({r,days})=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#e1f5fe;color:#0277bd;border:1px solid #81d4fa;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}(${days===null?'記録なし':days+'日'})</button>`).join('')+(bathAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${bathAlerts.length-3}名</span>`:'');
@@ -7679,9 +7689,29 @@ const mealLabel=t=>({breakfast:'朝食',morning_snack:'10時',lunch:'昼食',sna
 // ═══════════ RESIDENT LIST ═══════════
 function setFilter(f){
   S.filter=f;
+  S._alertResFilter=null;
   document.querySelectorAll('.chip').forEach(c=>{
     c.classList.toggle('on',c.dataset.f===f);
   });
+  renderResList();
+}
+function getDismissedAlerts(){
+  return new Set(JSON.parse(localStorage.getItem('_adism_'+_localDs(new Date()))||'[]'));
+}
+function dismissDashAlert(type){
+  const d=[...getDismissedAlerts()];
+  if(!d.includes(type))d.push(type);
+  localStorage.setItem('_adism_'+_localDs(new Date()),JSON.stringify(d));
+  renderDashboard();
+}
+function gotoAlertResidents(type){
+  S._alertResFilter=type;
+  showScr('scr-residents');
+}
+function clearAlertResFilter(){
+  S._alertResFilter=null;
+  const b=document.getElementById('alert-res-banner');
+  if(b)b.style.display='none';
   renderResList();
 }
 function hiraToKata(s){return s.replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60));}
@@ -7721,7 +7751,7 @@ function renderResList(){
   const careFilterVal=(document.getElementById('res-care-filter')?.value)||'all';
   const vitalFilterOn=S.vitalFilter==='unrecorded';
   const careOrder={none:0,support1:1,support2:2,care1:3,care2:4,care3:5,care4:6,care5:7};
-  const res=allResidents.filter(r=>{
+  let res=allResidents.filter(r=>{
     const kana=(r.kana||'').toLowerCase();
     const matchQ=!q||r.name.toLowerCase().includes(q)||kana.includes(q)||kana.includes(qk);
     // デイフィルター: スケジュールに今日のcommuteがある人のみ
@@ -7729,7 +7759,11 @@ function renderResList(){
       (S.filter==='commute'?todayCommuteRids.has(r.id):r.services.includes(S.filter));
     const matchC=careFilterVal==='all'||r.care===careFilterVal;
     const matchV=!vitalFilterOn||!vitalToday.has(r.id);
-    return matchQ&&matchF&&matchC&&matchV;
+    const matchAlert=!S._alertResFilter||
+      (S._alertResFilter==='vital'&&!vitalToday.has(r.id))||
+      (S._alertResFilter==='stool'&&S._stoolAlertIds&&S._stoolAlertIds.has(r.id))||
+      (S._alertResFilter==='bath'&&S._bathAlertIds&&S._bathAlertIds.has(r.id));
+    return matchQ&&matchF&&matchC&&matchV&&matchAlert;
   }).sort((a,b)=>{
     if(sortKey==='room'){const ra=parseInt(a.room)||9999,rb=parseInt(b.room)||9999;return ra-rb||a.kana.localeCompare(b.kana,'ja');}
     if(sortKey==='care_asc')return (careOrder[a.care]||0)-(careOrder[b.care]||0)||a.kana.localeCompare(b.kana,'ja');
@@ -7737,6 +7771,22 @@ function renderResList(){
     if(sortKey==='vital'){const av=vitalToday.has(a.id)?1:0,bv=vitalToday.has(b.id)?1:0;return av-bv||a.kana.localeCompare(b.kana,'ja');}
     return a.kana.localeCompare(b.kana,'ja');
   });
+  // アラートフィルター：事業所別ソート + バナー表示
+  const _alertBanner=document.getElementById('alert-res-banner');
+  const _alertBannerTxt=document.getElementById('alert-res-banner-txt');
+  if(S._alertResFilter){
+    const _svcOrd={resident:0,commute:1,stay:2,visit:3,nursing:4};
+    res=res.slice().sort((a,b)=>{
+      const sa=Math.min(...(a.services||[]).map(s=>_svcOrd[s]??9));
+      const sb=Math.min(...(b.services||[]).map(s=>_svcOrd[s]??9));
+      return sa-sb||a.kana.localeCompare(b.kana,'ja');
+    });
+    const _lbl={vital:'バイタル未記録',stool:'排便3日以上なし',bath:'入浴4日以上なし'};
+    if(_alertBanner){_alertBanner.style.display='flex';}
+    if(_alertBannerTxt)_alertBannerTxt.textContent='⚠️ '+(_lbl[S._alertResFilter]||'')+'の利用者のみ表示中（'+res.length+'名）';
+  } else {
+    if(_alertBanner){_alertBanner.style.display='none';}
+  }
   const tagClass={resident:'tag-resident',commute:'tag-commute',stay:'tag-stay',visit:'tag-visit'};
   const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
