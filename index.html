@@ -12486,7 +12486,7 @@ async function processMedPhoto(input){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'meta-llama/llama-4-scout-17b-16e-instruct',
+        model:'meta-llama/llama-4-maverick-17b-128e-instruct',
         messages:[{role:'user',content:[
           {type:'text',text:'この薬手帳または処方箋から薬品名と用法用量をすべて読み取り、以下のJSON配列のみ返してください（前後の説明不要）：\n[{"name":"薬品名","dose":"1錠など","slots":["morning"]}]\nslots選択肢: wakeup(起床時)/morning_before(朝食前)/morning(朝食後)/noon_before(昼食前)/noon(昼食後)/evening_before(夕食前)/evening(夕食後)/bedtime(眠前)\n用法不明時はmorning。薬が見つからない場合は[]を返す。'},
           {type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64}}
