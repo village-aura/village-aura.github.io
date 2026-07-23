@@ -253,11 +253,11 @@ a{color:var(--p);text-decoration:none}
 .handover-by{font-size:11px;color:var(--sub);margin-top:4px}
 .input-section{padding:0 12px}
 .input-section h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0 6px;text-transform:uppercase;letter-spacing:.04em}
-.inp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.inp-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .15s;cursor:pointer;touch-action:manipulation;width:100%;box-sizing:border-box;min-width:0;overflow:hidden}
+.inp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.inp-btn{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .15s;cursor:pointer;touch-action:manipulation;width:100%;box-sizing:border-box;min-height:62px}
 .inp-btn:hover,.inp-btn:active{border-color:var(--p);background:var(--ps)}
-.inp-btn .ib-ico{font-size:22px;flex-shrink:0;line-height:1}
-.inp-btn .ib-lbl{font-size:12px;font-weight:700;color:var(--txt);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inp-btn .ib-ico{font-size:22px;line-height:1}
+.inp-btn .ib-lbl{font-size:11px;font-weight:700;color:var(--txt);text-align:center;white-space:nowrap}
 .timeline-sec{padding:0 12px;margin-top:4px}
 .timeline-sec h3{font-size:13px;font-weight:700;color:var(--sub);padding:8px 0;text-transform:uppercase;letter-spacing:.04em}
 .detail-mobile-tabs{display:flex;background:var(--card);border-bottom:2px solid var(--bdr);position:sticky;top:56px;z-index:10}
@@ -437,7 +437,7 @@ a{color:var(--p);text-decoration:none}
   .quick-grid{grid-template-columns:repeat(4,1fr)}
   .res-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
   .res-list .res-card{margin-bottom:0}
-  .inp-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .inp-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
   #scr-handover-board.on{padding:4px 0}
   #scr-handover-board .card{margin-bottom:0}
   /* diary split layout */
@@ -8465,7 +8465,8 @@ function renderDetail(){
       grid.innerHTML='<div style="color:var(--sub);font-size:13px;padding:10px 2px;grid-column:1/-1">↑ 今日のサービスを選択してください</div>';
     } else {
       const btns=SVC_BTNS[S.currentService]||[];
-      grid.innerHTML=btns.map((key,idx)=>{const b=BTN_DEF[key];const span=(btns.length%2===1&&idx===btns.length-1)?'grid-column:span 2':'';return`<button class="inp-btn" onclick="${b.fn}" style="${span}"><span class="ib-ico">${b.ico}</span><span class="ib-lbl">${b.lbl}</span></button>`;}).join('');
+      const rem=btns.length%3;
+      grid.innerHTML=btns.map((key,idx)=>{const b=BTN_DEF[key];const isLast=idx===btns.length-1;const span=(rem===1&&isLast)?'grid-column:span 3':'';return`<button class="inp-btn" onclick="${b.fn}" style="${span}"><span class="ib-ico">${b.ico}</span><span class="ib-lbl">${b.lbl}</span></button>`;}).join('');
     }
   }
   // 居宅職員・医師: 入力セクション非表示・フェイスシートボタン強調
