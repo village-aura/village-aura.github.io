@@ -11128,7 +11128,7 @@ function addManualResident(){
 }
 function getCustomStaff(){return ls('custom_staff')||{};}
 function saveCustomStaff(s){lsSet('custom_staff',s);fsSet('custom_staff',s);}
-const JIGYOUSHO_LIST=['サ高住','小多機','デイサービス','訪問介護','訪問看護','居宅','いなだ医院'];
+const JIGYOUSHO_LIST=['サ高住','小多機','デイサービス','訪問介護','訪問看護','居宅','厨房','いなだ医院'];
 const SHOKUSHU_LIST=['介護士','介護福祉士','看護師','准看護師','ケアマネージャー','相談員','管理者','事務・受付','理学療法士（PT）','作業療法士（OT）','言語聴覚士（ST）','調理師','その他'];
 function getStaffJigyousho(key){const ss=getStaffSettings();return ss[key]?.jigyousho||getCustomStaff()[key]?.jigyousho||STAFF_INFO[key]?.jigyousho||'';}
 function getStaffShokushu(key){const ss=getStaffSettings();return ss[key]?.shokushu||getCustomStaff()[key]?.shokushu||STAFF_INFO[key]?.shokushu||'';}
@@ -16039,7 +16039,7 @@ function _getAllStaffNames(){
   Object.values(getCustomStaff()).forEach(s=>{if(s.name&&!s.disabled&&!s.hidden)names.add(s.name);});
   return names;
 }
-const _FAC_TO_JIG={resident:'サ高住',commute:'デイサービス',stay:'小多機',visit:'訪問介護',nursing:'訪問看護',home_care:'居宅'};
+const _FAC_TO_JIG={resident:'サ高住',commute:'デイサービス',stay:'小多機',visit:'訪問介護',nursing:'訪問看護',home_care:'居宅',kitchen:'厨房'};
 function _getStaffNamesForFacility(fac){
   const targetJig=_FAC_TO_JIG[fac]||fac;
   const names=new Set();
