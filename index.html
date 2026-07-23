@@ -12924,7 +12924,9 @@ function openHbStatus(){
   if(!isManagerOrAbove()){toast('管理者以上のみ閲覧できます');return;}
   const bd=getBoardData();
   const reads=getHandoverReads();
-  const allStaff=_getAllStaffNames();
+  const mf=getManagedFacility();
+  const allStaff=mf?_getStaffNamesForFacility(mf):_getAllStaffNames();
+  const facLabel=mf?(_FAC_TO_JIG[mf]||mf):'全事業所';
   const allItems=[...(bd.urgent||[]),...(bd.important||[]),...(bd.normal||[])].filter(h=>h&&h.id&&!isExpired(h));
   const body=document.getElementById('hb-status-body');
   if(!body)return;
@@ -12953,7 +12955,7 @@ function openHbStatus(){
       </div>`:''}
     </div>`;
   });
-  body.innerHTML=`<div style="font-size:12px;color:var(--sub);margin-bottom:10px">申し送り ${allItems.length}件 ／ スタッフ ${staffArr.length}名</div>${html}`;
+  body.innerHTML=`<div style="font-size:12px;color:var(--sub);margin-bottom:10px">申し送り ${allItems.length}件 ／ ${facLabel} スタッフ ${staffArr.length}名</div>${html}`;
   openModal('modal-hb-status');
 }
 function linkifyResidents(text){
@@ -16080,6 +16082,18 @@ function _getAllStaffNames(){
   const names=new Set();
   Object.values(STAFF_INFO).forEach(s=>{if(s.name)names.add(s.name);});
   Object.values(getCustomStaff()).forEach(s=>{if(s.name&&!s.disabled&&!s.hidden)names.add(s.name);});
+  return names;
+}
+const _FAC_TO_JIG={resident:'サ高住',commute:'デイサービス',stay:'小多機',visit:'訪問介護',nursing:'訪問看護',home_care:'居宅'};
+function _getStaffNamesForFacility(fac){
+  const targetJig=_FAC_TO_JIG[fac]||fac;
+  const names=new Set();
+  const all={...STAFF_INFO,...getCustomStaff()};
+  Object.entries(all).forEach(([k,s])=>{
+    if(!s.name||s.disabled||s.hidden)return;
+    const jig=getStaffJigyousho(k);
+    if(jig===targetJig)names.add(s.name);
+  });
   return names;
 }
 
