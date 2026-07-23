@@ -4741,8 +4741,10 @@ const ROLE_COLORS = {
   staff:                     {bg:'#1565c0',label:'スタッフ'},
   kitchen:                   {bg:'#f57c00',label:'厨房職員'},
 };
+const _ROLE_COMPAT={'care':'staff','nurse':'staff','home_care':'staff','medical_office':'staff'};
 function getRoleInfo(roleKey){
-  return ROLE_COLORS[roleKey]||{bg:'#9ca3af',label:roleKey};
+  const k=_ROLE_COMPAT[roleKey]||roleKey;
+  return ROLE_COLORS[k]||{bg:'#9ca3af',label:k};
 }
 function getStaffKeyByName(name){
   const all={...STAFF_INFO,...getCustomStaff()};
