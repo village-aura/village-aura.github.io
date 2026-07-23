@@ -981,9 +981,11 @@ a{color:var(--p);text-decoration:none}
     </div>
     <!-- 凡例 -->
     <div style="display:flex;gap:10px;padding:2px 16px 10px;flex-wrap:wrap;align-items:center">
-      <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:var(--ok)"></div><span style="font-size:11px;color:var(--sub)">バイタル済</span></div>
-      <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#e65100"></div><span style="font-size:11px;color:var(--sub)">バイタル未</span></div>
-      <span style="font-size:9px;background:#ff9800;color:#fff;padding:1px 5px;border-radius:4px;font-weight:700">2人</span><span style="font-size:11px;color:var(--sub)">2人部屋</span>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#e65100"></div><span style="font-size:10px;color:var(--sub)">バイタル未</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#7b1fa2"></div><span style="font-size:10px;color:var(--sub)">排便</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#0277bd"></div><span style="font-size:10px;color:var(--sub)">入浴</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#f59e0b"></div><span style="font-size:10px;color:var(--sub)">未読申し送り</span></div>
+      <span style="font-size:9px;background:#ff9800;color:#fff;padding:1px 5px;border-radius:4px;font-weight:700">2人</span><span style="font-size:10px;color:var(--sub)">2人部屋</span>
     </div>
     <div id="floor-map-content" style="padding:0 12px 80px"></div>
   </div>
@@ -7966,48 +7968,61 @@ function renderFloorMap(){
     if(!roomMap[rn])roomMap[rn]=[];
     roomMap[rn].push(r);
   });
-  const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||'');
+  // アラート判定データ
+  const handovers=getHandovers();
+  const reads=getHandoverReads();
+  function _resAlerts(r){
+    const dots=[];
+    // バイタル未記録
+    if(!vitalToday.has(r.id))dots.push({c:'#e65100',t:'バイタル未記録'});
+    // 排便3日以上なし
+    const sd=getStoolDays(r.id,recs);
+    if(sd===null||sd>=3)dots.push({c:'#7b1fa2',t:`排便${sd===null?'未記録':sd+'日'}`});
+    // 入浴4日以上なし（居住者のみ）
+    if((r.services||[]).includes('resident')){const bd=getLastBathDays(r.id);if(bd===null||bd>=4)dots.push({c:'#0277bd',t:`入浴${bd===null?'記録なし':bd+'日'}`});}
+    // 未読申し送り
+    const hw=handovers[r.id]||[];
+    const hasUnread=hw.some(h=>{const rd=reads[h.id]||[];return!rd.includes(S.user);});
+    if(hasUnread)dots.push({c:'#f59e0b',t:'未読申し送りあり'});
+    return dots;
+  }
+  const CELL_W=68;const GAP=4;
+  function renderResCard(r){
+    const nm=r.name.replace(/\s/g,'<br>');
+    const dots=_resAlerts(r);
+    const dotsHtml=dots.length?`<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px">${dots.map(d=>`<span title="${d.t}" style="width:6px;height:6px;border-radius:50%;background:${d.c};flex-shrink:0;display:inline-block"></span>`).join('')}</div>`:'';
+    return `<div onclick="openResident('${r.id}')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex:1;padding:0 2px">
+      <div style="font-size:${r.name.length>4?'9px':'10px'};font-weight:800;text-align:center;line-height:1.3;color:var(--tx)">${nm}</div>
+      ${dotsHtml}
+    </div>`;
+  }
   function renderCell(num){
     const rn=String(num);
     const residents=roomMap[rn]||[];
     const isDouble=DOUBLE_ROOMS.has(rn);
     const vacant=residents.length===0;
-    const cellH=isDouble?'110px':'80px';
+    const cellW=isDouble?`${CELL_W*2+GAP}px`:`${CELL_W}px`;
     const bg=vacant?'var(--bg)':'var(--card)';
     const border=vacant?'1.5px dashed var(--bdr)':'1.5px solid var(--p)';
     const doubleBadge=isDouble?`<span style="font-size:8px;background:#ff9800;color:#fff;padding:0 3px;border-radius:3px;margin-left:2px;font-weight:700">2人</span>`:'';
     let content='';
     if(vacant){
       content=`<div style="flex:1;display:flex;align-items:center;justify-content:center"><span style="font-size:10px;color:var(--sub)">空室</span></div>`;
+    } else if(isDouble){
+      // 2人部屋：横並び
+      const left=renderResCard(residents[0]);
+      const right=residents[1]?renderResCard(residents[1]):`<div style="flex:1;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:var(--sub)">空き</span></div>`;
+      content=`<div style="flex:1;display:flex;gap:0"><div style="flex:1;border-right:1px solid var(--bdr)">${left}</div><div style="flex:1">${right}</div></div>`;
     } else {
-      const cards=residents.map(r=>{
-        const hv=vitalToday.has(r.id);
-        const nm=r.name.replace(/\s/g,'<br>');
-        return `<div onclick="event.stopPropagation();openResident('${r.id}')" style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer">
-          <div style="font-size:${r.name.length>4?'10px':'11px'};font-weight:800;text-align:center;line-height:1.3;color:var(--tx)">${nm}</div>
-          <div style="display:flex;gap:3px;align-items:center;margin-top:2px">
-            <span style="font-size:8px;color:var(--sub)">${careLabel(r.care)}</span>
-            <span style="width:6px;height:6px;border-radius:50%;background:${hv?'var(--ok)':'#e65100'};flex-shrink:0"></span>
-          </div>
-        </div>`;
-      });
-      if(residents.length>1){
-        content=`<div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:2px 0">${cards.join(`<div style="border-top:1px solid var(--bdr);margin:0 4px"></div>`)}</div>`;
-      } else {
-        content=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center">${cards[0]}</div>`;
-      }
+      content=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center">${renderResCard(residents[0])}</div>`;
     }
-    const clickAttr=vacant?'':`onclick="openResident('${residents[0]?.id}')"`;
-    return `<div ${residents.length===1?clickAttr:''} style="background:${bg};border:${border};border-radius:8px;padding:5px 4px;min-width:68px;width:68px;height:${cellH};display:flex;flex-direction:column;cursor:${vacant?'default':'pointer'};box-sizing:border-box">
+    return `<div style="background:${bg};border:${border};border-radius:8px;padding:5px 4px;width:${cellW};height:80px;display:flex;flex-direction:column;box-sizing:border-box;flex-shrink:0">
       <div style="font-size:9px;font-weight:800;color:${vacant?'var(--sub)':'var(--p)'};display:flex;align-items:center;flex-shrink:0">${rn}${doubleBadge}</div>
       ${content}
     </div>`;
   }
-  function renderRow(rooms,label){
-    return `<div style="display:flex;gap:6px;align-items:flex-start">
-      <div style="writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:800;color:var(--sub);min-width:16px;padding-top:4px;flex-shrink:0;letter-spacing:.1em">${label}</div>
-      <div style="display:flex;gap:4px">${rooms.map(n=>renderCell(n)).join('')}</div>
-    </div>`;
+  function renderRow(rooms){
+    return `<div style="display:flex;gap:${GAP}px">${rooms.map(n=>renderCell(n)).join('')}</div>`;
   }
   function renderFloor(floorKey){
     const layout=FLOOR_LAYOUT[floorKey];
@@ -8017,17 +8032,18 @@ function renderFloorMap(){
     return `<div style="margin-bottom:20px">
       <div style="font-size:15px;font-weight:800;color:var(--p);padding-bottom:8px;display:flex;align-items:center;gap:8px">
         ${floorKey} <span style="font-size:11px;font-weight:400;color:var(--sub)">${occupied}/${total}室 入居中</span>
-        <span style="font-size:10px;color:var(--sub);margin-left:auto">← 横スクロール →</span>
       </div>
-      <div style="background:var(--card);border-radius:14px;padding:12px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <div style="background:var(--card);border-radius:14px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch">
         <div style="display:flex;flex-direction:column;gap:8px;width:max-content">
-          ${renderRow(layout.upper,'上段')}
-          <div style="font-size:9px;color:var(--sub);letter-spacing:.2em;padding:3px 20px;border-top:1.5px dashed var(--bdr);border-bottom:1.5px dashed var(--bdr);text-align:center;width:100%;box-sizing:border-box">── 廊下 ──</div>
-          ${renderRow(layout.lower,'下段')}
+          ${renderRow(layout.upper)}
+          <div style="font-size:9px;color:var(--sub);letter-spacing:.2em;padding:3px 16px;border-top:1.5px dashed var(--bdr);border-bottom:1.5px dashed var(--bdr);text-align:center;box-sizing:border-box">── 廊下 ──</div>
+          ${renderRow(layout.lower)}
         </div>
       </div>
     </div>`;
   }
+  // 凡例HTML更新
+  const legendEl=document.querySelector('#scr-floor-map .floor-legend');
   el.innerHTML=renderFloor('2F')+renderFloor('1F');
 }
 
