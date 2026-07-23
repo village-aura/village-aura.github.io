@@ -1080,9 +1080,12 @@ a{color:var(--p);text-decoration:none}
         <input type="file" id="file-inp-staff" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleStaffFile(this)">
       </div>
       <div id="staff-csv-preview" style="display:none;margin-top:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
           <b id="staff-csv-count"></b>
-          <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="importStaffCSVFromPreview()">職員をインポート</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn-primary" style="width:auto;padding:10px 20px" onclick="importStaffCSVFromPreview(false)">新規のみインポート</button>
+            <button style="width:auto;padding:10px 20px;background:#e65100;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer" onclick="importStaffCSVFromPreview(true)">全員上書き</button>
+          </div>
         </div>
         <div class="preview-wrap"><table class="preview-table" id="staff-preview-table"></table></div>
       </div>
@@ -10379,18 +10382,17 @@ function dropFileStaff(e){
   const f=e.dataTransfer.files[0];
   if(f){const inp=document.getElementById('file-inp-staff');const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handleStaffFile(inp);}
 }
-function importStaffCSVFromPreview(){
+function importStaffCSVFromPreview(overwrite=false){
   if(!isSuperAdminRole()&&!isFacilityAdmin()&&!isAdmin()){toast('職員登録は管理者以上のみ実行できます');return;}
   if(!S.staffCsvData)return;
   const {headers,rows,dupFlags}=S.staffCsvData;
-  // 重複行をスキップして新規のみインポート
-  const newRows=rows.filter((_,i)=>!dupFlags||!dupFlags[i]);
-  if(!newRows.length){toast('インポート対象の新規職員がいません');return;}
-  importStaffCSV(headers,newRows);
+  const targetRows=overwrite?rows:rows.filter((_,i)=>!dupFlags||!dupFlags[i]);
+  if(!targetRows.length){toast('インポート対象の職員がいません');return;}
+  importStaffCSV(headers,targetRows,overwrite);
   document.getElementById('staff-csv-preview').style.display='none';
   S.staffCsvData=null;
 }
-function importStaffCSV(headers,rows){
+function importStaffCSV(headers,rows,overwrite=false){
   const norm=h=>STAFF_COL[h]||h;
   const normed=headers.map(norm);
   const i=n=>normed.indexOf(n);
@@ -10401,7 +10403,6 @@ function importStaffCSV(headers,rows){
   rows.forEach(r=>{
     const name=(i('name')>=0?String(r[i('name')]||''):'').trim();
     if(!name)return;
-    const pass=i('password')>=0&&String(r[i('password')]||'').trim()?String(r[i('password')]).trim():generatePassword();
     const roleRaw=(i('role')>=0?String(r[i('role')]||''):'').trim();
     const role=ROLE_DISP[roleRaw]||'care';
     if(!isSuperAdminRole()&&STAFF_ADMIN_ROLES.includes(role)){results.push({name,loginId:'-',pass:'-',note:'スキップ（全権管理者のみ登録可）'});return;}
@@ -10409,8 +10410,19 @@ function importStaffCSV(headers,rows){
     const jigyousho=JIGYOUSHO_DISP[jRaw]||jRaw||'サ高住';
     const empRaw=empColIdx>=0?String(r[empColIdx]??'').trim():'';
     const loginId=empRaw&&parseInt(empRaw)>0?String(parseInt(empRaw)).padStart(4,'0'):getNextStaffLoginId();
-    const key='cs'+Date.now()+Math.random();
     const kana=(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim();
+    // 上書きモード：既存レコードを loginId or 名前で探して更新
+    let key=null;
+    if(overwrite){
+      const nameNorm=name.replace(/\s/g,'');
+      key=Object.keys(cs).find(k=>{
+        const lid=(ss[k]?.loginId||cs[k]?.loginId||'').toLowerCase();
+        return lid===loginId.toLowerCase()||(cs[k]?.name||'').replace(/\s/g,'')==nameNorm;
+      })||null;
+    }
+    if(!key)key='cs'+Date.now()+Math.random();
+    const existPass=ss[key]?.pass||cs[key]?.pass;
+    const pass=existPass||generatePassword();
     cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
     ss[key]={pass,loginId};
     results.push({name,loginId,pass});
