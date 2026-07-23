@@ -965,6 +965,7 @@ a{color:var(--p);text-decoration:none}
       <span id="alert-res-banner-txt"></span>
       <button onclick="clearAlertResFilter()" style="margin-left:auto;background:none;border:none;color:#e65100;font-weight:700;cursor:pointer;font-size:12px;padding:0;touch-action:manipulation">✕ 解除</button>
     </div>
+    <div id="res-kana-index" style="display:none;padding:4px 10px 2px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch"></div>
     <div class="res-list" id="res-list"></div>
   </div>
 
@@ -1406,6 +1407,59 @@ a{color:var(--p);text-decoration:none}
       <button onclick="addMedItem()" style="width:100%;padding:9px;background:var(--ps);color:var(--p);border-radius:8px;font-size:13px;font-weight:700;border:1.5px dashed var(--p);cursor:pointer;margin-bottom:8px">＋ 薬を追加</button>
       <button class="btn-primary" onclick="saveMedReg()">保存</button>
       <button class="btn-cancel" onclick="closeModal('modal-med-reg')">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ─── 服薬詳細入力モーダル（4タブ）─── -->
+  <div class="overlay" id="modal-med-detail" onclick="closeModal('modal-med-detail',event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">💊 薬の入力</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px">
+        <button id="mdt-t1" onclick="setMedDetailTab(1)" style="padding:8px 2px;border-radius:8px;font-size:10px;font-weight:700;border:none;background:var(--p);color:#fff;cursor:pointer;line-height:1.5;touch-action:manipulation">1<br>薬品名</button>
+        <button id="mdt-t2" onclick="setMedDetailTab(2)" style="padding:8px 2px;border-radius:8px;font-size:10px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;line-height:1.5;touch-action:manipulation">2<br>数量</button>
+        <button id="mdt-t3" onclick="setMedDetailTab(3)" style="padding:8px 2px;border-radius:8px;font-size:10px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;line-height:1.5;touch-action:manipulation">3<br>単位</button>
+        <button id="mdt-t4" onclick="setMedDetailTab(4)" style="padding:8px 2px;border-radius:8px;font-size:10px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;line-height:1.5;touch-action:manipulation">4<br>タイミング</button>
+      </div>
+      <div id="med-detail-summary" style="padding:6px 10px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--sub);margin-bottom:12px;min-height:22px;border:1px solid var(--bdr)">内容を入力してください</div>
+      <!-- Tab1: 薬品名 -->
+      <div id="mdt-tab-1">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">薬品名</div>
+        <div style="position:relative">
+          <input type="text" id="mdt-name" placeholder="2文字以上入力で候補表示" oninput="onMdtNameInput()" autocomplete="off" style="width:100%;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;background:var(--card);color:var(--tx);box-sizing:border-box">
+          <div id="mdt-name-suggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:1.5px solid var(--p);border-top:none;border-radius:0 0 10px 10px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.12)"></div>
+        </div>
+        <button onclick="startVoiceMdtName(this)" style="width:100%;padding:10px;background:var(--ps);color:var(--p);border-radius:10px;border:1.5px solid var(--p);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;margin-top:8px">🎤 音声で入力</button>
+      </div>
+      <!-- Tab2: 数量 -->
+      <div id="mdt-tab-2" style="display:none">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px">数量</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px" id="mdt-qty-grid"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--sub);white-space:nowrap">その他</span>
+          <input type="number" id="mdt-qty-custom" placeholder="数量入力" step="0.5" min="0" oninput="setMdtQty(this.value,false)" style="flex:1;padding:8px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--tx)">
+        </div>
+      </div>
+      <!-- Tab3: 単位 -->
+      <div id="mdt-tab-3" style="display:none">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px">単位</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px" id="mdt-unit-grid"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--sub);white-space:nowrap">その他</span>
+          <input type="text" id="mdt-unit-custom" placeholder="単位入力" oninput="setMdtUnit(this.value,false)" style="flex:1;padding:8px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--tx)">
+        </div>
+      </div>
+      <!-- Tab4: タイミング -->
+      <div id="mdt-tab-4" style="display:none">
+        <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px">飲むタイミング（複数選択可）</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px" id="mdt-slot-grid"></div>
+      </div>
+      <!-- Nav -->
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button onclick="medDetailNav(-1)" id="mdt-prev-btn" style="display:none;flex:1;padding:11px;background:var(--bg);border-radius:10px;font-size:13px;font-weight:700;border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation">← 戻る</button>
+        <button onclick="medDetailNav(1)" id="mdt-next-btn" style="flex:1;padding:11px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">次へ →</button>
+        <button onclick="saveMedDetail()" id="mdt-save-btn" style="display:none;flex:1;padding:11px;background:#2e7d32;color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓ 保存</button>
+      </div>
     </div>
   </div>
 
@@ -7792,7 +7846,26 @@ function renderResList(){
   const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||c);
   const canHide=isManagerOrAbove();
   const canDel=isSuperAdminRole();
+  // 50音インデックスバー（かな順ソート時のみ）
+  const kanaIndexEl=document.getElementById('res-kana-index');
+  const showKanaIdx=sortKey==='kana'&&!S._alertResFilter&&!q;
+  if(kanaIndexEl){
+    if(showKanaIdx&&res.length>0){
+      const rows50=['あ','か','さ','た','な','は','ま','や','ら','わ'];
+      const presentRows=new Set(res.map(r=>_row50(r.kana||'')));
+      kanaIndexEl.style.display='block';
+      kanaIndexEl.innerHTML=rows50.map(r=>{
+        const has=presentRows.has(r);
+        return `<button onclick="scrollToResKana('${r}')" style="display:inline-block;min-width:30px;margin-right:4px;padding:5px 7px;border-radius:8px;font-size:13px;font-weight:800;border:1.5px solid ${has?'var(--p)':'var(--bdr)'};background:${has?'var(--ps)':'transparent'};color:${has?'var(--p)':'var(--sub)'};cursor:${has?'pointer':'default'};touch-action:manipulation">${r}</button>`;
+      }).join('');
+    } else {
+      kanaIndexEl.style.display='none';
+    }
+  }
+  let prevKanaRow='';
   document.getElementById('res-list').innerHTML=res.map(r=>{
+    let kanaHeader='';
+    if(showKanaIdx){const row=_row50(r.kana||'');if(row!==prevKanaRow){prevKanaRow=row;kanaHeader=`<div id="res-kana-anchor-${row}" style="grid-column:1/-1;padding:6px 2px 3px;margin-top:4px;font-size:11px;font-weight:800;color:var(--p);letter-spacing:.1em;border-bottom:2px solid var(--ps)">${row}行</div>`;}}
     const ok=vitalToday.has(r.id);
     const stoolDays=getStoolDays(r.id,recs);
     const stoolWarn=stoolDays===null||stoolDays>=3;
@@ -7808,7 +7881,7 @@ function renderResList(){
     const moreBtn=(canHide||canDel)?`<button onclick="event.stopPropagation();showResCardMenu('${r.id}',this)" style="position:absolute;top:6px;right:6px;font-size:15px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;cursor:pointer;touch-action:manipulation;padding:2px 7px;line-height:1.4;color:var(--sub);font-weight:700" title="メニュー">⋯</button>`:'';
     const hiddenStyle=r.hidden?'opacity:.6;border:1.5px dashed var(--bdr);':'';
     const hiddenBadge=r.hidden?'<span style="background:#e0e0e0;color:#757575;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;margin-left:4px">非表示</span>':'';
-    return `<div class="res-card" style="${hiddenStyle}" onclick="${r.hidden?`showHiddenResMenu('${r.id}',null)`:`openResident('${r.id}')`}">
+    return kanaHeader+`<div class="res-card" style="${hiddenStyle}" onclick="${r.hidden?`showHiddenResMenu('${r.id}',null)`:`openResident('${r.id}')`}">
       ${moreBtn}
       <div class="res-avatar ${r.gender==='male'?'male':''}">${r.photo?`<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover">`:(r.gender==='male'?'👴':'👵')}</div>
       <div class="res-info">
@@ -11487,6 +11560,126 @@ function saveBulkExcretion(rid){
 let _medSlot='morning';
 const MED_SLOT_LABEL={wakeup:'起床時',morning_before:'朝食前',morning:'朝食後',noon_before:'昼食前',noon:'昼食後',evening_before:'夕食前',evening:'夕食後',bedtime:'眠前'};
 const MED_SLOT_GROUP={wakeup:['wakeup'],morning:['morning_before','morning'],noon:['noon_before','noon'],evening:['evening_before','evening'],bedtime:['bedtime']};
+const DRUG_LIST=[{"n":"アーチスト錠2.5㎎","u":"錠"},{"n":"アイトロール錠20㎎","u":"錠"},{"n":"アジルサルタン","u":"錠"},{"n":"アンブロキソール塩酸塩15㎎","u":"錠"},{"n":"アセトアミノフェン錠200㎎[マルイシ」","u":"錠"},{"n":"アデホスコーワ腸溶錠60㎎","u":"錠"},{"n":"アトルバスタチン錠10㎎「サンド」","u":"錠"},{"n":"アルダクトンA錠25㎎","u":"錠"},{"n":"アレロック錠5㎎","u":"錠"},{"n":"ウリトスOD錠0.1㎎","u":"錠"},{"n":"ウルソデオキシコール酸錠100mg「ﾃﾊﾞ」","u":"錠"},{"n":"エリキュース錠5mg","u":"錠"},{"n":"エフィエント錠3.75mg","u":"錠"},{"n":"エクア錠50㎎","u":"錠"},{"n":"エフィエント錠5mg","u":"錠"},{"n":"エナラプリルマレイン酸塩錠2.5㎎「EMEC」","u":"錠"},{"n":"エビスタ錠60㎎","u":"錠"},{"n":"エピナスチン塩酸塩錠20㎎「サワイ」","u":"錠"},{"n":"エンレスト200ｍｇ","u":"錠"},{"n":"エリキュース錠2.5mg","u":"錠"},{"n":"オルメサルタンOD錠20㎎「DSEP」","u":"錠"},{"n":"オゼックス錠150㎎","u":"錠"},{"n":"カルデナリン錠1㎎","u":"錠"},{"n":"カルブロック錠16㎎","u":"錠"},{"n":"カルベジロール錠10㎎「サワイ」","u":"錠"},{"n":"カルボシステイン錠500mg「サワイ」","u":"錠"},{"n":"キプレス錠10㎎","u":"錠"},{"n":"ケトチフェンカプセル「サワイ」","u":"錠"},{"n":"ガスコン錠40㎎","u":"錠"},{"n":"クラリス錠200㎎","u":"錠"},{"n":"グリチロン配合錠","u":"錠"},{"n":"グルベス配合錠","u":"錠"},{"n":"コレバイン錠500㎎","u":"錠"},{"n":"クロピトグレル錠75mg「YD」","u":"錠"},{"n":"ジャディアンス錠10mg","u":"錠"},{"n":"シグマート錠5㎎","u":"錠"},{"n":"ストミンA配合錠","u":"錠"},{"n":"ジェニナック錠200㎎","u":"錠"},{"n":"シロスタゾール錠100㎎「サワイ」","u":"錠"},{"n":"ジャヌビア錠50㎎","u":"錠"},{"n":"スーグラ錠50mg","u":"錠"},{"n":"セファドール錠25mg","u":"錠"},{"n":"セイブル錠50㎎","u":"錠"},{"n":"ゼチーア錠10㎎","u":"錠"},{"n":"2mgセルシン錠","u":"錠"},{"n":"セルベックスカプセル50㎎","u":"C"},{"n":"セレスタミン配合錠","u":"錠"},{"n":"セロクラール錠20㎎","u":"錠"},{"n":"ザイザル錠5㎎","u":"錠"},{"n":"センノシド錠12㎎「サワイ」","u":"錠"},{"n":"スージャヌ配合錠","u":"錠"},{"n":"タケキャブ錠10mg","u":"錠"},{"n":"タムスロシン塩酸塩OD錠0.1㎎「サワイ」","u":"錠"},{"n":"タリオンOD錠10㎎","u":"錠"},{"n":"チアトンカプセル10㎎","u":"C"},{"n":"テノーミン錠50㎎","u":"錠"},{"n":"デプロメール錠25㎎","u":"錠"},{"n":"テオフィリン徐放錠100㎎「サワイ」","u":"錠"},{"n":"テルネリン","u":"錠"},{"n":"ドンペリドン錠10㎎「ｻﾜｲ」","u":"錠"},{"n":"トランサミン錠250㎎","u":"錠"},{"n":"トコフェロール錠50㎎「トーワ」","u":"錠"},{"n":"トリクロルメチアジト錠2mg「NIG」","u":"錠"},{"n":"ナトリックス錠2㎎","u":"錠"},{"n":"ノイロトロピン錠4単位","u":"錠"},{"n":"ビオフェルミン錠剤","u":"錠"},{"n":"バップフォー錠10㎎","u":"錠"},{"n":"バルサルタン錠80㎎「ｻﾝﾄﾞ」","u":"錠"},{"n":"バイアスピリン錠100㎎","u":"錠"},{"n":"フェブリク錠20㎎","u":"錠"},{"n":"フェキソフェナジン塩酸塩錠60mg「日新」","u":"錠"},{"n":"ブロムヘキシン塩酸塩「ｻﾜｲ」","u":"錠"},{"n":"べオーバ錠50mg","u":"錠"},{"n":"フェブキソスタット10ｍｇ｢AFP｣","u":"錠"},{"n":"フリバス錠25㎎","u":"錠"},{"n":"プルゼニド錠12㎎","u":"錠"},{"n":"フェロミア錠50㎎","u":"錠"},{"n":"フォイパン錠100㎎","u":"錠"},{"n":"ベタヒスチンメシル酸塩錠6ｍｇ｢日医工｣","u":"錠"},{"n":"プラザキサカプセル110㎎","u":"C"},{"n":"ビソプロロールフマル酸塩酸錠2.5mg","u":"錠"},{"n":"プラバスタチンNa錠5mg「ｹﾐﾌｧ」","u":"錠"},{"n":"ヘルベッサー錠30㎎Rｶﾌﾟｾﾙ100mg","u":"錠"},{"n":"アムロジピンOD錠5㎎「NP」","u":"錠"},{"n":"アリセプトD錠10㎎","u":"錠"},{"n":"インフリーカプセル100㎎","u":"C"},{"n":"ベニジピン塩酸塩錠4mg「OME」","u":"錠"},{"n":"エルデカルシトールカプセル0.75μｇ","u":"C"},{"n":"ファモチジン20mg 「デパ」","u":"錠"},{"n":"パルモディアXR 0.2mg","u":"錠"},{"n":"プレドニン錠5㎎","u":"錠"},{"n":"メインテート錠5mg","u":"錠"},{"n":"ペンタサ250mg","u":"錠"},{"n":"ボグリボース錠0.2mg「サワイ」","u":"錠"},{"n":"ベザフィブラートSR 200mg 「ｻﾜｲ」","u":"錠"},{"n":"ベルソムラ錠15mg","u":"錠"},{"n":"リクシアナOD錠15mg","u":"錠"},{"n":"グリメピリド錠1mg「YD」","u":"錠"},{"n":"ジゴキシンKY錠0.25㎎","u":"錠"},{"n":"セレコックス錠100mg","u":"錠"},{"n":"サインバルタカプセル20mg","u":"C"},{"n":"シロドシン錠4mg「DSEP」","u":"錠"},{"n":"プレガバリンOD75㎎「ニプロ」","u":"錠"},{"n":"マイスリー錠10㎎","u":"錠"},{"n":"マグミット錠500㎎","u":"錠"},{"n":"ロサルヒド配合錠LD「サワイ」","u":"錠"},{"n":"ニバジール錠2㎎","u":"錠"},{"n":"プレガバリンOD25㎎「ニプロ」","u":"錠"},{"n":"メルカゾール錠5㎎","u":"錠"},{"n":"フロセミド錠20mg「NIG」","u":"錠"},{"n":"サンリズムカプセル50㎎","u":"C"},{"n":"セロケン錠20㎎","u":"錠"},{"n":"アルファカルシドール「フソー」","u":"C"},{"n":"ドネペジル塩酸塩OD錠5㎎「NP」","u":"錠"},{"n":"チラーヂンS錠50μｇ","u":"錠"},{"n":"ニフェジピンL錠10㎎","u":"錠"},{"n":"モサプリドクエン酸塩錠5㎎「日新」","u":"錠"},{"n":"ユベラNソフトカプセル200㎎","u":"C"},{"n":"ラベプラゾールNa錠10mg「ケミファ｣","u":"錠"},{"n":"レスプレン錠20㎎","u":"錠"},{"n":"メコバラミン500mg｢日医工｣","u":"錠"},{"n":"メジコン錠15㎎","u":"錠"},{"n":"ランソプラゾールOD錠15㎎「武田ﾃﾞﾊﾟ」","u":"錠"},{"n":"ロスバスタチン錠2.5ｍｇ「ニプロ」","u":"錠"},{"n":"ナボールSRカプセル37.5㎎","u":"C"},{"n":"ニフェジピンCR錠20㎎「NP」","u":"錠"},{"n":"ベタニス錠50mg","u":"錠"},{"n":"ビ・シフロール錠0.125㎎","u":"錠"},{"n":"ベラプロストNa錠20μｇ","u":"錠"},{"n":"リフレックス錠15mg","u":"錠"},{"n":"ユナシン錠375㎎","u":"錠"},{"n":"レボフロキサシン錠500㎎「ZE」","u":"錠"},{"n":"ラリキシン250mg","u":"錠"},{"n":"リマプロストアルファデクス錠5μｇ「サワイ」","u":"錠"},{"n":"レンドルミン錠0.25㎎","u":"錠"},{"n":"ロキソニン錠60㎎","u":"錠"},{"n":"ワーファリン錠1㎎","u":"錠"},{"n":"リクシアナOD錠60mg","u":"錠"},{"n":"リスペリドン錠0.5㎎「アメル」","u":"錠"},{"n":"メトグルコ錠250㎎","u":"錠"},{"n":"メマリーOD錠20㎎","u":"錠"},{"n":"レミニールOD錠8㎎","u":"錠"},{"n":"リセドロン酸Na錠17.5㎎「サンド」","u":"錠"},{"n":"グリミクロン錠40㎎","u":"錠"},{"n":"アスパラCA錠200","u":"錠"},{"n":"アミティザカプセル12mg","u":"錠"},{"n":"トラマドール塩散塩OD25mg｢KO｣","u":"錠"},{"n":"エブランチルカプセル15mg","u":"C"},{"n":"バイカロン錠25mg","u":"錠"},{"n":"クロピドグレル錠50mg「サワイ」","u":"錠"},{"n":"シベノール錠100mg","u":"錠"},{"n":"ミネブロOD錠2.5mg","u":"錠"},{"n":"クエチアピン錠12.5mg「明治」","u":"錠"},{"n":"メキシチールカプセル100㎎","u":"C"},{"n":"パロキセチン錠10㎎「YD」","u":"錠"},{"n":"メマリーＯＤ錠5㎎","u":"錠"},{"n":"エベレンゾ酸50ｍｇ","u":"錠"},{"n":"ドパコール配合錠L100","u":"錠"},{"n":"エンテカビル錠0.5mg「EE」","u":"錠"},{"n":"ペプリコール錠50mg","u":"錠"},{"n":"ビムパット錠50mg","u":"錠"},{"n":"ヘモナーゼ配合錠","u":"錠"},{"n":"ピルシカイニド塩酸塩カプセル25mg「NIG」","u":"C"},{"n":"タンボコール錠50㎎","u":"錠"},{"n":"リバーロキサバンOD15mg｢ニプロ｣","u":"錠"},{"n":"リマチル錠50㎎","u":"錠"},{"n":"サンポグレラート塩散塩錠100mg｢NIG｣","u":"錠"},{"n":"ベムリディ25mg","u":"錠"},{"n":"ロケルマ懸濁散分包5ｇ","u":"包"},{"n":"ミグシス錠5mg","u":"錠"},{"n":"レクサプロ錠10㎎","u":"錠"},{"n":"リパクレオン顆粒300mg分包0.5ｇ","u":"包"},{"n":"リベルサス錠3mg","u":"錠"},{"n":"リベルサス錠7mg","u":"錠"},{"n":"トラゾドン塩散塩錠25mg｢アメル｣","u":"錠"},{"n":"ロプレソール錠40mg","u":"錠"},{"n":"リウマトレックスカプセル2㎎","u":"錠"},{"n":"エブトール250ｍｇ","u":"錠"},{"n":"トフラニール錠10mｇ","u":"錠"},{"n":"ネオフィリン錠100㎎","u":"錠"},{"n":"リファンピシンカプセル150mg","u":"C"},{"n":"アジスロマイシン錠250mg｢ｻﾜｲ｣","u":"錠"},{"n":"パントシン散20%","u":"g"},{"n":"ビオフェルミン配合散","u":"g"},{"n":"コデインリン酸塩散1％","u":"g"},{"n":"乳糖水和物「マルイシ」","u":"g"},{"n":"炭酸水素ナトリウム曹「ニッコー」","u":"g"},{"n":"トランサミン散50%","u":"g"},{"n":"クラリスDS10%小児用100㎎","u":"g"},{"n":"タンニン酸アルブミン","u":"錠"},{"n":"オゼックス細粒小児用15％","u":"g"},{"n":"ケトチフェンDS小児用0.1%「サワイ」","u":"g"},{"n":"アシクロビルDS80%","u":"g"},{"n":"テオフィリン徐放DS小児用20%「サワイ」","u":"g"},{"n":"ワイドシリン","u":"g"},{"n":"セフカペンピボキシル塩酸塩","u":"g"},{"n":"酸化マグネシウム「NP」原末","u":"g"},{"n":"カロナール細粒50%","u":"g"},{"n":"オセルタミビルDS3%「サワイ」","u":"g"},{"n":"オーグメンチン250Rs","u":"錠"},{"n":"ベシケア錠5㎎","u":"錠"},{"n":"ネイリンカプセル100mg","u":"C"},{"n":"セルニルトン錠","u":"錠"},{"n":"ランドセン錠0.5mg","u":"錠"},{"n":"レミニールOD錠4㎎","u":"錠"},{"n":"ビタメジン配合カプセルB25","u":"C"},{"n":"シダキュアスギ花粉舌下錠5000JAUブリスター","u":"錠"},{"n":"ミティキュアダニ舌下錠10000JAU","u":"錠"},{"n":"アザルフィジンEN錠500㎎","u":"錠"},{"n":"エペリゾン塩酸塩錠50㎎「トーワ」","u":"錠"},{"n":"エソメプラゾール","u":"錠"},{"n":"グルファスト錠10㎎","u":"錠"},{"n":"グーフィス錠5mg","u":"錠"},{"n":"グラケーカプセル15㎎","u":"C"},{"n":"ケタスカプセル10mg","u":"C"},{"n":"コントミン糖衣錠25mg","u":"錠"},{"n":"コメリアンコーワ錠50㎎","u":"錠"},{"n":"サアミオン錠5mg","u":"錠"},{"n":"スルピリド錠50㎎「サワイ」","u":"錠"},{"n":"ダイアート錠60mg","u":"錠"},{"n":"デザレックス錠5㎎","u":"錠"},{"n":"デエビゴ錠5mg","u":"錠"},{"n":"ピオグリタゾン錠15㎎「DSEP」","u":"錠"},{"n":"ピモベンダン1.25「TE」","u":"錠"},{"n":"アスパラカリウム錠300","u":"錠"},{"n":"チアプリド錠25㎎「サワイ」","u":"錠"},{"n":"メインテート錠0.625","u":"錠"},{"n":"トビエース錠4㎎","u":"錠"},{"n":"エビプロスタット配合錠DB","u":"錠"},{"n":"オングリザ錠5mg","u":"錠"},{"n":"カンデサルタン錠4ｍｇ「ｹﾐﾌｧ」","u":"錠"},{"n":"プレドニゾロン錠1mg「VTRS」","u":"錠"},{"n":"パナルジン錠100㎎","u":"錠"},{"n":"リポバス錠5㎎","u":"錠"},{"n":"ブスコパン錠10㎎","u":"錠"},{"n":"ツムラ17","u":"包"},{"n":"ツムラ20","u":"包"},{"n":"ツムラ23","u":"包"},{"n":"ツムラ107","u":"包"},{"n":"ツムラ29","u":"包"},{"n":"ｸﾗｼｴ人参養栄湯ｴｷｽ細粒 1包＝3.75g","u":"包"},{"n":"ツムラ52","u":"包"},{"n":"ツムラ41","u":"包"},{"n":"ツムラ100","u":"包"},{"n":"ツムラ91","u":"包"},{"n":"ツムラ62","u":"包"},{"n":"ツムラ61","u":"包"},{"n":"ツムラ86","u":"包"},{"n":"ツムラ54","u":"包"},{"n":"ツムラ40","u":"包"},{"n":"ツムラ68","u":"包"},{"n":"ツムラ24","u":"包"},{"n":"ツムラ25","u":"包"},{"n":"ツムラ43","u":"包"},{"n":"ツムラ88","u":"包"},{"n":"ツムラ7","u":"包"},{"n":"ツムラ1","u":"包"},{"n":"BCG","u":"本"},{"n":"アクトヒブ","u":"本"},{"n":"三種混合","u":"本"},{"n":"四種混合","u":"本"},{"n":"プレベナー","u":"本"},{"n":"二種混合","u":"本"},{"n":"子宮頸がん","u":"本"},{"n":"麻しん・風しん（MR）","u":"本"},{"n":"麻しん","u":"本"},{"n":"風しん","u":"本"},{"n":"ポリオ","u":"本"},{"n":"日本脳炎（エンセバック)","u":"本"},{"n":"成人用肺炎球菌（ニューモバックス）","u":"本"},{"n":"ロタリックス","u":"本"},{"n":"ロタテック","u":"本"},{"n":"おたふく","u":"本"},{"n":"水痘","u":"本"},{"n":"狂犬病","u":"本"},{"n":"A型肝炎","u":"本"},{"n":"B型肝炎（ビームゲン0.25）","u":"本"},{"n":"B型肝炎（ビームゲン0.5）","u":"本"},{"n":"B型肝炎(ヘプタバックス０．２５)","u":"本"},{"n":"ヘプタバックス（０．５）","u":"本"},{"n":"シングリックス","u":"本"},{"n":"サーバリックス","u":"本"},{"n":"インフルエンザ","u":"錠"},{"n":"アドエア100ディスカス28吸入用","u":"個"},{"n":"アズノール軟膏0.033%","u":"本"},{"n":"白色ワセリン","u":"g"},{"n":"ユーロジン2㎎錠","u":"錠"},{"n":"リスミー錠2㎎","u":"錠"},{"n":"ロゼレム錠8㎎","u":"錠"},{"n":"ベンザリン錠10㎎","u":"錠"},{"n":"ポララミン錠2㎎","u":"錠"},{"n":"ニトロール錠5㎎","u":"錠"},{"n":"アドナ錠30㎎","u":"錠"},{"n":"PL配合顆粒","u":"包"},{"n":"プリンペラン錠5㎎","u":"錠"},{"n":"小児用バクシダール錠50㎎","u":"錠"},{"n":"メイラックス錠2㎎","u":"錠"},{"n":"ロペミンカプセル1㎎","u":"C"},{"n":"エバステルOD錠10㎎","u":"錠"},{"n":"フォリアミン錠5㎎","u":"錠"},{"n":"ミノマイシンカプセル50㎎","u":"C"},{"n":"トリプタノール錠10㎎","u":"錠"},{"n":"ワソラン錠40㎎","u":"錠"},{"n":"サワシリンカプセル250㎎","u":"C"},{"n":"ヘパリン類似物質的外用泡スプレー1本＝100g","u":"本"},{"n":"リーゼ錠5㎎","u":"錠"},{"n":"ホクナリンテープ1㎎","u":"枚"},{"n":"ポビドンヨードガーグル液7%「明治」","u":"本"},{"n":"ヒアレイン点眼液0.1%","u":"本"},{"n":"カタリンK点眼用0.005%","u":"本"},{"n":"オフロキサシン点眼液0.3%","u":"本"},{"n":"強力ポステリザン軟膏","u":"個"},{"n":"テリルジー200エリプタ14吸入用","u":"個"},{"n":"レルベア100エリプタ30吸入","u":"個"},{"n":"マーズレンS配合顆粒","u":"包"},{"n":"SPトローチ0.25㎎「明治」","u":"個"},{"n":"アズノールうがい液4%","u":"本"},{"n":"ラキソベロン内用液0.75%","u":"本"},{"n":"フランドルテープ","u":"枚"},{"n":"ビソノテープ4mg","u":"枚"},{"n":"キュバール50エアゾール8.7g","u":"本"},{"n":"エパデールS600㎎","u":"個"},{"n":"シムビコートタービュヘイラー60吸入","u":"本"},{"n":"カリメート散","u":"包"},{"n":"ロコアテープ","u":"枚"},{"n":"ラクツロース・シロップ60％10ml","u":"本"},{"n":"リンゼス0.25mg","u":"錠"},{"n":"バクタ配合錠","u":"錠"},{"n":"モビコール配合内用材HD","u":"包"},{"n":"ロトリガ粒状カプセル2g","u":"包"},{"n":"リーバクト配合顆粒4.15ｇ","u":"包"},{"n":"ボノサップパック400","u":"錠"},{"n":"ウルティブロ吸入用カプセル","u":"C"},{"n":"クラシエ抑肝散加陳皮半夏エキス細粒","u":"包"},{"n":"ナノパスニードルⅡ 34G","u":"個"},{"n":"ﾘｱﾙﾀﾞ錠1200mg","u":"錠"},{"n":"ダイアップ坐剤6㎎","u":"個"},{"n":"ドンペリドン坐剤10㎎「JG」","u":"個"},{"n":"アルピニー坐剤100㎎","u":"個"},{"n":"新レシカルボン坐剤","u":"個"},{"n":"ボラザG坐剤","u":"個"},{"n":"ボルタレンサポ50㎎","u":"個"},{"n":"ナウゼリン坐剤30㎎","u":"個"},{"n":"シメチジン錠200mg「ｻﾜｲ」","u":"錠"},{"n":"酢酸亜鉛錠50mg｢ｻﾜｲ｣","u":"錠"},{"n":"アロチノロール塩散塩錠5ｍｇ「DSP」","u":"錠"},{"n":"ラシックス錠20㎎","u":"錠"},{"n":"プラザキサカプセル75㎎","u":"C"},{"n":"テラムロ配合錠「ニプロ」","u":"錠"},{"n":"メロキシカム錠10㎎「NP」","u":"錠"},{"n":"リバスチグミンテープ9mg","u":"枚"},{"n":"アスペノンカプセル20㎎","u":"C"},{"n":"ﾂﾛﾌﾞﾃﾛｰﾙﾃｰﾌﾟ0.5㎎「ファイザー」","u":"枚"},{"n":"スピリーバ吸入用カプセル18μｇ","u":"C"},{"n":"アミオダロン塩酸塩錠100mg「サワイ」","u":"錠"},{"n":"アメナリーフ","u":"錠"},{"n":"アモバン錠10㎎","u":"錠"},{"n":"オセルタミビルカプセル75mg「サワイ」","u":"錠"},{"n":"サムスカOD錠7.5mg","u":"錠"},{"n":"ゾフルーザ","u":"錠"},{"n":"ソラナックス錠0.4mg","u":"錠"},{"n":"タダラフィル錠5mg","u":"錠"},{"n":"タミフルカプセル75㎎","u":"錠"},{"n":"デパス錠0.5㎎","u":"錠"},{"n":"ハルシオン0.25㎎錠","u":"錠"},{"n":"ビラノア錠OD","u":"錠"},{"n":"ラスビック75ｍｇ","u":"錠"},{"n":"リクシアナOD錠30mg","u":"錠"},{"n":"リレンザ5㎎","u":"錠"},{"n":"レイボー","u":"錠"},{"n":"レルパックス錠20㎎","u":"錠"}];
+const MDT_QTY_OPTIONS=['0.5','1','1.5','2','2.5','3','4','5'];
+const MDT_UNIT_OPTIONS=['錠','カプセル','包','g','mg','ml','μg','枚','個','本','パッチ'];
+let _mdtIdx=null,_mdtTab=1;
+let _mdtData={name:'',qty:'1',unit:'錠',slots:[]};
+function openMedDetailModal(i){
+  const medData=getMedicationData();const meds=medData[_medRegRid]||[];
+  _mdtIdx=i;
+  if(i===null){_mdtData={name:'',qty:'1',unit:'錠',slots:['morning']};}
+  else{
+    const m=meds[i]||{};
+    const qty=m.qty||_parseDQ(m.dose)||'1';
+    const unit=m.unit||_parseDU(m.dose)||'錠';
+    _mdtData={name:m.name||'',qty,unit,slots:[...(m.slots||['morning'])]};
+  }
+  _mdtTab=1;_renderMdt();
+  openModal('modal-med-detail');
+  setTimeout(()=>document.getElementById('mdt-name')?.focus(),250);
+}
+function _parseDQ(d){if(!d)return'1';const m=String(d).match(/^([0-9.]+)/);return m?m[1]:'1';}
+function _parseDU(d){if(!d)return'錠';const m=String(d).match(/^[0-9.]+(.+)/);return m?m[1].trim():'錠';}
+function setMedDetailTab(t){
+  if(_mdtTab===1)_mdtData.name=(document.getElementById('mdt-name')?.value||'').trim();
+  _mdtTab=t;_renderMdt();
+}
+function _renderMdt(){
+  for(let t=1;t<=4;t++){
+    const b=document.getElementById('mdt-t'+t);
+    if(b){const on=t===_mdtTab;b.style.background=on?'var(--p)':'var(--bg)';b.style.color=on?'#fff':'var(--sub)';b.style.border=on?'none':'1.5px solid var(--bdr)';}
+    const p=document.getElementById('mdt-tab-'+t);if(p)p.style.display=t===_mdtTab?'block':'none';
+  }
+  _updateMdtSum();
+  if(_mdtTab===1){const ni=document.getElementById('mdt-name');if(ni)ni.value=_mdtData.name;}
+  if(_mdtTab===2){
+    const g=document.getElementById('mdt-qty-grid');
+    if(g)g.innerHTML=MDT_QTY_OPTIONS.map(v=>{const on=String(_mdtData.qty)===v;return`<button onclick="setMdtQty('${v}',true)" style="padding:14px 4px;border-radius:10px;font-size:16px;font-weight:800;border:${on?'2px solid var(--p)':'1.5px solid var(--bdr)'};background:${on?'var(--p)':'var(--card)'};color:${on?'#fff':'var(--tx)'};cursor:pointer;touch-action:manipulation">${v}</button>`;}).join('');
+    const ci=document.getElementById('mdt-qty-custom');if(ci)ci.value=MDT_QTY_OPTIONS.includes(String(_mdtData.qty))?'':_mdtData.qty;
+  }
+  if(_mdtTab===3){
+    const unitMap={'C':'カプセル','g':'g','本':'本','個':'個','枚':'枚','袋':'袋','包':'包'};
+    const g=document.getElementById('mdt-unit-grid');
+    if(g)g.innerHTML=MDT_UNIT_OPTIONS.map(u=>{const on=_mdtData.unit===u;return`<button onclick="setMdtUnit('${u}',true)" style="padding:12px 4px;border-radius:10px;font-size:14px;font-weight:700;border:${on?'2px solid var(--p)':'1.5px solid var(--bdr)'};background:${on?'var(--p)':'var(--card)'};color:${on?'#fff':'var(--tx)'};cursor:pointer;touch-action:manipulation">${u}</button>`;}).join('');
+    const cu=document.getElementById('mdt-unit-custom');if(cu)cu.value=MDT_UNIT_OPTIONS.includes(_mdtData.unit)?'':_mdtData.unit;
+  }
+  if(_mdtTab===4){
+    const g=document.getElementById('mdt-slot-grid');
+    const allS=['wakeup','morning_before','morning','noon_before','noon','evening_before','evening','bedtime'];
+    if(g)g.innerHTML=allS.map(s=>{const on=(_mdtData.slots||[]).includes(s);return`<button onclick="toggleMdtSlot('${s}')" data-mslot="${s}" style="padding:12px 4px;border-radius:10px;font-size:13px;font-weight:700;border:${on?'2px solid var(--p)':'1.5px solid var(--bdr)'};background:${on?'var(--p)':'var(--card)'};color:${on?'#fff':'var(--tx)'};cursor:pointer;touch-action:manipulation">${MED_SLOT_LABEL[s]}</button>`;}).join('');
+  }
+  const prev=document.getElementById('mdt-prev-btn'),next=document.getElementById('mdt-next-btn'),save=document.getElementById('mdt-save-btn');
+  if(prev)prev.style.display=_mdtTab>1?'block':'none';
+  if(next)next.style.display=_mdtTab<4?'block':'none';
+  if(save)save.style.display=_mdtTab===4?'block':'none';
+}
+function _updateMdtSum(){
+  const s=document.getElementById('med-detail-summary');if(!s)return;
+  const parts=[];
+  if(_mdtData.name)parts.push('💊 '+_mdtData.name);
+  if(_mdtData.qty||_mdtData.unit)parts.push((_mdtData.qty||'')+(_mdtData.unit||''));
+  const sl=(_mdtData.slots||[]).map(x=>MED_SLOT_LABEL[x]||x);
+  if(sl.length)parts.push(sl.join('・'));
+  s.textContent=parts.join(' ／ ')||'内容を入力してください';
+}
+function setMdtQty(v,fromBtn){
+  _mdtData.qty=String(v);
+  if(fromBtn){document.getElementById('mdt-qty-grid')?.querySelectorAll('button').forEach(b=>{const on=b.textContent===String(v);b.style.background=on?'var(--p)':'var(--card)';b.style.color=on?'#fff':'var(--tx)';b.style.border=on?'2px solid var(--p)':'1.5px solid var(--bdr)';});const ci=document.getElementById('mdt-qty-custom');if(ci)ci.value='';}
+  _updateMdtSum();
+}
+function setMdtUnit(v,fromBtn){
+  _mdtData.unit=v;
+  if(fromBtn){document.getElementById('mdt-unit-grid')?.querySelectorAll('button').forEach(b=>{const on=b.textContent===v;b.style.background=on?'var(--p)':'var(--card)';b.style.color=on?'#fff':'var(--tx)';b.style.border=on?'2px solid var(--p)':'1.5px solid var(--bdr)';});const cu=document.getElementById('mdt-unit-custom');if(cu)cu.value='';}
+  _updateMdtSum();
+}
+function toggleMdtSlot(s){
+  const slots=_mdtData.slots||[];const idx=slots.indexOf(s);
+  if(idx>=0)slots.splice(idx,1);else slots.push(s);
+  _mdtData.slots=slots;
+  const btn=document.querySelector(`[data-mslot="${s}"]`);
+  if(btn){const on=slots.includes(s);btn.style.background=on?'var(--p)':'var(--card)';btn.style.color=on?'#fff':'var(--tx)';btn.style.border=on?'2px solid var(--p)':'1.5px solid var(--bdr)';}
+  _updateMdtSum();
+}
+function medDetailNav(dir){
+  if(_mdtTab===1){_mdtData.name=(document.getElementById('mdt-name')?.value||'').trim();if(dir>0&&!_mdtData.name){toast('薬品名を入力してください');return;}}
+  _mdtTab=Math.max(1,Math.min(4,_mdtTab+dir));_renderMdt();
+}
+function saveMedDetail(){
+  _mdtData.name=(document.getElementById('mdt-name')?.value||_mdtData.name||'').trim();
+  if(!_mdtData.name){toast('薬品名を入力してください');setMedDetailTab(1);return;}
+  const medData=getMedicationData();
+  if(!medData[_medRegRid])medData[_medRegRid]=[];
+  const dose=(_mdtData.qty||'')+(_mdtData.unit||'');
+  const item={id:_mdtIdx!==null?(medData[_medRegRid][_mdtIdx]?.id||'m'+Date.now()):'m'+Date.now(),
+    name:_mdtData.name,qty:_mdtData.qty,unit:_mdtData.unit,dose,slots:_mdtData.slots||['morning']};
+  if(_mdtIdx!==null)medData[_medRegRid][_mdtIdx]=item;else medData[_medRegRid].push(item);
+  saveMedicationData(medData);closeModal('modal-med-detail');renderMedRegList();toast('保存しました ✓');
+}
+function startVoiceMdtName(btn){
+  startVoice('mdt-name',btn);
+  const poll=setInterval(()=>{if(!_voiceActive){_mdtData.name=(document.getElementById('mdt-name')?.value||'').trim();_updateMdtSum();onMdtNameInput();clearInterval(poll);}},400);
+}
+function onMdtNameInput(){
+  const inp=document.getElementById('mdt-name'),sug=document.getElementById('mdt-name-suggest');
+  if(!inp||!sug)return;
+  const q=inp.value.trim();
+  _mdtData.name=q;_updateMdtSum();
+  if(q.length<2){sug.style.display='none';return;}
+  const lq=q.toLowerCase();
+  const hits=DRUG_LIST.filter(d=>d.n.toLowerCase().includes(lq)).slice(0,8);
+  if(!hits.length){sug.style.display='none';return;}
+  sug.style.display='block';
+  sug.innerHTML=hits.map(d=>`<div onclick="selectMdtDrug('${d.n.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}','${d.u}')" style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--bdr);display:flex;align-items:baseline;gap:6px" onmouseenter="this.style.background='var(--ps)'" onmouseleave="this.style.background=''"><span style="font-weight:700;flex:1">${d.n}</span><span style="color:var(--sub);font-size:11px;flex-shrink:0">${d.u}</span></div>`).join('');
+}
+function selectMdtDrug(name,unit){
+  _mdtData.name=name;
+  const unitMap={'C':'カプセル','g':'g','本':'本','個':'個','枚':'枚','袋':'袋','包':'包'};
+  _mdtData.unit=unitMap[unit]||unit||'錠';
+  const inp=document.getElementById('mdt-name');if(inp)inp.value=name;
+  const sug=document.getElementById('mdt-name-suggest');if(sug)sug.style.display='none';
+  _updateMdtSum();
+}
 function getMedicationData(){return ls('medication_data')||{};}
 function saveMedicationData(d){lsSet('medication_data',d);fsSet('medication_data',d);}
 function getMedicationChecks(){return ls('medication_checks')||{};}
@@ -11601,32 +11794,19 @@ function renderMedRegList(){
   const medData=getMedicationData();
   const meds=medData[_medRegRid]||[];
   const el=document.getElementById('med-reg-list');if(!el)return;
+  if(!meds.length){el.innerHTML='<div style="font-size:12px;color:var(--sub);text-align:center;padding:16px">まだ薬が登録されていません</div>';return;}
   el.innerHTML=meds.map((m,i)=>{
-    const doseIsCustom=m.dose&&!MED_DOSE_OPTIONS.slice(0,-1).includes(m.dose);
-    const selVal=doseIsCustom?'その他':m.dose||'';
-    const slots=m.slots||[];
-    const allSlots=['wakeup','morning_before','morning','noon_before','noon','evening_before','evening','bedtime'];
-    return `<div style="background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
-        <input type="text" id="med-name-${i}" value="${m.name}" placeholder="薬品名（例：アムロジピン）" oninput="updateMedItem(${i},'name',this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">
-        <button onclick="startVoiceMedName(${i},this)" style="flex-shrink:0;padding:6px 10px;background:var(--ps);color:var(--p);border-radius:6px;border:1.5px solid var(--p);cursor:pointer;font-size:15px;touch-action:manipulation">🎤</button>
-        <button onclick="removeMedItem(${i})" style="flex-shrink:0;padding:6px 10px;background:#fee;color:var(--ng);border-radius:6px;border:none;cursor:pointer;font-size:13px">✕</button>
+    const slots=(m.slots||[]).map(s=>MED_SLOT_LABEL[s]||s).join('・')||'タイミング未設定';
+    const dose=(m.qty&&m.unit)?(m.qty+m.unit):(m.dose||'用量未設定');
+    return `<div onclick="openMedDetailModal(${i})" style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--bdr);cursor:pointer;display:flex;align-items:center;gap:10px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name||'（薬品名なし）'}</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px">${dose} ／ ${slots}</div>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:8px">
-        <select onchange="updateMedDose(${i},this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px;background:#fff">
-          <option value="">用法・用量</option>
-          ${MED_DOSE_OPTIONS.map(o=>`<option value="${o}"${selVal===o?' selected':''}>${o}</option>`).join('')}
-        </select>
-        ${(selVal==='その他'||doseIsCustom)?`<input type="text" value="${doseIsCustom?m.dose:''}" placeholder="自由入力" oninput="updateMedItem(${i},'dose',this.value)" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:13px">`:''}
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${allSlots.map(s=>{
-          const on=slots.includes(s);
-          return `<label style="font-size:12px;cursor:pointer;background:${on?'var(--p)':'var(--card)'};color:${on?'#fff':'var(--sub)'};padding:4px 10px;border-radius:20px;border:1.5px solid ${on?'var(--p)':'var(--bdr)'};touch-action:manipulation;display:inline-block"><input type="checkbox" ${on?'checked':''} onchange="toggleMedSlot(${i},'${s}',this.checked)" style="display:none">${MED_SLOT_LABEL[s]}</label>`;
-        }).join('')}
-      </div>
+      <button onclick="event.stopPropagation();removeMedItem(${i})" style="flex-shrink:0;padding:6px 10px;background:none;color:var(--ng);border-radius:6px;border:1px solid var(--bdr);cursor:pointer;font-size:12px;touch-action:manipulation">削除</button>
+      <span style="color:var(--sub);font-size:16px;flex-shrink:0">›</span>
     </div>`;
-  }).join('')||'<div style="font-size:12px;color:var(--sub);text-align:center;padding:12px">まだ薬が登録されていません</div>';
+  }).join('');
 }
 function updateMedDose(i,val){
   if(val==='その他')return;
@@ -11634,13 +11814,7 @@ function updateMedDose(i,val){
   renderMedRegList();
 }
 let _medRegItems=[];
-function addMedItem(){
-  const medData=getMedicationData();
-  if(!medData[_medRegRid])medData[_medRegRid]=[];
-  medData[_medRegRid].push({id:'m'+Date.now(),name:'',dose:'',slots:['morning']});
-  saveMedicationData(medData);
-  renderMedRegList();
-}
+function addMedItem(){openMedDetailModal(null);}
 function updateMedItem(i,field,val){
   const medData=getMedicationData();
   if(medData[_medRegRid]&&medData[_medRegRid][i])medData[_medRegRid][i][field]=val;
@@ -15118,10 +15292,25 @@ function setTaskFilter(type,val){
   renderTasksList();
 }
 
+function _row50(kana){
+  if(!kana)return'その他';
+  const c=kana[0];
+  if('アイウエオァィゥェォ'.includes(c))return'あ';
+  if('カキクケコガギグゲゴヵヶ'.includes(c))return'か';
+  if('サシスセソザジズゼゾ'.includes(c))return'さ';
+  if('タチツテトダヂヅデドッ'.includes(c))return'た';
+  if('ナニヌネノ'.includes(c))return'な';
+  if('ハヒフヘホバビブベボパピプペポ'.includes(c))return'は';
+  if('マミムメモ'.includes(c))return'ま';
+  if('ヤユヨャュョ'.includes(c))return'や';
+  if('ラリルレロ'.includes(c))return'ら';
+  if('ワヲンヮ'.includes(c))return'わ';
+  return'その他';
+}
 function _buildTaskStaffFilter(){
   const el=document.getElementById('task-staff-filter');if(!el)return;
-  const all={...STAFF_INFO,...getCustomStaff()};
-  const names=['all',...Object.values(all).filter(s=>!isStaffDisabled(Object.keys(all).find(k=>all[k]===s))).map(s=>s.name)];
+  const allObj={...STAFF_INFO,...getCustomStaff()};
+  const names=['all',...Object.entries(allObj).filter(([k,s])=>!s.hidden&&!isStaffDisabled(k)).map(([_,s])=>s.name)];
   el.innerHTML=names.map(n=>`<button class="chip ${n===_taskFilter.staff?'on':''}" onclick="setTaskStaffFilter('${n}')">${n==='all'?'全スタッフ':n}</button>`).join('');
 }
 function setTaskStaffFilter(name){
@@ -15146,39 +15335,71 @@ function renderTasksList(){
   if(_taskFilter.staff!=='all')tasks=tasks.filter(t=>t.assignedTo===_taskFilter.staff);
   if(_taskFilter.status==='pending')tasks=tasks.filter(t=>!t.done);
   else if(_taskFilter.status==='done')tasks=tasks.filter(t=>t.done);
-  const pending=tasks.filter(t=>!t.done);
-  const done=tasks.filter(t=>t.done);
+  if(!tasks.length){el.innerHTML='<div class="empty"><div class="e-ico">📌</div><p>タスクはありません</p></div>';return;}
+  const allObj={...STAFF_INFO,...getCustomStaff()};
+  const _stKana=(name)=>{if(!name)return'';const s=Object.values(allObj).find(x=>x.name===name);return s?.kana||name;};
   const facLabel={all:'全施設',resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
-  const renderCard=t=>`
-    <div style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,.07);display:flex;align-items:flex-start;gap:10px;border-left:4px solid ${t.done?'var(--ok)':'var(--p)'}">
-      <button onclick="toggleTaskDone('${t.id}')" style="width:28px;height:28px;border-radius:8px;border:2px solid ${t.done?'var(--ok)':'var(--bdr)'};background:${t.done?'var(--ok)':'var(--bg)'};color:${t.done?'#fff':'var(--sub)'};font-size:16px;cursor:pointer;flex-shrink:0;touch-action:manipulation">${t.done?'✓':''}</button>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700;${t.done?'text-decoration:line-through;color:var(--sub)':''}">${t.title}</div>
-        ${t.detail?`<div style="font-size:12px;color:var(--sub);margin-top:3px">${t.detail}</div>`:''}
-        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
-          <span style="font-size:10px;color:var(--sub);background:var(--bg);padding:2px 7px;border-radius:8px">${facLabel[t.fac]||t.fac}</span>
-          ${t.assignedTo?`<span style="font-size:10px;color:var(--p);background:var(--ps);padding:2px 7px;border-radius:8px;font-weight:700">👤 ${t.assignedTo}</span>`:''}
-          <span style="font-size:10px;color:var(--sub)">${t.createdAt?new Date(t.createdAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>
-        </div>
+  const renderCard=t=>`<div style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;border-left:4px solid ${t.done?'var(--ok)':'var(--p)'}">
+    <button onclick="toggleTaskDone('${t.id}')" style="width:28px;height:28px;border-radius:8px;border:2px solid ${t.done?'var(--ok)':'var(--bdr)'};background:${t.done?'var(--ok)':'var(--bg)'};color:${t.done?'#fff':'var(--sub)'};font-size:16px;cursor:pointer;flex-shrink:0;touch-action:manipulation">${t.done?'✓':''}</button>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:14px;font-weight:700;${t.done?'text-decoration:line-through;color:var(--sub)':''}">${t.title}</div>
+      ${t.detail?`<div style="font-size:12px;color:var(--sub);margin-top:3px">${t.detail}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--sub);background:var(--bg);padding:2px 7px;border-radius:8px">${facLabel[t.fac]||t.fac}</span>
+        <span style="font-size:10px;color:var(--sub)">${t.createdAt?new Date(t.createdAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>
       </div>
-      ${canDeleteTask(t)?`<button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px;cursor:pointer;flex-shrink:0;touch-action:manipulation">🗑</button>`:'<span style="width:26px;flex-shrink:0"></span>'}
-    </div>`;
-  let html='';
-  if(pending.length){
-    html+=`<div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:6px 0 4px">📋 未完了 (${pending.length})</div>`;
-    html+=pending.map(renderCard).join('');
+    </div>
+    ${canDeleteTask(t)?`<button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px;cursor:pointer;flex-shrink:0;touch-action:manipulation">🗑</button>`:'<span style="width:26px;flex-shrink:0"></span>'}
+  </div>`;
+  // 50音グループ
+  const groups={};
+  tasks.forEach(t=>{const key=t.assignedTo||'__noassign__';if(!groups[key])groups[key]=[];groups[key].push(t);});
+  const sortedAssignees=Object.keys(groups).filter(n=>n!=='__noassign__').sort((a,b)=>_stKana(a).localeCompare(_stKana(b),'ja'));
+  const rows50=['あ','か','さ','た','な','は','ま','や','ら','わ'];
+  const rowMap={};
+  sortedAssignees.forEach(name=>{const r=_row50(_stKana(name));if(!rowMap[r])rowMap[r]=[];rowMap[r].push(name);});
+  // インデックスバー
+  let html=`<div style="display:flex;gap:4px;padding:4px 0 10px;flex-wrap:wrap">`;
+  rows50.forEach(r=>{
+    const has=!!rowMap[r];
+    html+=`<button onclick="scrollToTaskSection('${r}')" style="min-width:30px;padding:5px 7px;border-radius:8px;font-size:13px;font-weight:800;border:1.5px solid ${has?'var(--p)':'var(--bdr)'};background:${has?'var(--ps)':'transparent'};color:${has?'var(--p)':'var(--sub)'};cursor:${has?'pointer':'default'};touch-action:manipulation">${r}</button>`;
+  });
+  html+='</div>';
+  // 50音グループ本体
+  rows50.forEach(row=>{
+    const names=rowMap[row];if(!names)return;
+    html+=`<div id="task-section-${row}">`;
+    names.forEach(name=>{
+      const grpTasks=groups[name];
+      const pend=grpTasks.filter(t=>!t.done).length;
+      html+=`<div style="display:flex;align-items:center;gap:6px;padding:8px 0 5px;border-bottom:2px solid var(--ps);margin-bottom:6px">
+        <span style="font-size:11px;font-weight:800;color:var(--p)">👤 ${name}</span>
+        ${pend>0?`<span style="font-size:10px;background:var(--p);color:#fff;border-radius:10px;padding:1px 7px;font-weight:700">${pend}件</span>`:''}
+        ${pend===0?`<span style="font-size:10px;background:var(--ok);color:#fff;border-radius:10px;padding:1px 7px;font-weight:700">完了</span>`:''}
+      </div>`;
+      html+=grpTasks.map(renderCard).join('');
+    });
+    html+='</div>';
+  });
+  // 未割り当て
+  if(groups['__noassign__']){
+    html+=`<div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:8px 0 4px;border-bottom:2px solid var(--bdr);margin-bottom:6px">📌 未割り当て</div>`;
+    html+=groups['__noassign__'].map(renderCard).join('');
   }
-  if(done.length){
-    html+=`<div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:10px 0 4px">✅ 完了済 (${done.length})</div>`;
-    html+=done.map(renderCard).join('');
-  }
-  if(!pending.length&&!done.length)html='<div class="empty"><div class="e-ico">📌</div><p>タスクはありません</p></div>';
   el.innerHTML=html;
+}
+function scrollToTaskSection(row){
+  const sec=document.getElementById('task-section-'+row);
+  if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function scrollToResKana(row){
+  const anchor=document.getElementById('res-kana-anchor-'+row);
+  if(anchor)anchor.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function openTaskModal(editId){
-  const all={...STAFF_INFO,...getCustomStaff()};
-  const names=Object.values(all).filter(s=>!s.disabled).map(s=>s.name);
+  const allObj={...STAFF_INFO,...getCustomStaff()};
+  const names=Object.entries(allObj).filter(([k,s])=>!s.hidden&&!s.disabled&&!isStaffDisabled(k)).map(([_,s])=>s.name);
   document.getElementById('task-inp-staff').innerHTML=`<option value="">（未割り当て）</option>`+names.map(n=>`<option value="${n}">${n}</option>`).join('');
   if(editId){
     const t=getTasks().find(x=>x.id===editId);if(!t)return;
