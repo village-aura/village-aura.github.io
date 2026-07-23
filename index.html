@@ -805,24 +805,21 @@ a{color:var(--p);text-decoration:none}
     <!-- 今月の目標 -->
     <div id="monthly-goal-card" style="margin:8px 12px 0"></div>
 
-    <!-- 記録入力（種別選択） -->
+    <!-- 記録入力（事業所別） -->
     <div style="margin:0 12px 4px">
       <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">記録入力</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-        <button onclick="openRecordEntry('vital')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #3b82f6;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🌡️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">バイタル</span>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+        <button onclick="openSvcEntry('resident')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">🏠</span><span style="font-size:10px;font-weight:700;color:#1565c0">サ高住</span>
         </button>
-        <button onclick="openRecordEntry('meal')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #f59e0b;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🍚</span><span style="font-size:10px;font-weight:700;color:var(--tx)">食事・水分</span>
+        <button onclick="openSvcEntry('commute')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #f57c00;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">☀️</span><span style="font-size:10px;font-weight:700;color:#f57c00">デイ</span>
         </button>
-        <button onclick="openRecordEntry('excretion')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #10b981;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">💧</span><span style="font-size:10px;font-weight:700;color:var(--tx)">排泄</span>
+        <button onclick="openSvcEntry('stay')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #2e7d32;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">🏡</span><span style="font-size:10px;font-weight:700;color:#2e7d32">小多機</span>
         </button>
-        <button onclick="openRecordEntry('chrono')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #8b5cf6;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">📝</span><span style="font-size:10px;font-weight:700;color:var(--tx)">経時記録</span>
-        </button>
-        <button onclick="openRecordEntry('weight')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #6b7280;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">⚖️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">体重</span>
+        <button onclick="openSvcEntry('visit')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #6a1b9a;cursor:pointer;touch-action:manipulation;gap:3px">
+          <span style="font-size:18px">🚗</span><span style="font-size:10px;font-weight:700;color:#6a1b9a">訪問介護</span>
         </button>
       </div>
     </div>
@@ -12260,8 +12257,10 @@ function renderHbList(){
         <div style="margin-left:auto;display:flex;align-items:center">${editBtn}${delBtn}</div>
       </div>
       <div style="font-size:13px;color:var(--txt);line-height:1.55;white-space:pre-wrap">${linkifyResidents(escHtml(h.content||''))}</div>
-      <div style="font-size:10px;color:var(--sub);margin-top:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap">
-        <span>${h.by||''}</span><span>·</span><span>${h.date?h.date+' ':''}${h.time||''}</span>
+      <div style="font-size:11px;color:var(--sub);margin-top:7px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bdr);padding-top:6px">
+        <span style="font-weight:700;color:var(--tx)">✍ ${h.by||'──'}</span>
+        <span style="color:var(--bdr)">|</span>
+        <span>🕐 ${h.date||''}${h.time?' '+h.time:''}</span>
         <span>·</span><span style="color:${expiryColor}">${expiryTxt}</span>
         ${editedMark?`<span style="color:var(--sub)">${editedMark}</span>`:''}
         <span style="margin-left:auto">${readBtn}</span>
