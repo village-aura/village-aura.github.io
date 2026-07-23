@@ -8008,10 +8008,9 @@ function renderFloorMap(){
     const doubleBadge=isDouble?`<span style="font-size:8px;background:#ff9800;color:#fff;padding:0 3px;border-radius:3px;margin-left:2px;font-weight:700">2人</span>`:'';
     const buildHalf=(r)=>{
       if(!r)return`<div style="flex:1;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:var(--sub)">空き</span></div>`;
-      const nm=r.name.replace(/\s/g,'<br>');
       const dots=_resAlerts(r);
       const dh=dots.length?`<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px">${dots.map(d=>`<span title="${d.t}" style="width:6px;height:6px;border-radius:50%;background:${d.c};flex-shrink:0;display:inline-block"></span>`).join('')}</div>`:'';
-      return`<div onclick="openResident('${r.id}')" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:2px;overflow:hidden;background:${gBg(r)}"><div style="font-size:${r.name.length>4?'9px':'10px'};font-weight:800;text-align:center;line-height:1.3;color:var(--tx)">${nm}</div>${dh}</div>`;
+      return`<div onclick="openResident('${r.id}')" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:4px 6px;background:${gBg(r)}"><div style="font-size:10px;font-weight:800;white-space:nowrap;line-height:1.3;color:var(--tx)">${r.name}</div>${dh}</div>`;
     };
     let content='';
     if(vacant){
@@ -8021,7 +8020,7 @@ function renderFloorMap(){
     } else {
       content=buildHalf(residents[0]);
     }
-    return `<div style="background:${bg};border:${border};border-radius:8px;padding:5px 4px;width:${cellW};height:80px;display:flex;flex-direction:column;box-sizing:border-box;flex-shrink:0">
+    return `<div style="background:${bg};border:${border};border-radius:8px;padding:5px 4px;min-width:${cellW};width:max-content;height:80px;display:flex;flex-direction:column;box-sizing:border-box;flex-shrink:0">
       <div style="font-size:9px;font-weight:800;color:${vacant?'var(--sub)':'var(--p)'};display:flex;align-items:center;flex-shrink:0">${rn}${doubleBadge}</div>
       ${content}
     </div>`;
