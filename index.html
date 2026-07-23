@@ -429,7 +429,7 @@ a{color:var(--p);text-decoration:none}
 /* ── SIDEBAR ── */
 #sidebar{display:none;flex-direction:column;width:240px;height:100vh;position:fixed;left:0;top:0;z-index:200;background:var(--pd);color:#fff;box-shadow:2px 0 12px rgba(0,0,0,.15);padding-top:env(safe-area-inset-top);transition:transform .22s ease;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sbn{display:block;width:100%;padding:10px 20px;color:rgba(255,255,255,.7);text-align:left;font-size:13px;font-weight:600;transition:all .15s;border-left:3px solid transparent;letter-spacing:.01em}
-.sb-lbl{padding:12px 16px 3px;font-size:9px;font-weight:800;letter-spacing:.14em;color:rgba(255,255,255,.35);text-transform:uppercase;display:block}
+.sb-lbl{padding:14px 16px 4px;font-size:10px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.5);text-transform:uppercase;display:block;border-top:1px solid rgba(255,255,255,.08);margin-top:4px}
 .sbn:hover{background:rgba(255,255,255,.1);color:#fff}
 .sbn.on{background:rgba(255,255,255,.15);color:#fff;border-left-color:#fff}
 /* Sidebar collapse toggle button – 左上固定 */
@@ -822,90 +822,103 @@ a{color:var(--p);text-decoration:none}
     <div id="monthly-goal-card" style="margin:8px 12px 0"></div>
 
     <!-- 記録入力（事業所別） -->
-    <div style="margin:0 12px 4px">
-      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">記録入力</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-        <button onclick="openSvcEntry('resident')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🏠</span><span style="font-size:10px;font-weight:700;color:#1565c0">サ高住</span>
+    <div style="margin:0 12px 6px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+        <div style="width:3px;height:15px;background:#1565c0;border-radius:2px"></div>
+        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">記録入力</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+        <button onclick="openSvcEntry('resident')" style="display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">🏠</span><span style="font-size:12px;font-weight:700;color:#1565c0">サ高住</span>
         </button>
-        <button onclick="openSvcEntry('commute')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #f57c00;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">☀️</span><span style="font-size:10px;font-weight:700;color:#f57c00">デイ</span>
+        <button onclick="openSvcEntry('commute')" style="display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #f57c00;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">☀️</span><span style="font-size:12px;font-weight:700;color:#f57c00">デイ</span>
         </button>
-        <button onclick="openSvcEntry('stay')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #2e7d32;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🏡</span><span style="font-size:10px;font-weight:700;color:#2e7d32">小多機</span>
+        <button onclick="openSvcEntry('stay')" style="display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #2e7d32;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">🏡</span><span style="font-size:12px;font-weight:700;color:#2e7d32">小多機</span>
         </button>
-        <button onclick="openSvcEntry('visit')" style="display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #6a1b9a;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🚗</span><span style="font-size:10px;font-weight:700;color:#6a1b9a">訪問介護</span>
+        <button onclick="openSvcEntry('visit')" style="display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #6a1b9a;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">🚗</span><span style="font-size:12px;font-weight:700;color:#6a1b9a">訪問介護</span>
         </button>
       </div>
     </div>
 
-    <!-- 業務ショートカット -->
-    <div style="margin:8px 12px 0">
-      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">業務</div>
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
-        <button onclick="showScr('scr-residents')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">👥</span><span style="font-size:10px;font-weight:700;color:var(--tx)">利用者<span id="q-count"></span></span>
+    <!-- 業務 -->
+    <div style="margin:10px 12px 0">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+        <div style="width:3px;height:15px;background:#0891b2;border-radius:2px"></div>
+        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">業務</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px">
+        <button onclick="showScr('scr-residents')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">👥</span><span style="font-size:12px;font-weight:700;color:var(--tx)">利用者<span id="q-count"></span></span>
         </button>
-        <button onclick="showScr('scr-day-today')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🚌</span><span style="font-size:10px;font-weight:700;color:#1565c0">今日のデイ<span id="q-day-today-cnt" style="margin-left:2px"></span></span>
+        <button onclick="showScr('scr-day-today')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">🚌</span><span style="font-size:11px;font-weight:700;color:#1565c0">今日のデイ<span id="q-day-today-cnt" style="margin-left:2px"></span></span>
         </button>
-        <button onclick="showScr('scr-schedule')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">📅</span><span style="font-size:10px;font-weight:700;color:var(--tx)">予定表<span id="q-sched-today"></span></span>
+        <button onclick="showScr('scr-schedule')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">📅</span><span style="font-size:12px;font-weight:700;color:var(--tx)">予定表<span id="q-sched-today"></span></span>
         </button>
-        <button onclick="showScr('scr-handover-board')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">📣</span><span style="font-size:10px;font-weight:700;color:var(--tx)">申し送り</span>
+        <button onclick="showScr('scr-handover-board')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">📣</span><span style="font-size:12px;font-weight:700;color:var(--tx)">申し送り</span>
         </button>
-        <button onclick="showScr('scr-rounds')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">✅</span><span style="font-size:10px;font-weight:700;color:var(--tx)">巡回</span>
+        <button onclick="showScr('scr-rounds')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">✅</span><span style="font-size:12px;font-weight:700;color:var(--tx)">巡回</span>
         </button>
-        <button onclick="showScr('scr-medication')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #7c3aed;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">💊</span><span style="font-size:10px;font-weight:700;color:#7c3aed">服薬</span>
+        <button onclick="showScr('scr-medication')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #7c3aed;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">💊</span><span style="font-size:12px;font-weight:700;color:#7c3aed">服薬</span>
         </button>
-        <button onclick="showScr('scr-transport')" style="display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #0891b2;cursor:pointer;touch-action:manipulation;gap:3px">
-          <span style="font-size:18px">🚐</span><span style="font-size:10px;font-weight:700;color:#0891b2">送迎</span>
+        <button onclick="showScr('scr-transport')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #0891b2;cursor:pointer;touch-action:manipulation;gap:5px">
+          <span style="font-size:22px">🚐</span><span style="font-size:12px;font-weight:700;color:#0891b2">送迎</span>
         </button>
       </div>
     </div>
 
     <!-- 一括入力 -->
     <div style="margin:10px 12px 0">
-      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">一括入力</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        <button onclick="showScr('scr-bulk-vital')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #3b82f6;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">🌡️</span><span style="font-size:10px;font-weight:700;color:var(--tx);white-space:nowrap">一括バイタル</span>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+        <div style="width:3px;height:15px;background:#3b82f6;border-radius:2px"></div>
+        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">一括入力</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+        <button onclick="showScr('scr-bulk-vital')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #3b82f6;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">🌡️</span><span style="font-size:12px;font-weight:700;color:var(--tx)">一括バイタル</span>
         </button>
-        <button onclick="showScr('scr-bulk-meal')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #f59e0b;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">🍚</span><span style="font-size:10px;font-weight:700;color:var(--tx);white-space:nowrap">一括食事・水分</span>
+        <button onclick="showScr('scr-bulk-meal')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #f59e0b;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">🍚</span><span style="font-size:12px;font-weight:700;color:var(--tx)">一括食事・水分</span>
         </button>
-        <button onclick="showScr('scr-bulk-excretion')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;border-top:3px solid #10b981;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">💧</span><span style="font-size:10px;font-weight:700;color:var(--tx);white-space:nowrap">一括排泄</span>
+        <button onclick="showScr('scr-bulk-excretion')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #10b981;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">💧</span><span style="font-size:12px;font-weight:700;color:var(--tx)">一括排泄</span>
         </button>
       </div>
     </div>
+
     <!-- 管理 -->
     <div style="margin:10px 12px 0">
-      <div style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:.07em;margin-bottom:5px">管理</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        <button onclick="showScr('scr-tasks')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;min-height:56px;position:relative">
-          <span style="font-size:18px">📌</span><span style="font-size:10px;font-weight:700;color:var(--tx)">タスク</span>
-          <span id="q-task-cnt" style="display:none;position:absolute;top:4px;right:6px;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;font-weight:800"></span>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+        <div style="width:3px;height:15px;background:#e53935;border-radius:2px"></div>
+        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">管理</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+        <button onclick="showScr('scr-tasks')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px;position:relative">
+          <span style="font-size:22px">📌</span><span style="font-size:12px;font-weight:700;color:var(--tx)">タスク</span>
+          <span id="q-task-cnt" style="display:none;position:absolute;top:5px;right:7px;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;font-weight:800"></span>
         </button>
-        <button onclick="showScr('scr-incidents')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">🚨</span><span style="font-size:10px;font-weight:700;color:var(--tx)">インシデント</span>
+        <button onclick="showScr('scr-incidents')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">🚨</span><span style="font-size:12px;font-weight:700;color:var(--tx)">インシデント</span>
         </button>
-        <button onclick="openIncidentModal()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">⚠️</span><span style="font-size:10px;font-weight:700;color:var(--tx)">ヒヤリハット</span>
+        <button onclick="openIncidentModal()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">⚠️</span><span style="font-size:12px;font-weight:700;color:var(--tx)">ヒヤリハット</span>
         </button>
-        <button onclick="showScr('scr-diary')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">📋</span><span style="font-size:10px;font-weight:700;color:var(--tx)">業務日誌</span>
+        <button onclick="showScr('scr-diary')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">📋</span><span style="font-size:12px;font-weight:700;color:var(--tx)">業務日誌</span>
         </button>
-        <button onclick="showScr('scr-infection')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;min-height:56px;position:relative">
-          <span style="font-size:18px">🦠</span><span style="font-size:10px;font-weight:700;color:var(--tx)">感染管理</span>
-          <span id="q-infection-cnt" style="display:none;position:absolute;top:4px;right:6px;font-size:9px;background:#2e7d32;color:#fff;border-radius:8px;padding:1px 5px;font-weight:800"></span>
+        <button onclick="showScr('scr-infection')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px;position:relative">
+          <span style="font-size:22px">🦠</span><span style="font-size:12px;font-weight:700;color:var(--tx)">感染管理</span>
+          <span id="q-infection-cnt" style="display:none;position:absolute;top:5px;right:7px;font-size:9px;background:#2e7d32;color:#fff;border-radius:8px;padding:1px 5px;font-weight:800"></span>
         </button>
-        <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 4px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;touch-action:manipulation;min-height:56px">
-          <span style="font-size:18px">📊</span><span style="font-size:10px;font-weight:700;color:var(--tx)">月次レポート</span>
+        <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
+          <span style="font-size:22px">📊</span><span style="font-size:12px;font-weight:700;color:var(--tx)">月次レポート</span>
         </button>
       </div>
     </div>
