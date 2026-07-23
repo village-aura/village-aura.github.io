@@ -664,6 +664,7 @@ a{color:var(--p);text-decoration:none}
     <nav style="flex:1;padding:6px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
+      <button class="sbn" id="sbn-floor-map" onclick="showScr('scr-floor-map')">🗺️　フロアマップ</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')" style="display:flex;align-items:center;gap:5px">📣　申し送りボード<span id="sbn-hb-badge" style="display:none;background:var(--ng);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;line-height:1.4;flex-shrink:0"></span></button>
       <span class="sb-lbl">業務記録</span>
       <button class="sbn" id="sbn-bulk-vital" onclick="showScr('scr-bulk-vital')">🌡️　一括バイタル</button>
@@ -967,6 +968,24 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div id="res-kana-index" style="display:none;padding:4px 10px 2px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch"></div>
     <div class="res-list" id="res-list"></div>
+  </div>
+
+  <!-- ─── FLOOR MAP ─── -->
+  <div id="scr-floor-map" class="scr">
+    <div style="padding:14px 16px 6px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:800">🗺️ フロアマップ</div>
+        <div style="font-size:12px;color:var(--sub)">入居状況・部屋割り一覧</div>
+      </div>
+      <button onclick="renderFloorMap()" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;touch-action:manipulation">更新</button>
+    </div>
+    <!-- 凡例 -->
+    <div style="display:flex;gap:10px;padding:2px 16px 10px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:var(--ok)"></div><span style="font-size:11px;color:var(--sub)">バイタル済</span></div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:#e65100"></div><span style="font-size:11px;color:var(--sub)">バイタル未</span></div>
+      <span style="font-size:9px;background:#ff9800;color:#fff;padding:1px 5px;border-radius:4px;font-weight:700">2人</span><span style="font-size:11px;color:var(--sub)">2人部屋</span>
+    </div>
+    <div id="floor-map-content" style="padding:0 12px 80px"></div>
   </div>
 
   <!-- ─── RESIDENT DETAIL ─── -->
@@ -1996,6 +2015,7 @@ a{color:var(--p);text-decoration:none}
       <nav style="flex:1;padding:6px 0;overflow-y:auto">
         <button class="mmn" onclick="showScr('scr-dashboard');closeMobileMenu()">🏠 ホーム</button>
         <button class="mmn" onclick="showScr('scr-residents');closeMobileMenu()">👥 利用者一覧</button>
+        <button class="mmn" onclick="showScr('scr-floor-map');closeMobileMenu()">🗺️ フロアマップ</button>
         <button class="mmn" onclick="showScr('scr-handover-board');closeMobileMenu()">📣 申し送りボード</button>
         <button class="mmn" onclick="showScr('scr-bulk-vital');closeMobileMenu()">🌡️ 一括バイタル</button>
         <button class="mmn" onclick="showScr('scr-bulk-meal');closeMobileMenu()">🍚 一括食事・水分</button>
@@ -6794,7 +6814,7 @@ function showScr(id){
   else if(dir==='fwd')scrEl.classList.add('slide-fwd');
   scrEl.classList.add('on');
   const titles={
-    'scr-dashboard':'ホーム','scr-residents':'利用者一覧',
+    'scr-dashboard':'ホーム','scr-residents':'利用者一覧','scr-floor-map':'フロアマップ',
     'scr-detail':'利用者詳細','scr-import':'利用者・職員登録','scr-settings':'設定・管理','scr-proposal':'改善提案',
     'scr-handover-board':'申し送りボード','scr-schedule':'スケジュール','scr-help':'ヘルプ',
     'scr-diary':'業務日誌',
@@ -6817,12 +6837,13 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-import') initImportScr();
   if(id==='scr-dashboard') renderDashboard();
   if(id==='scr-residents') renderResList();
+  if(id==='scr-floor-map') renderFloorMap();
   if(id==='scr-handover-board'){_hbTab='unread';setHbTab('unread');cleanupOldConfirmedHandovers();renderHandoverBoard();}
   if(id==='scr-schedule') renderSchedule();
   if(id==='scr-diary') renderDiary();
@@ -6848,7 +6869,7 @@ function showScr(id){
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
   // サイドバー自動格納
-  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor','scr-shift','scr-manual','scr-day-today'];
+  const OPS_SCREENS=['scr-bulk-vital','scr-bulk-meal','scr-bulk-excretion','scr-medication','scr-transport','scr-rounds','scr-diary','scr-tasks','scr-incidents','scr-infection','scr-help','scr-proposal','scr-vital-alert','scr-urgent-rec','scr-stool-alert','scr-import','scr-settings','scr-doctor','scr-shift','scr-manual','scr-day-today','scr-floor-map'];
   const isOps=OPS_SCREENS.includes(id);
   const wasOps=OPS_SCREENS.includes(S.prevScreen);
   if(isOps){
@@ -7923,6 +7944,91 @@ function renderResList(){
       el.insertAdjacentHTML('beforeend',hdHtml);
     }
   }
+}
+
+// ═══════════ FLOOR MAP ═══════════
+const FLOOR_LAYOUT={
+  '2F':{upper:[210,211,212,213,214,215,216,217,218],lower:[201,202,203,204,205,206,207,208]},
+  '1F':{upper:[108,109,110,111,112,113,114,115,116],lower:[101,102,103,104,105,106,107]}
+};
+const DOUBLE_ROOMS=new Set(['107','208','210']);
+
+function renderFloorMap(){
+  const el=document.getElementById('floor-map-content');if(!el)return;
+  const resAll=getResidents();
+  const recs=getRecords();
+  const todayStr=new Date().toDateString();
+  const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
+  const roomMap={};
+  resAll.forEach(r=>{
+    if(!r.room||r.hidden)return;
+    const rn=String(r.room).trim();
+    if(!roomMap[rn])roomMap[rn]=[];
+    roomMap[rn].push(r);
+  });
+  const careLabel=c=>({none:'自立',support1:'支1',support2:'支2',care1:'介1',care2:'介2',care3:'介3',care4:'介4',care5:'介5'}[c]||'');
+  function renderCell(num){
+    const rn=String(num);
+    const residents=roomMap[rn]||[];
+    const isDouble=DOUBLE_ROOMS.has(rn);
+    const vacant=residents.length===0;
+    const cellH=isDouble?'110px':'80px';
+    const bg=vacant?'var(--bg)':'var(--card)';
+    const border=vacant?'1.5px dashed var(--bdr)':'1.5px solid var(--p)';
+    const doubleBadge=isDouble?`<span style="font-size:8px;background:#ff9800;color:#fff;padding:0 3px;border-radius:3px;margin-left:2px;font-weight:700">2人</span>`:'';
+    let content='';
+    if(vacant){
+      content=`<div style="flex:1;display:flex;align-items:center;justify-content:center"><span style="font-size:10px;color:var(--sub)">空室</span></div>`;
+    } else {
+      const cards=residents.map(r=>{
+        const hv=vitalToday.has(r.id);
+        const nm=r.name.replace(/\s/g,'<br>');
+        return `<div onclick="event.stopPropagation();openResident('${r.id}')" style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer">
+          <div style="font-size:${r.name.length>4?'10px':'11px'};font-weight:800;text-align:center;line-height:1.3;color:var(--tx)">${nm}</div>
+          <div style="display:flex;gap:3px;align-items:center;margin-top:2px">
+            <span style="font-size:8px;color:var(--sub)">${careLabel(r.care)}</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:${hv?'var(--ok)':'#e65100'};flex-shrink:0"></span>
+          </div>
+        </div>`;
+      });
+      if(residents.length>1){
+        content=`<div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:2px 0">${cards.join(`<div style="border-top:1px solid var(--bdr);margin:0 4px"></div>`)}</div>`;
+      } else {
+        content=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center">${cards[0]}</div>`;
+      }
+    }
+    const clickAttr=vacant?'':`onclick="openResident('${residents[0]?.id}')"`;
+    return `<div ${residents.length===1?clickAttr:''} style="background:${bg};border:${border};border-radius:8px;padding:5px 4px;min-width:68px;width:68px;height:${cellH};display:flex;flex-direction:column;cursor:${vacant?'default':'pointer'};box-sizing:border-box">
+      <div style="font-size:9px;font-weight:800;color:${vacant?'var(--sub)':'var(--p)'};display:flex;align-items:center;flex-shrink:0">${rn}${doubleBadge}</div>
+      ${content}
+    </div>`;
+  }
+  function renderRow(rooms,label){
+    return `<div style="display:flex;gap:6px;align-items:flex-start">
+      <div style="writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:800;color:var(--sub);min-width:16px;padding-top:4px;flex-shrink:0;letter-spacing:.1em">${label}</div>
+      <div style="display:flex;gap:4px">${rooms.map(n=>renderCell(n)).join('')}</div>
+    </div>`;
+  }
+  function renderFloor(floorKey){
+    const layout=FLOOR_LAYOUT[floorKey];
+    const allNums=[...layout.upper,...layout.lower];
+    const occupied=allNums.filter(n=>(roomMap[String(n)]||[]).length>0).length;
+    const total=allNums.length;
+    return `<div style="margin-bottom:20px">
+      <div style="font-size:15px;font-weight:800;color:var(--p);padding-bottom:8px;display:flex;align-items:center;gap:8px">
+        ${floorKey} <span style="font-size:11px;font-weight:400;color:var(--sub)">${occupied}/${total}室 入居中</span>
+        <span style="font-size:10px;color:var(--sub);margin-left:auto">← 横スクロール →</span>
+      </div>
+      <div style="background:var(--card);border-radius:14px;padding:12px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <div style="display:flex;flex-direction:column;gap:8px;width:max-content">
+          ${renderRow(layout.upper,'上段')}
+          <div style="font-size:9px;color:var(--sub);letter-spacing:.2em;padding:3px 20px;border-top:1.5px dashed var(--bdr);border-bottom:1.5px dashed var(--bdr);text-align:center;width:100%;box-sizing:border-box">── 廊下 ──</div>
+          ${renderRow(layout.lower,'下段')}
+        </div>
+      </div>
+    </div>`;
+  }
+  el.innerHTML=renderFloor('2F')+renderFloor('1F');
 }
 
 // ═══════════ SERVICE ENTRY ROUTE ═══════════
