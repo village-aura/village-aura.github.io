@@ -7595,7 +7595,7 @@ function renderMonthlyGoal(){
   const month=now.getMonth()+1;
   const label=now.getFullYear()+'年'+month+'月の目標';
   const g=_mgEffective(key,month);
-  const admin=isManagerOrAbove();
+  const canEdit=isSuperAdminRole();
   const isCustom=!!(getMonthlyGoals()[key]);
   if(g){
     const cc=MG_CAT_COLOR[g.category]||'#1565c0';
@@ -7604,12 +7604,12 @@ function renderMonthlyGoal(){
       +'<div style="background:linear-gradient(90deg,'+cc+','+cc+'cc);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:8px">'
         +'<span style="font-size:14px;font-weight:800">🎯 '+label+'</span>'
         +'<span style="background:rgba(255,255,255,.25);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700">'+(g.category||'')+'</span>'
-        +(admin?'<button onclick="openMonthlyGoalEdit()" style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">✏️ 編集</button>':'')
+        +(canEdit?'<button onclick="openMonthlyGoalEdit()" style="margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">✏️ 編集</button>':'')
       +'</div>'
       +'<div style="padding:10px 14px 6px;font-size:13px;line-height:1.7;color:var(--txt);white-space:pre-wrap">'+bodyEsc+'</div>'
       +(isCustom&&g.updatedBy?'<div style="padding:0 14px 8px;font-size:10px;color:var(--sub)">設定: '+g.updatedBy+'　'+((g.updatedAt||'').slice(0,10))+'</div>':'')
     +'</div>';
-  } else if(admin){
+  } else if(canEdit){
     el.innerHTML='<div style="background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:10px 14px;display:flex;align-items:center;gap:10px">'
       +'<span style="font-size:18px;opacity:.4">🎯</span>'
       +'<span style="flex:1;font-size:12px;color:var(--sub)">'+label+'が設定されていません</span>'
@@ -7620,7 +7620,7 @@ function renderMonthlyGoal(){
   }
 }
 function openMonthlyGoalEdit(){
-  if(!isManagerOrAbove()){toast('管理者以上のみ設定できます');return;}
+  if(!isSuperAdminRole()){toast('全権管理者のみ設定できます');return;}
   const now=new Date();
   const curKey=_mgKey(now);
   const curMonth=now.getMonth()+1;
