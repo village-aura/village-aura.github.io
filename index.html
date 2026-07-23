@@ -3083,9 +3083,9 @@ a{color:var(--p);text-decoration:none}
     <button id="vs-btn-excretion" class="btn-voice-smart" onclick="startVoiceSmart('excretion')">🎤 音声で一括入力<span class="vs-ex">例：排尿あり普通量 軟便あり</span></button>
     <div class="field"><label>種別</label>
       <div class="radio-group">
-        <label><input type="radio" name="ex-type" value="urine" checked> 排尿</label>
-        <label><input type="radio" name="ex-type" value="stool"> 排便</label>
-        <label><input type="radio" name="ex-type" value="both"> 両方</label>
+        <label><input type="radio" name="ex-type" value="urine" checked onchange="onExTypeChange(this)"> 排尿</label>
+        <label><input type="radio" name="ex-type" value="stool" onchange="onExTypeChange(this)"> 排便</label>
+        <label><input type="radio" name="ex-type" value="both" onchange="onExTypeChange(this)"> 両方</label>
       </div>
     </div>
     <div class="field-row">
@@ -7418,7 +7418,7 @@ function deleteMonthlyGoal(){
 
 function getStoolDays(rid,_allRecs){
   const src=_allRecs||getRecords();
-  const recs=src.filter(r=>r.rid===rid&&r.type==='excretion'&&(r.data.etype==='stool'||r.data.etype==='both')&&r.data.stool&&r.data.stool!=='');
+  const recs=src.filter(r=>r.rid===rid&&r.type==='excretion'&&(r.data.etype==='stool'||r.data.etype==='both'));
   if(!recs.length)return null;
   const last=recs.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
   return Math.floor((Date.now()-new Date(last.ts).getTime())/(24*3600*1000));
@@ -8742,6 +8742,12 @@ function openEditRecord(id,type){
     const et2=document.getElementById('excretion-modal-title');if(et2)et2.textContent='✏️ 排泄記録（修正中）';
     const esb=document.querySelector('#modal-excretion .btn-primary');if(esb)esb.textContent='修正を保存';
     openModal('modal-excretion');
+  }
+}
+function onExTypeChange(el){
+  if(el.value==='stool'||el.value==='both'){
+    const sel=document.getElementById('ex-stool');
+    if(sel&&!sel.value)sel.value='○';
   }
 }
 function toggleFluidOnly(checked){
