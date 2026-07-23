@@ -675,28 +675,25 @@ a{color:var(--p);text-decoration:none}
     <nav style="flex:1;padding:6px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
-      <button class="sbn" id="sbn-floor-map" onclick="showScr('scr-floor-map')">🗺️　フロアマップ</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')" style="display:flex;align-items:center;gap:5px">📣　申し送りボード<span id="sbn-hb-badge" style="display:none;background:var(--ng);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;line-height:1.4;flex-shrink:0"></span></button>
-      <span class="sb-lbl">業務記録</span>
-      <button class="sbn" id="sbn-bulk-vital" onclick="showScr('scr-bulk-vital')">🌡️　一括バイタル</button>
-      <button class="sbn" id="sbn-bulk-meal" onclick="showScr('scr-bulk-meal')">🍚　一括食事・水分</button>
-      <button class="sbn" id="sbn-bulk-excretion" onclick="showScr('scr-bulk-excretion')">💧　一括排泄</button>
-      <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
-      <button class="sbn" id="sbn-day-today" onclick="showScr('scr-day-today')">🚌　今日のデイ</button>
-      <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">📋　送迎チェック</button>
-      <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">👁　巡回チェック</button>
-      <span class="sb-lbl">管理</span>
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
+      <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
+      <span class="sb-lbl">チェックリスト</span>
+      <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
+      <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">🚐　送迎チェック</button>
+      <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">👁　巡回チェック</button>
+      <button class="sbn" id="sbn-day-today" onclick="showScr('scr-day-today')">🚌　今日のデイ</button>
+      <button class="sbn" id="sbn-floor-map" onclick="showScr('scr-floor-map')">🗺️　フロアマップ</button>
+      <span class="sb-lbl">記録・書類</span>
       <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
-      <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
+      <button class="sbn" id="sbn-infection" onclick="showScr('scr-infection')">🦠　感染管理</button>
+      <button class="sbn" id="sbn-skin-gallery" onclick="showScr('scr-skin-gallery')">🔬　皮膚写真</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
-      <button class="sbn" id="sbn-skin-gallery" onclick="showScr('scr-skin-gallery')">🔬　皮膚写真一覧</button>
-      <span class="sb-lbl">業務ツール</span>
+      <span class="sb-lbl">ツール・設定</span>
       <button class="sbn" id="sbn-shift" onclick="showScr('scr-shift')">📆　シフト表</button>
       <button class="sbn" id="sbn-manual" onclick="showScr('scr-manual')">📚　マニュアル</button>
-      <span class="sb-lbl">システム</span>
-      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　利用者・職員登録</button>
+      <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　職員・利用者登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
       <button class="sbn" id="sbn-doctor" onclick="showScr('scr-doctor')" style="display:none">🩺　医師ページ</button>
       <button class="sbn" id="sbn-help" onclick="showScr('scr-help')">📖　ヘルプ</button>
@@ -821,12 +818,43 @@ a{color:var(--p);text-decoration:none}
     <!-- 今月の目標 -->
     <div id="monthly-goal-card" style="margin:8px 12px 0"></div>
 
-    <!-- 記録入力（事業所別） -->
-    <div style="margin:0 12px 6px">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-        <div style="width:3px;height:15px;background:#1565c0;border-radius:2px"></div>
-        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">記録入力</span>
+    <!-- 今日の記録（一括入力） -->
+    <div style="margin:8px 12px 0">
+      <div style="font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">今日の記録</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <button onclick="showScr('scr-bulk-vital')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 6px 14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;min-height:76px">
+          <span style="font-size:26px">🌡️</span>
+          <span style="font-size:13px;font-weight:700;color:var(--tx)">バイタル</span>
+          <span style="font-size:9px;color:var(--sub)">一括入力</span>
+        </button>
+        <button onclick="showScr('scr-bulk-meal')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 6px 14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;border-top:3px solid #f59e0b;cursor:pointer;touch-action:manipulation;min-height:76px">
+          <span style="font-size:26px">🍚</span>
+          <span style="font-size:13px;font-weight:700;color:var(--tx)">食事・水分</span>
+          <span style="font-size:9px;color:var(--sub)">一括入力</span>
+        </button>
+        <button onclick="showScr('scr-bulk-excretion')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 6px 14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;border-top:3px solid #10b981;cursor:pointer;touch-action:manipulation;min-height:76px">
+          <span style="font-size:26px">💧</span>
+          <span style="font-size:13px;font-weight:700;color:var(--tx)">排泄</span>
+          <span style="font-size:9px;color:var(--sub)">一括入力</span>
+        </button>
       </div>
+    </div>
+
+    <!-- 申し送り（全幅） -->
+    <div style="margin:8px 12px 0">
+      <button onclick="showScr('scr-handover-board')" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;cursor:pointer;touch-action:manipulation;text-align:left">
+        <span style="font-size:24px;flex-shrink:0">📣</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--tx)">申し送りボード</div>
+          <div style="font-size:10px;color:var(--sub);margin-top:2px">確認・記録・共有</div>
+        </div>
+        <span style="color:var(--sub);font-size:16px;flex-shrink:0">›</span>
+      </button>
+    </div>
+
+    <!-- 事業所から記録 -->
+    <div style="margin:14px 12px 0">
+      <div style="font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">事業所</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
         <button onclick="openSvcEntry('resident')" style="display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:5px">
           <span style="font-size:22px">🏠</span><span style="font-size:12px;font-weight:700;color:#1565c0">サ高住</span>
@@ -843,86 +871,16 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
 
-    <!-- 業務 -->
-    <div style="margin:10px 12px 0">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-        <div style="width:3px;height:15px;background:#0891b2;border-radius:2px"></div>
-        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">業務</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px">
-        <button onclick="showScr('scr-residents')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">👥</span><span style="font-size:12px;font-weight:700;color:var(--tx)">利用者<span id="q-count"></span></span>
-        </button>
-        <button onclick="showScr('scr-day-today')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #1565c0;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">🚌</span><span style="font-size:11px;font-weight:700;color:#1565c0">今日のデイ<span id="q-day-today-cnt" style="margin-left:2px"></span></span>
-        </button>
-        <button onclick="showScr('scr-schedule')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">📅</span><span style="font-size:12px;font-weight:700;color:var(--tx)">予定表<span id="q-sched-today"></span></span>
-        </button>
-        <button onclick="showScr('scr-handover-board')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">📣</span><span style="font-size:12px;font-weight:700;color:var(--tx)">申し送り</span>
-        </button>
-        <button onclick="showScr('scr-rounds')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">✅</span><span style="font-size:12px;font-weight:700;color:var(--tx)">巡回</span>
-        </button>
-        <button onclick="showScr('scr-medication')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #7c3aed;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">💊</span><span style="font-size:12px;font-weight:700;color:#7c3aed">服薬</span>
-        </button>
-        <button onclick="showScr('scr-transport')" style="display:flex;flex-direction:column;align-items:center;padding:11px 4px 9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #0891b2;cursor:pointer;touch-action:manipulation;gap:5px">
-          <span style="font-size:22px">🚐</span><span style="font-size:12px;font-weight:700;color:#0891b2">送迎</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 一括入力 -->
-    <div style="margin:10px 12px 0">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-        <div style="width:3px;height:15px;background:#3b82f6;border-radius:2px"></div>
-        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">一括入力</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
-        <button onclick="showScr('scr-bulk-vital')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #3b82f6;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">🌡️</span><span style="font-size:12px;font-weight:700;color:var(--tx)">一括バイタル</span>
-        </button>
-        <button onclick="showScr('scr-bulk-meal')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #f59e0b;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">🍚</span><span style="font-size:12px;font-weight:700;color:var(--tx)">一括食事・水分</span>
-        </button>
-        <button onclick="showScr('scr-bulk-excretion')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;border-top:3px solid #10b981;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">💧</span><span style="font-size:12px;font-weight:700;color:var(--tx)">一括排泄</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 管理 -->
-    <div style="margin:10px 12px 0">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-        <div style="width:3px;height:15px;background:#e53935;border-radius:2px"></div>
-        <span style="font-size:12px;font-weight:800;color:var(--tx);letter-spacing:.03em">管理</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
-        <button onclick="showScr('scr-tasks')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px;position:relative">
-          <span style="font-size:22px">📌</span><span style="font-size:12px;font-weight:700;color:var(--tx)">タスク</span>
-          <span id="q-task-cnt" style="display:none;position:absolute;top:5px;right:7px;font-size:9px;background:var(--ng);color:#fff;border-radius:8px;padding:1px 5px;font-weight:800"></span>
-        </button>
-        <button onclick="showScr('scr-incidents')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">🚨</span><span style="font-size:12px;font-weight:700;color:var(--tx)">インシデント</span>
-        </button>
-        <button onclick="openIncidentModal()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">⚠️</span><span style="font-size:12px;font-weight:700;color:var(--tx)">ヒヤリハット</span>
-        </button>
-        <button onclick="showScr('scr-diary')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">📋</span><span style="font-size:12px;font-weight:700;color:var(--tx)">業務日誌</span>
-        </button>
-        <button onclick="showScr('scr-infection')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px;position:relative">
-          <span style="font-size:22px">🦠</span><span style="font-size:12px;font-weight:700;color:var(--tx)">感染管理</span>
-          <span id="q-infection-cnt" style="display:none;position:absolute;top:5px;right:7px;font-size:9px;background:#2e7d32;color:#fff;border-radius:8px;padding:1px 5px;font-weight:800"></span>
-        </button>
-        <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:11px 4px 10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;touch-action:manipulation;min-height:60px">
-          <span style="font-size:22px">📊</span><span style="font-size:12px;font-weight:700;color:var(--tx)">月次レポート</span>
-        </button>
-      </div>
-    </div>
+    <!-- クイックアクション（個別利用者） -->
     <div class="qa-grid" id="qa-grid" style="margin:14px 12px 0"></div>
+
+    <!-- 隠しIDホルダー（バッジ更新用） -->
+    <span id="q-count" style="display:none"></span>
+    <span id="q-day-today-cnt" style="display:none"></span>
+    <span id="q-sched-today" style="display:none"></span>
+    <span id="q-task-cnt" style="display:none"></span>
+    <span id="q-infection-cnt" style="display:none"></span>
+    <button id="qb-monthly-report" onclick="openMonthlyReport()" style="display:none"></button>
 
     <!-- 体位変換タイマー -->
     <div id="dash-repo-sec" style="display:none;margin:10px 12px 0">
@@ -7012,7 +6970,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-bulk-vital':'sbn-bulk-vital','scr-bulk-meal':'sbn-bulk-meal','scr-bulk-excretion':'sbn-bulk-excretion','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift','scr-skin-gallery':'sbn-skin-gallery'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift','scr-skin-gallery':'sbn-skin-gallery','scr-infection':'sbn-infection'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-import') initImportScr();
