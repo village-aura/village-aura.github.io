@@ -4219,7 +4219,19 @@ a{color:var(--p);text-decoration:none}
       <select id="sch-rid" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:#fff"></select>
     </div>
     <div class="field"><label>タイトル</label>
-      <input type="text" id="sch-title" placeholder="通院・デイサービス等">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+        <button type="button" onclick="applySchTpl('通院','medical')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🏥 通院</button>
+        <button type="button" onclick="applySchTpl('訪問診療','medical')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🩺 訪問診療</button>
+        <button type="button" onclick="applySchTpl('歯科往診','medical')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🦷 歯科往診</button>
+        <button type="button" onclick="applySchTpl('入浴','care')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🛁 入浴</button>
+        <button type="button" onclick="applySchTpl('リハビリ','rehab')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🏃 リハビリ</button>
+        <button type="button" onclick="applySchTpl('家族面会','family')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">👨‍👩‍👧 家族面会</button>
+        <button type="button" onclick="applySchTpl('外出','other')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">🚶 外出</button>
+        <button type="button" onclick="applySchTpl('体重測定','care')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">⚖️ 体重測定</button>
+        <button type="button" onclick="applySchTpl('服薬確認','care')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">💊 服薬確認</button>
+        <button type="button" onclick="applySchTpl('ケアプラン面談','family')" style="padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">📋 ケア面談</button>
+      </div>
+      <input type="text" id="sch-title" placeholder="↑テンプレを選ぶかここに直接入力">
     </div>
     <div class="field"><label>種別</label>
       <select id="sch-type">
@@ -13468,6 +13480,12 @@ function openResFromSched(rid){
   renderDetail();
 }
 
+function applySchTpl(title,type){
+  const t=document.getElementById('sch-title');
+  const s=document.getElementById('sch-type');
+  if(t){t.value=title;t.focus();}
+  if(s&&type)s.value=type;
+}
 // ── schedule voice input ──
 let schedVoiceRec=null;
 function toggleSchedVoice(btn){
