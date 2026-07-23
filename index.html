@@ -3257,6 +3257,69 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- SKIN / 褥瘡 -->
+<div class="overlay" id="modal-skin" onclick="closeModal('modal-skin',event)">
+  <div class="sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🔬 皮膚・褥瘡記録</div>
+    <div id="skin-sub" style="font-size:12px;color:var(--sub);margin:-8px 0 12px;text-align:center"></div>
+    <div class="field"><label>区分</label>
+      <div style="display:flex;gap:16px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="jokuso" checked onchange="toggleSkinStage()"> 褥瘡</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="skin_finding" onchange="toggleSkinStage()"> 皮膚所見（非褥瘡）</label>
+      </div>
+    </div>
+    <div class="field"><label>部位</label>
+      <select id="sk-location" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;background:var(--bg)">
+        <option>仙骨部（尾骨）</option><option>踵部（かかと）</option><option>大転子部（腰骨外側）</option>
+        <option>坐骨部</option><option>脊椎棘突起部</option><option>肘部</option>
+        <option>肩甲骨部</option><option>後頭部</option><option>耳介部</option>
+        <option>膝部</option><option>下腿部</option><option>足趾部</option><option>その他（メモ参照）</option>
+      </select>
+    </div>
+    <div class="field" id="sk-stage-row"><label>ステージ</label>
+      <select id="sk-stage" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;background:var(--bg)">
+        <option value="Ⅰ度">Ⅰ度 — 発赤（押すと白くなる）</option>
+        <option value="Ⅱ度">Ⅱ度 — 水疱・びらん（真皮まで）</option>
+        <option value="Ⅲ度">Ⅲ度 — 深い潰瘍（皮下組織まで）</option>
+        <option value="Ⅳ度">Ⅳ度 — 筋肉・腱・骨まで</option>
+        <option value="DTI">DTI — 深部損傷褥瘡疑い</option>
+        <option value="判定不能">判定不能（壊死・ドレッシング除去不可）</option>
+        <option value="改善中">改善中（経過良好）</option>
+        <option value="治癒">治癒</option>
+      </select>
+    </div>
+    <div class="field"><label>大きさ</label>
+      <input type="text" id="sk-size" placeholder="例：2×3cm、直径10mm" style="width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;box-sizing:border-box;background:var(--bg);color:var(--tx)">
+    </div>
+    <div class="field"><label>性状</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="発赤">発赤</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="水疱">水疱</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="浸出液">浸出液</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="壊死組織">壊死組織</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="肉芽形成">肉芽形成</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="上皮化">上皮化</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="感染徴候">感染徴候</label>
+        <label style="display:flex;align-items:center;gap:4px;background:var(--card);padding:5px 10px;border-radius:20px;border:1.5px solid var(--bdr);font-size:13px;cursor:pointer"><input type="checkbox" name="sk-app" value="乾燥">乾燥</label>
+      </div>
+    </div>
+    <div class="field"><label>写真</label>
+      <input type="file" id="sk-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleSkinPhoto(this)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button type="button" onclick="document.getElementById('sk-photo-input').click()" style="padding:10px 16px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">📷 撮影・選択</button>
+        <button type="button" id="sk-photo-clear" onclick="clearSkinPhoto()" style="display:none;padding:10px 12px;background:#fef2f2;color:#c62828;border:1.5px solid #fca5a5;border-radius:10px;font-size:13px;cursor:pointer;touch-action:manipulation">✕ 削除</button>
+      </div>
+      <div id="sk-photo-preview" style="display:none;margin-top:8px"><img id="sk-photo-img" style="max-width:100%;max-height:220px;border-radius:10px;border:1.5px solid var(--bdr);object-fit:contain"></div>
+    </div>
+    <div class="field"><label>所見・メモ</label>
+      <textarea id="sk-note" rows="3" placeholder="所見の詳細・処置内容など" style="width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;resize:none;box-sizing:border-box;background:var(--bg);color:var(--tx)"></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveRecord('skin')">保存</button>
+    <button class="btn-cancel" onclick="closeModal('modal-skin')">キャンセル</button>
+  </div>
+</div>
+
 <!-- HANDOVER -->
 <div class="overlay" id="modal-handover" onclick="closeModal('modal-handover',event)">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -4567,11 +4630,11 @@ const SVC_META = {
   nursing: {label:'💊 訪問看護',color:'#00796b', section:'nursing'},
 };
 const SVC_BTNS = {
-  resident:['vital','bath','meal','excretion','chrono','weight','handover'],
+  resident:['vital','bath','meal','excretion','chrono','weight','skin','handover'],
   commute: ['attendance','vital','bath','meal','excretion','chrono','handover'],
-  stay:    ['attendance','vital','bath','meal','excretion','chrono','weight','handover'],
+  stay:    ['attendance','vital','bath','meal','excretion','chrono','weight','skin','handover'],
   visit:   ['visit_report','chrono','handover'],
-  nursing: ['handover'],
+  nursing: ['skin','chrono','handover'],
 };
 const BTN_DEF = {
   vital:       {ico:'🌡️', lbl:'バイタル',    fn:"openVitalFull()"},
@@ -4580,6 +4643,7 @@ const BTN_DEF = {
   excretion:   {ico:'💧', lbl:'排泄',        fn:"openModal('modal-excretion')"},
   chrono:      {ico:'📝', lbl:'経時記録',    fn:"openModal('modal-chrono')"},
   weight:      {ico:'⚖️', lbl:'体重測定',    fn:"openModal('modal-weight')"},
+  skin:        {ico:'🔬', lbl:'皮膚・褥瘡',  fn:"openModal('modal-skin')"},
   handover:    {ico:'📣', lbl:'申し送り',    fn:'openHandoverFromDetail()'},
   attendance:  {ico:'🕐', lbl:'来所/退所',   fn:'openAttendance()'},
   visit_report:{ico:'🚗', lbl:'訪問介護記録',fn:'openVisitReportFromDetail()'},
@@ -7806,6 +7870,7 @@ function summarizeRecord(r){
   if(r.type==='weight')return `${r.data.val}kg`;
   if(r.type==='handover')return (r.data.content||'').substring(0,30);
   if(r.type==='attendance'){const d=r.data;return `来所${d.timeFrom||'──'}${d.timeTo?'・退所'+d.timeTo:''}`;}
+  if(r.type==='skin'){const d=r.data;return `${d.category==='jokuso'?'褥瘡':'皮膚所見'} ${d.location||''}${d.stage?' ['+d.stage+']':''}${d.size?' '+d.size:''}`;}
   return '';
 }
 const mealLabel=t=>({breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食'}[t]||t);
@@ -8814,8 +8879,8 @@ function renderTimeline(){
   const recs=allRecs.filter(rc=>new Date(rc.ts).toDateString()===targetStr)
     .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   const filtered=_tlFilter==='all'?recs:recs.filter(r=>r.type===_tlFilter);
-  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐'};
-  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所'};
+  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐',skin:'🔬'};
+  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所',skin:'皮膚・褥瘡'};
   if(!filtered.length){
     const msg=_tlFilter==='chrono'?`${dateLabel}の経時記録はありません`:`${dateLabel}の記録はありません`;
     document.getElementById('timeline').innerHTML=`<div class="tl-empty">${msg}</div>`;
@@ -8836,7 +8901,8 @@ function renderTimeline(){
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
-        ${r.type==='vital'?vitalChips(r):`<div class="tl-val">${summarizeRecord(r)}</div>`}
+        ${r.type==='vital'?vitalChips(r):r.type==='skin'?`<div class="tl-val">${summarizeRecord(r)}</div>${(r.data.appearance||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${(r.data.appearance||[]).map(a=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fce7f3;color:#9c27b0;font-weight:700;border:1px solid #f48fb1">${a}</span>`).join('')}</div>`:''}`:`<div class="tl-val">${summarizeRecord(r)}</div>`}
+        ${r.type==='skin'&&r.data.photo?`<div style="margin-top:6px"><img src="${r.data.photo}" onclick="openSkinPhotoFull('${r.id}')" style="max-width:140px;max-height:100px;border-radius:8px;border:1.5px solid var(--bdr);object-fit:cover;cursor:pointer" loading="lazy"></div>`:''}
         ${r.data.note||r.data.content?(()=>{const txt=r.data.note||r.data.content||'';const isChrono=r.type==='chrono';const short=!isChrono&&!isChronoMode&&txt.length>60;return `<div class="tl-note" id="tln-${r.id}">${short?escHtml(txt.substring(0,60))+'…':escHtml(txt)}${short?`<button onclick="expandTlNote('${r.id}',this)" style="margin-left:4px;background:none;border:none;color:var(--p);font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">続きを見る</button>`:''}</div>`;})():''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
         <div class="tl-staff" style="display:flex;align-items:center;gap:4px">${badge}${staffName}${r.editedBy?`<span style="font-size:9px;color:var(--sub);margin-left:4px">✏️${r.editedBy}${r.editedAt?' '+new Date(r.editedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>`:''}<div style="margin-left:auto;display:flex;gap:3px">${canEdit?`<button onclick="openEditRecord('${r.id}','${r.type}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;cursor:pointer;touch-action:manipulation" title="修正">✏️</button>`:''}<button onclick="deleteTimelineRecord('${r.id}')" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);background:var(--card);font-size:12px;color:var(--ng);cursor:pointer;touch-action:manipulation" title="削除">🗑️</button></div></div>
@@ -8870,10 +8936,18 @@ function expandTlNote(id,btn){
 function openModal(id){
   const r=getResidents().find(x=>x.id===S.currentRes);
   const name=r?r.name+' 様':'利用者';
-  ['vital-sub','meal-sub','chrono-sub'].forEach(sid=>{
+  ['vital-sub','meal-sub','chrono-sub','skin-sub'].forEach(sid=>{
     const el=document.getElementById(sid);
     if(el)el.textContent=name;
   });
+  if(id==='modal-skin'){
+    const joku=document.querySelector('[name=sk-cat][value="jokuso"]');
+    if(joku){joku.checked=true;toggleSkinStage();}
+    const skSize=document.getElementById('sk-size');if(skSize)skSize.value='';
+    document.querySelectorAll('[name=sk-app]').forEach(cb=>cb.checked=false);
+    clearSkinPhoto();
+    const skNote=document.getElementById('sk-note');if(skNote)skNote.value='';
+  }
   if(id==='modal-handover'){
     document.getElementById('ho-edit-id').value='';
     document.getElementById('ho-modal-title').textContent='📣 申し送り';
@@ -8901,7 +8975,7 @@ function openModal(id){
   }
   document.getElementById(id).classList.add('on');
   // 記録日時セレクターを注入（対象モーダルのみ）
-  const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight'];
+  const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight','modal-skin'];
   if(recModals.includes(id)){
     const sheet=document.querySelector('#'+id+' .sheet');
     if(sheet){
@@ -9104,6 +9178,20 @@ function saveRecord(type){
     }
     data={val,note:document.getElementById('w-note').value};
     closeModal('modal-weight');
+  }else if(type==='skin'){
+    const category=document.querySelector('[name=sk-cat]:checked')?.value||'jokuso';
+    const appearance=[...document.querySelectorAll('[name=sk-app]:checked')].map(cb=>cb.value);
+    data={
+      category,
+      location:document.getElementById('sk-location').value,
+      stage:category==='jokuso'?document.getElementById('sk-stage').value:'',
+      size:document.getElementById('sk-size').value,
+      appearance,
+      photo:_skinPhotoB64||'',
+      note:document.getElementById('sk-note').value,
+    };
+    _skinPhotoB64='';
+    closeModal('modal-skin');
   }else if(type==='handover'){
     const content=document.getElementById('ho-content').value.trim();
     if(!content){toast('内容を入力してください');return;}
@@ -9146,7 +9234,7 @@ function saveRecord(type){
     const _ts=getRecordTs();if(_ts===null)return;
     recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,ts:_ts,data});
     saveRecords(recs);
-    const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重'}[type]||type;
+    const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重',skin:'皮膚・褥瘡'}[type]||type;
     addAuditLog('記録保存',typeLabel+' / 利用者ID: '+S.currentRes);
     toast('保存しました ✓');
   }
@@ -12077,6 +12165,48 @@ function startVoiceMedName(i,btn){
   },400);
 }
 function openMedPhotoOCR(){document.getElementById('med-photo-input').click();}
+let _skinPhotoB64='';
+function toggleSkinStage(){
+  const cat=document.querySelector('[name=sk-cat]:checked')?.value;
+  const row=document.getElementById('sk-stage-row');
+  if(row)row.style.display=cat==='jokuso'?'':'none';
+}
+async function handleSkinPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const preview=document.getElementById('sk-photo-preview');
+  const img=document.getElementById('sk-photo-img');
+  const clearBtn=document.getElementById('sk-photo-clear');
+  try{
+    _skinPhotoB64=await _compressImage(input.files[0],1200,0.7);
+    if(img)img.src='data:image/jpeg;base64,'+_skinPhotoB64;
+    if(preview)preview.style.display='block';
+    if(clearBtn)clearBtn.style.display='';
+  }catch(e){toast('写真の読み込みに失敗しました');}
+}
+function clearSkinPhoto(){
+  _skinPhotoB64='';
+  const preview=document.getElementById('sk-photo-preview');
+  const img=document.getElementById('sk-photo-img');
+  const clearBtn=document.getElementById('sk-photo-clear');
+  const input=document.getElementById('sk-photo-input');
+  if(img)img.src='';
+  if(preview)preview.style.display='none';
+  if(clearBtn)clearBtn.style.display='none';
+  if(input)input.value='';
+}
+function openSkinPhotoFull(recId){
+  const recs=getRecords();
+  const r=recs.find(x=>x.id===recId);
+  if(!r||!r.data?.photo)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:pointer';
+  ov.onclick=()=>ov.remove();
+  const img=document.createElement('img');
+  img.src='data:image/jpeg;base64,'+r.data.photo;
+  img.style.cssText='max-width:100vw;max-height:100vh;object-fit:contain';
+  ov.appendChild(img);
+  document.body.appendChild(ov);
+}
 function _compressImage(file,maxPx,quality){
   return new Promise(resolve=>{
     const img=new Image();
