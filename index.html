@@ -1275,24 +1275,6 @@ a{color:var(--p);text-decoration:none}
             <option value="いなだ医院">いなだ医院</option>
           </select>
         </div>
-        <div class="field"><label>職種</label>
-          <select id="ms-shokushu">
-            <option value="">─ 選択してください ─</option>
-            <option value="介護士">介護士</option>
-            <option value="介護福祉士">介護福祉士</option>
-            <option value="看護師">看護師</option>
-            <option value="准看護師">准看護師</option>
-            <option value="ケアマネージャー">ケアマネージャー</option>
-            <option value="相談員">相談員</option>
-            <option value="管理者">管理者</option>
-            <option value="事務・受付">事務・受付</option>
-            <option value="理学療法士">理学療法士（PT）</option>
-            <option value="作業療法士">作業療法士（OT）</option>
-            <option value="言語聴覚士">言語聴覚士（ST）</option>
-            <option value="調理師">調理師</option>
-            <option value="その他">その他</option>
-          </select>
-        </div>
         <div class="field"><label>ログインID（自動採番）</label>
           <input type="text" id="ms-loginid" readonly style="background:#f3f4f6;color:var(--sub)">
         </div>
@@ -4756,10 +4738,8 @@ const ROLE_COLORS = {
   facility_manager_stay:     {bg:'#2e7d32',label:'小多機管理者'},
   facility_manager_visit:    {bg:'#6a1b9a',label:'訪問管理者'},
   facility_manager_home_care:{bg:'#00796b',label:'居宅管理者'},
-  nurse:                     {bg:'#00796b',label:'看護師'},
-  care:                      {bg:'#1565c0',label:'介護職員'},
-  home_care:                 {bg:'#2e7d32',label:'居宅職員'},
-  medical_office:            {bg:'#6a1b9a',label:'医療事務'},
+  staff:                     {bg:'#1565c0',label:'スタッフ'},
+  kitchen:                   {bg:'#f57c00',label:'厨房職員'},
 };
 function getRoleInfo(roleKey){
   return ROLE_COLORS[roleKey]||{bg:'#9ca3af',label:roleKey};
@@ -6011,9 +5991,8 @@ function renderRolePreviewGrid(){
   const grid=document.getElementById('role-preview-grid');
   if(!grid)return;
   const roles=[
-    {role:'nurse',                    ico:'🩺', label:'看護師'},
-    {role:'care',                     ico:'🤝', label:'介護職員'},
-    {role:'home_care',                ico:'🏠', label:'居宅職員'},
+    {role:'staff',                    ico:'🤝', label:'スタッフ'},
+    {role:'kitchen',                  ico:'🍳', label:'厨房職員'},
     {role:'doctor',                   ico:'👨‍⚕️', label:'医師'},
     {role:'facility_manager_resident',ico:'🏢', label:'サ高住管理者'},
     {role:'facility_manager_commute', ico:'☀️', label:'デイ管理者'},
@@ -6108,7 +6087,6 @@ function renderAdminStaffList(){
     const curLoginId=getStaffLoginId(key);
     const curRole=getStaffRole(key);
     const curJig=getStaffJigyousho(key);
-    const curSho=getStaffShokushu(key);
     const rc=getRoleInfo(curRole);
     const editId='adm-edit-'+key;
     const canDel=isCustomKey(key)&&!isMe;
@@ -6124,7 +6102,6 @@ function renderAdminStaffList(){
           <div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">
             <span class="staff-badge" style="background:${rc.bg};font-size:9px">${escHtml(rc.label)}</span>
             ${curJig?`<span style="background:#e8f0fb;color:#1565c0;font-size:9px;font-weight:700;border-radius:8px;padding:1px 7px">${escHtml(curJig)}</span>`:''}
-            ${curSho?`<span style="background:#f3e5f5;color:#7b1fa2;font-size:9px;font-weight:700;border-radius:8px;padding:1px 7px">${escHtml(curSho)}</span>`:''}
             <span style="font-size:11px;color:var(--sub)">ID: ${escHtml(curLoginId)}</span>
             <span style="font-size:10px;font-weight:700;color:${disabled?'var(--ng)':'var(--ok)'}">${disabled?'停止中':'有効'}</span>
           </div>
@@ -6145,14 +6122,6 @@ function renderAdminStaffList(){
             ${JIGYOUSHO_LIST.map(j=>`<option value="${j}"${curJig===j?' selected':''}>${j}</option>`).join('')}
           </select>
           <button onclick="adminSetJigyousho('${key}')" style="padding:6px 10px;background:#1565c0;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-          <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">職種</span>
-          <select id="adm-sho-${key}" style="flex:1;padding:6px 8px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;background:#f8f9fb">
-            <option value="">─ 未設定 ─</option>
-            ${SHOKUSHU_LIST.map(s=>`<option value="${s}"${curSho===s?' selected':''}>${s}</option>`).join('')}
-          </select>
-          <button onclick="adminSetShokushu('${key}')" style="padding:6px 10px;background:#7b1fa2;color:#fff;border-radius:7px;font-size:11px;font-weight:700">変更</button>
         </div>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
           <span style="font-size:11px;color:var(--sub);width:36px;flex-shrink:0">ID</span>
@@ -6922,21 +6891,6 @@ function trackRecentResident(rid){
 // ── ROLE-BASED QUICK ACTIONS ──
 function getRoleQuickActions(){
   const role=S.userRole||'';
-  if(role==='nurse')return[
-    {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
-    {type:'meal',    label:'食事記録', sub:'食事・飲水', ico:'🍚', color:'#2e7d32'},
-    {type:'excretion',label:'排泄記録',sub:'排泄・状態', ico:'💧', color:'#e65100'},
-  ];
-  if(role==='care')return[
-    {type:'excretion',label:'排泄記録',sub:'排泄・状態', ico:'💧', color:'#e65100'},
-    {type:'meal',    label:'食事記録', sub:'食事・飲水', ico:'🍚', color:'#2e7d32'},
-    {type:'vital',   label:'バイタル', sub:'測定・記録', ico:'🌡️', color:'#1565c0'},
-  ];
-  if(role==='home_care')return[
-    {type:'facesheet',label:'フェイスシート',sub:'利用者情報', ico:'📋', color:'#1565c0'},
-    {type:'diary',    label:'業務日誌',     sub:'日報・記録', ico:'📔', color:'#c0392b'},
-    {type:'schedule', label:'スケジュール',  sub:'予定・入力', ico:'📅', color:'#6a1b9a'},
-  ];
   if(role==='doctor')return[
     {type:'vital_alert', label:'要注意バイタル', sub:'アラート確認', ico:'🚨', color:'#c62828'},
     {type:'urgent_rec',  label:'緊急・重要記録', sub:'経時・申し送り',ico:'⚠️', color:'#e65100'},
@@ -10735,11 +10689,12 @@ const SVC_DISP={'居住':'resident','デイ（通所）':'commute','デイ':'com
 const STAFF_COL={'氏名':'name','ふりがな':'name_kana','職種':'role','事業所':'jigyousho','従業員番号':'emp_no',
   'name':'name','name_kana':'name_kana','role':'role','jigyousho':'jigyousho','password':'password','emp_no':'emp_no'};
 const ROLE_DISP={'全権管理者':'super_admin','全権管理者 兼 医師':'super_admin_doctor','医師':'doctor','管理者':'facility_manager_resident',
-  '管理者補佐':'facility_manager_commute','介護職':'care','看護職':'nurse','事務':'medical_office',
+  '管理者補佐':'facility_manager_commute','介護職':'staff','看護職':'staff','事務':'staff','厨房職員':'kitchen','厨房':'kitchen',
   'サ高住管理者':'facility_manager_resident','デイ管理者':'facility_manager_commute',
-  '小多機管理者':'facility_manager_stay','小多機管理者補佐':'facility_manager_stay','訪問管理者':'facility_manager_visit','居宅管理者':'home_care',
-  'super_admin':'super_admin','doctor':'doctor','care':'care','nurse':'nurse','medical_office':'medical_office',
-  'home_care':'home_care','facility_manager_resident':'facility_manager_resident',
+  '小多機管理者':'facility_manager_stay','小多機管理者補佐':'facility_manager_stay','訪問管理者':'facility_manager_visit','居宅管理者':'facility_manager_home_care',
+  'super_admin':'super_admin','doctor':'doctor','staff':'staff','kitchen':'kitchen',
+  'care':'staff','nurse':'staff','medical_office':'staff','home_care':'staff',
+  'facility_manager_resident':'facility_manager_resident',
   'facility_manager_commute':'facility_manager_commute','facility_manager_stay':'facility_manager_stay'};
 const JIGYOUSHO_DISP={'デイ':'デイサービス'};
 
@@ -11228,7 +11183,6 @@ function addManualStaff(){
   cs[key]={name,sei,mei,kana:kanaSei&&kanaMei?kanaSei+' '+kanaMei:'',
     role,loginId,pass,
     jigyousho:document.getElementById('ms-jigyousho').value,
-    shokushu:document.getElementById('ms-shokushu').value,
     addedBy:S.user,addedAt:new Date().toISOString()};
   saveCustomStaff(cs);
   // staff_settings に pass を書いておく
@@ -11240,7 +11194,6 @@ function addManualStaff(){
   toast(name+'を登録しました ✓');
   ['ms-sei','ms-mei','ms-kana-sei','ms-kana-mei'].forEach(id=>document.getElementById(id).value='');
   const msJig=document.getElementById('ms-jigyousho');if(msJig)msJig.value='';
-  const msSho=document.getElementById('ms-shokushu');if(msSho)msSho.value='';
   renderStaffRoleDropdown();
   genMsPass();
 }
