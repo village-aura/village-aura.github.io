@@ -690,6 +690,7 @@ a{color:var(--p);text-decoration:none}
       <button class="sbn" id="sbn-infection" onclick="showScr('scr-infection')">🦠　感染管理</button>
       <button class="sbn" id="sbn-skin-gallery" onclick="showScr('scr-skin-gallery')">🔬　皮膚写真</button>
       <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
+      <button class="sbn" id="sbn-bulletin" onclick="showScr('scr-bulletin')">🗒️　職員掲示板<span id="sbn-bul-badge" style="display:none;background:#e53935;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;line-height:1.4;margin-left:4px"></span></button>
       <span class="sb-lbl">ツール・設定</span>
       <button class="sbn" id="sbn-shift" onclick="showScr('scr-shift')">📆　シフト表</button>
       <button class="sbn" id="sbn-manual" onclick="showScr('scr-manual')">📚　マニュアル</button>
@@ -1062,6 +1063,25 @@ a{color:var(--p);text-decoration:none}
       <div style="font-size:18px;font-weight:800">🔬 皮膚写真一覧</div>
     </div>
     <div id="skin-gallery-content"></div>
+  </div>
+
+  <!-- ─── 職員掲示板 ─── -->
+  <div id="scr-bulletin" class="scr">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px">
+      <div>
+        <div style="font-size:18px;font-weight:800">🗒️ 職員掲示板</div>
+        <div style="font-size:12px;color:var(--sub)">管理者からの全体通知</div>
+      </div>
+      <button id="btn-bulletin-post" onclick="openBulletinPost()" style="display:none;background:var(--p);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 投稿</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="bul-filter-bar">
+      <button class="hb-filter-btn on" onclick="setBulFilter('all')">すべて</button>
+      <button class="hb-filter-btn" onclick="setBulFilter('important')">🔴 重要連絡</button>
+      <button class="hb-filter-btn" onclick="setBulFilter('business')">🔵 業務連絡</button>
+      <button class="hb-filter-btn" onclick="setBulFilter('event')">🟢 行事・お知らせ</button>
+      <button class="hb-filter-btn" onclick="setBulFilter('training')">🟣 研修・勉強会</button>
+    </div>
+    <div id="bulletin-list"></div>
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -4401,6 +4421,53 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- 掲示板投稿モーダル -->
+<div class="overlay" id="modal-bulletin-post" onclick="closeModal('modal-bulletin-post',event)">
+  <div class="modal-inner" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="bul-post-title">🗒️ 掲示板に投稿</div>
+    <div class="field"><label>カテゴリ</label>
+      <select id="bul-cat" style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;background:var(--bg);color:var(--tx)">
+        <option value="important">🔴 重要連絡</option>
+        <option value="business">🔵 業務連絡</option>
+        <option value="event">🟢 行事・お知らせ</option>
+        <option value="training">🟣 研修・勉強会</option>
+      </select>
+    </div>
+    <div class="field"><label>タイトル</label><input type="text" id="bul-title-inp" placeholder="件名を入力"></div>
+    <div class="field"><label>本文</label><textarea id="bul-content-inp" rows="5" placeholder="内容を入力..."></textarea></div>
+    <div class="field" style="padding:4px 0">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+        <input type="checkbox" id="bul-pin" style="width:18px;height:18px;accent-color:var(--p)">
+        📌 ピン留め（常に上位表示）
+      </label>
+    </div>
+    <input type="hidden" id="bul-edit-id">
+    <button class="btn-primary" onclick="saveBulletinPost()">投稿する</button>
+    <button class="btn-cancel" onclick="closeModal('modal-bulletin-post')">キャンセル</button>
+  </div>
+</div>
+
+<!-- 皮膚写真 Before/After 比較モーダル -->
+<div id="modal-skin-compare" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);flex-direction:column" onclick="closeSkinCompare(event)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;flex-shrink:0">
+    <div id="skin-cmp-label" style="color:#fff;font-size:13px;font-weight:700"></div>
+    <button onclick="closeSkinCompare()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer">✕ 閉じる</button>
+  </div>
+  <!-- Before/After スライダー -->
+  <div style="flex:1;position:relative;overflow:hidden;min-height:0" id="skin-cmp-wrap">
+    <img id="skin-cmp-before" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain">
+    <img id="skin-cmp-after" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain">
+    <div id="skin-cmp-divider" style="position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;transform:translateX(-50%);pointer-events:none">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#333">⟺</div>
+    </div>
+    <div id="skin-cmp-before-lbl" style="position:absolute;top:10px;left:14px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">BEFORE</div>
+    <div id="skin-cmp-after-lbl" style="position:absolute;top:10px;right:14px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">AFTER</div>
+    <input type="range" min="0" max="100" value="50" id="skin-cmp-slider" oninput="updateSkinCompare(this.value)" style="position:absolute;inset:0;opacity:0;cursor:ew-resize;width:100%;height:100%;margin:0">
+  </div>
+  <!-- タイムラインストリップ -->
+  <div id="skin-cmp-strip" style="display:flex;gap:6px;padding:10px 14px;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch"></div>
+</div>
+
 <!-- 家族向けサマリーモーダル -->
 <div class="overlay" id="modal-family-summary" onclick="closeModal('modal-family-summary',event)">
   <div class="modal-inner" onclick="event.stopPropagation()" style="max-width:520px">
@@ -4782,7 +4849,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.4';
+const APP_VERSION='1.0.5';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -4793,7 +4860,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','hb_replies'];
+const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','hb_replies','bulletin_board'];
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
 let _knownHwIds=new Set(), _hwNotiReady=false;
@@ -7028,7 +7095,7 @@ function showScr(id){
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const navMap={'scr-dashboard':'bn-home','scr-residents':'bn-res','scr-handover-board':'bn-hb','scr-settings':'bn-set','scr-schedule':'bn-sch'};
   if(navMap[id]){const nb=document.getElementById(navMap[id]);if(nb)nb.classList.add('on');}
-  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift','scr-skin-gallery':'sbn-skin-gallery','scr-infection':'sbn-infection'};
+  const sbMap={'scr-dashboard':'sbn-home','scr-residents':'sbn-res','scr-floor-map':'sbn-floor-map','scr-handover-board':'sbn-hb','scr-schedule':'sbn-sch','scr-import':'sbn-imp','scr-settings':'sbn-set','scr-detail':'sbn-res','scr-help':'sbn-help','scr-proposal':'sbn-prop','scr-diary':'sbn-diary','scr-rounds':'sbn-rounds','scr-incidents':'sbn-incidents','scr-tasks':'sbn-tasks','scr-medication':'sbn-medication','scr-transport':'sbn-transport','scr-day-today':'sbn-day-today','scr-doctor':'sbn-doctor','scr-manual':'sbn-manual','scr-shift':'sbn-shift','scr-skin-gallery':'sbn-skin-gallery','scr-infection':'sbn-infection','scr-bulletin':'sbn-bulletin'};
   document.querySelectorAll('.sbn').forEach(b=>b.classList.remove('on'));
   if(sbMap[id]){const el=document.getElementById(sbMap[id]);if(el)el.classList.add('on');}
   if(id==='scr-import') initImportScr();
@@ -7057,6 +7124,7 @@ function showScr(id){
   if(id==='scr-day-today'){_dayView='list';setDayView('list');renderDayToday();}
   if(id==='scr-shift') renderShift();
   if(id==='scr-skin-gallery') renderSkinGallery();
+  if(id==='scr-bulletin'){renderBulletin();const pb=document.getElementById('btn-bulletin-post');if(pb)pb.style.display=isAdmin()?'block':'none';}
   if(id==='scr-infection') renderInfectionScr();
   if(id==='scr-handover-board') updateHandoverUnreadBadge();
   window.scrollTo(0,0);
@@ -12564,6 +12632,192 @@ function _skinPhotoCard(r,resMap,opts){
     </div>
   </div>`;
 }
+// ═══════════ 職員掲示板 ═══════════
+function getBulletin(){return ls('bulletin_board')||[];}
+function saveBulletin(data){
+  lsSet('bulletin_board',data);
+  fsSet('bulletin_board',data);
+  updateBulletinBadge();
+}
+let _bulFilter='all';
+const BUL_CAT={important:{lbl:'重要連絡',emoji:'🔴',color:'#e53935',bg:'#fef2f2'},business:{lbl:'業務連絡',emoji:'🔵',color:'#1565c0',bg:'#e3f2fd'},event:{lbl:'行事・お知らせ',emoji:'🟢',color:'#2e7d32',bg:'#e8f5e9'},training:{lbl:'研修・勉強会',emoji:'🟣',color:'#6a1b9a',bg:'#f3e5f5'}};
+function setBulFilter(cat){
+  _bulFilter=cat;
+  document.querySelectorAll('#bul-filter-bar .hb-filter-btn').forEach((b,i)=>{
+    const cats=['all','important','business','event','training'];
+    b.classList.toggle('on',cats[i]===cat);
+  });
+  renderBulletin();
+}
+function renderBulletin(){
+  const el=document.getElementById('bulletin-list');
+  if(!el)return;
+  let posts=getBulletin().sort((a,b)=>{if(a.pinned&&!b.pinned)return -1;if(!a.pinned&&b.pinned)return 1;return b.date>a.date?1:-1;});
+  if(_bulFilter!=='all') posts=posts.filter(p=>p.category===_bulFilter);
+  if(!posts.length){el.innerHTML='<div style="text-align:center;padding:48px;color:var(--sub)">掲示板に投稿はありません</div>';return;}
+  const canEdit=isAdmin();
+  el.innerHTML=posts.map(p=>{
+    const cat=BUL_CAT[p.category]||BUL_CAT.business;
+    const reads=p.reads||[];
+    const myRead=reads.includes(S.user);
+    const readCnt=reads.length;
+    const readBtn=!myRead?`<button onclick="markBulletinRead('${p.id}')" style="padding:3px 10px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">👁 読了する</button>`:`<span style="font-size:10px;color:#2e7d32;font-weight:700">✓ 読了済み</span>`;
+    const editBtn=canEdit?`<button onclick="event.stopPropagation();openBulletinPost('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--sub);padding:2px 4px">✏️</button>`:'';
+    const delBtn=canEdit?`<button onclick="event.stopPropagation();deleteBulletinPost('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:#e53935;padding:2px 4px">🗑️</button>`:'';
+    return `<div style="background:var(--card);border-radius:12px;border:1.5px solid ${myRead?'var(--bdr)':'var(--p)'};margin-bottom:10px;overflow:hidden;${!myRead?'box-shadow:0 0 0 2px rgba(61,122,181,.15)':''}">
+      <div style="background:${cat.bg};padding:8px 12px;display:flex;align-items:center;gap:6px">
+        <span style="font-size:11px;font-weight:700;color:${cat.color};background:#fff;border-radius:10px;padding:2px 8px">${cat.emoji} ${cat.lbl}</span>
+        ${p.pinned?'<span style="font-size:10px;background:#ff9800;color:#fff;border-radius:6px;padding:1px 6px;font-weight:700">📌 ピン留め</span>':''}
+        ${!myRead?'<span style="font-size:10px;background:var(--p);color:#fff;border-radius:6px;padding:1px 6px;font-weight:700">NEW</span>':''}
+        <div style="margin-left:auto;display:flex;align-items:center">${editBtn}${delBtn}</div>
+      </div>
+      <div style="padding:12px 14px">
+        <div style="font-size:15px;font-weight:800;color:var(--tx);margin-bottom:6px">${escHtml(p.title||'')}</div>
+        <div style="font-size:13px;color:var(--tx);line-height:1.6;white-space:pre-wrap">${escHtml(p.content||'')}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--bdr)">
+          <span style="font-size:11px;color:var(--sub)">✍ ${escHtml(p.by||'─')} · ${p.date||''}</span>
+          <span style="font-size:11px;color:var(--sub)">${readCnt>0?'👁 '+readCnt+'名読了':''}</span>
+          <span style="margin-left:auto">${readBtn}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function markBulletinRead(id){
+  const posts=getBulletin();
+  const p=posts.find(x=>x.id===id);
+  if(!p)return;
+  if(!p.reads)p.reads=[];
+  if(!p.reads.includes(S.user))p.reads.push(S.user);
+  saveBulletin(posts);
+  renderBulletin();
+}
+function openBulletinPost(editId){
+  const hidEl=document.getElementById('bul-edit-id');
+  if(hidEl)hidEl.value=editId||'';
+  const titleEl=document.getElementById('bul-post-title');
+  if(editId){
+    const p=getBulletin().find(x=>x.id===editId)||{};
+    document.getElementById('bul-cat').value=p.category||'business';
+    document.getElementById('bul-title-inp').value=p.title||'';
+    document.getElementById('bul-content-inp').value=p.content||'';
+    document.getElementById('bul-pin').checked=!!p.pinned;
+    if(titleEl)titleEl.textContent='✏️ 投稿を編集';
+  } else {
+    document.getElementById('bul-cat').value='business';
+    document.getElementById('bul-title-inp').value='';
+    document.getElementById('bul-content-inp').value='';
+    document.getElementById('bul-pin').checked=false;
+    if(titleEl)titleEl.textContent='🗒️ 掲示板に投稿';
+  }
+  document.getElementById('modal-bulletin-post').classList.add('on');
+}
+function saveBulletinPost(){
+  const title=document.getElementById('bul-title-inp').value.trim();
+  const content=document.getElementById('bul-content-inp').value.trim();
+  if(!title){toast('タイトルを入力してください');return;}
+  if(!content){toast('本文を入力してください');return;}
+  const editId=document.getElementById('bul-edit-id').value;
+  const now=new Date();
+  const posts=getBulletin();
+  if(editId){
+    const idx=posts.findIndex(x=>x.id===editId);
+    if(idx>=0){posts[idx]={...posts[idx],title,content,category:document.getElementById('bul-cat').value,pinned:document.getElementById('bul-pin').checked};}
+  } else {
+    posts.push({id:'bb'+Date.now(),title,content,category:document.getElementById('bul-cat').value,pinned:document.getElementById('bul-pin').checked,by:S.user||'─',date:_localDs(now),reads:[]});
+  }
+  saveBulletin(posts);
+  closeModal('modal-bulletin-post');
+  toast(editId?'更新しました ✓':'投稿しました ✓');
+  renderBulletin();
+}
+function deleteBulletinPost(id){
+  showDelConfirm('この投稿を削除しますか？',()=>{
+    saveBulletin(getBulletin().filter(x=>x.id!==id));
+    toast('削除しました');
+    renderBulletin();
+  });
+}
+function updateBulletinBadge(){
+  const badge=document.getElementById('sbn-bul-badge');
+  if(!badge)return;
+  const posts=getBulletin();
+  const unread=posts.filter(p=>!(p.reads||[]).includes(S.user)).length;
+  if(unread){badge.textContent=unread;badge.style.display='inline';}
+  else badge.style.display='none';
+}
+
+// ═══════════ 皮膚写真 Before/After 比較 ═══════════
+let _skinCmpRecs=[];
+let _skinCmpBefore=0;
+let _skinCmpAfter=0;
+function openSkinCompare(rid, location){
+  const allRecs=getRecords().filter(r=>r.type==='skin'&&r.data?.photo&&r.rid===rid&&(r.data.location||'')===location)
+    .sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  if(allRecs.length<2){toast('比較するには2枚以上の写真が必要です');return;}
+  _skinCmpRecs=allRecs;
+  _skinCmpBefore=0;
+  _skinCmpAfter=allRecs.length-1;
+  const res=getResidents().find(r=>r.id===rid);
+  const lbl=document.getElementById('skin-cmp-label');
+  if(lbl)lbl.textContent=(res?res.name+'様 ':'')+escHtml(location)+' — '+allRecs.length+'枚';
+  _updateSkinCmpImages();
+  const modal=document.getElementById('modal-skin-compare');
+  if(modal)modal.style.display='flex';
+}
+function _updateSkinCmpImages(){
+  const before=_skinCmpRecs[_skinCmpBefore];
+  const after=_skinCmpRecs[_skinCmpAfter];
+  const bImg=document.getElementById('skin-cmp-before');
+  const aImg=document.getElementById('skin-cmp-after');
+  if(bImg)bImg.src='data:image/jpeg;base64,'+(before.data.photo||'');
+  if(aImg){aImg.src='data:image/jpeg;base64,'+(after.data.photo||'');aImg.style.clipPath='inset(0 50% 0 0)';}
+  const slider=document.getElementById('skin-cmp-slider');
+  if(slider)slider.value=50;
+  const fmtDate=ts=>new Date(ts).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+  const bl=document.getElementById('skin-cmp-before-lbl');
+  const al=document.getElementById('skin-cmp-after-lbl');
+  if(bl)bl.textContent='BEFORE  '+fmtDate(before.ts);
+  if(al)al.textContent='AFTER  '+fmtDate(after.ts);
+  _renderSkinCmpStrip();
+}
+function updateSkinCompare(val){
+  const pct=100-parseInt(val);
+  const aImg=document.getElementById('skin-cmp-after');
+  if(aImg)aImg.style.clipPath='inset(0 '+pct+'% 0 0)';
+  const div=document.getElementById('skin-cmp-divider');
+  if(div)div.style.left=val+'%';
+}
+function _renderSkinCmpStrip(){
+  const strip=document.getElementById('skin-cmp-strip');
+  if(!strip)return;
+  const fmtDate=ts=>new Date(ts).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+  strip.innerHTML=_skinCmpRecs.map((r,i)=>{
+    const isBefore=i===_skinCmpBefore;
+    const isAfter=i===_skinCmpAfter;
+    const border=isBefore?'3px solid #42a5f5':isAfter?'3px solid #ef5350':'2px solid transparent';
+    const lbl=isBefore?'B':isAfter?'A':'';
+    return `<div onclick="setSkinCmpPoint(${i})" style="flex-shrink:0;cursor:pointer;text-align:center">
+      <div style="position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:${border}">
+        <img src="data:image/jpeg;base64,${r.data.photo||''}" style="width:100%;height:100%;object-fit:cover">
+        ${lbl?`<div style="position:absolute;bottom:0;left:0;right:0;background:${isBefore?'rgba(66,165,245,.85)':'rgba(239,83,80,.85)'};color:#fff;font-size:9px;font-weight:800;text-align:center;padding:1px">${lbl}</div>`:''}
+      </div>
+      <div style="font-size:9px;color:#ccc;margin-top:2px">${fmtDate(r.ts)}</div>
+    </div>`;
+  }).join('');
+}
+function setSkinCmpPoint(idx){
+  if(idx===_skinCmpBefore){toast('Bを別の写真に変更するには長押し');return;}
+  if(idx===_skinCmpAfter){toast('Aを別の写真に変更するには長押し');return;}
+  if(idx<_skinCmpAfter) _skinCmpBefore=idx;
+  else _skinCmpAfter=idx;
+  _updateSkinCmpImages();
+}
+function closeSkinCompare(e){
+  if(e&&e.target!==document.getElementById('modal-skin-compare'))return;
+  document.getElementById('modal-skin-compare').style.display='none';
+}
+
 function renderSkinGallery(){
   const el=document.getElementById('skin-gallery-content');
   if(!el)return;
@@ -12571,13 +12825,21 @@ function renderSkinGallery(){
   const resMap=Object.fromEntries(getResidents().map(r=>[r.id,r.name]));
   if(!recs.length){el.innerHTML='<div style="text-align:center;padding:48px 16px;color:var(--sub);font-size:14px">写真付きの皮膚記録がまだありません</div>';return;}
   const resIds=[...new Set(recs.map(r=>r.rid))];
+  // 比較可能グループを集計
+  const compareGroups={};
+  recs.forEach(r=>{const key=r.rid+'|'+(r.data.location||'');if(!compareGroups[key])compareGroups[key]=[];compareGroups[key].push(r);});
   const filterBtns=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
     <button class="hb-filter-btn on" id="sgf-all" onclick="setSgFilter('all')">全員</button>
     ${resIds.map(rid=>`<button class="hb-filter-btn" id="sgf-${rid}" onclick="setSgFilter('${rid}')">${escHtml(resMap[rid]||rid)}</button>`).join('')}
   </div>`;
   const canDel=isManagerOrAbove();
-  const cards=recs.map(r=>_skinPhotoCard(r,resMap,{showName:true,showGoBtn:true,showDelBtn:canDel,onDel:`deleteSkinRecord('${r.id}','gallery')`})).join('');
-  el.innerHTML=`${filterBtns}<div id="sg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">${cards}</div>`;
+  const cards=recs.map(r=>{
+    const key=r.rid+'|'+(r.data.location||'');
+    const grp=compareGroups[key]||[];
+    const cmpBtn=grp.length>=2?`<button onclick="event.stopPropagation();openSkinCompare('${r.rid}','${escHtml(r.data.location||'')}') " style="margin-top:4px;width:100%;padding:5px 8px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">📊 経過比較 (${grp.length}枚)</button>`:'';
+    return '<div>'+_skinPhotoCard(r,resMap,{showName:true,showGoBtn:true,showDelBtn:canDel,onDel:"deleteSkinRecord('"+r.id+"','gallery')"})+(cmpBtn?'<div style="padding:0 10px 8px">'+cmpBtn+'</div>':'')+'</div>';
+  });
+  el.innerHTML=`${filterBtns}<div id="sg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">${cards.join('')}</div>`;
 }
 function renderResidentPhotos(){
   const el=document.getElementById('res-photo-area');
