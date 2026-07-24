@@ -4257,6 +4257,18 @@ a{color:var(--p);text-decoration:none}
     <div class="field"><label>タイトル <span style="color:var(--ng)">*</span></label>
       <input type="text" id="task-inp-title" placeholder="例：入浴介助、服薬確認" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--tx)">
     </div>
+    <div style="display:flex;gap:8px">
+      <div class="field" style="flex:1"><label>優先度</label>
+        <select id="task-inp-pri" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--tx)">
+          <option value="normal">⚪ 通常</option>
+          <option value="high">🟡 重要</option>
+          <option value="urgent">🔴 緊急</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1"><label>期限日（任意）</label>
+        <input type="date" id="task-inp-due" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;background:var(--card);color:var(--tx)">
+      </div>
+    </div>
     <div class="field"><label>事業所</label>
       <select id="task-inp-fac" style="width:100%;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:15px;background:var(--card);color:var(--tx)">
         <option value="all">全施設共通</option>
@@ -4849,7 +4861,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.9';
+const APP_VERSION='1.0.10';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -16616,6 +16628,18 @@ function renderTasksScr(){
   renderTasksList();
 }
 
+const TASK_PRI={urgent:{lbl:'緊急',color:'#e53935',bg:'#fef2f2',border:'#fca5a5'},high:{lbl:'重要',color:'#f57c00',bg:'#fff8e1',border:'#ffd54f'},normal:{lbl:'通常',color:'var(--sub)',bg:'var(--bg)',border:'var(--bdr)'}};
+function _taskDueInfo(dueDate){
+  if(!dueDate)return null;
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=new Date(dueDate);due.setHours(0,0,0,0);
+  const diff=Math.round((due-today)/(1000*60*60*24));
+  if(diff<0)return{lbl:'期限切れ',color:'#e53935',bg:'#fef2f2'};
+  if(diff===0)return{lbl:'今日まで',color:'#e53935',bg:'#fef2f2'};
+  if(diff===1)return{lbl:'明日まで',color:'#f57c00',bg:'#fff3e0'};
+  if(diff<=3)return{lbl:diff+'日後',color:'#f57c00',bg:'#fff3e0'};
+  return{lbl:new Date(dueDate).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+'まで',color:'var(--sub)',bg:'var(--bg)'};
+}
 function renderTasksList(){
   const el=document.getElementById('tasks-list');if(!el)return;
   let tasks=getTasks();
@@ -16627,43 +16651,70 @@ function renderTasksList(){
   const allObj={...STAFF_INFO,...getCustomStaff()};
   const _stKana=(name)=>{if(!name)return'';const s=Object.values(allObj).find(x=>x.name===name);return s?.kana||name;};
   const facLabel={all:'全施設',resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
-  const renderCard=t=>`<div style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;border-left:4px solid ${t.done?'var(--ok)':'var(--p)'}">
-    <button onclick="toggleTaskDone('${t.id}')" style="width:28px;height:28px;border-radius:8px;border:2px solid ${t.done?'var(--ok)':'var(--bdr)'};background:${t.done?'var(--ok)':'var(--bg)'};color:${t.done?'#fff':'var(--sub)'};font-size:16px;cursor:pointer;flex-shrink:0;touch-action:manipulation">${t.done?'✓':''}</button>
-    <div style="flex:1;min-width:0">
-      <div style="font-size:14px;font-weight:700;${t.done?'text-decoration:line-through;color:var(--sub)':''}">${t.title}</div>
-      ${t.detail?`<div style="font-size:12px;color:var(--sub);margin-top:3px">${t.detail}</div>`:''}
-      <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">
-        <span style="font-size:10px;color:var(--sub);background:var(--bg);padding:2px 7px;border-radius:8px">${facLabel[t.fac]||t.fac}</span>
-        <span style="font-size:10px;color:var(--sub)">${t.createdAt?new Date(t.createdAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}</span>
+  // 優先度ソート（緊急>重要>通常、未完了>完了）
+  const priOrd={urgent:0,high:1,normal:2};
+  const renderCard=t=>{
+    const pri=TASK_PRI[t.pri||'normal']||TASK_PRI.normal;
+    const due=_taskDueInfo(t.dueDate);
+    const borderColor=t.done?'var(--ok)':(t.pri==='urgent'?'#e53935':t.pri==='high'?'#f57c00':'var(--p)');
+    const canDel=canDeleteTask(t);
+    const doneInfo=t.done&&t.doneAt?new Date(t.doneAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    return `<div style="background:var(--card);border-radius:14px;margin-bottom:10px;border:1.5px solid ${t.done?'var(--bdr)':borderColor};overflow:hidden;${t.done?'opacity:.7':''}">
+      <div style="display:flex;align-items:stretch;gap:0">
+        <div style="width:5px;flex-shrink:0;background:${borderColor};border-radius:0"></div>
+        <div style="flex:1;padding:14px 12px 12px;min-width:0">
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
+            <button onclick="toggleTaskDone('${t.id}')" style="width:30px;height:30px;border-radius:50%;border:2.5px solid ${t.done?'var(--ok)':'var(--bdr)'};background:${t.done?'var(--ok)':'var(--bg)'};color:${t.done?'#fff':'transparent'};font-size:17px;cursor:pointer;flex-shrink:0;touch-action:manipulation;display:flex;align-items:center;justify-content:center;margin-top:1px">✓</button>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:16px;font-weight:800;line-height:1.35;${t.done?'text-decoration:line-through;color:var(--sub)':'color:var(--tx)'}">${escHtml(t.title)}</div>
+              ${t.detail?`<div style="font-size:13px;color:var(--sub);margin-top:4px;line-height:1.5">${escHtml(t.detail)}</div>`:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding-top:8px;border-top:1px solid var(--bdr)">
+            ${t.pri&&t.pri!=='normal'?`<span style="font-size:11px;font-weight:800;color:${pri.color};background:${pri.bg};border:1px solid ${pri.border};border-radius:8px;padding:2px 8px">${t.pri==='urgent'?'🔴':'🟡'} ${pri.lbl}</span>`:''}
+            ${due?`<span style="font-size:11px;font-weight:700;color:${due.color};background:${due.bg};border-radius:8px;padding:2px 8px;border:1px solid ${due.color}">🗓 ${due.lbl}</span>`:''}
+            <span style="font-size:11px;color:var(--sub);background:var(--bg);padding:2px 8px;border-radius:8px">${facLabel[t.fac]||t.fac||'全施設'}</span>
+            ${t.done&&doneInfo?`<span style="font-size:11px;color:var(--ok);font-weight:700">✓ ${t.doneBy||''} ${doneInfo}</span>`:`<span style="font-size:11px;color:var(--sub)">${t.createdBy?'by '+t.createdBy:''} ${t.createdAt?new Date(t.createdAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}</span>`}
+            <div style="margin-left:auto;display:flex;gap:2px">
+              <button onclick="openTaskModal('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px 6px;cursor:pointer;touch-action:manipulation">✏️</button>
+              ${canDel?`<button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:#e53935;font-size:18px;padding:4px 6px;cursor:pointer;touch-action:manipulation">🗑</button>`:''}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    ${canDeleteTask(t)?`<button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px;cursor:pointer;flex-shrink:0;touch-action:manipulation">🗑</button>`:'<span style="width:26px;flex-shrink:0"></span>'}
-  </div>`;
-  // 50音グループ
+    </div>`;
+  };
+  // 担当者グループ
   const groups={};
   tasks.forEach(t=>{const key=t.assignedTo||'__noassign__';if(!groups[key])groups[key]=[];groups[key].push(t);});
+  Object.keys(groups).forEach(k=>{groups[k].sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;return (priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2);});});
   const sortedAssignees=Object.keys(groups).filter(n=>n!=='__noassign__').sort((a,b)=>_stKana(a).localeCompare(_stKana(b),'ja'));
   const rows50=['あ','か','さ','た','な','は','ま','や','ら','わ'];
   const rowMap={};
   sortedAssignees.forEach(name=>{const r=_row50(_stKana(name));if(!rowMap[r])rowMap[r]=[];rowMap[r].push(name);});
   // インデックスバー
-  let html=`<div style="display:flex;gap:4px;padding:4px 0 10px;flex-wrap:wrap">`;
+  let html=`<div style="display:flex;gap:4px;padding:4px 0 12px;flex-wrap:wrap">`;
   rows50.forEach(r=>{
     const has=!!rowMap[r];
-    html+=`<button onclick="scrollToTaskSection('${r}')" style="min-width:30px;padding:5px 7px;border-radius:8px;font-size:13px;font-weight:800;border:1.5px solid ${has?'var(--p)':'var(--bdr)'};background:${has?'var(--ps)':'transparent'};color:${has?'var(--p)':'var(--sub)'};cursor:${has?'pointer':'default'};touch-action:manipulation">${r}</button>`;
+    html+=`<button onclick="scrollToTaskSection('${r}')" style="min-width:32px;padding:6px 8px;border-radius:8px;font-size:13px;font-weight:800;border:1.5px solid ${has?'var(--p)':'var(--bdr)'};background:${has?'var(--ps)':'transparent'};color:${has?'var(--p)':'var(--sub)'};cursor:${has?'pointer':'default'};touch-action:manipulation">${r}</button>`;
   });
   html+='</div>';
-  // 50音グループ本体
+  // 担当者グループ本体
   rows50.forEach(row=>{
     const names=rowMap[row];if(!names)return;
     html+=`<div id="task-section-${row}">`;
     names.forEach(name=>{
       const grpTasks=groups[name];
       const pend=grpTasks.filter(t=>!t.done).length;
-      html+=`<div style="display:flex;align-items:center;gap:6px;padding:8px 0 5px;border-bottom:2px solid var(--ps);margin-bottom:6px">
-        <span style="font-size:11px;font-weight:800;color:var(--p)">👤 ${name}</span>
-        ${pend>0?`<span style="font-size:10px;background:var(--p);color:#fff;border-radius:10px;padding:1px 7px;font-weight:700">${pend}件</span>`:''}
-        ${pend===0?`<span style="font-size:10px;background:var(--ok);color:#fff;border-radius:10px;padding:1px 7px;font-weight:700">完了</span>`:''}
+      const urgent=grpTasks.filter(t=>!t.done&&t.pri==='urgent').length;
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 0 8px;border-bottom:2px solid var(--ps);margin-bottom:10px;margin-top:4px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">👤</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:800;color:var(--tx)">${escHtml(name)}</div>
+          <div style="font-size:11px;color:var(--sub)">${pend}件未完了 / 計${grpTasks.length}件</div>
+        </div>
+        ${urgent>0?`<span style="font-size:11px;font-weight:800;color:#fff;background:#e53935;border-radius:10px;padding:2px 10px">🔴 緊急${urgent}件</span>`:''}
+        ${pend===0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border-radius:10px;padding:3px 10px">✅ 全完了</span>`:''}
       </div>`;
       html+=grpTasks.map(renderCard).join('');
     });
@@ -16671,8 +16722,16 @@ function renderTasksList(){
   });
   // 未割り当て
   if(groups['__noassign__']){
-    html+=`<div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.06em;padding:8px 0 4px;border-bottom:2px solid var(--bdr);margin-bottom:6px">📌 未割り当て</div>`;
-    html+=groups['__noassign__'].map(renderCard).join('');
+    const ua=groups['__noassign__'];
+    const uaPend=ua.filter(t=>!t.done).length;
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 0 8px;border-bottom:2px solid var(--bdr);margin-bottom:10px;margin-top:4px">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--bg);border:2px dashed var(--bdr);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📌</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--sub)">未割り当て</div>
+        <div style="font-size:11px;color:var(--sub)">${uaPend}件未完了 / 計${ua.length}件</div>
+      </div>
+    </div>`;
+    html+=ua.map(renderCard).join('');
   }
   el.innerHTML=html;
 }
@@ -16693,6 +16752,8 @@ function openTaskModal(editId){
     const t=getTasks().find(x=>x.id===editId);if(!t)return;
     document.getElementById('task-modal-title').textContent='📌 タスクを編集';
     document.getElementById('task-inp-title').value=t.title||'';
+    document.getElementById('task-inp-pri').value=t.pri||'normal';
+    document.getElementById('task-inp-due').value=t.dueDate||'';
     document.getElementById('task-inp-fac').value=t.fac||'all';
     document.getElementById('task-inp-staff').value=t.assignedTo||'';
     document.getElementById('task-inp-detail').value=t.detail||'';
@@ -16700,6 +16761,8 @@ function openTaskModal(editId){
   } else {
     document.getElementById('task-modal-title').textContent='📌 タスクを追加';
     document.getElementById('task-inp-title').value='';
+    document.getElementById('task-inp-pri').value='normal';
+    document.getElementById('task-inp-due').value='';
     document.getElementById('task-inp-fac').value=_taskFilter.fac!=='all'?_taskFilter.fac:'all';
     document.getElementById('task-inp-staff').value=_taskFilter.staff!=='all'?_taskFilter.staff:'';
     document.getElementById('task-inp-detail').value='';
@@ -16713,11 +16776,13 @@ function saveTask(){
   if(!title){toast('タイトルを入力してください');return;}
   const tasks=getTasks();
   const editId=document.getElementById('task-edit-id').value;
+  const pri=document.getElementById('task-inp-pri').value||'normal';
+  const dueDate=document.getElementById('task-inp-due').value||'';
   if(editId){
     const idx=tasks.findIndex(t=>t.id===editId);
-    if(idx>=0){tasks[idx].title=title;tasks[idx].fac=document.getElementById('task-inp-fac').value;tasks[idx].assignedTo=document.getElementById('task-inp-staff').value;tasks[idx].detail=document.getElementById('task-inp-detail').value.trim();}
+    if(idx>=0){tasks[idx].title=title;tasks[idx].pri=pri;tasks[idx].dueDate=dueDate;tasks[idx].fac=document.getElementById('task-inp-fac').value;tasks[idx].assignedTo=document.getElementById('task-inp-staff').value;tasks[idx].detail=document.getElementById('task-inp-detail').value.trim();}
   } else {
-    tasks.unshift({id:'task_'+Date.now(),title,fac:document.getElementById('task-inp-fac').value,assignedTo:document.getElementById('task-inp-staff').value,detail:document.getElementById('task-inp-detail').value.trim(),done:false,createdBy:S.user,createdAt:new Date().toISOString()});
+    tasks.unshift({id:'task_'+Date.now(),title,pri,dueDate,fac:document.getElementById('task-inp-fac').value,assignedTo:document.getElementById('task-inp-staff').value,detail:document.getElementById('task-inp-detail').value.trim(),done:false,createdBy:S.user,createdAt:new Date().toISOString()});
   }
   saveTasks(tasks);
   closeModal('modal-task');
