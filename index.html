@@ -2295,7 +2295,8 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;margin-bottom:2px">📌 タスク管理</div>
         <div style="font-size:12px;color:var(--sub)">事業所・担当者別タスク</div>
       </div>
-      <button onclick="openTaskModal()" style="background:var(--p);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;flex-shrink:0">＋ 追加</button>
+      <button id="task-review-btn" onclick="openTaskReviewModal()" style="display:none;background:var(--bg);color:var(--p);border:1.5px solid var(--p);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;flex-shrink:0">📋 指示確認</button>
+      <button id="task-add-btn" onclick="openTaskModal()" style="background:var(--p);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;flex-shrink:0">＋ 追加</button>
     </div>
     <!-- フィルターバー -->
     <div style="display:flex;gap:8px;padding:8px 12px 10px;align-items:center;flex-wrap:wrap">
@@ -2309,11 +2310,6 @@ a{color:var(--p);text-decoration:none}
         <option value="stay">小多機</option>
         <option value="visit">訪問</option>
       </select>
-    </div>
-    <!-- 未完了 / 完了 タブ -->
-    <div id="task-done-tabs" style="display:flex;gap:6px;padding:0 12px 10px">
-      <button id="task-tab-pending" onclick="setTaskDoneTab('pending')" style="flex:1;padding:9px;border-radius:10px;font-size:14px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer;touch-action:manipulation;transition:all .15s">未完了 <span id="task-tab-pending-cnt" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:12px;margin-left:3px"></span></button>
-      <button id="task-tab-done" onclick="setTaskDoneTab('done')" style="flex:1;padding:9px;border-radius:10px;font-size:14px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation;transition:all .15s">完了 <span id="task-tab-done-cnt" style="background:var(--bdr);border-radius:10px;padding:1px 7px;font-size:12px;margin-left:3px"></span></button>
     </div>
     <div id="tasks-list" style="padding:0 12px 80px"></div>
   </div>
@@ -4295,6 +4291,18 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- TASK REVIEW (admin) -->
+<div class="overlay" id="modal-task-review" onclick="closeModal('modal-task-review',event)">
+  <div class="sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📋 自分が指示したタスク</div>
+    <div id="task-review-body" style="padding-bottom:8px"></div>
+    <div style="margin-top:8px">
+      <button class="btn-cancel" onclick="closeModal('modal-task-review')" style="width:100%">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- MONTHLY GOAL EDIT -->
 <div class="overlay" id="modal-monthly-goal" onclick="closeModal('modal-monthly-goal',event)">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -4864,7 +4872,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.16';
+const APP_VERSION='1.0.17';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -16586,15 +16594,16 @@ function getTasks(){return ls('tasks_data')||[];}
 function saveTasks(d){lsSet('tasks_data',d);fsSet('tasks_data',d);}
 
 let _taskFilter={fac:'all',status:'all',staff:'all'};
-let _taskDoneTab='pending';
+let _taskDoneOpen=false;
 
-function setTaskDoneTab(tab){
-  _taskDoneTab=tab;
-  const btnP=document.getElementById('task-tab-pending');
-  const btnD=document.getElementById('task-tab-done');
-  if(btnP){btnP.style.background=tab==='pending'?'var(--p)':'var(--bg)';btnP.style.color=tab==='pending'?'#fff':'var(--sub)';btnP.style.border=tab==='pending'?'none':'1.5px solid var(--bdr)';}
-  if(btnD){btnD.style.background=tab==='done'?'var(--ok)':'var(--bg)';btnD.style.color=tab==='done'?'#fff':'var(--sub)';btnD.style.border=tab==='done'?'none':'1.5px solid var(--bdr)';}
-  renderTasksList();
+function toggleTaskDonePanel(){
+  _taskDoneOpen=!_taskDoneOpen;
+  const panel=document.getElementById('task-done-panel');
+  const arrow=document.getElementById('task-done-arrow');
+  if(!panel)return;
+  if(_taskDoneOpen){panel.style.maxHeight=panel.scrollHeight+'px';}
+  else{panel.style.maxHeight='0';}
+  if(arrow)arrow.style.transform=_taskDoneOpen?'rotate(180deg)':'rotate(0deg)';
 }
 
 function setTaskFilter(type,val){
@@ -16648,6 +16657,11 @@ function renderTasksScr(){
     const mf=getManagedFacility();
     if(mf){_taskFilter.fac=mf;const fs=document.getElementById('task-fac-sel');if(fs)fs.value=mf;}
   }
+  const isM=isManagerOrAbove();
+  const addBtn=document.getElementById('task-add-btn');
+  const revBtn=document.getElementById('task-review-btn');
+  if(addBtn)addBtn.style.display=isM?'':'none';
+  if(revBtn)revBtn.style.display=isM?'':'none';
   _buildTaskStaffFilter();
   renderTasksList();
 }
@@ -16707,12 +16721,6 @@ function renderTasksList(){
   };
   const pending=tasks.filter(t=>!t.done).sort((a,b)=>(priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2));
   const done=tasks.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
-  // タブカウント更新
-  const cntP=document.getElementById('task-tab-pending-cnt');
-  const cntD=document.getElementById('task-tab-done-cnt');
-  if(cntP)cntP.textContent=pending.length;
-  if(cntD)cntD.textContent=done.length;
-  // タブ表示切り替え（スタッフパネルは両タブ共通）
   let html='';
   if(_taskFilter.staff!=='all'){
     const urgent=pending.filter(t=>t.pri==='urgent').length;
@@ -16726,18 +16734,22 @@ function renderTasksList(){
       ${pending.length===0&&done.length>0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:10px;padding:3px 10px">✅ 全完了</span>`:''}
     </div>`;
   }
-  if(_taskDoneTab==='pending'){
-    if(pending.length){
-      html+=pending.map(renderCard).join('');
-    } else {
-      html+=`<div style="text-align:center;padding:40px 0 20px;color:var(--ok);font-size:15px;font-weight:700">✅ 未完了タスクはありません</div>`;
-    }
+  // 未完了
+  if(pending.length){
+    html+=pending.map(renderCard).join('');
   } else {
-    if(done.length){
-      html+=done.map(renderCard).join('');
-    } else {
-      html+=`<div style="text-align:center;padding:40px 0 20px;color:var(--sub);font-size:15px;font-weight:700">完了済みタスクはありません</div>`;
-    }
+    html+=`<div style="text-align:center;padding:40px 0 20px;color:var(--ok);font-size:15px;font-weight:700">✅ 未完了タスクはありません</div>`;
+  }
+  // 完了済み カーテン
+  if(done.length){
+    const openNow=_taskDoneOpen;
+    html+=`<button onclick="toggleTaskDonePanel()" style="width:100%;margin-top:10px;padding:10px 14px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;touch-action:manipulation">
+      <span>✅ 完了済み <span style="background:var(--bdr);border-radius:8px;padding:1px 8px;font-size:12px">${done.length}件</span></span>
+      <span id="task-done-arrow" style="font-size:16px;transition:transform .3s;transform:${openNow?'rotate(180deg)':'rotate(0deg)'}">⌄</span>
+    </button>
+    <div id="task-done-panel" style="overflow:hidden;max-height:${openNow?'9999px':'0'};transition:max-height .35s ease">
+      <div style="padding-top:8px">${done.map(renderCard).join('')}</div>
+    </div>`;
   }
   el.innerHTML=html;
 }
@@ -16751,6 +16763,11 @@ function scrollToResKana(row){
 }
 
 function openTaskModal(editId){
+  if(!editId&&!isManagerOrAbove()){toast('タスクの追加は管理者以上のみです');return;}
+  if(editId){
+    const t=getTasks().find(x=>x.id===editId);
+    if(t&&t.createdBy!==S.user&&!isManagerOrAbove()){toast('作成者または管理者のみ編集できます');return;}
+  }
   const allObj={...STAFF_INFO,...getCustomStaff()};
   const names=Object.entries(allObj).filter(([k,s])=>!s.hidden&&!s.disabled&&!isStaffDisabled(k)).map(([_,s])=>s.name);
   document.getElementById('task-inp-staff').innerHTML=`<option value="">（未割り当て）</option>`+names.map(n=>`<option value="${n}">${n}</option>`).join('');
@@ -16778,6 +16795,7 @@ function openTaskModal(editId){
 }
 
 function saveTask(){
+  if(!isManagerOrAbove()){toast('タスクの作成は管理者以上のみです');return;}
   const title=document.getElementById('task-inp-title').value.trim();
   if(!title){toast('タイトルを入力してください');return;}
   const tasks=getTasks();
@@ -16813,6 +16831,39 @@ function deleteTask(id){
     renderTasksList();
     toast('削除しました');
   });
+}
+
+function openTaskReviewModal(){
+  const body=document.getElementById('task-review-body');if(!body)return;
+  const mine=getTasks().filter(t=>t.createdBy===S.user);
+  if(!mine.length){body.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--sub);font-size:14px">自分が作成したタスクはありません</div>';openModal('modal-task-review');return;}
+  const pending=mine.filter(t=>!t.done).sort((a,b)=>(({urgent:0,high:1,normal:2}[a.pri||'normal']??2)-({urgent:0,high:1,normal:2}[b.pri||'normal']??2)));
+  const done=mine.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
+  const row=t=>{
+    const doneInfo=t.done&&t.doneAt?new Date(t.doneAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+      <span style="font-size:20px;flex-shrink:0;margin-top:1px">${t.done?'✅':'⬜'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;${t.done?'text-decoration:line-through;color:var(--sub)':'color:var(--tx)'}">${escHtml(t.title)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+          ${t.assignedTo?`<span style="font-size:11px;font-weight:700;color:var(--p);background:var(--ps);border-radius:6px;padding:1px 7px">👤 ${escHtml(t.assignedTo)}</span>`:'<span style="font-size:11px;color:var(--sub)">未割当</span>'}
+          ${t.done&&doneInfo?`<span style="font-size:11px;color:var(--ok)">完了: ${t.doneBy||''} ${doneInfo}</span>`:''}
+          ${t.dueDate&&!t.done?`<span style="font-size:11px;color:var(--sub)">🗓 ${t.dueDate}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  };
+  let html='';
+  if(pending.length){
+    html+=`<div style="font-size:12px;font-weight:800;color:var(--p);margin:10px 0 4px;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:3px;height:12px;background:var(--p);border-radius:2px"></span>未完了 ${pending.length}件</div>`;
+    html+=pending.map(row).join('');
+  }
+  if(done.length){
+    html+=`<div style="font-size:12px;font-weight:800;color:var(--ok);margin:14px 0 4px;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:3px;height:12px;background:var(--ok);border-radius:2px"></span>完了済み ${done.length}件</div>`;
+    html+=done.map(row).join('');
+  }
+  body.innerHTML=html;
+  openModal('modal-task-review');
 }
 
 // ═══════════ FEATURE 7: 申し送り読了確認 ═══════════
