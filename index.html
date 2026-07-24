@@ -737,6 +737,8 @@ a{color:var(--p);text-decoration:none}
 
     <!-- バックアップ警告バナー -->
     <div id="backup-banner" style="display:none"></div>
+    <!-- 誕生日・記念日バナー -->
+    <div id="birthday-banner" style="margin:0 12px 8px"></div>
 
     <!-- ステータスバー（コンパクト） -->
     <div style="margin:0 12px 10px">
@@ -960,15 +962,26 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800">🗺️ サ高住フロアマップ</div>
         <div style="font-size:12px;color:var(--sub)">入居状況・部屋割り一覧</div>
       </div>
-      <button onclick="renderFloorMap()" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;touch-action:manipulation">更新</button>
+      <div style="display:flex;gap:6px">
+        <button id="btn-heatmap-toggle" onclick="toggleFloorHeatmap()" style="background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;touch-action:manipulation">🌡️ 体温マップ</button>
+        <button onclick="renderFloorMap()" style="background:none;border:1.5px solid var(--bdr);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--sub);cursor:pointer;touch-action:manipulation">更新</button>
+      </div>
     </div>
     <!-- 凡例 -->
-    <div style="display:flex;gap:10px;padding:2px 16px 10px;flex-wrap:wrap;align-items:center">
+    <div id="floor-legend-default" style="display:flex;gap:10px;padding:2px 16px 10px;flex-wrap:wrap;align-items:center">
       <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#e65100"></div><span style="font-size:10px;color:var(--sub)">バイタル未</span></div>
       <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#7b1fa2"></div><span style="font-size:10px;color:var(--sub)">排便</span></div>
       <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#0277bd"></div><span style="font-size:10px;color:var(--sub)">入浴</span></div>
       <div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:#f59e0b"></div><span style="font-size:10px;color:var(--sub)">未読申し送り</span></div>
       <span style="font-size:9px;background:#ff9800;color:#fff;padding:1px 5px;border-radius:4px;font-weight:700">2人</span><span style="font-size:10px;color:var(--sub)">2人部屋</span>
+    </div>
+    <div id="floor-legend-heatmap" style="display:none;gap:10px;padding:2px 16px 10px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:10px;color:var(--sub)">体温マップ:</span>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:14px;height:14px;border-radius:3px;background:#e3f2fd"></div><span style="font-size:10px;color:var(--sub)">正常（〜36.9）</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:14px;height:14px;border-radius:3px;background:#fff9c4"></div><span style="font-size:10px;color:var(--sub)">微熱（37.0〜37.4）</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:14px;height:14px;border-radius:3px;background:#ffcc80"></div><span style="font-size:10px;color:var(--sub)">発熱（37.5〜38.4）</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:14px;height:14px;border-radius:3px;background:#ef9a9a"></div><span style="font-size:10px;color:var(--sub)">高熱（38.5〜）</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div style="width:14px;height:14px;border-radius:3px;background:var(--bdr)"></div><span style="font-size:10px;color:var(--sub)">未記録</span></div>
     </div>
     <div id="floor-map-content" style="padding:0 12px 80px"></div>
   </div>
@@ -981,6 +994,7 @@ a{color:var(--p);text-decoration:none}
       <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
       <button class="detail-tab-btn" id="dtab-life" onclick="switchDetailTab('life')">📊 生活シート</button>
       <button class="detail-tab-btn" id="dtab-photos" onclick="switchDetailTab('photos')">📷 写真</button>
+      <button class="detail-tab-btn" onclick="openFamilySummary()" style="color:#1565c0;border-bottom-color:transparent;font-size:11px;flex-shrink:0">📄 家族報告</button>
     </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
@@ -4387,6 +4401,33 @@ a{color:var(--p);text-decoration:none}
   </div>
 </div>
 
+<!-- 家族向けサマリーモーダル -->
+<div class="overlay" id="modal-family-summary" onclick="closeModal('modal-family-summary',event)">
+  <div class="modal-inner" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="sheet-title" id="family-summary-title">📄 家族向けレポート</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button onclick="copyFamilySummary()" style="flex:1;padding:9px;background:var(--p);color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📋 コピー</button>
+      <button onclick="printFamilySummary()" style="flex:1;padding:9px;background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🖨️ 印刷</button>
+    </div>
+    <textarea id="family-summary-text" rows="16" style="width:100%;padding:12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;background:var(--bg);color:var(--tx);font-family:inherit"></textarea>
+    <button class="btn-cancel" onclick="closeModal('modal-family-summary')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
+<!-- 申し送り返信モーダル -->
+<div class="overlay" id="modal-hb-reply" onclick="closeModal('modal-hb-reply',event)">
+  <div class="modal-inner" onclick="event.stopPropagation()">
+    <div class="sheet-title">💬 返信・コメント</div>
+    <div id="hb-reply-thread" style="max-height:200px;overflow-y:auto;margin-bottom:10px;background:var(--bg);border-radius:8px;padding:8px"></div>
+    <div class="field"><label>コメントを追加</label>
+      <textarea id="hb-reply-text" rows="3" placeholder="確認しました。対応します。など…"></textarea>
+    </div>
+    <input type="hidden" id="hb-reply-target-id">
+    <button class="btn-primary" onclick="saveHbReply()">送信</button>
+    <button class="btn-cancel" onclick="closeModal('modal-hb-reply')">閉じる</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -4741,7 +4782,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.3';
+const APP_VERSION='1.0.4';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -4752,7 +4793,7 @@ const FB_CONFIG={
   messagingSenderId:'559931440710',
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
-const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records'];
+const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','hb_replies'];
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
 let _knownHwIds=new Set(), _hwNotiReady=false;
@@ -4958,6 +4999,7 @@ let S = {
   graphRange: 'today', tlOffset: 0,
   schedView: 'month', schedScope: 'all', schedRid: null, schedSearch: '',
   schedYear: _now.getFullYear(), schedMonth: _now.getMonth(), schedDay: _now.getDate(),
+  floorHeatmap: false,
   currentService: null,
   editRecId: null,
   showHidden: false, vitalFilter: 'all',
@@ -5492,7 +5534,9 @@ function checkAutoDark(){
   toggleDarkMode(inRange);
 }
 function initAutoDark(){
-  const on=localStorage.getItem('va_auto_dark')==='1';
+  const stored=localStorage.getItem('va_auto_dark');
+  const on=stored===null?true:stored==='1';
+  if(stored===null)localStorage.setItem('va_auto_dark','1');
   const tog=document.getElementById('auto-dark-toggle');
   if(tog)tog.checked=on;
   const timeEl=document.getElementById('auto-dark-time');
@@ -7646,7 +7690,172 @@ function getStoolDays(rid,_allRecs){
   const last=recs.sort((a,b)=>new Date(b.ts)-new Date(a.ts))[0];
   return Math.floor((Date.now()-new Date(last.ts).getTime())/(24*3600*1000));
 }
+// ═══════════ 誕生日・記念日バナー ═══════════
+function renderBirthdayBanner(){
+  const el=document.getElementById('birthday-banner');
+  if(!el)return;
+  const now=new Date();
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const dd=String(now.getDate()).padStart(2,'0');
+  const todayMMDD=mm+'-'+dd;
+  const res=getResidents();
+  const items=[];
+  res.forEach(r=>{
+    if(r.birthDate&&typeof r.birthDate==='string'){
+      const parts=r.birthDate.split('-');
+      if(parts.length>=3&&parts[1]+'-'+parts[2]===todayMMDD){
+        const age=now.getFullYear()-parseInt(parts[0]);
+        items.push({name:r.name,rid:r.id,type:'birthday',label:'🎂 お誕生日おめでとうございます！',sub:age+'歳になりました',color:'#e91e63',bg:'#fce4ec'});
+      }
+    }
+    if(r.admitDate&&typeof r.admitDate==='string'){
+      const parts=r.admitDate.split('-');
+      if(parts.length>=3&&parts[1]+'-'+parts[2]===todayMMDD){
+        const years=now.getFullYear()-parseInt(parts[0]);
+        if(years>0) items.push({name:r.name,rid:r.id,type:'anniversary',label:'🏠 入居記念日',sub:years+'周年',color:'#7b1fa2',bg:'#f3e5f5'});
+      }
+    }
+  });
+  if(!items.length){el.innerHTML='';return;}
+  el.innerHTML=items.map(it=>`<div onclick="openResident('${it.rid}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${it.bg};border-radius:10px;border-left:4px solid ${it.color};cursor:pointer;margin-bottom:6px">
+    <span style="font-size:22px">${it.type==='birthday'?'🎂':'🏠'}</span>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;color:${it.color}">${it.label}</div>
+      <div style="font-size:12px;color:#333">${it.name}様 <span style="color:${it.color};font-weight:700">${it.sub}</span></div>
+    </div>
+    <span style="font-size:12px;color:${it.color}">›</span>
+  </div>`).join('');
+}
+
+// ═══════════ フロアマップ 体温ヒートマップ ═══════════
+function toggleFloorHeatmap(){
+  S.floorHeatmap=!S.floorHeatmap;
+  const btn=document.getElementById('btn-heatmap-toggle');
+  if(btn){btn.style.background=S.floorHeatmap?'#e53935':'var(--card)';btn.style.color=S.floorHeatmap?'#fff':'var(--sub)';btn.style.borderColor=S.floorHeatmap?'#e53935':'var(--bdr)';}
+  const defLgd=document.getElementById('floor-legend-default');
+  const hmLgd=document.getElementById('floor-legend-heatmap');
+  if(defLgd)defLgd.style.display=S.floorHeatmap?'none':'flex';
+  if(hmLgd)hmLgd.style.display=S.floorHeatmap?'flex':'none';
+  renderFloorMap();
+}
+function _tempColor(temp){
+  if(temp===null||temp===undefined)return null;
+  const t=parseFloat(temp);
+  if(isNaN(t))return null;
+  if(t<37.0)return '#e3f2fd';
+  if(t<37.5)return '#fff9c4';
+  if(t<38.5)return '#ffcc80';
+  return '#ef9a9a';
+}
+
+// ═══════════ 家族向けサマリー ═══════════
+function openFamilySummary(){
+  const rid=S.currentRes;
+  if(!rid){toast('利用者を選択してください');return;}
+  const res=getResidents().find(r=>r.id===rid);
+  if(!res){return;}
+  const now=new Date();
+  const recs=getRecords().filter(r=>r.rid===rid);
+  const sevenAgo=new Date(now.getTime()-7*24*3600*1000);
+  const weekRecs=recs.filter(r=>new Date(r.ts)>=sevenAgo).sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  const vitals=weekRecs.filter(r=>r.type==='vital');
+  const meals=weekRecs.filter(r=>r.type==='meal');
+  const excretions=weekRecs.filter(r=>r.type==='excretion');
+  const chronos=weekRecs.filter(r=>r.type==='chrono');
+  const fmtDate=d=>new Date(d).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'});
+  const fmtTime=d=>new Date(d).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  let text=res.name+'様 ご家族へ\n';
+  text+=now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})+'現在\n\n';
+  text+='【バイタルサイン（直近7日）】\n';
+  if(vitals.length){
+    vitals.slice(-7).forEach(v=>{
+      const d=v.data;
+      const parts=[];
+      if(d.temp!=null)parts.push(`体温${d.temp}℃`);
+      if(d.sys!=null)parts.push(`血圧${d.sys}/${d.dia}mmHg`);
+      if(d.pulse!=null)parts.push(`脈${d.pulse}bpm`);
+      if(d.spo2!=null)parts.push(`SpO₂${d.spo2}%`);
+      text+=`${fmtDate(v.ts)} ${fmtTime(v.ts)} ${parts.join('・')}\n`;
+    });
+  }else text+='記録なし\n';
+  text+='\n【食事摂取状況（直近7日）】\n';
+  if(meals.length){
+    const byDate={};
+    meals.forEach(m=>{const d=fmtDate(m.ts);if(!byDate[d])byDate[d]=[];byDate[d].push(m);});
+    Object.entries(byDate).slice(-7).forEach(([date,ms])=>{
+      const avg=v=>Math.round(ms.filter(m=>m.data[v]!=null).reduce((s,m)=>s+Number(m.data[v]),0)/ms.filter(m=>m.data[v]!=null).length)||'-';
+      text+=`${date} 主食${avg('staple')}割・副食${avg('side')}割\n`;
+    });
+  }else text+='記録なし\n';
+  text+='\n【排泄（直近7日の特記）】\n';
+  const stoolRecs=excretions.filter(r=>r.data.stool&&r.data.stool!=='なし');
+  if(stoolRecs.length){stoolRecs.slice(-5).forEach(r=>{text+=`${fmtDate(r.ts)} 排便あり\n`;});}
+  else text+='特記事項なし\n';
+  text+='\n【特記・申し送り事項】\n';
+  const impChronos=chronos.filter(r=>r.data.priority==='urgent'||r.data.priority==='important');
+  if(impChronos.length){impChronos.slice(-5).forEach(r=>{text+=`${fmtDate(r.ts)} ${(r.data.content||'').substring(0,60)}\n`;});}
+  else text+='特記事項なし\n';
+  text+='\n担当者より以上ご報告いたします。\nご不明な点はお気軽にお問い合わせください。\n';
+  const titleEl=document.getElementById('family-summary-title');
+  if(titleEl)titleEl.textContent='📄 '+res.name+'様 家族向けレポート';
+  const ta=document.getElementById('family-summary-text');
+  if(ta)ta.value=text;
+  document.getElementById('modal-family-summary').classList.add('on');
+}
+function copyFamilySummary(){
+  const ta=document.getElementById('family-summary-text');
+  if(!ta)return;
+  if(navigator.clipboard){navigator.clipboard.writeText(ta.value).then(()=>toast('コピーしました ✓'));}
+  else{ta.select();document.execCommand('copy');toast('コピーしました ✓');}
+}
+function printFamilySummary(){
+  const ta=document.getElementById('family-summary-text');
+  if(!ta)return;
+  const w=window.open('','_blank','width=600,height=800');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>家族向けレポート</title>
+    <style>body{font-family:sans-serif;padding:24px;font-size:14px;line-height:1.8;white-space:pre-wrap}@media print{button{display:none}}</style></head>
+    <body><button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#1976d2;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ 印刷</button>\n${ta.value}</body></html>`);
+  w.document.close();
+}
+
+// ═══════════ 申し送り返信（コメントスレッド） ═══════════
+function getHbReplies(){return ls('hb_replies')||{};}
+function saveHbReplies(data){lsSet('hb_replies',data);}
+function openHbReply(itemId){
+  const replies=getHbReplies()[itemId]||[];
+  const el=document.getElementById('hb-reply-thread');
+  if(el){
+    if(!replies.length){el.innerHTML='<div style="font-size:12px;color:var(--sub);text-align:center;padding:8px">まだコメントはありません</div>';}
+    else{el.innerHTML=replies.map(r=>`<div style="background:var(--card);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+      <div style="font-size:11px;color:var(--sub);margin-bottom:3px"><b style="color:var(--tx)">${r.by||'─'}</b> · ${r.date||''} ${r.time||''}</div>
+      <div style="font-size:12px;color:var(--tx);line-height:1.5">${escHtml(r.content||'')}</div>
+    </div>`).join('');}
+  }
+  const hidEl=document.getElementById('hb-reply-target-id');
+  if(hidEl)hidEl.value=itemId;
+  const ta=document.getElementById('hb-reply-text');
+  if(ta)ta.value='';
+  document.getElementById('modal-hb-reply').classList.add('on');
+}
+function saveHbReply(){
+  const ta=document.getElementById('hb-reply-text');
+  const hidEl=document.getElementById('hb-reply-target-id');
+  const content=(ta&&ta.value.trim())||'';
+  const itemId=hidEl&&hidEl.value;
+  if(!content){toast('コメントを入力してください');return;}
+  if(!itemId){toast('エラー：対象が特定できません');return;}
+  const now=new Date();
+  const replies=getHbReplies();
+  if(!replies[itemId])replies[itemId]=[];
+  replies[itemId].push({by:S.user||'不明',date:_localDs(now),time:now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),content});
+  saveHbReplies(replies);
+  toast('返信しました ✓');
+  closeModal('modal-hb-reply');
+  renderHbList();
+}
+
 function renderDashboard(){
+  renderBirthdayBanner();
   renderQuickActions();
   renderBackupBanner();
   renderMonthlyGoal();
@@ -8118,6 +8327,17 @@ function renderFloorMap(){
   const recs=getRecords();
   const todayStr=new Date().toDateString();
   const vitalToday=new Set(recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
+  // 体温ヒートマップ用：利用者ごとの最新体温
+  const latestTemp={};
+  recs.filter(r=>r.type==='vital'&&new Date(r.ts).toDateString()===todayStr&&r.data.temp!=null)
+    .forEach(r=>{if(!latestTemp[r.rid]||new Date(r.ts)>new Date(latestTemp[r.rid].ts))latestTemp[r.rid]={ts:r.ts,temp:r.data.temp};});
+  // ヒートマップボタン状態を反映
+  const hmBtn=document.getElementById('btn-heatmap-toggle');
+  if(hmBtn){hmBtn.style.background=S.floorHeatmap?'#e53935':'var(--card)';hmBtn.style.color=S.floorHeatmap?'#fff':'var(--sub)';hmBtn.style.borderColor=S.floorHeatmap?'#e53935':'var(--bdr)';}
+  const defLgd=document.getElementById('floor-legend-default');
+  const hmLgd=document.getElementById('floor-legend-heatmap');
+  if(defLgd)defLgd.style.display=S.floorHeatmap?'none':'flex';
+  if(hmLgd)hmLgd.style.display=S.floorHeatmap?'flex':'none';
   const roomMap={};
   resAll.forEach(r=>{
     if(!r.room||r.hidden)return;
@@ -8160,14 +8380,15 @@ function renderFloorMap(){
     const vacant=residents.length===0;
     const cellW=isDouble?`${CELL_W*2+GAP}px`:`${CELL_W}px`;
     const gBg=(r)=>r.gender==='male'?'rgba(59,130,246,0.15)':r.gender==='female'?'rgba(236,72,153,0.15)':'var(--card)';
-    const bg=vacant?'var(--bg)':isDouble?'var(--card)':gBg(residents[0]);
-    const border=vacant?'1.5px dashed var(--bdr)':'1.5px solid var(--p)';
+    const hmBg=(r)=>{if(!S.floorHeatmap)return gBg(r);const lt=latestTemp[r.id];const c=_tempColor(lt?lt.temp:null);return c||'#f5f5f5';};
+    const bg=vacant?'var(--bg)':isDouble?'var(--card)':hmBg(residents[0]);
+    const border=vacant?'1.5px dashed var(--bdr)':(S.floorHeatmap?'1.5px solid var(--bdr)':'1.5px solid var(--p)');
     const doubleBadge=isDouble?`<span style="font-size:8px;background:#ff9800;color:#fff;padding:0 3px;border-radius:3px;margin-left:2px;font-weight:700">2人</span>`:'';
     const buildHalf=(r)=>{
       if(!r)return`<div style="flex:1;display:flex;align-items:center;justify-content:center"><span style="font-size:9px;color:var(--sub)">空き</span></div>`;
       const dots=_resAlerts(r);
       const dh=dots.length?`<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px">${dots.map(d=>`<span title="${d.t}" style="width:6px;height:6px;border-radius:50%;background:${d.c};flex-shrink:0;display:inline-block"></span>`).join('')}</div>`:'';
-      return`<div onclick="openResident('${r.id}')" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:4px 6px;background:${gBg(r)}"><div style="font-size:10px;font-weight:800;white-space:nowrap;line-height:1.3;color:var(--tx)">${r.name}</div>${dh}</div>`;
+      return`<div onclick="openResident('${r.id}')" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:4px 6px;background:${hmBg(r)}"><div style="font-size:10px;font-weight:800;white-space:nowrap;line-height:1.3;color:var(--tx)">${r.name}</div>${dh}</div>`;
     };
     let content='';
     if(vacant){
@@ -8177,8 +8398,9 @@ function renderFloorMap(){
     } else {
       content=buildHalf(residents[0]);
     }
+    const hmTempLabel=S.floorHeatmap&&!vacant?residents.map(r=>{const lt=latestTemp[r.id];return lt?`<span style="font-size:8px;font-weight:800;color:#333;margin-left:2px">${lt.temp}℃</span>`:''}).join(''):'';
     return `<div style="background:${bg};border:${border};border-radius:8px;padding:5px 4px;min-width:${cellW};width:max-content;height:80px;display:flex;flex-direction:column;box-sizing:border-box;flex-shrink:0">
-      <div style="font-size:9px;font-weight:800;color:${vacant?'var(--sub)':'var(--p)'};display:flex;align-items:center;flex-shrink:0">${rn}${doubleBadge}</div>
+      <div style="font-size:9px;font-weight:800;color:${vacant?'var(--sub)':'var(--p)'};display:flex;align-items:center;flex-shrink:0">${rn}${doubleBadge}${hmTempLabel}</div>
       ${content}
     </div>`;
   }
@@ -13041,18 +13263,24 @@ function renderHbList(){
           </div>`)
       :'';
     const _cardOpacity=_allRead?'opacity:.55;':'';
+    const _replies=_itemKey?(getHbReplies()[_itemKey]||[]):[];
+    const _replyCnt=_replies.length;
+    const _replyBtn=_itemKey?`<button onclick="event.stopPropagation();openHbReply('${_itemKey}')" style="padding:2px 8px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;font-size:10px;font-weight:700;color:var(--sub);cursor:pointer;touch-action:manipulation;white-space:nowrap">💬 返信${_replyCnt>0?' ('+_replyCnt+')':''}</button>`:'';
+    const _replyPreview=_replyCnt>0?`<div style="margin-top:6px;border-top:1px dashed var(--bdr);padding-top:6px">${_replies.slice(-2).map(r=>`<div style="font-size:11px;color:var(--sub);line-height:1.5;padding:3px 0"><b style="color:var(--tx)">${r.by}</b>: ${escHtml((r.content||'').substring(0,60))}${(r.content||'').length>60?'…':''}</div>`).join('')}</div>`:'';
     return `<div class="hb-card ${priClass}" style="${_cardOpacity}" ${cardClick}>
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px">
         ${priBadge}${secTag}${resChip}
         <div style="margin-left:auto;display:flex;align-items:center">${editBtn}${delBtn}</div>
       </div>
       <div style="font-size:13px;color:var(--txt);line-height:1.55;white-space:pre-wrap">${linkifyResidents(escHtml(h.content||''))}</div>
+      ${_replyPreview}
       <div style="font-size:11px;color:var(--sub);margin-top:7px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bdr);padding-top:6px">
         <span style="font-weight:700;color:var(--tx)">✍ ${h.by||'──'}</span>
         <span style="color:var(--bdr)">|</span>
         <span>🕐 ${h.date||''}${h.time?' '+h.time:''}</span>
         <span>·</span><span style="color:${expiryColor}">${expiryTxt}</span>
         ${editedMark?`<span style="color:var(--sub)">${editedMark}</span>`:''}
+        ${_replyBtn}
         <span style="margin-left:auto">${readBtn}</span>
         ${_res&&!readBtn?`<span style="font-size:10px;color:var(--p);font-weight:700">→ カルテ</span>`:''}
       </div>
