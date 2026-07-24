@@ -106,6 +106,7 @@ a{color:var(--p);text-decoration:none}
 #mobile-menu.on #mm-panel{transform:translateX(0)}
 .mmn{width:100%;padding:13px 18px;text-align:left;color:rgba(255,255,255,.85);font-size:14px;font-weight:600;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.07)}
 .mmn:active,.mmn:hover{background:rgba(255,255,255,.1);color:#fff}
+.mm-lbl{padding:12px 18px 4px;font-size:10px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.45);text-transform:uppercase;display:block;border-top:1px solid rgba(255,255,255,.08);margin-top:4px}
 #hd-menu{font-size:24px;color:#fff;opacity:.85;padding:4px 10px;line-height:1}
 @media(min-width:768px){#hd-menu{display:none!important}}
 
@@ -2036,24 +2037,34 @@ a{color:var(--p);text-decoration:none}
       </div>
       <nav style="flex:1;padding:6px 0;overflow-y:auto">
         <button class="mmn" onclick="showScr('scr-dashboard');closeMobileMenu()">🏠 ホーム</button>
+        <span class="mm-lbl">業務・連絡</span>
         <button class="mmn" onclick="showScr('scr-residents');closeMobileMenu()">👥 利用者一覧</button>
-        <button class="mmn" onclick="showScr('scr-floor-map');closeMobileMenu()">🗺️ フロアマップ</button>
         <button class="mmn" onclick="showScr('scr-handover-board');closeMobileMenu()">📣 申し送りボード</button>
+        <button class="mmn" onclick="showScr('scr-schedule');closeMobileMenu()">📅 スケジュール</button>
+        <button class="mmn" onclick="showScr('scr-tasks');closeMobileMenu()">📌 タスク</button>
+        <button class="mmn" onclick="showScr('scr-day-today');closeMobileMenu()">🚌 今日のデイ</button>
+        <span class="mm-lbl">記録・入力</span>
+        <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
         <button class="mmn" onclick="showScr('scr-bulk-vital');closeMobileMenu()">🌡️ 一括バイタル</button>
         <button class="mmn" onclick="showScr('scr-bulk-meal');closeMobileMenu()">🍚 一括食事・水分</button>
         <button class="mmn" onclick="showScr('scr-bulk-excretion');closeMobileMenu()">💧 一括排泄</button>
-        <button class="mmn" onclick="showScr('scr-day-today');closeMobileMenu()">🚌 今日のデイ</button>
         <button class="mmn" onclick="showScr('scr-medication');closeMobileMenu()">💊 服薬チェック</button>
         <button class="mmn" onclick="showScr('scr-transport');closeMobileMenu()">🚐 送迎チェック</button>
-        <button class="mmn" onclick="showScr('scr-rounds');closeMobileMenu()">✅ 巡回チェック</button>
-        <button class="mmn" onclick="showScr('scr-schedule');closeMobileMenu()">📅 スケジュール</button>
-        <button class="mmn" onclick="showScr('scr-diary');closeMobileMenu()">📋 業務日誌</button>
+        <button class="mmn" onclick="showScr('scr-rounds');closeMobileMenu()">👁 巡回チェック</button>
+        <span class="mm-lbl">閲覧・安全</span>
+        <button class="mmn" onclick="showScr('scr-floor-map');closeMobileMenu()">🗺️ フロアマップ</button>
         <button class="mmn" onclick="showScr('scr-incidents');closeMobileMenu()">⚠️ インシデント</button>
-        <button class="mmn" onclick="showScr('scr-tasks');closeMobileMenu()">📌 タスク管理</button>
-        <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 利用者・職員登録</button>
+        <button class="mmn" onclick="showScr('scr-infection');closeMobileMenu()">🦠 感染管理</button>
+        <button class="mmn" onclick="showScr('scr-skin-gallery');closeMobileMenu()">🔬 皮膚写真</button>
+        <span class="mm-lbl">スタッフ</span>
+        <button class="mmn" onclick="showScr('scr-bulletin');closeMobileMenu()">🗒️ 職員掲示板</button>
         <button class="mmn" onclick="showScr('scr-proposal');closeMobileMenu()">💡 改善提案</button>
-        <button class="mmn" id="mmn-doctor" onclick="showScr('scr-doctor');closeMobileMenu()" style="display:none">🩺 医師ページ</button>
+        <button class="mmn" onclick="showScr('scr-shift');closeMobileMenu()">📆 シフト表</button>
+        <span class="mm-lbl">設定・その他</span>
+        <button class="mmn" onclick="showScr('scr-manual');closeMobileMenu()">📚 マニュアル</button>
+        <button class="mmn" onclick="showScr('scr-import');closeMobileMenu()">📥 職員・利用者登録</button>
         <button class="mmn" onclick="showScr('scr-settings');closeMobileMenu()">⚙️ 設定</button>
+        <button class="mmn" id="mmn-doctor" onclick="showScr('scr-doctor');closeMobileMenu()" style="display:none">🩺 医師ページ</button>
         <button class="mmn" onclick="showScr('scr-help');closeMobileMenu()">📖 ヘルプ</button>
       </nav>
       <div style="padding:14px 16px;border-top:1px solid rgba(255,255,255,.15)">
@@ -4882,7 +4893,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.20';
+const APP_VERSION='1.0.21';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
