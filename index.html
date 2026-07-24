@@ -2296,21 +2296,18 @@ a{color:var(--p);text-decoration:none}
       </div>
       <button onclick="openTaskModal()" style="background:var(--p);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">＋ 追加</button>
     </div>
-    <!-- 事業所フィルター -->
-    <div style="display:flex;gap:6px;padding:8px 12px 4px;flex-wrap:wrap">
-      <button class="chip on" id="tf-fac-all" onclick="setTaskFilter('fac','all')">全施設</button>
-      <button class="chip" id="tf-fac-resident" onclick="setTaskFilter('fac','resident')">居住</button>
-      <button class="chip" id="tf-fac-commute" onclick="setTaskFilter('fac','commute')">デイ</button>
-      <button class="chip" id="tf-fac-stay" onclick="setTaskFilter('fac','stay')">小多機</button>
-      <button class="chip" id="tf-fac-visit" onclick="setTaskFilter('fac','visit')">訪問</button>
-    </div>
-    <!-- スタッフフィルター -->
-    <div id="task-staff-filter" style="display:flex;gap:6px;padding:4px 12px 4px;flex-wrap:wrap;overflow-x:auto"></div>
-    <!-- ステータスフィルター -->
-    <div style="display:flex;gap:6px;padding:4px 12px 10px">
-      <button class="chip on" id="tf-st-all" onclick="setTaskFilter('status','all')">全て</button>
-      <button class="chip" id="tf-st-pending" onclick="setTaskFilter('status','pending')">未完了</button>
-      <button class="chip" id="tf-st-done" onclick="setTaskFilter('status','done')">完了</button>
+    <!-- フィルターバー -->
+    <div style="display:flex;gap:8px;padding:8px 12px 10px;align-items:center;flex-wrap:wrap">
+      <select id="task-staff-sel" onchange="setTaskStaffFilter(this.value)" style="flex:1;min-width:140px;padding:9px 10px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;font-weight:700;background:var(--card);color:var(--tx);cursor:pointer">
+        <option value="all">👥 全スタッフ</option>
+      </select>
+      <select id="task-fac-sel" onchange="setTaskFilter('fac',this.value)" style="flex:1;min-width:120px;padding:9px 10px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;font-weight:700;background:var(--card);color:var(--tx);cursor:pointer">
+        <option value="all">🏠 全施設</option>
+        <option value="resident">居住</option>
+        <option value="commute">デイ</option>
+        <option value="stay">小多機</option>
+        <option value="visit">訪問</option>
+      </select>
     </div>
     <div id="tasks-list" style="padding:0 12px 80px"></div>
   </div>
@@ -4861,7 +4858,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.10';
+const APP_VERSION='1.0.11';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -16586,9 +16583,7 @@ let _taskFilter={fac:'all',status:'all',staff:'all'};
 
 function setTaskFilter(type,val){
   _taskFilter[type]=val;
-  const prefix=type==='fac'?'tf-fac-':type==='status'?'tf-st-':'tf-stf-';
-  const options=type==='fac'?['all','resident','commute','stay','visit']:type==='status'?['all','pending','done']:null;
-  if(options)options.forEach(k=>{const b=document.getElementById(prefix+k);if(b)b.classList.toggle('on',k===val);});
+  if(type==='fac'){const s=document.getElementById('task-fac-sel');if(s)s.value=val;}
   renderTasksList();
 }
 
@@ -16608,21 +16603,21 @@ function _row50(kana){
   return'その他';
 }
 function _buildTaskStaffFilter(){
-  const el=document.getElementById('task-staff-filter');if(!el)return;
+  const sel=document.getElementById('task-staff-sel');if(!sel)return;
   const allObj={...STAFF_INFO,...getCustomStaff()};
-  const names=['all',...Object.entries(allObj).filter(([k,s])=>!s.hidden&&!isStaffDisabled(k)).map(([_,s])=>s.name)];
-  el.innerHTML=names.map(n=>`<button class="chip ${n===_taskFilter.staff?'on':''}" onclick="setTaskStaffFilter('${n}')">${n==='all'?'全スタッフ':n}</button>`).join('');
+  const names=Object.entries(allObj).filter(([k,s])=>!s.hidden&&!isStaffDisabled(k)).map(([_,s])=>s.name).sort((a,b)=>a.localeCompare(b,'ja'));
+  sel.innerHTML=`<option value="all">👥 全スタッフ</option>`+names.map(n=>`<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
+  sel.value=_taskFilter.staff;
 }
 function setTaskStaffFilter(name){
   _taskFilter.staff=name;
-  _buildTaskStaffFilter();
   renderTasksList();
 }
 
 function renderTasksScr(){
   if(isFacilityAdmin()&&_taskFilter.fac==='all'){
     const mf=getManagedFacility();
-    if(mf) setTaskFilter('fac',mf);
+    if(mf){_taskFilter.fac=mf;const fs=document.getElementById('task-fac-sel');if(fs)fs.value=mf;}
   }
   _buildTaskStaffFilter();
   renderTasksList();
@@ -16645,13 +16640,10 @@ function renderTasksList(){
   let tasks=getTasks();
   if(_taskFilter.fac!=='all')tasks=tasks.filter(t=>t.fac==='all'||t.fac===_taskFilter.fac);
   if(_taskFilter.staff!=='all')tasks=tasks.filter(t=>t.assignedTo===_taskFilter.staff);
-  if(_taskFilter.status==='pending')tasks=tasks.filter(t=>!t.done);
-  else if(_taskFilter.status==='done')tasks=tasks.filter(t=>t.done);
   if(!tasks.length){el.innerHTML='<div class="empty"><div class="e-ico">📌</div><p>タスクはありません</p></div>';return;}
   const allObj={...STAFF_INFO,...getCustomStaff()};
   const _stKana=(name)=>{if(!name)return'';const s=Object.values(allObj).find(x=>x.name===name);return s?.kana||name;};
   const facLabel={all:'全施設',resident:'居住',commute:'デイ',stay:'小多機',visit:'訪問'};
-  // 優先度ソート（緊急>重要>通常、未完了>完了）
   const priOrd={urgent:0,high:1,normal:2};
   const renderCard=t=>{
     const pri=TASK_PRI[t.pri||'normal']||TASK_PRI.normal;
@@ -16687,52 +16679,46 @@ function renderTasksList(){
   // 担当者グループ
   const groups={};
   tasks.forEach(t=>{const key=t.assignedTo||'__noassign__';if(!groups[key])groups[key]=[];groups[key].push(t);});
-  Object.keys(groups).forEach(k=>{groups[k].sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;return (priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2);});});
   const sortedAssignees=Object.keys(groups).filter(n=>n!=='__noassign__').sort((a,b)=>_stKana(a).localeCompare(_stKana(b),'ja'));
-  const rows50=['あ','か','さ','た','な','は','ま','や','ら','わ'];
-  const rowMap={};
-  sortedAssignees.forEach(name=>{const r=_row50(_stKana(name));if(!rowMap[r])rowMap[r]=[];rowMap[r].push(name);});
-  // インデックスバー
-  let html=`<div style="display:flex;gap:4px;padding:4px 0 12px;flex-wrap:wrap">`;
-  rows50.forEach(r=>{
-    const has=!!rowMap[r];
-    html+=`<button onclick="scrollToTaskSection('${r}')" style="min-width:32px;padding:6px 8px;border-radius:8px;font-size:13px;font-weight:800;border:1.5px solid ${has?'var(--p)':'var(--bdr)'};background:${has?'var(--ps)':'transparent'};color:${has?'var(--p)':'var(--sub)'};cursor:${has?'pointer':'default'};touch-action:manipulation">${r}</button>`;
-  });
-  html+='</div>';
-  // 担当者グループ本体
-  rows50.forEach(row=>{
-    const names=rowMap[row];if(!names)return;
-    html+=`<div id="task-section-${row}">`;
-    names.forEach(name=>{
-      const grpTasks=groups[name];
-      const pend=grpTasks.filter(t=>!t.done).length;
-      const urgent=grpTasks.filter(t=>!t.done&&t.pri==='urgent').length;
-      html+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 0 8px;border-bottom:2px solid var(--ps);margin-bottom:10px;margin-top:4px">
-        <div style="width:34px;height:34px;border-radius:50%;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">👤</div>
-        <div style="flex:1">
-          <div style="font-size:15px;font-weight:800;color:var(--tx)">${escHtml(name)}</div>
-          <div style="font-size:11px;color:var(--sub)">${pend}件未完了 / 計${grpTasks.length}件</div>
-        </div>
-        ${urgent>0?`<span style="font-size:11px;font-weight:800;color:#fff;background:#e53935;border-radius:10px;padding:2px 10px">🔴 緊急${urgent}件</span>`:''}
-        ${pend===0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border-radius:10px;padding:3px 10px">✅ 全完了</span>`:''}
-      </div>`;
-      html+=grpTasks.map(renderCard).join('');
-    });
-    html+='</div>';
-  });
-  // 未割り当て
-  if(groups['__noassign__']){
-    const ua=groups['__noassign__'];
-    const uaPend=ua.filter(t=>!t.done).length;
-    html+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 0 8px;border-bottom:2px solid var(--bdr);margin-bottom:10px;margin-top:4px">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--bg);border:2px dashed var(--bdr);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📌</div>
-      <div style="flex:1">
-        <div style="font-size:15px;font-weight:800;color:var(--sub)">未割り当て</div>
-        <div style="font-size:11px;color:var(--sub)">${uaPend}件未完了 / 計${ua.length}件</div>
+  const _renderPersonSection=(name,label,isDash)=>{
+    const grpTasks=groups[name];
+    const pending=grpTasks.filter(t=>!t.done).sort((a,b)=>(priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2));
+    const done=grpTasks.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
+    const urgent=pending.filter(t=>t.pri==='urgent').length;
+    const sectionId='tsec-'+name.replace(/\s/g,'_');
+    let h=`<div style="background:var(--card);border-radius:14px;margin-bottom:14px;overflow:hidden;border:1.5px solid var(--bdr)">`;
+    // ヘッダー
+    h+=`<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--ps);border-bottom:1.5px solid var(--bdr)">
+      <div style="width:36px;height:36px;border-radius:50%;background:${isDash?'var(--bg)':'var(--p)'};${isDash?'border:2px dashed var(--bdr)':'border:none'};display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${isDash?'📌':'👤'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:16px;font-weight:800;color:${isDash?'var(--sub)':'var(--tx)'}">${escHtml(label)}</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:1px">未完了 ${pending.length}件 ／ 完了済み ${done.length}件</div>
       </div>
+      ${urgent>0?`<span style="font-size:11px;font-weight:800;color:#fff;background:#e53935;border-radius:10px;padding:3px 10px;flex-shrink:0">🔴 緊急${urgent}</span>`:''}
+      ${pending.length===0&&done.length>0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:10px;padding:3px 10px;flex-shrink:0">✅ 全完了</span>`:''}
     </div>`;
-    html+=ua.map(renderCard).join('');
-  }
+    // 未完了
+    if(pending.length){
+      h+=`<div style="padding:10px 12px 4px">
+        <div style="font-size:11px;font-weight:800;color:var(--p);letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:3px;height:11px;background:var(--p);border-radius:2px;margin-right:2px"></span>未完了 ${pending.length}件</div>
+        ${pending.map(renderCard).join('')}
+      </div>`;
+    }
+    // 完了済み（折りたたみ）
+    if(done.length){
+      h+=`<div style="padding:0 12px 10px">
+        <details>
+          <summary style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.05em;padding:8px 0;cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:3px;height:11px;background:var(--ok);border-radius:2px;margin-right:2px"></span>✅ 完了済み ${done.length}件 ▸</summary>
+          <div style="margin-top:4px">${done.map(renderCard).join('')}</div>
+        </details>
+      </div>`;
+    }
+    h+='</div>';
+    return h;
+  };
+  let html='';
+  sortedAssignees.forEach(name=>{html+=_renderPersonSection(name,name,false);});
+  if(groups['__noassign__'])html+=_renderPersonSection('__noassign__','未割り当て',true);
   el.innerHTML=html;
 }
 function scrollToTaskSection(row){
