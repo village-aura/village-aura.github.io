@@ -1348,7 +1348,7 @@ a{color:var(--p);text-decoration:none}
       <button id="hbtab-confirmed" onclick="setHbTab('confirmed')" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">✅ 確認済み</button>
     </div>
     <!-- フィルター：緊急度ボタン + 事業所ドロップダウン -->
-    <div style="padding:0 12px 6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+    <div id="hb-filter-bar" style="padding:0 12px 6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <button id="hb-filter-all" class="hb-filter-btn on" onclick="setHbFilter('all')">すべて</button>
       <button id="hb-filter-urgent" class="hb-filter-btn" onclick="setHbFilter('urgent')">🚨 緊急</button>
       <button id="hb-filter-important" class="hb-filter-btn" onclick="setHbFilter('important')">⚠️ 重要</button>
@@ -4849,7 +4849,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.6';
+const APP_VERSION='1.0.7';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -13350,7 +13350,7 @@ function openHbStatus(){
   const mf=getManagedFacility();
   const allStaff=mf?_getStaffNamesForFacility(mf):_getAllStaffNames();
   const facLabel=mf?(_FAC_TO_JIG[mf]||mf):'全事業所';
-  const allItems=[...(bd.urgent||[]),...(bd.important||[]),...(bd.normal||[])].filter(h=>h&&h.id&&!isExpired(h));
+  const allItems=[...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])].filter(h=>h&&h.id&&!isExpired(h));
   const body=document.getElementById('hb-status-body');
   if(!body)return;
   if(allItems.length===0){
@@ -13373,7 +13373,7 @@ function openHbStatus(){
       ${!allOk?`<div style="padding:8px 12px 10px;border-top:1px solid var(--bdr)">
         ${unconfirmed.map(h=>`<div style="padding:5px 0;border-bottom:1px solid var(--bdr);display:flex;align-items:flex-start;gap:8px">
           <span style="font-size:10px;color:var(--sub);flex-shrink:0;margin-top:1px">${h.date||''}</span>
-          <span style="font-size:12px;flex:1;color:var(--tx)">${escHtml((h.body||'').substring(0,60))}${(h.body||'').length>60?'…':''}</span>
+          <span style="font-size:12px;flex:1;color:var(--tx)">${escHtml((h.content||'').substring(0,60))}${(h.content||'').length>60?'…':''}</span>
         </div>`).join('')}
       </div>`:''}
     </div>`;
@@ -13452,7 +13452,7 @@ const HB_SEC_INFO={
 };
 function setHbFilter(f){
   _hbFilter=f;
-  document.querySelectorAll('.hb-filter-btn').forEach(b=>b.classList.toggle('on',b.id==='hb-filter-'+f));
+  document.querySelectorAll('#hb-filter-bar .hb-filter-btn').forEach(b=>b.classList.toggle('on',b.id==='hb-filter-'+f));
   const svc=document.getElementById('hb-filter-svc');if(svc)svc.value='';
   renderHbList();
 }
@@ -16803,13 +16803,12 @@ function updateHandoverUnreadBadge(){
   const sbnBadge=document.getElementById('sbn-hb-badge');
   const bd=getBoardData();
   const allItems=[
-    ...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.nurse||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])
+    ...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])
   ];
   const reads=getHandoverReads();
   const unread=allItems.filter(h=>{
-    if(!h||!h.content)return false;
-    const key=h.id||'unknown';
-    return !(reads[key]||[]).includes(S.user);
+    if(!h||!h.content||!h.id)return false;
+    return !(reads[h.id]||[]).includes(S.user);
   }).length;
   const txt=unread>9?'9+':String(unread);
   if(badge){badge.style.display=unread>0?'block':'none';if(unread>0)badge.textContent=txt;}
