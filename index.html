@@ -1059,29 +1059,29 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── SKIN GALLERY ─── -->
   <div id="scr-skin-gallery" class="scr">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 12px">
       <div style="font-size:18px;font-weight:800">🔬 皮膚写真一覧</div>
     </div>
-    <div id="skin-gallery-content"></div>
+    <div id="skin-gallery-content" style="padding:0 12px"></div>
   </div>
 
   <!-- ─── 職員掲示板 ─── -->
   <div id="scr-bulletin" class="scr">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px">
       <div>
         <div style="font-size:18px;font-weight:800">🗒️ 職員掲示板</div>
         <div style="font-size:12px;color:var(--sub)">管理者からの全体通知</div>
       </div>
       <button id="btn-bulletin-post" onclick="openBulletinPost()" style="display:none;background:var(--p);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">＋ 投稿</button>
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="bul-filter-bar">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding:0 12px" id="bul-filter-bar">
       <button class="hb-filter-btn on" onclick="setBulFilter('all')">すべて</button>
       <button class="hb-filter-btn" onclick="setBulFilter('important')">🔴 重要連絡</button>
       <button class="hb-filter-btn" onclick="setBulFilter('business')">🔵 業務連絡</button>
       <button class="hb-filter-btn" onclick="setBulFilter('event')">🟢 行事・お知らせ</button>
       <button class="hb-filter-btn" onclick="setBulFilter('training')">🟣 研修・勉強会</button>
     </div>
-    <div id="bulletin-list"></div>
+    <div id="bulletin-list" style="padding:0 12px"></div>
   </div>
 
   <!-- ─── IMPORT ─── -->
@@ -4880,7 +4880,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.18';
+const APP_VERSION='1.0.19';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
