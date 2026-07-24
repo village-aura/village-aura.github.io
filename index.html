@@ -4859,7 +4859,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.13';
+const APP_VERSION='1.0.14';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -16666,10 +16666,10 @@ function renderTasksList(){
             </div>
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding-top:8px;border-top:1px solid var(--bdr)">
+            ${t.assignedTo?`<span style="font-size:12px;font-weight:800;color:var(--p);background:var(--ps);border-radius:8px;padding:2px 9px">👤 ${escHtml(t.assignedTo)}</span>`:`<span style="font-size:11px;color:var(--sub);background:var(--bg);border-radius:8px;padding:2px 8px">未割当</span>`}
             ${t.pri&&t.pri!=='normal'?`<span style="font-size:11px;font-weight:800;color:${pri.color};background:${pri.bg};border:1px solid ${pri.border};border-radius:8px;padding:2px 8px">${t.pri==='urgent'?'🔴':'🟡'} ${pri.lbl}</span>`:''}
             ${due?`<span style="font-size:11px;font-weight:700;color:${due.color};background:${due.bg};border-radius:8px;padding:2px 8px;border:1px solid ${due.color}">🗓 ${due.lbl}</span>`:''}
-            <span style="font-size:11px;color:var(--sub);background:var(--bg);padding:2px 8px;border-radius:8px">${facLabel[t.fac]||t.fac||'全施設'}</span>
-            ${t.done&&doneInfo?`<span style="font-size:11px;color:var(--ok);font-weight:700">✓ ${t.doneBy||''} ${doneInfo}</span>`:`<span style="font-size:11px;color:var(--sub)">${t.createdBy?'by '+t.createdBy:''} ${t.createdAt?new Date(t.createdAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}</span>`}
+            ${t.done&&doneInfo?`<span style="font-size:11px;color:var(--ok);font-weight:700">✓ ${t.doneBy||''} ${doneInfo}</span>`:`<span style="font-size:11px;color:var(--sub)">${t.createdAt?new Date(t.createdAt).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}):''}</span>`}
             <div style="margin-left:auto;display:flex;gap:2px">
               <button onclick="openTaskModal('${t.id}')" style="background:none;border:none;color:var(--sub);font-size:18px;padding:4px 6px;cursor:pointer;touch-action:manipulation">✏️</button>
               ${canDel?`<button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:#e53935;font-size:18px;padding:4px 6px;cursor:pointer;touch-action:manipulation">🗑</button>`:''}
