@@ -674,25 +674,27 @@ a{color:var(--p);text-decoration:none}
     </div>
     <nav style="flex:1;padding:6px 0;overflow-y:auto">
       <button class="sbn on" id="sbn-home" onclick="showScr('scr-dashboard')">🏠　ホーム</button>
+      <span class="sb-lbl">業務・連絡</span>
       <button class="sbn" id="sbn-res" onclick="showScr('scr-residents')">👥　利用者一覧</button>
       <button class="sbn" id="sbn-hb" onclick="showScr('scr-handover-board')" style="display:flex;align-items:center;gap:5px">📣　申し送りボード<span id="sbn-hb-badge" style="display:none;background:var(--ng);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;line-height:1.4;flex-shrink:0"></span></button>
       <button class="sbn" id="sbn-sch" onclick="showScr('scr-schedule')">📅　スケジュール</button>
       <button class="sbn" id="sbn-tasks" onclick="showScr('scr-tasks')">📌　タスク</button>
-      <span class="sb-lbl">チェックリスト</span>
+      <button class="sbn" id="sbn-day-today" onclick="showScr('scr-day-today')">🚌　今日のデイ</button>
+      <span class="sb-lbl">記録・入力</span>
+      <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-medication" onclick="showScr('scr-medication')">💊　服薬チェック</button>
       <button class="sbn" id="sbn-transport" onclick="showScr('scr-transport')">🚐　送迎チェック</button>
       <button class="sbn" id="sbn-rounds" onclick="showScr('scr-rounds')">👁　巡回チェック</button>
-      <button class="sbn" id="sbn-day-today" onclick="showScr('scr-day-today')">🚌　今日のデイ</button>
+      <span class="sb-lbl">閲覧・安全</span>
       <button class="sbn" id="sbn-floor-map" onclick="showScr('scr-floor-map')">🗺️　フロアマップ</button>
-      <span class="sb-lbl">記録・書類</span>
-      <button class="sbn" id="sbn-diary" onclick="showScr('scr-diary')">📋　業務日誌</button>
       <button class="sbn" id="sbn-incidents" onclick="showScr('scr-incidents')">⚠️　インシデント</button>
       <button class="sbn" id="sbn-infection" onclick="showScr('scr-infection')">🦠　感染管理</button>
       <button class="sbn" id="sbn-skin-gallery" onclick="showScr('scr-skin-gallery')">🔬　皮膚写真</button>
-      <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
+      <span class="sb-lbl">スタッフ</span>
       <button class="sbn" id="sbn-bulletin" onclick="showScr('scr-bulletin')">🗒️　職員掲示板<span id="sbn-bul-badge" style="display:none;background:#e53935;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;line-height:1.4;margin-left:4px"></span></button>
-      <span class="sb-lbl">ツール・設定</span>
+      <button class="sbn" id="sbn-prop" onclick="showScr('scr-proposal')">💡　改善提案</button>
       <button class="sbn" id="sbn-shift" onclick="showScr('scr-shift')">📆　シフト表</button>
+      <span class="sb-lbl">設定・その他</span>
       <button class="sbn" id="sbn-manual" onclick="showScr('scr-manual')">📚　マニュアル</button>
       <button class="sbn" id="sbn-imp" onclick="showScr('scr-import')">📥　職員・利用者登録</button>
       <button class="sbn" id="sbn-set" onclick="showScr('scr-settings')">⚙️　設定</button>
@@ -1982,7 +1984,7 @@ a{color:var(--p);text-decoration:none}
           <div class="acc-body"><div class="acc-inner">
             <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap">
               <button id="ptab-pending" onclick="switchProposalTab('pending')" style="flex:1;min-width:0;padding:7px 4px;background:var(--p);color:#fff;border-radius:8px;font-size:11px;font-weight:700">未審査 <span id="ptab-pending-cnt"></span></button>
-              <button id="ptab-in_progress" onclick="switchProposalTab('in_progress')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:#e65100;border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">修正中</button>
+              <button id="ptab-in_progress" onclick="switchProposalTab('in_progress')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:#e65100;border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">対応中</button>
               <button id="ptab-done" onclick="switchProposalTab('done')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:var(--ok);border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">実装済</button>
               <button id="ptab-rejected" onclick="switchProposalTab('rejected')" style="flex:1;min-width:0;padding:7px 4px;background:var(--bg);color:var(--sub);border-radius:8px;font-size:11px;font-weight:700;border:1px solid var(--bdr)">却下</button>
             </div>
@@ -2282,7 +2284,7 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">📋 提案管理 <span style="font-size:11px;font-weight:400">（管理者）</span></div>
         <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">
           <button id="ptab2-pending" onclick="switchProposalTab2('pending')" style="flex:1;min-width:0;padding:8px 4px;background:var(--p);color:#fff;border-radius:8px;font-size:11px;font-weight:700">未審査 <span id="ptab2-pending-cnt"></span></button>
-          <button id="ptab2-in_progress" onclick="switchProposalTab2('in_progress')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:#e65100;border-radius:8px;font-size:11px;font-weight:700">修正中</button>
+          <button id="ptab2-in_progress" onclick="switchProposalTab2('in_progress')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:#e65100;border-radius:8px;font-size:11px;font-weight:700">対応中</button>
           <button id="ptab2-done" onclick="switchProposalTab2('done')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:var(--ok);border-radius:8px;font-size:11px;font-weight:700">実装済</button>
           <button id="ptab2-rejected" onclick="switchProposalTab2('rejected')" style="flex:1;min-width:0;padding:8px 4px;background:#f0f4ff;color:var(--sub);border-radius:8px;font-size:11px;font-weight:700">却下</button>
         </div>
@@ -4880,7 +4882,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.19';
+const APP_VERSION='1.0.20';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -5937,8 +5939,8 @@ function openProposalDetail(id){
         <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">管理者コメント（任意）</div>
         <textarea id="padmin-comment" rows="2" placeholder="補足など…" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px"></textarea>
         <div style="display:flex;gap:8px">
-          <button onclick="reviewProposal('${id}','done')" style="flex:1;padding:10px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✓ 実装済</button>
-          <button onclick="reviewProposal('${id}','rejected')" style="flex:1;padding:10px;background:var(--ng);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✗ 却下</button>
+          <button onclick="reviewProposal('${id}','done')" style="flex:1;padding:10px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✓ 実装済み</button>
+          <button onclick="reviewProposal('${id}','rejected')" style="flex:1;padding:10px;background:#6b7280;color:#fff;border-radius:8px;font-size:14px;font-weight:700">✗ 実装不可</button>
         </div>
       </div>`;
   } else if(p.status==='pending'){
@@ -5948,7 +5950,7 @@ function openProposalDetail(id){
         <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px">管理者コメント（任意）</div>
         <textarea id="padmin-comment" rows="2" placeholder="却下理由や補足など…" style="width:100%;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;margin-bottom:8px"></textarea>
         <div style="display:flex;gap:8px">
-          <button onclick="reviewProposal('${id}','in_progress')" style="flex:1;padding:10px;background:#e65100;color:#fff;border-radius:8px;font-size:14px;font-weight:700">🔧 修正中</button>
+          <button onclick="reviewProposal('${id}','in_progress')" style="flex:1;padding:10px;background:#e65100;color:#fff;border-radius:8px;font-size:14px;font-weight:700">🔄 対応中</button>
           <button onclick="reviewProposal('${id}','rejected')" style="flex:1;padding:10px;background:var(--ng);color:#fff;border-radius:8px;font-size:14px;font-weight:700">✗ 却下</button>
         </div>
       </div>`;
@@ -5969,9 +5971,9 @@ function reviewProposal(id,status){
   p.reviewedAt=new Date().toISOString();
   saveProposals(proposals);
   closeModal('modal-proposal-detail');
-  const auditLabel={in_progress:'修正中設定',done:'実装済',rejected:'却下'};
+  const auditLabel={in_progress:'対応中設定',done:'実装済み',rejected:'却下/実装不可'};
   addAuditLog('提案'+(auditLabel[status]||status),p.title);
-  const toastMsg={in_progress:'修正中に設定しました 🔧',done:'実装済に設定しました ✓',rejected:'却下しました'};
+  const toastMsg={in_progress:'対応中に設定しました 🔄',done:'実装済みに設定しました ✓',rejected:'却下しました'};
   toast(toastMsg[status]||'更新しました ✓');
   renderProposalList();
   if(status==='done'||status==='in_progress'){
@@ -6829,7 +6831,7 @@ function renderMyProposalList(){
   if(!el)return;
   const mine=getProposals().filter(p=>p.by===S.user);
   if(!mine.length){el.innerHTML='<div style="color:var(--sub);font-size:13px;padding:8px 0">まだ提案はありません</div>';return;}
-  const statusLabel={pending:'審査中',in_progress:'修正中',done:'実装済',approved:'実装済',rejected:'却下'};
+  const statusLabel={pending:'審査中',in_progress:'対応中',done:'実装済み',approved:'実装済み',rejected:'却下'};
   const statusColor={pending:'#9ca3af',in_progress:'#e65100',done:'var(--ok)',approved:'var(--ok)',rejected:'var(--ng)'};
   el.innerHTML=mine.map(p=>`<div style="border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;background:#fff">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
