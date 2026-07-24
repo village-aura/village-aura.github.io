@@ -4373,6 +4373,7 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="field"><label>メモ</label>
       <textarea id="sch-note" placeholder="備考..."></textarea>
+      <button class="btn-voice" onclick="startVoice('sch-note',this)">🎤 音声入力</button>
     </div>
     <button class="btn-primary" onclick="saveScheduleEvent()">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-sch-add')">キャンセル</button>
@@ -4733,7 +4734,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='2026.07.24';
+const APP_VERSION='1.0.1';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -13265,7 +13266,7 @@ function renderSchedule(){
   bar.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
-        ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0')}${scopeBtn('visit','訪問介護','0')}${scopeBtn('nursing','訪問看護','0 8px 8px 0')}
+        ${scopeBtn('all','全体','8px 0 0 8px')}${scopeBtn('individual','個別','0')}${scopeBtn('commute','デイ','0')}${scopeBtn('visit','訪問介護','0')}${scopeBtn('nursing','訪問看護','0 8px 8px 0')}
       </div>
       <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
         ${viewBtn('month','月','8px 0 0 8px')}${viewBtn('day','日','0 8px 8px 0')}
@@ -13308,7 +13309,8 @@ function renderMonthCal(){
   const allRes=getResidents();
   const scheds=getSchedules().filter(ev=>{
     const [y,m]=ev.date.split('-').map(Number);
-    return y===year&&m===month+1&&(S.schedScope==='all'||ev.rid===S.schedRid);
+    const scopeOk=S.schedScope==='all'||(S.schedScope==='individual'&&ev.rid===S.schedRid)||(S.schedScope==='commute'&&ev.type==='commute');
+    return y===year&&m===month+1&&scopeOk;
   });
   const DOW=['日','月','火','水','木','金','土'];
   let html=`<div class="cal-wrap"><div class="cal-grid">`;
@@ -13362,7 +13364,8 @@ function renderDayView(){
   const year=S.schedYear,month=S.schedMonth,day=S.schedDay;
   const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   const allRes=getResidents();
-  const scheds=getSchedules().filter(ev=>ev.date===dateStr&&(S.schedScope==='all'||ev.rid===S.schedRid))
+  const _scopeFilter=ev=>S.schedScope==='all'||(S.schedScope==='individual'&&ev.rid===S.schedRid)||(S.schedScope==='commute'&&ev.type==='commute');
+  const scheds=getSchedules().filter(ev=>ev.date===dateStr&&_scopeFilter(ev))
     .sort((a,b)=>a.start<b.start?-1:1);
   if(!scheds.length) return `<div class="tl-empty" style="padding:40px 20px">この日の予定はありません<br><span style="font-size:12px;color:var(--sub)">右下の ＋ から追加できます</span></div>`;
   return `<div class="day-view">${scheds.map(ev=>{
@@ -13370,19 +13373,19 @@ function renderDayView(){
     const res=allRes[ridx];
     const color=S.schedScope==='individual'?(EVENT_COLORS[ev.type]||EVENT_COLORS.other):(RES_PALETTE[ridx%RES_PALETTE.length]||'#607d8b');
     const typeLabel={medical:'通院・医療',commute:'デイサービス',care:'ケア・入浴',family:'家族面談',rehab:'リハビリ',other:'その他'}[ev.type]||ev.type;
-    return `<div class="day-event" style="background:${color}18;border-left:4px solid ${color};color:var(--txt);margin-bottom:8px">
+    return `<div class="day-event" style="background:var(--card);border-left:5px solid ${color};color:var(--txt);margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
       <div style="display:flex;align-items:flex-start;gap:8px">
         <div style="flex:1;min-width:0">
-          <b>${ev.start||''}${ev.end?' – '+ev.end:''} ${ev.title}</b>
-          <span style="display:block;margin-top:3px;font-size:12px">${typeLabel}${res?' · <b style="color:var(--p)">${res.name}</b>':''}</span>
-          ${ev.note?`<span style="color:var(--sub);font-size:11px">${ev.note}</span>`:''}
+          <b style="color:var(--tx)">${ev.start||''}${ev.end?' – '+ev.end:''} ${ev.title}</b>
+          <span style="display:block;margin-top:3px;font-size:12px;color:var(--sub)">${typeLabel}`+(res?' · <b style="color:var(--p)">'+res.name+'</b>':'')+`</span>
+          ${ev.note?'<span style="color:var(--sub);font-size:11px">'+ev.note+'</span>':''}
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          <button onclick="openSchEdit('${ev.id}')" style="padding:4px 9px;font-size:11px;font-weight:700;background:var(--card);border:1.5px solid var(--bdr);border-radius:7px;cursor:pointer;touch-action:manipulation;color:var(--tx)">✏️ 編集</button>
+          <button onclick="openSchEdit('${ev.id}')" style="padding:4px 9px;font-size:11px;font-weight:700;background:var(--bg);border:1.5px solid var(--bdr);border-radius:7px;cursor:pointer;touch-action:manipulation;color:var(--tx)">✏️ 編集</button>
           <button onclick="deleteSchEvent('${ev.id}')" style="padding:4px 9px;font-size:11px;font-weight:700;background:#fff0f0;border:1.5px solid #fca5a5;border-radius:7px;cursor:pointer;touch-action:manipulation;color:#c62828">🗑 削除</button>
         </div>
       </div>
-      ${res?`<button onclick="openResFromSched('${ev.rid}')" style="margin-top:8px;padding:4px 10px;font-size:11px;font-weight:700;background:none;border:none;color:var(--p);cursor:pointer;padding-left:0;touch-action:manipulation">👤 ${res.name}様のページへ ›</button>`:''}
+      ${res?'<button onclick="openResFromSched(\''+ev.rid+'\')" style="margin-top:8px;padding:4px 10px;font-size:11px;font-weight:700;background:none;border:none;color:var(--p);cursor:pointer;padding-left:0;touch-action:manipulation">👤 '+res.name+'様のページへ ›</button>':''}
     </div>`;
   }).join('')}</div>`;
 }
