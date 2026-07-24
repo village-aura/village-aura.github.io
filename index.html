@@ -4859,7 +4859,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.14';
+const APP_VERSION='1.0.15';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -16584,7 +16584,10 @@ let _taskFilter={fac:'all',status:'all',staff:'all'};
 
 function setTaskFilter(type,val){
   _taskFilter[type]=val;
-  if(type==='fac'){const s=document.getElementById('task-fac-sel');if(s)s.value=val;}
+  if(type==='fac'){
+    const s=document.getElementById('task-fac-sel');if(s)s.value=val;
+    _buildTaskStaffFilter();
+  }
   renderTasksList();
 }
 
@@ -16606,10 +16609,18 @@ function _row50(kana){
 function _buildTaskStaffFilter(){
   const sel=document.getElementById('task-staff-sel');if(!sel)return;
   const allObj={...STAFF_INFO,...getCustomStaff()};
-  const entries=Object.entries(allObj).filter(([k,s])=>!s.hidden&&!isStaffDisabled(k)&&s.name)
-    .map(([_,s])=>({name:s.name,kana:s.kana||s.name}))
+  const targetJig=_taskFilter.fac!=='all'?(_FAC_TO_JIG[_taskFilter.fac]||null):null;
+  const entries=Object.entries(allObj).filter(([k,s])=>{
+    if(!s.name||s.hidden||isStaffDisabled(k))return false;
+    if(targetJig){const jig=getStaffJigyousho(k);return jig===targetJig;}
+    return true;
+  }).map(([_,s])=>({name:s.name,kana:s.kana||s.name}))
     .sort((a,b)=>a.kana.localeCompare(b.kana,'ja'));
   sel.innerHTML=`<option value="all">👥 全スタッフ</option>`+entries.map(e=>`<option value="${escHtml(e.name)}">${escHtml(e.name)}</option>`).join('');
+  // 選択中スタッフが絞り込み後のリストにいなければリセット
+  if(_taskFilter.staff!=='all'&&!entries.find(e=>e.name===_taskFilter.staff)){
+    _taskFilter.staff='all';
+  }
   sel.value=_taskFilter.staff;
 }
 function setTaskStaffFilter(name){
@@ -16679,50 +16690,37 @@ function renderTasksList(){
       </div>
     </div>`;
   };
-  if(_taskFilter.staff==='all'){
-    // 全スタッフ：フラットリスト（未完了のみ優先度順、完了は折りたたみ）
-    const pending=tasks.filter(t=>!t.done).sort((a,b)=>(priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2));
-    const done=tasks.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
-    let html='';
-    if(pending.length){
-      html+=`<div style="font-size:12px;font-weight:800;color:var(--p);letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:3px;height:12px;background:var(--p);border-radius:2px"></span>未完了 ${pending.length}件</div>`;
-      html+=pending.map(renderCard).join('');
-    } else {
-      html+=`<div style="text-align:center;padding:32px 0 16px;color:var(--ok);font-size:15px;font-weight:700">✅ 未完了タスクはありません</div>`;
-    }
-    if(done.length){
-      html+=`<details style="margin-top:6px"><summary style="font-size:12px;font-weight:800;color:var(--sub);padding:10px 0;cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;border-top:1px solid var(--bdr)"><span style="display:inline-block;width:3px;height:12px;background:var(--ok);border-radius:2px"></span>✅ 完了済み ${done.length}件 ▸</summary><div style="margin-top:6px">${done.map(renderCard).join('')}</div></details>`;
-    }
-    el.innerHTML=html;
-  } else {
-    // 特定スタッフ：未完了／完了を分けて表示
-    const pending=tasks.filter(t=>!t.done).sort((a,b)=>(priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2));
-    const done=tasks.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
+  const _secHeader=(label,color,count)=>`<div style="display:flex;align-items:center;gap:6px;padding:10px 0 8px;margin-bottom:6px;border-bottom:2px solid ${color}20">
+    <span style="display:inline-block;width:4px;height:14px;background:${color};border-radius:2px"></span>
+    <span style="font-size:13px;font-weight:800;color:${color}">${label}</span>
+    <span style="font-size:12px;font-weight:700;color:#fff;background:${color};border-radius:10px;padding:1px 8px">${count}件</span>
+  </div>`;
+  const pending=tasks.filter(t=>!t.done).sort((a,b)=>(priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2));
+  const done=tasks.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
+  let html='';
+  if(_taskFilter.staff!=='all'){
     const urgent=pending.filter(t=>t.pri==='urgent').length;
-    let html=`<div style="background:var(--card);border-radius:14px;overflow:hidden;border:1.5px solid var(--bdr)">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--ps);border-bottom:1.5px solid var(--bdr)">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">👤</div>
-        <div style="flex:1">
-          <div style="font-size:16px;font-weight:800;color:var(--tx)">${escHtml(_taskFilter.staff)}</div>
-          <div style="font-size:11px;color:var(--sub)">未完了 ${pending.length}件 ／ 完了済み ${done.length}件</div>
-        </div>
-        ${urgent>0?`<span style="font-size:11px;font-weight:800;color:#fff;background:#e53935;border-radius:10px;padding:3px 10px">🔴 緊急${urgent}</span>`:''}
-        ${pending.length===0&&done.length>0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:10px;padding:3px 10px">✅ 全完了</span>`:''}
-      </div>`;
-    if(pending.length){
-      html+=`<div style="padding:10px 12px 4px">
-        <div style="font-size:11px;font-weight:800;color:var(--p);letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:3px;height:11px;background:var(--p);border-radius:2px;margin-right:2px"></span>未完了 ${pending.length}件</div>
-        ${pending.map(renderCard).join('')}
-      </div>`;
-    } else {
-      html+=`<div style="text-align:center;padding:24px 0;color:var(--ok);font-size:14px;font-weight:700">✅ 未完了タスクはありません</div>`;
-    }
-    if(done.length){
-      html+=`<div style="padding:0 12px 10px"><details><summary style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.05em;padding:8px 0;cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:3px;height:11px;background:var(--ok);border-radius:2px;margin-right:2px"></span>✅ 完了済み ${done.length}件 ▸</summary><div style="margin-top:4px">${done.map(renderCard).join('')}</div></details></div>`;
-    }
-    html+='</div>';
-    el.innerHTML=html;
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 0 12px;margin-bottom:4px">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">👤</div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:800;color:var(--tx)">${escHtml(_taskFilter.staff)}</div>
+        <div style="font-size:11px;color:var(--sub)">未完了 ${pending.length}件 ／ 完了済み ${done.length}件</div>
+      </div>
+      ${urgent>0?`<span style="font-size:11px;font-weight:800;color:#fff;background:#e53935;border-radius:10px;padding:3px 10px">🔴 緊急${urgent}</span>`:''}
+      ${pending.length===0&&done.length>0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:10px;padding:3px 10px">✅ 全完了</span>`:''}
+    </div>`;
   }
+  if(pending.length){
+    html+=_secHeader('未完了','var(--p)',pending.length);
+    html+=pending.map(renderCard).join('');
+  } else {
+    html+=`<div style="text-align:center;padding:28px 0 14px;color:var(--ok);font-size:15px;font-weight:700">✅ 未完了タスクはありません</div>`;
+  }
+  if(done.length){
+    html+=`<div style="margin-top:14px">${_secHeader('完了済み','var(--ok)',done.length)}</div>`;
+    html+=done.map(renderCard).join('');
+  }
+  el.innerHTML=html;
 }
 function scrollToTaskSection(row){
   const sec=document.getElementById('task-section-'+row);
