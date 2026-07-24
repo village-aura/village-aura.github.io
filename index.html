@@ -642,7 +642,7 @@ a{color:var(--p);text-decoration:none}
       <div class="login-title">Village Aura</div>
       <div class="login-sub-fac">メディケアビレッジかしわじま / こはる日和</div>
       <div class="login-sub-desc">複合介護施設記録ツール</div>
-      <div class="login-sub-desc" style="margin-top:8px;opacity:.5">v1.0.0</div>
+      <div class="login-sub-desc" style="margin-top:8px;opacity:.5" id="login-ver-lbl">v---</div>
     </div>
     <div class="login-card">
       <label for="login-id">職員ID（4桁）</label>
@@ -4322,7 +4322,7 @@ a{color:var(--p);text-decoration:none}
 
 <div class="sheet-modal-auto" id="modal-sch-add" onclick="closeModal('modal-sch-add',event)">
   <div class="modal-inner" onclick="event.stopPropagation()">
-    <div class="sheet-title">📅 スケジュール追加</div>
+    <div class="sheet-title" id="sch-modal-title">📅 スケジュール追加</div>
     <!-- 音声入力バー -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <button id="sch-voice-btn" onclick="toggleSchedVoice(this)" style="background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;flex-shrink:0">🎤 口頭で入力</button>
@@ -4733,7 +4733,8 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.0';
+const APP_VERSION='2026.07.24';
+(function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
   apiKey:'AIzaSyBOU4Z48gIhbndtRSKiTH8fcQAjlKgncD8',
@@ -13325,7 +13326,7 @@ function renderMonthCal(){
       const color=S.schedScope==='individual'?(EVENT_COLORS[ev.type]||EVENT_COLORS.other):(RES_PALETTE[ridx%RES_PALETTE.length]||'#607d8b');
       const typePfx=S.schedScope==='individual'?(SHORT_TYPE[ev.type]||ev.type)+' ':'';
       const lbl=S.schedScope==='all'?((allRes[ridx]?.name.split(' ')[0]||'?')+' '+ev.title):ev.title;
-      return `<div class="cal-event" style="background:${color};color:#fff" title="${typePfx}${lbl}">${typePfx}${lbl}</div>`;
+      return `<div class="cal-event" style="background:${color};color:#fff" title="${typePfx}${lbl}" onclick="event.stopPropagation();openSchEdit('${ev.id}')">${typePfx}${lbl}</div>`;
     }).join('');
     const moreHtml=dayEvs.length>3?`<div class="cal-more">+${dayEvs.length-3}</div>`:'';
     html+=`<div class="${cls}" onclick="selectCalDay(${day})">
@@ -13363,16 +13364,25 @@ function renderDayView(){
   const allRes=getResidents();
   const scheds=getSchedules().filter(ev=>ev.date===dateStr&&(S.schedScope==='all'||ev.rid===S.schedRid))
     .sort((a,b)=>a.start<b.start?-1:1);
-  if(!scheds.length) return `<div class="tl-empty" style="padding:40px 20px">この日の予定はありません</div>`;
+  if(!scheds.length) return `<div class="tl-empty" style="padding:40px 20px">この日の予定はありません<br><span style="font-size:12px;color:var(--sub)">右下の ＋ から追加できます</span></div>`;
   return `<div class="day-view">${scheds.map(ev=>{
     const ridx=allRes.findIndex(r=>r.id===ev.rid);
     const res=allRes[ridx];
     const color=S.schedScope==='individual'?(EVENT_COLORS[ev.type]||EVENT_COLORS.other):(RES_PALETTE[ridx%RES_PALETTE.length]||'#607d8b');
     const typeLabel={medical:'通院・医療',commute:'デイサービス',care:'ケア・入浴',family:'家族面談',rehab:'リハビリ',other:'その他'}[ev.type]||ev.type;
-    return `<div class="day-event" style="background:${color}18;border-left:4px solid ${color};color:var(--txt);margin-bottom:8px;cursor:pointer" onclick="openResFromSched('${ev.rid}')">
-      <b>${ev.start?ev.start:''}${ev.end?' – '+ev.end:''} ${ev.title}</b>
-      <span style="display:block;margin-top:3px">${typeLabel}${res?' · <span style="color:var(--p);text-decoration:underline">'+res.name+'</span>':''}</span>
-      ${ev.note?`<span style="color:var(--sub)">${ev.note}</span>`:''}
+    return `<div class="day-event" style="background:${color}18;border-left:4px solid ${color};color:var(--txt);margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div style="flex:1;min-width:0">
+          <b>${ev.start||''}${ev.end?' – '+ev.end:''} ${ev.title}</b>
+          <span style="display:block;margin-top:3px;font-size:12px">${typeLabel}${res?' · <b style="color:var(--p)">${res.name}</b>':''}</span>
+          ${ev.note?`<span style="color:var(--sub);font-size:11px">${ev.note}</span>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button onclick="openSchEdit('${ev.id}')" style="padding:4px 9px;font-size:11px;font-weight:700;background:var(--card);border:1.5px solid var(--bdr);border-radius:7px;cursor:pointer;touch-action:manipulation;color:var(--tx)">✏️ 編集</button>
+          <button onclick="deleteSchEvent('${ev.id}')" style="padding:4px 9px;font-size:11px;font-weight:700;background:#fff0f0;border:1.5px solid #fca5a5;border-radius:7px;cursor:pointer;touch-action:manipulation;color:#c62828">🗑 削除</button>
+        </div>
+      </div>
+      ${res?`<button onclick="openResFromSched('${ev.rid}')" style="margin-top:8px;padding:4px 10px;font-size:11px;font-weight:700;background:none;border:none;color:var(--p);cursor:pointer;padding-left:0;touch-action:manipulation">👤 ${res.name}様のページへ ›</button>`:''}
     </div>`;
   }).join('')}</div>`;
 }
@@ -13616,15 +13626,40 @@ function navigateSchDay(delta){
 function selectCalDay(day){
   S.schedDay=day;S.schedView='day';renderSchedule();
 }
+let _schEditId=null;
 function openSchAdd(){
+  _schEditId=null;
   const res=getResidents();
   document.getElementById('sch-rid').innerHTML=res.map(r=>`<option value="${r.id}"${r.id===S.schedRid?' selected':''}>${r.name}</option>`).join('');
   document.getElementById('sch-date').value=`${S.schedYear}-${String(S.schedMonth+1).padStart(2,'0')}-${String(S.schedDay).padStart(2,'0')}`;
   document.getElementById('sch-title').value='';
+  document.getElementById('sch-type').value='medical';
   document.getElementById('sch-start').value='';
   document.getElementById('sch-end').value='';
   document.getElementById('sch-note').value='';
+  const ttl=document.getElementById('sch-modal-title');if(ttl)ttl.textContent='📅 スケジュール追加';
   document.getElementById('modal-sch-add').classList.add('on');
+}
+function openSchEdit(evId){
+  const ev=getSchedules().find(e=>e.id===evId);
+  if(!ev){toast('予定が見つかりません');return;}
+  _schEditId=evId;
+  const res=getResidents();
+  document.getElementById('sch-rid').innerHTML=res.map(r=>`<option value="${r.id}"${r.id===ev.rid?' selected':''}>${r.name}</option>`).join('');
+  document.getElementById('sch-date').value=ev.date||'';
+  document.getElementById('sch-title').value=ev.title||'';
+  document.getElementById('sch-type').value=ev.type||'other';
+  document.getElementById('sch-start').value=ev.start||'';
+  document.getElementById('sch-end').value=ev.end||'';
+  document.getElementById('sch-note').value=ev.note||'';
+  const ttl=document.getElementById('sch-modal-title');if(ttl)ttl.textContent='✏️ スケジュール編集';
+  document.getElementById('modal-sch-add').classList.add('on');
+}
+function deleteSchEvent(evId){
+  const scheds=getSchedules().filter(e=>e.id!==evId);
+  saveSchedules(scheds);
+  toast('予定を削除しました');
+  renderSchedule();
 }
 // ═══════════ 今日の来所者登録 ═══════════
 let _dtrSelected=new Set();
@@ -13763,14 +13798,22 @@ function saveScheduleEvent(){
   if(!title){toast('タイトルを入力してください');return;}
   const date=document.getElementById('sch-date').value;
   if(!date){toast('日付を入力してください');return;}
-  const ev={id:'ev'+Date.now(),rid:document.getElementById('sch-rid').value,
-    title,type:document.getElementById('sch-type').value,date,
-    start:document.getElementById('sch-start').value,
-    end:document.getElementById('sch-end').value,
-    note:document.getElementById('sch-note').value};
-  const scheds=getSchedules();scheds.push(ev);saveSchedules(scheds);
-  closeModal('modal-sch-add');
-  toast('予定を追加しました ✓');
+  const fields={rid:document.getElementById('sch-rid').value,title,type:document.getElementById('sch-type').value,date,
+    start:document.getElementById('sch-start').value,end:document.getElementById('sch-end').value,note:document.getElementById('sch-note').value};
+  const scheds=getSchedules();
+  if(_schEditId){
+    const idx=scheds.findIndex(e=>e.id===_schEditId);
+    if(idx>=0) scheds[idx]={...scheds[idx],...fields};
+    _schEditId=null;
+    saveSchedules(scheds);
+    closeModal('modal-sch-add');
+    toast('予定を更新しました ✓');
+  } else {
+    scheds.push({id:'ev'+Date.now(),...fields});
+    saveSchedules(scheds);
+    closeModal('modal-sch-add');
+    toast('予定を追加しました ✓');
+  }
   renderSchedule();
 }
 
