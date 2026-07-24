@@ -1308,13 +1308,21 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── HB STATUS MODAL ─── -->
   <div class="overlay" id="modal-hb-status" data-no-close-btn onclick="closeModal('modal-hb-status',event)">
-    <div class="sheet" style="max-height:92vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div class="sheet" style="max-height:92vh;display:flex;flex-direction:column" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0">
         <div class="sheet-title" style="margin-bottom:0">📊 確認状況（スタッフ別）</div>
         <button onclick="closeModal('modal-hb-status')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation">✕ 閉じる</button>
       </div>
-      <div id="hb-status-body"></div>
+      <select id="hb-status-fac-sel" onchange="renderHbStatusBody(this.value)" style="flex-shrink:0;margin-bottom:10px;padding:8px 10px;border:1.5px solid var(--bdr);border-radius:10px;font-size:13px;font-weight:700;background:var(--card);color:var(--tx)">
+        <option value="all">🏠 全事業所</option>
+        <option value="resident">居住（サ高住）</option>
+        <option value="commute">デイサービス</option>
+        <option value="stay">小規模多機能</option>
+        <option value="visit">訪問介護</option>
+        <option value="nursing">訪問看護</option>
+      </select>
+      <div id="hb-status-body" style="overflow-y:auto;flex:1"></div>
     </div>
   </div>
 
@@ -4872,7 +4880,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.17';
+const APP_VERSION='1.0.18';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -13397,20 +13405,34 @@ function renderHandoverBoard(){
 }
 function openHbStatus(){
   if(!isManagerOrAbove()){toast('管理者以上のみ閲覧できます');return;}
+  const mf=getManagedFacility();
+  const sel=document.getElementById('hb-status-fac-sel');
+  if(sel){
+    // 施設管理者は自分の事業所に固定、スーパー管理者は全選択可
+    if(mf){sel.value=mf;sel.disabled=true;}
+    else{sel.value='all';sel.disabled=false;}
+  }
+  renderHbStatusBody(mf||'all');
+  openModal('modal-hb-status');
+}
+function renderHbStatusBody(fac){
   const bd=getBoardData();
   const reads=getHandoverReads();
-  const mf=getManagedFacility();
-  const allStaff=mf?_getStaffNamesForFacility(mf):_getAllStaffNames();
-  const facLabel=mf?(_FAC_TO_JIG[mf]||mf):'全事業所';
+  const allStaff=fac==='all'?_getAllStaffNames():_getStaffNamesForFacility(fac);
+  const facLabel=fac==='all'?'全事業所':(_FAC_TO_JIG[fac]||fac);
   const allItems=[...bd.sak.am,...bd.sak.pm,...(bd.doctor||[]),...(bd.doctor_to||[]),...(bd.facility_nurse||[]),...(bd.shot||[]),...(bd.day||[]),...(bd.visit||[]),...(bd.home_care||[])].filter(h=>h&&h.id&&!isExpired(h));
   const body=document.getElementById('hb-status-body');
   if(!body)return;
   if(allItems.length===0){
     body.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub);font-size:14px">申し送り項目がありません</div>';
-    openModal('modal-hb-status');return;
+    return;
   }
   const staffArr=Array.from(allStaff).sort();
-  let html='';
+  if(!staffArr.length){
+    body.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub);font-size:14px">該当スタッフがいません</div>';
+    return;
+  }
+  let html=`<div style="font-size:12px;color:var(--sub);margin-bottom:10px">申し送り ${allItems.length}件 ／ ${escHtml(facLabel)} スタッフ ${staffArr.length}名</div>`;
   staffArr.forEach(staff=>{
     const unconfirmed=allItems.filter(h=>!(reads[h.id]||[]).includes(staff));
     const allOk=unconfirmed.length===0;
@@ -13430,8 +13452,7 @@ function openHbStatus(){
       </div>`:''}
     </div>`;
   });
-  body.innerHTML=`<div style="font-size:12px;color:var(--sub);margin-bottom:10px">申し送り ${allItems.length}件 ／ ${facLabel} スタッフ ${staffArr.length}名</div>${html}`;
-  openModal('modal-hb-status');
+  body.innerHTML=html;
 }
 function linkifyResidents(text){
   let result=text;
@@ -16871,8 +16892,8 @@ function getHandoverReads(){return ls('handover_reads')||{};}
 function saveHandoverReads(d){lsSet('handover_reads',d);fsSet('handover_reads',d);}
 function _getAllStaffNames(){
   const names=new Set();
-  Object.values(STAFF_INFO).forEach(s=>{if(s.name)names.add(s.name);});
-  Object.values(getCustomStaff()).forEach(s=>{if(s.name&&!s.disabled&&!s.hidden)names.add(s.name);});
+  Object.entries(STAFF_INFO).forEach(([k,s])=>{if(s.name&&!s.hidden&&!isStaffDisabled(k))names.add(s.name);});
+  Object.entries(getCustomStaff()).forEach(([k,s])=>{if(s.name&&!s.disabled&&!s.hidden&&!isStaffDisabled(k))names.add(s.name);});
   return names;
 }
 const _FAC_TO_JIG={resident:'サ高住',commute:'デイサービス',stay:'小多機',visit:'訪問介護',nursing:'訪問看護',home_care:'居宅',kitchen:'厨房'};
@@ -16881,7 +16902,7 @@ function _getStaffNamesForFacility(fac){
   const names=new Set();
   const all={...STAFF_INFO,...getCustomStaff()};
   Object.entries(all).forEach(([k,s])=>{
-    if(!s.name||s.disabled||s.hidden)return;
+    if(!s.name||s.disabled||s.hidden||isStaffDisabled(k))return;
     const jig=getStaffJigyousho(k);
     if(jig===targetJig)names.add(s.name);
   });
