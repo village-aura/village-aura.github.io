@@ -2310,6 +2310,11 @@ a{color:var(--p);text-decoration:none}
         <option value="visit">訪問</option>
       </select>
     </div>
+    <!-- 未完了 / 完了 タブ -->
+    <div id="task-done-tabs" style="display:flex;gap:6px;padding:0 12px 10px">
+      <button id="task-tab-pending" onclick="setTaskDoneTab('pending')" style="flex:1;padding:9px;border-radius:10px;font-size:14px;font-weight:700;background:var(--p);color:#fff;border:none;cursor:pointer;touch-action:manipulation;transition:all .15s">未完了 <span id="task-tab-pending-cnt" style="background:rgba(255,255,255,.25);border-radius:10px;padding:1px 7px;font-size:12px;margin-left:3px"></span></button>
+      <button id="task-tab-done" onclick="setTaskDoneTab('done')" style="flex:1;padding:9px;border-radius:10px;font-size:14px;font-weight:700;background:var(--bg);color:var(--sub);border:1.5px solid var(--bdr);cursor:pointer;touch-action:manipulation;transition:all .15s">完了 <span id="task-tab-done-cnt" style="background:var(--bdr);border-radius:10px;padding:1px 7px;font-size:12px;margin-left:3px"></span></button>
+    </div>
     <div id="tasks-list" style="padding:0 12px 80px"></div>
   </div>
 
@@ -4859,7 +4864,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.15';
+const APP_VERSION='1.0.16';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -16581,6 +16586,16 @@ function getTasks(){return ls('tasks_data')||[];}
 function saveTasks(d){lsSet('tasks_data',d);fsSet('tasks_data',d);}
 
 let _taskFilter={fac:'all',status:'all',staff:'all'};
+let _taskDoneTab='pending';
+
+function setTaskDoneTab(tab){
+  _taskDoneTab=tab;
+  const btnP=document.getElementById('task-tab-pending');
+  const btnD=document.getElementById('task-tab-done');
+  if(btnP){btnP.style.background=tab==='pending'?'var(--p)':'var(--bg)';btnP.style.color=tab==='pending'?'#fff':'var(--sub)';btnP.style.border=tab==='pending'?'none':'1.5px solid var(--bdr)';}
+  if(btnD){btnD.style.background=tab==='done'?'var(--ok)':'var(--bg)';btnD.style.color=tab==='done'?'#fff':'var(--sub)';btnD.style.border=tab==='done'?'none':'1.5px solid var(--bdr)';}
+  renderTasksList();
+}
 
 function setTaskFilter(type,val){
   _taskFilter[type]=val;
@@ -16690,13 +16705,14 @@ function renderTasksList(){
       </div>
     </div>`;
   };
-  const _secHeader=(label,color,count)=>`<div style="display:flex;align-items:center;gap:6px;padding:10px 0 8px;margin-bottom:6px;border-bottom:2px solid ${color}20">
-    <span style="display:inline-block;width:4px;height:14px;background:${color};border-radius:2px"></span>
-    <span style="font-size:13px;font-weight:800;color:${color}">${label}</span>
-    <span style="font-size:12px;font-weight:700;color:#fff;background:${color};border-radius:10px;padding:1px 8px">${count}件</span>
-  </div>`;
   const pending=tasks.filter(t=>!t.done).sort((a,b)=>(priOrd[a.pri||'normal']??2)-(priOrd[b.pri||'normal']??2));
   const done=tasks.filter(t=>t.done).sort((a,b)=>new Date(b.doneAt||0)-new Date(a.doneAt||0));
+  // タブカウント更新
+  const cntP=document.getElementById('task-tab-pending-cnt');
+  const cntD=document.getElementById('task-tab-done-cnt');
+  if(cntP)cntP.textContent=pending.length;
+  if(cntD)cntD.textContent=done.length;
+  // タブ表示切り替え（スタッフパネルは両タブ共通）
   let html='';
   if(_taskFilter.staff!=='all'){
     const urgent=pending.filter(t=>t.pri==='urgent').length;
@@ -16710,15 +16726,18 @@ function renderTasksList(){
       ${pending.length===0&&done.length>0?`<span style="font-size:11px;font-weight:700;color:var(--ok);background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:10px;padding:3px 10px">✅ 全完了</span>`:''}
     </div>`;
   }
-  if(pending.length){
-    html+=_secHeader('未完了','var(--p)',pending.length);
-    html+=pending.map(renderCard).join('');
+  if(_taskDoneTab==='pending'){
+    if(pending.length){
+      html+=pending.map(renderCard).join('');
+    } else {
+      html+=`<div style="text-align:center;padding:40px 0 20px;color:var(--ok);font-size:15px;font-weight:700">✅ 未完了タスクはありません</div>`;
+    }
   } else {
-    html+=`<div style="text-align:center;padding:28px 0 14px;color:var(--ok);font-size:15px;font-weight:700">✅ 未完了タスクはありません</div>`;
-  }
-  if(done.length){
-    html+=`<div style="margin-top:14px">${_secHeader('完了済み','var(--ok)',done.length)}</div>`;
-    html+=done.map(renderCard).join('');
+    if(done.length){
+      html+=done.map(renderCard).join('');
+    } else {
+      html+=`<div style="text-align:center;padding:40px 0 20px;color:var(--sub);font-size:15px;font-weight:700">完了済みタスクはありません</div>`;
+    }
   }
   el.innerHTML=html;
 }
