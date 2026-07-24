@@ -4849,7 +4849,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.5';
+const APP_VERSION='1.0.6';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
@@ -11386,7 +11386,7 @@ function addManualResident(){
   const age=birth?Math.floor((new Date()-new Date(birth))/(365.25*24*60*60*1000)):0;
   res.push({
     id:'r'+Date.now(),name,sei,mei,kana,
-    gender:document.getElementById('m-gender').value,age,
+    gender:document.getElementById('m-gender').value,age,birthDate:birth||null,
     care:document.getElementById('m-care').value,
     room:document.getElementById('m-room').value,
     services,facility:document.getElementById('m-facility').value,
@@ -11652,9 +11652,13 @@ function openEditResident(){
   document.getElementById('er-care').value=r.care||'care1';
   document.getElementById('er-facility').value=r.facility||'かしわじま';
   document.getElementById('er-allergy').value=r.allergy||'';
-  if(r.age&&r.age>0){
+  if(r.birthDate){
+    document.getElementById('er-birth').value=r.birthDate;
+  } else if(r.age&&r.age>0){
     const approxYear=new Date().getFullYear()-r.age;
     document.getElementById('er-birth').value=approxYear+'-01-01';
+  } else {
+    document.getElementById('er-birth').value='';
   }
   ['er-sv-res','er-sv-com','er-sv-sta','er-sv-vis'].forEach(id=>{
     document.getElementById(id).checked=r.services.includes(document.getElementById(id).value);
@@ -11703,7 +11707,7 @@ function saveEditResident(){
     res.push({
       id:newId,
       name,kana:document.getElementById('er-kana').value,
-      gender:document.getElementById('er-gender').value,age,
+      gender:document.getElementById('er-gender').value,age,birthDate:birth||null,
       care:document.getElementById('er-care').value,
       room:document.getElementById('er-room').value,
       services,facility:document.getElementById('er-facility').value,
@@ -11724,7 +11728,7 @@ function saveEditResident(){
     const idx=res.findIndex(x=>x.id===S.currentRes);
     if(idx<0)return;
     res[idx]={...res[idx],name,kana:document.getElementById('er-kana').value,
-      gender:document.getElementById('er-gender').value,age,
+      gender:document.getElementById('er-gender').value,age,birthDate:birth||null,
       care:document.getElementById('er-care').value,
       room:document.getElementById('er-room').value,
       services,facility:document.getElementById('er-facility').value,
