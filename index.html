@@ -4904,7 +4904,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.22';
+const APP_VERSION='1.1.0';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.0.21',date:'2026-07-25',items:['モバイル・タブレットのメニューもカテゴリ分け対応','モバイルメニューに皮膚写真・感染管理・職員掲示板・シフト表・マニュアルを追加']},
@@ -9111,7 +9111,98 @@ function renderTempBoard(resId, targetId){
       <td style="padding:5px 7px;font-size:10px;border:1px solid var(--bdr);color:var(--sub);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(note.substring(0,50))||'─'}</td>
     </tr>`;
   }).join('');
+  // ─ 当日詳細（複数バイタルがある場合）─
+  const todayStr=dayStr(new Date());
+  const todayVitals=(byDay[todayStr]||[]).filter(r=>r.type==='vital').sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  let todayHTML='';
+  if(todayVitals.length>=1){
+    const slots=[{label:'深夜',range:'0〜5時',h:[0,6]},{label:'午前',range:'6〜11時',h:[6,12]},{label:'午後',range:'12〜17時',h:[12,18]},{label:'夜間',range:'18〜23時',h:[18,24]}];
+    const slotData=slots.map(s=>{
+      const recs=todayVitals.filter(r=>{const h=new Date(r.ts).getHours();return h>=s.h[0]&&h<s.h[1];});
+      return {...s,recs};
+    }).filter(s=>s.recs.length>0);
+    const timelineRows=todayVitals.map(r=>{
+      const t=new Date(r.ts);
+      const tm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+      const sys=r.data.sys?parseInt(r.data.sys):null;
+      const dia=r.data.dia?parseInt(r.data.dia):null;
+      const pulse=r.data.pulse?parseInt(r.data.pulse):null;
+      const temp=r.data.temp?parseFloat(r.data.temp):null;
+      const spo2=r.data.spo2?parseInt(r.data.spo2):null;
+      const tempAlert=temp!=null&&temp>=37.5;
+      const bpAlert=sys!=null&&(sys>159||sys<90);
+      const spo2Alert=spo2!=null&&spo2<94;
+      return `<tr>
+        <td style="padding:6px 8px;font-size:12px;font-weight:800;color:var(--p);border:1px solid var(--bdr);white-space:nowrap">${tm}</td>
+        <td style="padding:6px 7px;font-size:12px;border:1px solid var(--bdr);text-align:center;${bpAlert?'background:#fef2f2;font-weight:700;color:#dc2626':''}">${sys&&dia?sys+'/'+dia:'─'}</td>
+        <td style="padding:6px 7px;font-size:12px;border:1px solid var(--bdr);text-align:center">${pulse||'─'}</td>
+        <td style="padding:6px 7px;font-size:12px;border:1px solid var(--bdr);text-align:center;${tempAlert?'background:#fff3e0;font-weight:700;color:#ef4444':''}">${temp!=null?temp+'℃':'─'}</td>
+        <td style="padding:6px 7px;font-size:12px;border:1px solid var(--bdr);text-align:center;${spo2Alert?'background:#ffe0e0;font-weight:700;color:#dc2626':''}">${spo2!=null?spo2+'%':'─'}</td>
+      </tr>`;
+    }).join('');
+    // 体温・SpO2の当日スパークライン
+    const tVals=todayVitals.map(r=>r.data.temp?parseFloat(r.data.temp):null);
+    const sVals=todayVitals.map(r=>r.data.spo2?parseInt(r.data.spo2):null);
+    const mkTodayLine=(vals,W,H,stroke,refLow,refHigh)=>{
+      const valid=vals.filter(v=>v!=null);
+      if(valid.length<2)return `<svg width="${W}" height="${H}"></svg>`;
+      const vmin=Math.min(...valid),vmax=Math.max(...valid);
+      const range=(vmax-vmin)||0.5;
+      const n=vals.length;
+      const sx=i=>8+i/(Math.max(n-1,1))*(W-16);
+      const sy=v=>H-6-(v-vmin)/range*(H-12);
+      const pts=vals.map((v,i)=>v!=null?{x:sx(i),y:sy(v),v}:null);
+      const line=pts.filter(Boolean).map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      const dots=pts.map((p,i)=>{
+        if(!p)return '';
+        const isLast=i===n-1;
+        const alert=(refHigh!=null&&p.v>refHigh)||(refLow!=null&&p.v<refLow);
+        const fill=alert?'#dc2626':stroke;
+        return isLast
+          ?`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${fill}" stroke="#fff" stroke-width="1.5"/>`
+          :`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="${fill}"/>`;
+      }).join('');
+      // 時刻ラベル（最初と最後）
+      const t0=new Date(todayVitals[0].ts);const tL=new Date(todayVitals[n-1].ts);
+      const fmt=t=>`${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')}`;
+      return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+        <polyline points="${line}" fill="none" stroke="${stroke}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>
+        ${dots}
+        <text x="8" y="${H-1}" font-size="9" fill="var(--sub)" opacity=".7">${fmt(t0)}</text>
+        <text x="${W-8}" y="${H-1}" font-size="9" fill="var(--sub)" opacity=".7" text-anchor="end">${fmt(tL)}</text>
+      </svg>`;
+    };
+    const TW=220,TH=64;
+    const hasTChart=tVals.filter(v=>v!=null).length>=2;
+    const hasSChart=sVals.filter(v=>v!=null).length>=2;
+    todayHTML=`<div style="background:rgba(59,130,246,.05);border:1.5px solid rgba(59,130,246,.2);border-radius:12px;padding:12px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:800;color:var(--p);margin-bottom:10px">📅 本日（${todayVitals.length}回測定）</div>
+      ${hasTChart||hasSChart?`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        ${hasTChart?`<div style="flex:1;min-width:180px">
+          <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px">🌡️ 体温の推移</div>
+          ${mkTodayLine(tVals,TW,TH,'#ef4444',null,37.5)}
+        </div>`:''}
+        ${hasSChart?`<div style="flex:1;min-width:180px">
+          <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px">💧 SpO2の推移</div>
+          ${mkTodayLine(sVals,TW,TH,'#10b981',93,null)}
+        </div>`:''}
+      </div>`:''}
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px">
+        <table style="border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums">
+          <thead><tr style="background:rgba(59,130,246,.1)">
+            <th style="padding:6px 8px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">時刻</th>
+            <th style="padding:6px 7px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">血圧</th>
+            <th style="padding:6px 7px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">脈拍</th>
+            <th style="padding:6px 7px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">体温</th>
+            <th style="padding:6px 7px;font-size:11px;font-weight:700;border:1px solid rgba(59,130,246,.2)">SpO2</th>
+          </tr></thead>
+          <tbody>${timelineRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
   area.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:12px">${res?escHtml(res.name)+' 様 — ':''} 直近14日間</div>
+    ${todayHTML}
     ${chartHTML}
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--bdr)">
       <table style="border-collapse:collapse;min-width:100%;font-variant-numeric:tabular-nums">${thead}<tbody>${rows}</tbody></table>
