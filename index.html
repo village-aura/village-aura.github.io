@@ -2007,6 +2007,17 @@ a{color:var(--p);text-decoration:none}
         </div>
 
       </div><!-- /acc-admin-wrap -->
+
+      <!-- ─── バージョン更新情報 ─── -->
+      <div class="acc-item" id="acc-changelog">
+        <button class="acc-hd" onclick="toggleAcc(this)">
+          <span class="acc-ico">📝</span>
+          <span class="acc-ttl">バージョン更新情報</span>
+          <i class="acc-arrow">›</i>
+        </button>
+        <div class="acc-body"><div class="acc-inner" id="changelog-body"></div></div>
+      </div>
+
     </div><!-- /acc-wrap -->
   </div>
 
@@ -4893,8 +4904,20 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.0.21';
+const APP_VERSION='1.0.22';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
+const CHANGELOG=[
+  {ver:'1.0.21',date:'2026-07-25',items:['モバイル・タブレットのメニューもカテゴリ分け対応','モバイルメニューに皮膚写真・感染管理・職員掲示板・シフト表・マニュアルを追加']},
+  {ver:'1.0.20',date:'2026-07-25',items:['サイドバーを5カテゴリに再整理（業務・連絡 / 記録・入力 / 閲覧・安全 / スタッフ / 設定）','改善提案のステータスを「対応中 / 却下」→「実装済み / 実装不可」フローに変更']},
+  {ver:'1.0.19',date:'2026-07-25',items:['皮膚写真一覧・職員掲示板の左寄りレイアウトを修正']},
+  {ver:'1.0.18',date:'2026-07-24',items:['申し送り利用確認にアカウント停止スタッフが表示されていた問題を修正','申し送り利用確認に事業所フィルターを追加']},
+  {ver:'1.0.17',date:'2026-07-24',items:['タスク管理の完了済みをカーテン（折りたたみ）形式に変更','タスク追加・編集を管理者以上に制限','管理者向け「指示確認」ページを追加（自分が作成したタスクの進捗確認）']},
+  {ver:'1.0.16',date:'2026-07-24',items:['タスク管理に「未完了 / 完了」タブを追加']},
+  {ver:'1.0.15',date:'2026-07-24',items:['タスク管理の完了済みを常時表示に変更','事業所フィルターに連動してスタッフドロップダウンが絞り込まれるように']},
+  {ver:'1.0.14',date:'2026-07-24',items:['タスク管理にバックボタン追加','全スタッフ表示時に担当者名を表示','スタッフ一覧を廃止しドロップダウン選択方式に変更（あいうえお順）','タスクカードに優先度・期限日を表示']},
+  {ver:'1.0.13',date:'2026-07-24',items:['申し送りボード 確認ステータスが正常に反映されない問題を修正','フィルターボタンが掲示板側に影響していた問題を修正']},
+  {ver:'1.0.12',date:'2026-07-24',items:['誕生日バナーを利用者情報の生年月日から読み込むように変更','CSV取込の生年月日（M/D形式）が誕生日バナーに反映されない問題を修正','既存利用者の生年月日フォーマットを自動修正する移行処理を追加']},
+];
 // ═══════════ FIREBASE ═══════════
 const FB_CONFIG={
   apiKey:'AIzaSyBOU4Z48gIhbndtRSKiTH8fcQAjlKgncD8',
@@ -6082,7 +6105,21 @@ function renderSettings(){
   document.getElementById('setting-user').textContent=S.user||'──';
   document.getElementById('setting-login-time').textContent=S.loginTime||'──';
   const verLbl=document.getElementById('app-ver-lbl');
-  if(verLbl){const t=new Date();verLbl.textContent='現在のキャッシュ取得日時: '+t.toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  if(verLbl){const t=new Date();verLbl.textContent='v'+APP_VERSION+'　取得日時: '+t.toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  const clBody=document.getElementById('changelog-body');
+  if(clBody){
+    clBody.innerHTML=CHANGELOG.map(c=>`
+      <div style="margin-bottom:14px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:800;color:var(--p)">v${c.ver}</span>
+          <span style="font-size:11px;color:var(--sub)">${c.date}</span>
+        </div>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+          ${c.items.map(i=>`<li style="font-size:13px;color:var(--tx);line-height:1.5">${i}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('<div style="border-top:1px solid var(--bdr);margin:4px 0 14px"></div>');
+  }
 
   const dmt=document.getElementById('dark-mode-toggle');
   if(dmt) dmt.checked=document.body.classList.contains('dark-mode');
