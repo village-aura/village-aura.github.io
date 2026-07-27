@@ -4905,9 +4905,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.8';
+const APP_VERSION='1.1.9';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.9',date:'2026-07-27',items:['一括食事マトリクスの区分ドロップダウンから10時・15時を削除（朝食・昼食・夕食のみ）']},
   {ver:'1.1.8',date:'2026-07-27',items:['一括入力マトリクスをExcel方式に刷新：入力欄を離れた瞬間に自動保存・✓ボタン廃止','食事/排泄はドロップダウン変更で即時保存','保存時に行の左ボーダーが緑に変わりフラッシュで確認']},
   {ver:'1.1.7',date:'2026-07-27',items:['マトリクスの視認性改善（ヘッダー色分け・左端アクセントライン・ゼブラ縞）','15時・10時は主食/副食列を「—」に変更']},
   {ver:'1.1.6',date:'2026-07-27',items:['フロアマップの二人部屋で男性を左側（前）に表示','個人排泄モーダルに時刻入力フィールドを追加']},
@@ -12401,9 +12402,9 @@ function renderBulkMeal(){
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   _bmResIds=res.map(r=>r.id);
   const hr=new Date().getHours();
-  const autoMtype=hr<10?'breakfast':hr<12?'morning_snack':hr<15?'lunch':hr<17?'snack':'dinner';
-  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
-  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  const autoMtype=hr<11?'breakfast':hr<16?'lunch':'dinner';
+  const MEAL_TYPES=['breakfast','lunch','dinner'];
+  const mtypeLbl={breakfast:'朝食',lunch:'昼食',dinner:'夕食'};
   const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
   const TH_BG_M='#f0fdf4';const TH_CLR_M='#166534';
   const th='padding:9px 5px;text-align:center;font-size:12px;font-weight:800;white-space:nowrap;border-bottom:2px solid #bbf7d0;background:'+TH_BG_M+';color:'+TH_CLR_M+';min-width:58px';
@@ -12469,8 +12470,8 @@ function showBmBulk(f){
   const lbl=document.getElementById('bm-bulk-label');
   const area=document.getElementById('bm-bulk-input-area');
   const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
-  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
-  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  const MEAL_TYPES=['breakfast','lunch','dinner'];
+  const mtypeLbl={breakfast:'朝食',lunch:'昼食',dinner:'夕食'};
   if(f==='mtype'){
     if(lbl)lbl.textContent='区分 を全員セット ▶';
     if(area)area.innerHTML='<select id="bm-bulk-mtype" style="padding:6px 8px;border:2px solid #a5d6a7;border-radius:8px;font-size:13px;background:#fff">'+MEAL_TYPES.map(t=>'<option value="'+t+'">'+mtypeLbl[t]+'</option>').join('')+'</select>';
