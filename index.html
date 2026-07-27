@@ -999,7 +999,6 @@ a{color:var(--p);text-decoration:none}
     <div class="detail-mobile-tabs">
       <button class="detail-tab-btn on" id="dtab-input" onclick="switchDetailTab('input')">📝 記録入力</button>
       <button class="detail-tab-btn" id="dtab-timeline" onclick="switchDetailTab('timeline')">📋 タイムライン</button>
-      <button class="detail-tab-btn" id="dtab-life" onclick="switchDetailTab('life')">📊 生活シート</button>
       <button class="detail-tab-btn" id="dtab-photos" onclick="switchDetailTab('photos')">📷 写真</button>
       <button class="detail-tab-btn" onclick="openFamilySummary()" style="color:#1565c0;border-bottom-color:transparent;font-size:11px;flex-shrink:0">📄 家族報告</button>
     </div>
@@ -4905,9 +4904,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.3';
+const APP_VERSION='1.1.4';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.4',date:'2026-07-27',items:['一括食事にゼリー列を追加','10時・15時は主食/副食を自動無効化','生活シートタブを非表示']},
   {ver:'1.1.3',date:'2026-07-27',items:['バイタルモーダルの入力順を 体温→血圧→脈→SpO2 に変更','タイムラインにバイタル修正（✏️）アイコンを追加','音声認識で「酸素」「サチュレーション」「最高血圧」等の表現に対応']},
   {ver:'1.1.2',date:'2026-07-27',items:['一括バイタル・食事・排泄をマトリクス（表）形式に刷新','列ヘッダータップで全員一括セット機能を追加','未記録行をオレンジ・記録済みをグリーンで色分け表示','特記事項列を追加','排泄入力に時刻フィールドを追加（簡略化）']},
   {ver:'1.1.1',date:'2026-07-25',items:['デスクトップサイドバーから一括バイタル・食事・排泄ボタンが消えていた問題を修正','利用者詳細の当日バイタルグラフを時刻軸（0〜24時）で表示・6時間グリッド追加']},
@@ -12323,6 +12323,7 @@ function renderBulkMeal(){
     +'<th onclick="showBmBulk(\'staple\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:76px">主食<br><span style="font-size:8px">▼一括</span></th>'
     +'<th onclick="showBmBulk(\'side\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:76px">副食<br><span style="font-size:8px">▼一括</span></th>'
     +'<th onclick="showBmBulk(\'fluid\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:68px">水分ml<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th onclick="showBmBulk(\'jelly\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:68px">ゼリー<br><span style="font-size:8px">ml▼一括</span></th>'
     +'<th style="'+th+';min-width:76px;color:var(--sub)">特記</th>'
     +'<th style="'+th+';min-width:40px"></th>'
     +'</tr></thead><tbody>';
@@ -12334,22 +12335,26 @@ function renderBulkMeal(){
     const stickyBg=done?'rgba(76,175,80,.10)':'rgba(255,152,0,.10)';
     const dot=done?'#43a047':'#ef6c00';
     const curMtype=d.mtype||autoMtype;
+    const isSnack=curMtype==='morning_snack'||curMtype==='snack';
     const curStaple=d.staple!=null?String(d.staple):'';
     const curSide=d.side!=null?String(d.side):'';
     const curFluid=d.fluid||'';
+    const curJelly=d.jelly||'';
     const mtOpts=MEAL_TYPES.map(t=>'<option value="'+t+'"'+(curMtype===t?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('');
     const stOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curStaple===String(i)?' selected':'')+'>'+l+'</option>').join('');
     const sdOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curSide===String(i)?' selected':'')+'>'+l+'</option>').join('');
     const ss='width:70px;padding:5px 2px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box';
     const fluidBdr=done?'var(--bdr)':'#ffb74d';
     const fluidBg=done?'var(--bg)':'rgba(255,152,0,.08)';
+    const snaOp=isSnack?'opacity:0.3;pointer-events:none':'';
     html+='<tr id="bm-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-bottom:1px solid var(--bdr)">'
       +'<td style="padding:6px 6px 6px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;max-width:80px;overflow:hidden;text-overflow:ellipsis">'
       +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle"></span>'+r.name+'</td>'
-      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-mtype-'+r.id+'" style="'+ss+';min-width:62px">'+mtOpts+'</select></td>'
-      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-staple-'+r.id+'" style="'+ss+'">'+stOpts+'</select></td>'
-      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-side-'+r.id+'" style="'+ss+'">'+sdOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-mtype-'+r.id+'" onchange="bmMtypeChg(\''+r.id+'\',this.value)" style="'+ss+';min-width:62px">'+mtOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-staple-'+r.id+'" style="'+ss+';'+snaOp+'"'+(isSnack?' disabled':'')+'>'+stOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-side-'+r.id+'" style="'+ss+';'+snaOp+'"'+(isSnack?' disabled':'')+'>'+sdOpts+'</select></td>'
       +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-fluid-'+r.id+'" value="'+curFluid+'" placeholder="200" style="width:56px;padding:5px 2px;border:1.5px solid '+fluidBdr+';border-radius:6px;font-size:13px;text-align:center;background:'+fluidBg+';box-sizing:border-box"></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-jelly-'+r.id+'" value="'+curJelly+'" placeholder="100" style="width:56px;padding:5px 2px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;background:var(--bg);box-sizing:border-box"></td>'
       +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="text" id="bm-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" style="width:72px;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
       +'<td style="padding:4px 6px;text-align:center;background:'+rowBg+'"><button onclick="saveBulkMeal(\''+r.id+'\')" style="padding:5px 10px;background:var(--ok);color:#fff;border-radius:7px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button></td>'
       +'</tr>';
@@ -12375,12 +12380,22 @@ function showBmBulk(f){
   } else if(f==='fluid'){
     if(lbl)lbl.textContent='水分 を全員セット ▶';
     if(area)area.innerHTML='<input type="number" inputmode="numeric" id="bm-bulk-fluid" placeholder="200" style="width:80px;padding:6px 8px;border:2px solid #a5d6a7;border-radius:8px;font-size:14px;text-align:center;background:#fff">';
+  } else if(f==='jelly'){
+    if(lbl)lbl.textContent='ゼリー を全員セット ▶';
+    if(area)area.innerHTML='<input type="number" inputmode="numeric" id="bm-bulk-jelly" placeholder="100" style="width:80px;padding:6px 8px;border:2px solid #a5d6a7;border-radius:8px;font-size:14px;text-align:center;background:#fff">';
   }
-  setTimeout(()=>{const el=document.getElementById('bm-bulk-mtype')||document.getElementById('bm-bulk-food')||document.getElementById('bm-bulk-fluid');if(el)el.focus();},50);
+  setTimeout(()=>{const el=document.getElementById('bm-bulk-mtype')||document.getElementById('bm-bulk-food')||document.getElementById('bm-bulk-fluid')||document.getElementById('bm-bulk-jelly');if(el)el.focus();},50);
 }
 function hideBmBulk(){
   const p=document.getElementById('bm-bulk-panel');if(p)p.style.display='none';
   _bmBulkField=null;
+}
+function bmMtypeChg(rid,mtype){
+  const isSnack=mtype==='morning_snack'||mtype==='snack';
+  ['bm-staple-','bm-side-'].forEach(prefix=>{
+    const el=document.getElementById(prefix+rid);
+    if(el){el.disabled=isSnack;el.style.opacity=isSnack?'0.3':'1';if(isSnack)el.value='';}
+  });
 }
 function applyBmBulk(overwrite){
   if(!_bmBulkField){toast('項目を選択してください');return;}
@@ -12389,8 +12404,9 @@ function applyBmBulk(overwrite){
   if(f==='mtype') val=document.getElementById('bm-bulk-mtype')?.value||'';
   else if(f==='staple'||f==='side') val=document.getElementById('bm-bulk-food')?.value||'';
   else if(f==='fluid') val=(document.getElementById('bm-bulk-fluid')?.value||'').trim();
+  else if(f==='jelly') val=(document.getElementById('bm-bulk-jelly')?.value||'').trim();
   if(!val){toast('値を選択してください');return;}
-  const selId=f==='staple'?'bm-staple-':f==='side'?'bm-side-':f==='fluid'?'bm-fluid-':'bm-mtype-';
+  const selId=f==='staple'?'bm-staple-':f==='side'?'bm-side-':f==='fluid'?'bm-fluid-':f==='jelly'?'bm-jelly-':'bm-mtype-';
   let cnt=0;
   _bmResIds.forEach(rid=>{
     const el=document.getElementById(selId+rid);
@@ -12404,12 +12420,13 @@ function saveBulkMeal(rid){
   const stapleVal=document.getElementById('bm-staple-'+rid)?.value;
   const sideVal=document.getElementById('bm-side-'+rid)?.value;
   const fluid=_getVal('bm-fluid-'+rid);
-  if(stapleVal===''&&sideVal===''&&!fluid){toast('値を入力してください');return;}
+  const jelly=_getVal('bm-jelly-'+rid);
+  if(stapleVal===''&&sideVal===''&&!fluid&&!jelly){toast('値を入力してください');return;}
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
   const note=document.getElementById('bm-note-'+rid)?.value||'';
   const recs=getRecords();
   recs.push({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',
-    data:{mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,side:sideVal!==''&&sideVal!=null?Number(sideVal):null,fluid:fluid?Number(fluid):0,note}});
+    data:{mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,side:sideVal!==''&&sideVal!=null?Number(sideVal):null,fluid:fluid?Number(fluid):0,jelly:jelly?Number(jelly):0,note}});
   saveRecords(recs);
   const row=document.getElementById('bm-row-'+rid);
   if(row){
