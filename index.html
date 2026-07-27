@@ -4904,9 +4904,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.4';
+const APP_VERSION='1.1.5';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.5',date:'2026-07-27',items:['フェイスシートADL状態（食事/排泄/入浴/着脱/移動）を複数選択可能に変更']},
   {ver:'1.1.4',date:'2026-07-27',items:['一括食事にゼリー列を追加','10時・15時は主食/副食を自動無効化','生活シートタブを非表示']},
   {ver:'1.1.3',date:'2026-07-27',items:['バイタルモーダルの入力順を 体温→血圧→脈→SpO2 に変更','タイムラインにバイタル修正（✏️）アイコンを追加','音声認識で「酸素」「サチュレーション」「最高血圧」等の表現に対応']},
   {ver:'1.1.2',date:'2026-07-27',items:['一括バイタル・食事・排泄をマトリクス（表）形式に刷新','列ヘッダータップで全員一括セット機能を追加','未記録行をオレンジ・記録済みをグリーンで色分け表示','特記事項列を追加','排泄入力に時刻フィールドを追加（簡略化）']},
@@ -15218,8 +15219,9 @@ function lsFsSet(rid,data){lsSet('fs_'+rid,data);_syncFaceSheetsToFirestore();}
 
 function renderAdlOpts(elId,options,current,multi=false){
   const el=document.getElementById(elId);if(!el)return;
+  const cur=multi?(Array.isArray(current)?current:(current?[current]:[])):'';
   el.innerHTML=options.map(o=>{
-    const on=multi?(Array.isArray(current)&&current.includes(o)):(current===o);
+    const on=multi?cur.includes(o):(current===o);
     return `<button class="adl-opt ${on?'on':''}" onclick="selectAdlOpt('${elId}','${o}',${multi})">${o}</button>`;
   }).join('');
 }
@@ -15357,11 +15359,11 @@ function openFacesheet(){
     if(tels[i]) tels[i].value=c.tel||'';
   });
   // ADLタブ
-  renderAdlOpts('adl-shokuji',ADL_OPTS,fs.adl_shokuji);
-  renderAdlOpts('adl-haisetsu',ADL_OPTS,fs.adl_haisetsu);
-  renderAdlOpts('adl-nyuyoku',BATH_OPTS,fs.adl_nyuyoku);
-  renderAdlOpts('adl-chakudatsu',ADL_OPTS,fs.adl_chakudatsu);
-  renderAdlOpts('adl-ido',ADL_OPTS,fs.adl_ido);
+  renderAdlOpts('adl-shokuji',ADL_OPTS,fs.adl_shokuji,true);
+  renderAdlOpts('adl-haisetsu',ADL_OPTS,fs.adl_haisetsu,true);
+  renderAdlOpts('adl-nyuyoku',BATH_OPTS,fs.adl_nyuyoku,true);
+  renderAdlOpts('adl-chakudatsu',ADL_OPTS,fs.adl_chakudatsu,true);
+  renderAdlOpts('adl-ido',ADL_OPTS,fs.adl_ido,true);
   renderAdlOpts('adl-shushoku',MAIN_OPTS,fs.adl_shushoku);
   renderAdlOpts('adl-fukushoku',SIDE_OPTS,fs.adl_fukushoku);
   renderAdlOpts('adl-toromi',TOROMI_OPTS,fs.adl_toromi);
@@ -15472,11 +15474,11 @@ function saveFacesheetData(){
     cog:document.getElementById('fs-cog').value,
     contacts,care_manager:document.getElementById('fs-care-manager')?.value||'',
     family_situation:document.getElementById('fs-family-situation').value,
-    adl_shokuji:getAdlVal('adl-shokuji')||'自立',
-    adl_haisetsu:getAdlVal('adl-haisetsu')||'自立',
-    adl_nyuyoku:getAdlVal('adl-nyuyoku')||'個浴',
-    adl_chakudatsu:getAdlVal('adl-chakudatsu')||'自立',
-    adl_ido:getAdlVal('adl-ido')||'自立',
+    adl_shokuji:getAdlVal('adl-shokuji',true).length?getAdlVal('adl-shokuji',true):['自立'],
+    adl_haisetsu:getAdlVal('adl-haisetsu',true).length?getAdlVal('adl-haisetsu',true):['自立'],
+    adl_nyuyoku:getAdlVal('adl-nyuyoku',true).length?getAdlVal('adl-nyuyoku',true):['個浴'],
+    adl_chakudatsu:getAdlVal('adl-chakudatsu',true).length?getAdlVal('adl-chakudatsu',true):['自立'],
+    adl_ido:getAdlVal('adl-ido',true).length?getAdlVal('adl-ido',true):['自立'],
     adl_shushoku:getAdlVal('adl-shushoku')||'米飯',
     adl_fukushoku:getAdlVal('adl-fukushoku')||'普通',
     adl_toromi:getAdlVal('adl-toromi')||'なし',
@@ -15733,8 +15735,9 @@ function applyFsFields(d){
   const setSel=(id,v)=>{const e=document.getElementById(id);if(e&&v!=null)e.value=v;};
   const setAdl=(elId,opts,v,multi=false)=>{
     if(v==null) return;
+    const arr=multi?(Array.isArray(v)?v:(v?[v]:[])):'';
     document.querySelectorAll('#'+elId+' .adl-opt').forEach(b=>{
-      if(multi) b.classList.toggle('on',Array.isArray(v)&&v.includes(b.textContent));
+      if(multi) b.classList.toggle('on',arr.includes(b.textContent));
       else b.classList.toggle('on',b.textContent===v);
     });
   };
@@ -15742,11 +15745,11 @@ function applyFsFields(d){
   setSel('fs-cog',d.cog);
   const _cmEl=document.getElementById('fs-care-manager');if(_cmEl&&d.care_manager)_cmEl.value=d.care_manager;
   setText('fs-family-situation',d.family_situation);
-  setAdl('adl-shokuji',ADL_OPTS,d.adl_shokuji);
-  setAdl('adl-haisetsu',ADL_OPTS,d.adl_haisetsu);
-  setAdl('adl-nyuyoku',BATH_OPTS,d.adl_nyuyoku);
-  setAdl('adl-chakudatsu',ADL_OPTS,d.adl_chakudatsu);
-  setAdl('adl-ido',ADL_OPTS,d.adl_ido);
+  setAdl('adl-shokuji',ADL_OPTS,d.adl_shokuji,true);
+  setAdl('adl-haisetsu',ADL_OPTS,d.adl_haisetsu,true);
+  setAdl('adl-nyuyoku',BATH_OPTS,d.adl_nyuyoku,true);
+  setAdl('adl-chakudatsu',ADL_OPTS,d.adl_chakudatsu,true);
+  setAdl('adl-ido',ADL_OPTS,d.adl_ido,true);
   setAdl('adl-shushoku',MAIN_OPTS,d.adl_shushoku);
   setAdl('adl-fukushoku',SIDE_OPTS,d.adl_fukushoku);
   setAdl('adl-toromi',TOROMI_OPTS,d.adl_toromi);
