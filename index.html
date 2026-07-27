@@ -3220,6 +3220,7 @@ a{color:var(--p);text-decoration:none}
         <label><input type="checkbox" id="ex-laxative"> 下剤使用</label>
       </div>
     </div>
+    <div class="field"><label>時刻</label><input type="time" id="ex-time"></div>
     <div class="field"><label>メモ</label><textarea id="ex-note" placeholder="特記事項..."></textarea></div>
     <button class="btn-primary" onclick="saveRecord('excretion')">保存</button>
     <button class="btn-cancel" onclick="closeModal('modal-excretion')">キャンセル</button>
@@ -4904,9 +4905,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.5';
+const APP_VERSION='1.1.6';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.6',date:'2026-07-27',items:['フロアマップの二人部屋で男性を左側（前）に表示','個人排泄モーダルに時刻入力フィールドを追加']},
   {ver:'1.1.5',date:'2026-07-27',items:['フェイスシートADL状態（食事/排泄/入浴/着脱/移動）を複数選択可能に変更']},
   {ver:'1.1.4',date:'2026-07-27',items:['一括食事にゼリー列を追加','10時・15時は主食/副食を自動無効化','生活シートタブを非表示']},
   {ver:'1.1.3',date:'2026-07-27',items:['バイタルモーダルの入力順を 体温→血圧→脈→SpO2 に変更','タイムラインにバイタル修正（✏️）アイコンを追加','音声認識で「酸素」「サチュレーション」「最高血圧」等の表現に対応']},
@@ -8526,6 +8528,9 @@ function renderFloorMap(){
     if(!roomMap[rn])roomMap[rn]=[];
     roomMap[rn].push(r);
   });
+  Object.keys(roomMap).forEach(rn=>{
+    if(roomMap[rn].length>1)roomMap[rn].sort((a,b)=>(a.gender==='male'?0:1)-(b.gender==='male'?0:1));
+  });
   // アラート判定データ
   const handovers=getHandovers();
   const reads=getHandoverReads();
@@ -9526,6 +9531,7 @@ function openModal(id){
     }else if(pv){pv.style.display='none';}
   }
   document.getElementById(id).classList.add('on');
+  if(id==='modal-excretion'&&!S.editRecId){const exTEl=document.getElementById('ex-time');if(exTEl)exTEl.value=new Date().toTimeString().slice(0,5);}
   // 記録日時セレクターを注入（対象モーダルのみ）
   const recModals=['modal-vital','modal-meal','modal-excretion','modal-chrono','modal-weight','modal-skin'];
   if(recModals.includes(id)){
@@ -9615,6 +9621,7 @@ function openEditRecord(id,type){
     document.getElementById('ex-incontinent').checked=!!d.incon;
     document.getElementById('ex-laxative').checked=!!d.lax;
     document.getElementById('ex-note').value=d.note||'';
+    const exTEl2=document.getElementById('ex-time');if(exTEl2&&rec.ts)exTEl2.value=new Date(rec.ts).toTimeString().slice(0,5);
     const et2=document.getElementById('excretion-modal-title');if(et2)et2.textContent='✏️ 排泄記録（修正中）';
     const esb=document.querySelector('#modal-excretion .btn-primary');if(esb)esb.textContent='修正を保存';
     openModal('modal-excretion');
@@ -9802,7 +9809,10 @@ function saveRecord(type){
   const recs=getRecords();
   if(S.editRecId&&(type==='meal'||type==='excretion'||type==='vital')){
     const idx=recs.findIndex(r=>r.id===S.editRecId);
-    if(idx>=0){recs[idx].data=data;recs[idx].editedBy=S.user||'──';recs[idx].editedAt=new Date().toISOString();}
+    if(idx>=0){
+      recs[idx].data=data;recs[idx].editedBy=S.user||'──';recs[idx].editedAt=new Date().toISOString();
+      if(type==='excretion'){const exTEl=document.getElementById('ex-time');if(exTEl&&exTEl.value){const d2=new Date(recs[idx].ts);const[h2,m2]=exTEl.value.split(':');d2.setHours(parseInt(h2),parseInt(m2),0,0);recs[idx].ts=d2.toISOString();}}
+    }
     S.editRecId=null;
     saveRecords(recs);
     const typeLabel={meal:'食事',excretion:'排泄',vital:'バイタル'}[type]||type;
@@ -9810,7 +9820,8 @@ function saveRecord(type){
     toast('修正しました ✓');
   } else {
     S.editRecId=null;
-    const _ts=getRecordTs();if(_ts===null)return;
+    let _ts=getRecordTs();if(_ts===null)return;
+    if(type==='excretion'){const exTEl=document.getElementById('ex-time');if(exTEl&&exTEl.value){const d2=new Date(_ts);const[h2,m2]=exTEl.value.split(':');d2.setHours(parseInt(h2),parseInt(m2),0,0);_ts=d2.toISOString();}}
     recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,ts:_ts,data});
     saveRecords(recs);
     const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重',skin:'皮膚・褥瘡'}[type]||type;
