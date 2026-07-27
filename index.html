@@ -4907,9 +4907,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.1';
+const APP_VERSION='1.1.2';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.2',date:'2026-07-27',items:['一括バイタル・食事・排泄をマトリクス（表）形式に刷新','列ヘッダータップで全員一括セット機能を追加','未記録行をオレンジ・記録済みをグリーンで色分け表示','特記事項列を追加','排泄入力に時刻フィールドを追加（簡略化）']},
   {ver:'1.1.1',date:'2026-07-25',items:['デスクトップサイドバーから一括バイタル・食事・排泄ボタンが消えていた問題を修正','利用者詳細の当日バイタルグラフを時刻軸（0〜24時）で表示・6時間グリッド追加']},
   {ver:'1.0.21',date:'2026-07-25',items:['モバイル・タブレットのメニューもカテゴリ分け対応','モバイルメニューに皮膚写真・感染管理・職員掲示板・シフト表・マニュアルを追加']},
   {ver:'1.0.20',date:'2026-07-25',items:['サイドバーを5カテゴリに再整理（業務・連絡 / 記録・入力 / 閲覧・安全 / スタッフ / 設定）','改善提案のステータスを「対応中 / 却下」→「実装済み / 実装不可」フローに変更']},
@@ -12084,6 +12085,8 @@ function setBvFilter(f){
   });
   renderBulkVital();
 }
+let _bvResIds=[];
+let _bvBulkField=null;
 function renderBulkVital(){
   const dateEl=document.getElementById('bv-date');
   if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
@@ -12092,35 +12095,85 @@ function renderBulkVital(){
   const recs=getRecords();
   const list=document.getElementById('bulk-vital-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
-  const hasVoice='webkitSpeechRecognition' in window||'SpeechRecognition' in window;
-  list.innerHTML=res.map(r=>{
-    const latest=recs.filter(rc=>rc.rid===r.id&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts))[0];
+  _bvResIds=res.map(r=>r.id);
+  const BV_FIELDS=['sys','dia','pulse','temp','spo2'];
+  const BV_LBL={sys:'収縮期',dia:'拡張期',pulse:'脈拍',temp:'体温',spo2:'SpO2'};
+  const BV_UNIT={sys:'mmHg',dia:'mmHg',pulse:'/分',temp:'℃',spo2:'%'};
+  const BV_PH={sys:'120',dia:'80',pulse:'72',temp:'36.5',spo2:'98'};
+  const th='padding:7px 4px;text-align:center;font-size:11px;font-weight:800;white-space:nowrap;border-bottom:2px solid var(--bdr);min-width:56px';
+  let h='<div style="background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--sh)">'
+    +'<div id="bv-bulk-panel" style="display:none;background:#e8eaf6;padding:8px 12px;border-bottom:2px solid #9fa8da"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span id="bv-bulk-label" style="font-size:12px;font-weight:800;color:#3949ab;white-space:nowrap"></span>'
+    +'<input type="number" inputmode="decimal" id="bv-bulk-val" placeholder="値を入力" onkeydown="if(event.key===\'Enter\')applyBvBulk(false)" style="width:90px;padding:6px 8px;border:2px solid #9fa8da;border-radius:8px;font-size:14px;text-align:center;background:#fff">'
+    +'<button onclick="applyBvBulk(false)" style="padding:6px 14px;background:#3949ab;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">空欄のみ</button>'
+    +'<button onclick="applyBvBulk(true)" style="padding:6px 12px;background:#7986cb;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">全上書き</button>'
+    +'<button onclick="hideBvBulk()" style="padding:6px 10px;background:#9e9e9e;color:#fff;border-radius:8px;font-size:12px;border:none;cursor:pointer;margin-left:auto">✕</button>'
+    +'</div></div>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:460px">'
+    +'<thead><tr style="background:var(--bg)">'
+    +'<th style="'+th+';text-align:left;position:sticky;left:0;background:var(--bg);z-index:2;min-width:72px;padding-left:10px">利用者</th>';
+  BV_FIELDS.forEach(f=>{
+    h+='<th onclick="showBvBulk(\''+f+'\')" style="'+th+';cursor:pointer;color:var(--p)">'
+      +'<div>'+BV_LBL[f]+'</div><div style="font-size:9px;color:var(--sub);font-weight:400">'+BV_UNIT[f]+'</div>'
+      +'<div style="font-size:8px;color:var(--p);margin-top:1px">▼一括</div></th>';
+  });
+  h+='<th style="'+th+';min-width:80px;color:var(--sub)">特記</th><th style="'+th+';min-width:40px"></th>'
+    +'</tr></thead><tbody>';
+  res.forEach(r=>{
+    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
+    const latest=todayRecs[0];
     const v=latest?.data||{};
     const done=!!latest;
-    const vSummary=done?`血圧 ${v.sys||'─'}/${v.dia||'─'}　脈 ${v.pulse||'─'}　体温 ${v.temp||'─'}℃　SpO2 ${v.spo2||'─'}%`:'未記録';
-    return `<div id="bv-card-${r.id}" style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:12px 14px;box-shadow:var(--sh);border-left:3px solid ${done?'var(--ok)':'var(--bdr)'}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:800">${r.name}</div>
-          <div style="font-size:11px;color:${done?'var(--ok)':'var(--sub)'};margin-top:1px">${vSummary}</div>
-        </div>
-        ${hasVoice?`<button id="bv-voice-${r.id}" onclick="startBulkVoice('${r.id}')" style="display:flex;align-items:center;gap:5px;padding:8px 14px;background:var(--p);color:#fff;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation;flex-shrink:0"><span style="font-size:16px">🎤</span>音声</button>`:''}
-      </div>
-      <details style="margin-top:0" open>
-        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▶ 手動入力</span></summary>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px">
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">収縮期</div><input type="number" inputmode="numeric" id="bv-sys-${r.id}" value="${v.sys||''}" placeholder="120" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">拡張期</div><input type="number" inputmode="numeric" id="bv-dia-${r.id}" value="${v.dia||''}" placeholder="80" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">脈拍</div><input type="number" inputmode="numeric" id="bv-pulse-${r.id}" value="${v.pulse||''}" placeholder="72" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">体温</div><input type="number" inputmode="decimal" step="0.1" id="bv-temp-${r.id}" value="${v.temp||''}" placeholder="36.5" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-          <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">SpO2</div><input type="number" inputmode="numeric" id="bv-spo2-${r.id}" value="${v.spo2||''}" placeholder="98" style="width:100%;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;text-align:center;box-sizing:border-box"></div>
-        </div>
-        <div style="display:flex;justify-content:flex-end;margin-top:8px">
-          <button onclick="saveBulkVital('${r.id}')" style="background:var(--p);color:#fff;border-radius:8px;padding:6px 18px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
-        </div>
-      </details>
-    </div>`;
-  }).join('');
+    const rowBg=done?'rgba(76,175,80,.06)':'rgba(255,152,0,.06)';
+    const stickyBg=done?'rgba(76,175,80,.10)':'rgba(255,152,0,.10)';
+    const dot=done?'#43a047':'#ef6c00';
+    h+='<tr id="bv-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-bottom:1px solid var(--bdr)">'
+      +'<td style="padding:6px 6px 6px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;max-width:80px;overflow:hidden;text-overflow:ellipsis">'
+      +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle"></span>'+r.name+'</td>';
+    BV_FIELDS.forEach(f=>{
+      const fv=v[f]!=null?v[f]:'';
+      const bg=done?'var(--bg)':'rgba(255,152,0,.08)';
+      const bdr=done?'var(--bdr)':'#ffb74d';
+      const extra=f==='temp'?' step="0.1"':'';
+      const mode=f==='temp'?'decimal':'numeric';
+      h+='<td style="padding:4px 3px;background:'+rowBg+'">'
+        +'<input type="number" inputmode="'+mode+'"'+extra+' id="bv-'+f+'-'+r.id+'" value="'+fv+'" placeholder="'+BV_PH[f]+'" '
+        +'style="width:58px;padding:5px 2px;border:1.5px solid '+bdr+';border-radius:6px;font-size:13px;text-align:center;background:'+bg+';box-sizing:border-box"></td>';
+    });
+    h+='<td style="padding:4px 3px;background:'+rowBg+'">'
+      +'<input type="text" id="bv-note-'+r.id+'" value="'+(v.note||'')+'" placeholder="特記" style="width:76px;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
+      +'<td style="padding:4px 6px;text-align:center;background:'+rowBg+'">'
+      +'<button onclick="saveBulkVital(\''+r.id+'\')" style="padding:5px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button>'
+      +'</td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  list.innerHTML=h;
+}
+function showBvBulk(f){
+  _bvBulkField=f;
+  const panel=document.getElementById('bv-bulk-panel');if(!panel)return;
+  panel.style.display='';
+  const labelMap={sys:'収縮期（mmHg）',dia:'拡張期（mmHg）',pulse:'脈拍（/分）',temp:'体温（℃）',spo2:'SpO2（%）'};
+  const lbl=document.getElementById('bv-bulk-label');
+  if(lbl)lbl.textContent=labelMap[f]+' を全員セット ▶';
+  const inp=document.getElementById('bv-bulk-val');
+  if(inp){inp.value='';inp.step=f==='temp'?'0.1':'1';inp.inputMode=f==='temp'?'decimal':'numeric';inp.focus();}
+}
+function hideBvBulk(){
+  const p=document.getElementById('bv-bulk-panel');if(p)p.style.display='none';
+  _bvBulkField=null;
+}
+function applyBvBulk(overwrite){
+  if(!_bvBulkField){toast('項目を選択してください');return;}
+  const val=(document.getElementById('bv-bulk-val')?.value||'').trim();
+  if(!val){toast('値を入力してください');return;}
+  let cnt=0;
+  _bvResIds.forEach(rid=>{
+    const inp=document.getElementById('bv-'+_bvBulkField+'-'+rid);
+    if(inp&&(overwrite||!inp.value)){inp.value=val;cnt++;}
+  });
+  toast(cnt+'件にセットしました ✓');
 }
 let _bvVoiceRid=null;
 let _bvVoiceActive=false;
@@ -12196,7 +12249,8 @@ function saveBulkVital(rid){
   const spo2=_getVal('bv-spo2-'+rid);
   if(!sys&&!dia&&!pulse&&!temp&&!spo2){toast('値を入力してください');return;}
   const bvData={sys:sys?Number(sys):null,dia:dia?Number(dia):null,pulse:pulse?Number(pulse):null,
-                temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null};
+                temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null,
+                note:document.getElementById('bv-note-'+rid)?.value||''};
   const bvwarn=vitalSanityWarn(bvData);
   if(bvwarn.length&&!confirm('入力値が通常範囲外です:\n'+bvwarn.join(' / ')+'\n\nこのまま保存しますか？'))return;
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
@@ -12204,8 +12258,14 @@ function saveBulkVital(rid){
   const recs=getRecords();
   recs.push({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',data:bvData});
   saveRecords(recs);
+  const row=document.getElementById('bv-row-'+rid);
+  if(row){
+    row.dataset.done='1';
+    row.querySelectorAll('td').forEach((td,i)=>{td.style.background=i===0?'rgba(76,175,80,.10)':'rgba(76,175,80,.06)';});
+    const dot=row.querySelector('td:first-child span');if(dot)dot.style.background='#43a047';
+    row.querySelectorAll('input[type="number"]').forEach(inp=>{inp.style.borderColor='var(--bdr)';inp.style.background='var(--bg)';});
+  }
   toast('バイタルを保存しました ✓');
-  renderBulkVital();
 }
 
 
@@ -12219,76 +12279,135 @@ function setBmFilter(f){
   });
   renderBulkMeal();
 }
+let _bmResIds=[];
+let _bmBulkField=null;
 function renderBulkMeal(){
   const dateEl=document.getElementById('bm-date');
-  if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
+  if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
   const res=filterSortRes(r=>_bmFilter==='all'||r.services.includes(_bmFilter),document.getElementById('bm-search')?.value);
   const list=document.getElementById('bulk-meal-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
-  const h=new Date().getHours();
-  const autoMtype=h<10?'breakfast':h<12?'morning_snack':h<15?'lunch':h<17?'snack':'dinner';
-  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  _bmResIds=res.map(r=>r.id);
+  const hr=new Date().getHours();
+  const autoMtype=hr<10?'breakfast':hr<12?'morning_snack':hr<15?'lunch':hr<17?'snack':'dinner';
   const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
-  list.innerHTML=res.map(r=>{
-    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today));
+  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
+  const th='padding:7px 4px;text-align:center;font-size:11px;font-weight:800;white-space:nowrap;border-bottom:2px solid var(--bdr)';
+  let html='<div style="background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--sh)">'
+    +'<div id="bm-bulk-panel" style="display:none;background:#e8f5e9;padding:8px 12px;border-bottom:2px solid #a5d6a7"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span id="bm-bulk-label" style="font-size:12px;font-weight:800;color:#2e7d32;white-space:nowrap"></span>'
+    +'<div id="bm-bulk-input-area"></div>'
+    +'<button onclick="applyBmBulk(false)" style="padding:6px 14px;background:#2e7d32;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">空欄のみ</button>'
+    +'<button onclick="applyBmBulk(true)" style="padding:6px 12px;background:#66bb6a;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">全上書き</button>'
+    +'<button onclick="hideBmBulk()" style="padding:6px 10px;background:#9e9e9e;color:#fff;border-radius:8px;font-size:12px;border:none;cursor:pointer;margin-left:auto">✕</button>'
+    +'</div></div>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:500px">'
+    +'<thead><tr style="background:var(--bg)">'
+    +'<th style="'+th+';text-align:left;position:sticky;left:0;background:var(--bg);z-index:2;min-width:72px;padding-left:10px">利用者</th>'
+    +'<th onclick="showBmBulk(\'mtype\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:68px">区分<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th onclick="showBmBulk(\'staple\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:76px">主食<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th onclick="showBmBulk(\'side\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:76px">副食<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th onclick="showBmBulk(\'fluid\')" style="'+th+';cursor:pointer;color:var(--ok);min-width:68px">水分ml<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th style="'+th+';min-width:76px;color:var(--sub)">特記</th>'
+    +'<th style="'+th+';min-width:40px"></th>'
+    +'</tr></thead><tbody>';
+  res.forEach(r=>{
+    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
     const done=todayRecs.length>0;
-    const lastFluid=todayRecs.reduce((acc,rc)=>acc+(rc.data?.fluid||0),0);
-    const fluidWarn=done&&lastFluid>0&&lastFluid<700;
-    const statusTxt=done?`${todayRecs.length}件記録済 水分計${lastFluid}ml`:'未記録';
-    const statusColor=done?(fluidWarn?'var(--warn)':'var(--ok)'):'var(--sub)';
-    return `<div id="bm-card-${r.id}" style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:12px 14px;box-shadow:var(--sh);border-left:3px solid ${done?(fluidWarn?'var(--warn)':'var(--ok)'):'var(--bdr)'}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:800">${r.name}</div>
-          <div style="font-size:11px;color:${statusColor};margin-top:1px">${statusTxt}</div>
-        </div>
-      </div>
-      <details style="margin-top:0" open>
-        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▼ 入力</span></summary>
-        <div style="margin-top:8px">
-          <div style="display:flex;gap:3px;margin-bottom:8px">
-            ${MEAL_TYPES.map(t=>`<button id="bm-mtype-${r.id}-${t}" onclick="setBmMtype('${r.id}','${t}')" style="flex:1;padding:6px 1px;border-radius:8px;font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;touch-action:manipulation;background:${t===autoMtype?'var(--p)':'var(--bg)'};color:${t===autoMtype?'#fff':'var(--sub)'};border-color:${t===autoMtype?'var(--p)':'var(--bdr)'}">${mtypeLbl[t]}</button>`).join('')}
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-            <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">主食（割）</div><input type="number" inputmode="numeric" min="0" max="10" id="bm-staple-${r.id}" placeholder="10" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
-            <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">副食（割）</div><input type="number" inputmode="numeric" min="0" max="10" id="bm-side-${r.id}" placeholder="10" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
-            <div><div style="font-size:9px;color:var(--sub);margin-bottom:2px">水分（ml）</div><input type="number" inputmode="numeric" id="bm-fluid-${r.id}" placeholder="200" style="width:100%;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:14px;text-align:center;box-sizing:border-box"></div>
-          </div>
-          <div style="display:flex;justify-content:flex-end">
-            <button onclick="saveBulkMeal('${r.id}')" style="background:var(--ok);color:#fff;border-radius:8px;padding:7px 20px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
-          </div>
-        </div>
-      </details>
-    </div>`;
-  }).join('');
-  // autoMtype をデフォルト選択として記憶
-  res.forEach(r=>{ if(!document.getElementById('bm-mtype-cur-'+r.id)){ const d=document.createElement('input'); d.type='hidden'; d.id='bm-mtype-cur-'+r.id; d.value=autoMtype; document.body.appendChild(d); }});
-}
-function setBmMtype(rid,t){
-  ['breakfast','morning_snack','lunch','snack','dinner'].forEach(s=>{
-    const b=document.getElementById('bm-mtype-'+rid+'-'+s);
-    if(b){b.style.background=s===t?'var(--p)':'var(--bg)';b.style.color=s===t?'#fff':'var(--sub)';b.style.borderColor=s===t?'var(--p)':'var(--bdr)';}
+    const d=todayRecs[0]?.data||{};
+    const rowBg=done?'rgba(76,175,80,.06)':'rgba(255,152,0,.06)';
+    const stickyBg=done?'rgba(76,175,80,.10)':'rgba(255,152,0,.10)';
+    const dot=done?'#43a047':'#ef6c00';
+    const curMtype=d.mtype||autoMtype;
+    const curStaple=d.staple!=null?String(d.staple):'';
+    const curSide=d.side!=null?String(d.side):'';
+    const curFluid=d.fluid||'';
+    const mtOpts=MEAL_TYPES.map(t=>'<option value="'+t+'"'+(curMtype===t?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('');
+    const stOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curStaple===String(i)?' selected':'')+'>'+l+'</option>').join('');
+    const sdOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curSide===String(i)?' selected':'')+'>'+l+'</option>').join('');
+    const ss='width:70px;padding:5px 2px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box';
+    const fluidBdr=done?'var(--bdr)':'#ffb74d';
+    const fluidBg=done?'var(--bg)':'rgba(255,152,0,.08)';
+    html+='<tr id="bm-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-bottom:1px solid var(--bdr)">'
+      +'<td style="padding:6px 6px 6px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;max-width:80px;overflow:hidden;text-overflow:ellipsis">'
+      +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle"></span>'+r.name+'</td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-mtype-'+r.id+'" style="'+ss+';min-width:62px">'+mtOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-staple-'+r.id+'" style="'+ss+'">'+stOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bm-side-'+r.id+'" style="'+ss+'">'+sdOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-fluid-'+r.id+'" value="'+curFluid+'" placeholder="200" style="width:56px;padding:5px 2px;border:1.5px solid '+fluidBdr+';border-radius:6px;font-size:13px;text-align:center;background:'+fluidBg+';box-sizing:border-box"></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="text" id="bm-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" style="width:72px;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
+      +'<td style="padding:4px 6px;text-align:center;background:'+rowBg+'"><button onclick="saveBulkMeal(\''+r.id+'\')" style="padding:5px 10px;background:var(--ok);color:#fff;border-radius:7px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button></td>'
+      +'</tr>';
   });
-  const cur=document.getElementById('bm-mtype-cur-'+rid);
-  if(cur) cur.value=t; else { const d=document.createElement('input');d.type='hidden';d.id='bm-mtype-cur-'+rid;d.value=t;document.body.appendChild(d); }
+  html+='</tbody></table></div></div>';
+  list.innerHTML=html;
+}
+function showBmBulk(f){
+  _bmBulkField=f;
+  const panel=document.getElementById('bm-bulk-panel');if(!panel)return;
+  panel.style.display='';
+  const lbl=document.getElementById('bm-bulk-label');
+  const area=document.getElementById('bm-bulk-input-area');
+  const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
+  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
+  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'15時',dinner:'夕食'};
+  if(f==='mtype'){
+    if(lbl)lbl.textContent='区分 を全員セット ▶';
+    if(area)area.innerHTML='<select id="bm-bulk-mtype" style="padding:6px 8px;border:2px solid #a5d6a7;border-radius:8px;font-size:13px;background:#fff">'+MEAL_TYPES.map(t=>'<option value="'+t+'">'+mtypeLbl[t]+'</option>').join('')+'</select>';
+  } else if(f==='staple'||f==='side'){
+    if(lbl)lbl.textContent=(f==='staple'?'主食':'副食')+' を全員セット ▶';
+    if(area)area.innerHTML='<select id="bm-bulk-food" style="padding:6px 8px;border:2px solid #a5d6a7;border-radius:8px;font-size:13px;background:#fff"><option value="">選択</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('')+'</select>';
+  } else if(f==='fluid'){
+    if(lbl)lbl.textContent='水分 を全員セット ▶';
+    if(area)area.innerHTML='<input type="number" inputmode="numeric" id="bm-bulk-fluid" placeholder="200" style="width:80px;padding:6px 8px;border:2px solid #a5d6a7;border-radius:8px;font-size:14px;text-align:center;background:#fff">';
+  }
+  setTimeout(()=>{const el=document.getElementById('bm-bulk-mtype')||document.getElementById('bm-bulk-food')||document.getElementById('bm-bulk-fluid');if(el)el.focus();},50);
+}
+function hideBmBulk(){
+  const p=document.getElementById('bm-bulk-panel');if(p)p.style.display='none';
+  _bmBulkField=null;
+}
+function applyBmBulk(overwrite){
+  if(!_bmBulkField){toast('項目を選択してください');return;}
+  const f=_bmBulkField;
+  let val='';
+  if(f==='mtype') val=document.getElementById('bm-bulk-mtype')?.value||'';
+  else if(f==='staple'||f==='side') val=document.getElementById('bm-bulk-food')?.value||'';
+  else if(f==='fluid') val=(document.getElementById('bm-bulk-fluid')?.value||'').trim();
+  if(!val){toast('値を選択してください');return;}
+  const selId=f==='staple'?'bm-staple-':f==='side'?'bm-side-':f==='fluid'?'bm-fluid-':'bm-mtype-';
+  let cnt=0;
+  _bmResIds.forEach(rid=>{
+    const el=document.getElementById(selId+rid);
+    if(el&&(overwrite||!el.value||el.value==='')){el.value=val;cnt++;}
+  });
+  toast(cnt+'件にセットしました ✓');
 }
 function saveBulkMeal(rid){
   const dateEl=document.getElementById('bm-date');
-  const mtypeEl=document.getElementById('bm-mtype-cur-'+rid);
-  const mtype=mtypeEl?.value||'breakfast';
-  const staple=_getVal('bm-staple-'+rid);
-  const side=_getVal('bm-side-'+rid);
+  const mtype=document.getElementById('bm-mtype-'+rid)?.value||'breakfast';
+  const stapleVal=document.getElementById('bm-staple-'+rid)?.value;
+  const sideVal=document.getElementById('bm-side-'+rid)?.value;
   const fluid=_getVal('bm-fluid-'+rid);
-  if(!staple&&!side&&!fluid){toast('値を入力してください');return;}
+  if(stapleVal===''&&sideVal===''&&!fluid){toast('値を入力してください');return;}
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
+  const note=document.getElementById('bm-note-'+rid)?.value||'';
   const recs=getRecords();
   recs.push({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',
-    data:{mtype,staple:staple?Number(staple):null,side:side?Number(side):null,fluid:fluid?Number(fluid):0,note:''}});
+    data:{mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,side:sideVal!==''&&sideVal!=null?Number(sideVal):null,fluid:fluid?Number(fluid):0,note}});
   saveRecords(recs);
+  const row=document.getElementById('bm-row-'+rid);
+  if(row){
+    row.dataset.done='1';
+    row.querySelectorAll('td').forEach((td,i)=>{td.style.background=i===0?'rgba(76,175,80,.10)':'rgba(76,175,80,.06)';});
+    const dot=row.querySelector('td:first-child span');if(dot)dot.style.background='#43a047';
+    const fi=document.getElementById('bm-fluid-'+rid);if(fi){fi.style.borderColor='var(--bdr)';fi.style.background='var(--bg)';}
+  }
   toast('食事記録を保存しました ✓');
-  renderBulkMeal();
 }
 
 // ═══════════ 一括排泄 ═══════════
@@ -12301,97 +12420,116 @@ function setBexFilter(f){
   });
   renderBulkExcretion();
 }
+let _bexResIds=[];
+let _bexBulkField=null;
 function renderBulkExcretion(){
   const dateEl=document.getElementById('bex-date');
-  if(!dateEl.value) dateEl.value=new Date().toISOString().slice(0,10);
+  if(!dateEl.value)dateEl.value=new Date().toISOString().slice(0,10);
   const today=dateEl.value;
   const recs=getRecords();
   const res=filterSortRes(r=>_bexFilter==='all'||r.services.includes(_bexFilter),document.getElementById('bex-search')?.value);
   const list=document.getElementById('bulk-excretion-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
-  const stoolLbls={none:'なし',small:'少量',normal:'普通',large:'多量'};
-  list.innerHTML=res.map(r=>{
-    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today));
+  _bexResIds=res.map(r=>r.id);
+  const th='padding:7px 4px;text-align:center;font-size:11px;font-weight:800;white-space:nowrap;border-bottom:2px solid var(--bdr)';
+  let html='<div style="background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--sh)">'
+    +'<div id="bex-bulk-panel" style="display:none;background:#e3f2fd;padding:8px 12px;border-bottom:2px solid #90caf9"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span id="bex-bulk-label" style="font-size:12px;font-weight:800;color:#1565c0;white-space:nowrap"></span>'
+    +'<div id="bex-bulk-input-area"></div>'
+    +'<button onclick="applyBexBulk(false)" style="padding:6px 14px;background:#1565c0;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">空欄のみ</button>'
+    +'<button onclick="applyBexBulk(true)" style="padding:6px 12px;background:#42a5f5;color:#fff;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer">全上書き</button>'
+    +'<button onclick="hideBexBulk()" style="padding:6px 10px;background:#9e9e9e;color:#fff;border-radius:8px;font-size:12px;border:none;cursor:pointer;margin-left:auto">✕</button>'
+    +'</div></div>'
+    +'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:440px">'
+    +'<thead><tr style="background:var(--bg)">'
+    +'<th style="'+th+';text-align:left;position:sticky;left:0;background:var(--bg);z-index:2;min-width:72px;padding-left:10px">利用者</th>'
+    +'<th onclick="showBexBulk(\'urine\')" style="'+th+';cursor:pointer;color:#1565c0;min-width:80px">排尿<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th onclick="showBexBulk(\'stool\')" style="'+th+';cursor:pointer;color:#1565c0;min-width:80px">排便<br><span style="font-size:8px">▼一括</span></th>'
+    +'<th style="'+th+';min-width:48px;color:var(--sub)">失禁</th>'
+    +'<th style="'+th+';min-width:56px;color:var(--sub)">時刻</th>'
+    +'<th style="'+th+';min-width:80px;color:var(--sub)">特記</th>'
+    +'<th style="'+th+';min-width:40px"></th>'
+    +'</tr></thead><tbody>';
+  res.forEach(r=>{
+    const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
     const done=todayRecs.length>0;
-    const hasStool=todayRecs.some(rc=>rc.data?.stool&&rc.data.stool!=='none'&&rc.data.stool);
-    const statusTxt=done?`${todayRecs.length}件記録済${hasStool?' 排便あり':''}`:'未記録';
-    return `<div id="bex-card-${r.id}" style="background:var(--card);border-radius:12px;margin-bottom:8px;padding:12px 14px;box-shadow:var(--sh);border-left:3px solid ${done?'var(--ok)':'var(--bdr)'}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:800">${r.name}</div>
-          <div style="font-size:11px;color:${done?'var(--ok)':'var(--sub)'};margin-top:1px">${statusTxt}</div>
-        </div>
-      </div>
-      <details open>
-        <summary style="font-size:11px;color:var(--sub);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px"><span>▼ 入力</span></summary>
-        <div style="margin-top:8px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-            <div>
-              <div style="font-size:10px;color:var(--sub);margin-bottom:4px;font-weight:700">排尿</div>
-              <div style="display:flex;gap:3px;flex-wrap:wrap">
-                ${Object.entries(stoolLbls).map(([k,l])=>`<button id="bex-urine-${r.id}-${k}" onclick="setBexUrine('${r.id}','${k}')" style="padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">${l}</button>`).join('')}
-              </div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:var(--sub);margin-bottom:4px;font-weight:700">排便</div>
-              <div style="display:flex;gap:3px;flex-wrap:wrap">
-                ${Object.entries(stoolLbls).map(([k,l])=>`<button id="bex-stool-${r.id}-${k}" onclick="setBexStool('${r.id}','${k}')" style="padding:4px 7px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">${l}</button>`).join('')}
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;gap:12px;margin-bottom:8px">
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-              <input type="checkbox" id="bex-incon-${r.id}"> 失禁
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-              <input type="checkbox" id="bex-portable-${r.id}"> ポータブルトイレ
-            </label>
-          </div>
-          <div style="margin-bottom:8px">
-            <textarea id="bex-note-${r.id}" placeholder="特記（出血の有無・皮膚状態など）" rows="2" style="width:100%;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:6px;font-size:13px;resize:none;box-sizing:border-box;color:var(--txt);background:var(--bg)"></textarea>
-          </div>
-          <div style="display:flex;justify-content:flex-end">
-            <button onclick="saveBulkExcretion('${r.id}')" style="background:var(--ok);color:#fff;border-radius:8px;padding:7px 20px;font-size:12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">保存</button>
-          </div>
-        </div>
-      </details>
-    </div>`;
-  }).join('');
-}
-function _setBexBtn(prefix,rid,val,color){
-  ['none','small','normal','large'].forEach(k=>{
-    const b=document.getElementById(prefix+rid+'-'+k);
-    if(b){b.style.background=k===val?color:'var(--bg)';b.style.color=k===val?'#fff':'var(--sub)';b.style.borderColor=k===val?color:'var(--bdr)';}
+    const d=todayRecs[0]?.data||{};
+    const lastTs=todayRecs[0]?.ts||'';
+    const curTime=lastTs?lastTs.slice(11,16):new Date().toTimeString().slice(0,5);
+    const rowBg=done?'rgba(76,175,80,.06)':'rgba(255,152,0,.06)';
+    const stickyBg=done?'rgba(76,175,80,.10)':'rgba(255,152,0,.10)';
+    const dot=done?'#43a047':'#ef6c00';
+    const curUrine=d.urine||'';
+    const curStool=d.stool||'';
+    const urOpts='<option value="">-</option><option value="none"'+(curUrine==='none'?' selected':'')+'>なし</option><option value="small"'+(curUrine==='small'?' selected':'')+'>少量</option><option value="normal"'+(curUrine==='normal'?' selected':'')+'>普通</option><option value="large"'+(curUrine==='large'?' selected':'')+'>多量</option>';
+    const stOpts='<option value="">-</option><option value="none"'+(curStool==='none'?' selected':'')+'>なし</option><option value="small"'+(curStool==='small'?' selected':'')+'>少量</option><option value="normal"'+(curStool==='normal'?' selected':'')+'>普通</option><option value="large"'+(curStool==='large'?' selected':'')+'>多量</option>';
+    const ss='width:74px;padding:5px 2px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box';
+    html+='<tr id="bex-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-bottom:1px solid var(--bdr)">'
+      +'<td style="padding:6px 6px 6px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;max-width:80px;overflow:hidden;text-overflow:ellipsis">'
+      +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle"></span>'+r.name+'</td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bex-urine-'+r.id+'" style="'+ss+'">'+urOpts+'</select></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><select id="bex-stool-'+r.id+'" style="'+ss+'">'+stOpts+'</select></td>'
+      +'<td style="padding:4px 3px;text-align:center;background:'+rowBg+'"><input type="checkbox" id="bex-incon-'+r.id+'"'+(d.incon?' checked':'')+' style="width:18px;height:18px;cursor:pointer"></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="time" id="bex-time-'+r.id+'" value="'+curTime+'" style="width:72px;padding:4px 2px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
+      +'<td style="padding:4px 3px;background:'+rowBg+'"><input type="text" id="bex-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" style="width:74px;padding:5px 4px;border:1.5px solid var(--bdr);border-radius:6px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
+      +'<td style="padding:4px 6px;text-align:center;background:'+rowBg+'"><button onclick="saveBulkExcretion(\''+r.id+'\')" style="padding:5px 10px;background:var(--p);color:#fff;border-radius:7px;font-size:13px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button></td>'
+      +'</tr>';
   });
+  html+='</tbody></table></div></div>';
+  list.innerHTML=html;
 }
-function setBexUrine(rid,val){
-  _setBexBtn('bex-urine-',rid,val,'var(--p)');
-  const cur=document.getElementById('bex-urine-cur-'+rid);
-  if(cur) cur.value=val; else {const d=document.createElement('input');d.type='hidden';d.id='bex-urine-cur-'+rid;d.value=val;document.body.appendChild(d);}
+function showBexBulk(f){
+  _bexBulkField=f;
+  const panel=document.getElementById('bex-bulk-panel');if(!panel)return;
+  panel.style.display='';
+  const lbl=document.getElementById('bex-bulk-label');
+  const area=document.getElementById('bex-bulk-input-area');
+  const opts='<option value="">選択</option><option value="none">なし</option><option value="small">少量</option><option value="normal">普通</option><option value="large">多量</option>';
+  if(lbl)lbl.textContent=(f==='urine'?'排尿':'排便')+' を全員セット ▶';
+  if(area)area.innerHTML='<select id="bex-bulk-sel" style="padding:6px 8px;border:2px solid #90caf9;border-radius:8px;font-size:13px;background:#fff">'+opts+'</select>';
+  setTimeout(()=>document.getElementById('bex-bulk-sel')?.focus(),50);
 }
-function setBexStool(rid,val){
-  _setBexBtn('bex-stool-',rid,val,'var(--ok)');
-  const cur=document.getElementById('bex-stool-cur-'+rid);
-  if(cur) cur.value=val; else {const d=document.createElement('input');d.type='hidden';d.id='bex-stool-cur-'+rid;d.value=val;document.body.appendChild(d);}
+function hideBexBulk(){
+  const p=document.getElementById('bex-bulk-panel');if(p)p.style.display='none';
+  _bexBulkField=null;
+}
+function applyBexBulk(overwrite){
+  if(!_bexBulkField){toast('項目を選択してください');return;}
+  const val=document.getElementById('bex-bulk-sel')?.value||'';
+  if(!val){toast('値を選択してください');return;}
+  const selId=_bexBulkField==='urine'?'bex-urine-':'bex-stool-';
+  let cnt=0;
+  _bexResIds.forEach(rid=>{
+    const el=document.getElementById(selId+rid);
+    if(el&&(overwrite||!el.value||el.value==='')){el.value=val;cnt++;}
+  });
+  toast(cnt+'件にセットしました ✓');
 }
 function saveBulkExcretion(rid){
   const dateEl=document.getElementById('bex-date');
-  const urine=document.getElementById('bex-urine-cur-'+rid)?.value||'none';
-  const stool=document.getElementById('bex-stool-cur-'+rid)?.value||'none';
+  const urine=document.getElementById('bex-urine-'+rid)?.value||'';
+  const stool=document.getElementById('bex-stool-'+rid)?.value||'';
   const incon=document.getElementById('bex-incon-'+rid)?.checked||false;
-  const portable=document.getElementById('bex-portable-'+rid)?.checked||false;
   const note=(document.getElementById('bex-note-'+rid)?.value||'').trim();
-  const hasUrine=urine&&urine!=='none';
-  const hasStool=stool&&stool!=='none';
+  const timeVal=document.getElementById('bex-time-'+rid)?.value||new Date().toTimeString().slice(0,5);
+  const hasUrine=urine&&urine!=='none'&&urine!=='';
+  const hasStool=stool&&stool!=='none'&&stool!=='';
   if(!hasUrine&&!hasStool&&!incon){toast('値を入力してください');return;}
   const etype=hasUrine&&hasStool?'both':hasStool?'stool':'urine';
-  const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
+  const ts=dateEl.value+'T'+timeVal+':00';
+  if(new Date(ts)>new Date()){toast('未来の日付・時刻は入力できません');return;}
   const recs=getRecords();
   recs.push({id:'r'+Date.now(),rid,type:'excretion',ts,by:S.user||'──',
-    data:{etype,urine:hasUrine?urine:'',stool:hasStool?stool:'',portable,incon,lax:false,note}});
+    data:{etype,urine:hasUrine?urine:'',stool:hasStool?stool:'',portable:false,incon,lax:false,note}});
   saveRecords(recs);
+  const row=document.getElementById('bex-row-'+rid);
+  if(row){
+    row.dataset.done='1';
+    row.querySelectorAll('td').forEach((td,i)=>{td.style.background=i===0?'rgba(76,175,80,.10)':'rgba(76,175,80,.06)';});
+    const dot=row.querySelector('td:first-child span');if(dot)dot.style.background='#43a047';
+  }
   toast('排泄記録を保存しました ✓');
-  renderBulkExcretion();
 }
 // ═══════════ 服薬チェック ═══════════
 let _medSlot='morning';
