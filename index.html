@@ -4905,9 +4905,11 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.7';
+const APP_VERSION='1.1.8';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.8',date:'2026-07-27',items:['一括入力マトリクスをExcel方式に刷新：入力欄を離れた瞬間に自動保存・✓ボタン廃止','食事/排泄はドロップダウン変更で即時保存','保存時に行の左ボーダーが緑に変わりフラッシュで確認']},
+  {ver:'1.1.7',date:'2026-07-27',items:['マトリクスの視認性改善（ヘッダー色分け・左端アクセントライン・ゼブラ縞）','15時・10時は主食/副食列を「—」に変更']},
   {ver:'1.1.6',date:'2026-07-27',items:['フロアマップの二人部屋で男性を左側（前）に表示','個人排泄モーダルに時刻入力フィールドを追加']},
   {ver:'1.1.5',date:'2026-07-27',items:['フェイスシートADL状態（食事/排泄/入浴/着脱/移動）を複数選択可能に変更']},
   {ver:'1.1.4',date:'2026-07-27',items:['一括食事にゼリー列を追加','10時・15時は主食/副食を自動無効化','生活シートタブを非表示']},
@@ -12142,7 +12144,7 @@ function renderBulkVital(){
       +'<div>'+BV_LBL[f]+'</div><div style="font-size:10px;font-weight:400;opacity:.7">'+BV_UNIT[f]+'</div>'
       +'<div style="font-size:9px;margin-top:2px;opacity:.8">▼一括</div></th>';
   });
-  h+='<th style="'+th+';min-width:80px;opacity:.8">特記</th><th style="'+th+';min-width:44px"></th>'
+  h+='<th style="'+th+';min-width:80px;opacity:.8">特記</th>'
     +'</tr></thead><tbody>';
   res.forEach((r,ri)=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
@@ -12153,6 +12155,7 @@ function renderBulkVital(){
     const stickyBg=done?(ri%2===0?'rgba(76,175,80,.12)':'rgba(76,175,80,.18)'):'rgba(255,152,0,.20)';
     const lbdr=done?'4px solid #43a047':'4px solid #ef6c00';
     const dot=done?'#43a047':'#ef6c00';
+    const as="bvAutoSave('"+r.id+"')";
     h+='<tr id="bv-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-bottom:1.5px solid var(--bdr);border-left:'+lbdr+'">'
       +'<td style="padding:8px 6px 8px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;min-width:82px;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--bdr)">'
       +'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+dot+';margin-right:5px;vertical-align:middle;flex-shrink:0"></span>'+r.name+'</td>';
@@ -12164,13 +12167,12 @@ function renderBulkVital(){
       const mode=f==='temp'?'decimal':'numeric';
       h+='<td style="padding:6px 4px;background:'+rowBg+'">'
         +'<input type="number" inputmode="'+mode+'"'+extra+' id="bv-'+f+'-'+r.id+'" value="'+fv+'" placeholder="'+BV_PH[f]+'" '
+        +'onblur="'+as+'" '
         +'style="width:62px;padding:6px 2px;border:1.5px solid '+bdr+';border-radius:7px;font-size:14px;text-align:center;background:'+bg+';box-sizing:border-box"></td>';
     });
     h+='<td style="padding:6px 4px;background:'+rowBg+'">'
-      +'<input type="text" id="bv-note-'+r.id+'" value="'+(v.note||'')+'" placeholder="特記" style="width:76px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
-      +'<td style="padding:6px 6px;text-align:center;background:'+rowBg+'">'
-      +'<button onclick="saveBulkVital(\''+r.id+'\')" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button>'
-      +'</td></tr>';
+      +'<input type="text" id="bv-note-'+r.id+'" value="'+(v.note||'')+'" placeholder="特記" onblur="'+as+'" style="width:80px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
+      +'</tr>';
   });
   h+='</tbody></table></div></div>';
   list.innerHTML=h;
@@ -12265,6 +12267,88 @@ function startBulkVoice(rid){
 function r2name(rid){return getResidents().find(r=>r.id===rid)?.name||rid;}
 function _han(v){return (v||'').replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)).replace(/．/g,'.');}
 function _getVal(id){return _han(document.getElementById(id)?.value||'');}
+function _flashSaved(row){
+  if(!row)return;
+  row.style.outline='2px solid #22c55e';
+  setTimeout(()=>{row.style.outline='';},500);
+}
+function _bvApplyDone(rid){
+  const row=document.getElementById('bv-row-'+rid);if(!row)return;
+  row.dataset.done='1';row.style.borderLeft='4px solid #43a047';
+  row.querySelectorAll('td').forEach((td,i)=>{td.style.background=i===0?'rgba(76,175,80,.15)':'rgba(76,175,80,.10)';});
+  const dot=row.querySelector('td:first-child span');if(dot)dot.style.background='#43a047';
+  row.querySelectorAll('input[type="number"]').forEach(inp=>{inp.style.borderColor='var(--bdr)';inp.style.background='var(--bg)';});
+  _flashSaved(row);
+}
+function bvAutoSave(rid){
+  const dateEl=document.getElementById('bv-date');if(!dateEl||!dateEl.value)return;
+  const sys=_getVal('bv-sys-'+rid),dia=_getVal('bv-dia-'+rid);
+  const pulse=_getVal('bv-pulse-'+rid),temp=_getVal('bv-temp-'+rid),spo2=_getVal('bv-spo2-'+rid);
+  if(!sys&&!dia&&!pulse&&!temp&&!spo2)return;
+  const bvData={sys:sys?Number(sys):null,dia:dia?Number(dia):null,pulse:pulse?Number(pulse):null,
+                temp:temp?Number(temp):null,spo2:spo2?Number(spo2):null,
+                note:document.getElementById('bv-note-'+rid)?.value||''};
+  const bvwarn=vitalSanityWarn(bvData);if(bvwarn.length)toast('⚠️ '+bvwarn.join(' / '));
+  const today=dateEl.value;
+  const ts=today+'T'+new Date().toTimeString().slice(0,5)+':00';
+  if(new Date(ts)>new Date())return;
+  const recs=getRecords();
+  const ex=recs.find(rc=>rc.rid===rid&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today));
+  if(ex){ex.data=bvData;ex.ts=ts;}else{recs.unshift({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',data:bvData});}
+  saveRecords(recs);_bvApplyDone(rid);
+}
+function bmAutoSave(rid){
+  const dateEl=document.getElementById('bm-date');if(!dateEl||!dateEl.value)return;
+  const mtype=document.getElementById('bm-mtype-'+rid)?.value||'breakfast';
+  const stapleEl=document.getElementById('bm-staple-'+rid);
+  const sideEl=document.getElementById('bm-side-'+rid);
+  const stapleVal=stapleEl?.value;const sideVal=sideEl?.value;
+  const fluid=_getVal('bm-fluid-'+rid),jelly=_getVal('bm-jelly-'+rid);
+  const note=document.getElementById('bm-note-'+rid)?.value||'';
+  const isSnack=mtype==='morning_snack'||mtype==='snack';
+  if(isSnack&&!fluid&&!jelly&&!note)return;
+  if(!isSnack&&stapleVal===undefined&&sideVal===undefined&&!fluid&&!jelly)return;
+  const today=dateEl.value;
+  const ts=today+'T'+new Date().toTimeString().slice(0,5)+':00';
+  if(new Date(ts)>new Date())return;
+  const data={mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,
+              side:sideVal!==''&&sideVal!=null?Number(sideVal):null,
+              fluid:fluid?Number(fluid):0,jelly:jelly?Number(jelly):0,note};
+  const recs=getRecords();
+  const ex=recs.find(rc=>rc.rid===rid&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today)&&rc.data?.mtype===mtype);
+  if(ex){ex.data=data;ex.ts=ts;}else{recs.unshift({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',data});}
+  saveRecords(recs);
+  const row=document.getElementById('bm-row-'+rid);if(!row)return;
+  row.dataset.done='1';row.style.borderLeft='4px solid #43a047';
+  row.querySelectorAll('td').forEach((td,i)=>{td.style.background=i===0?'rgba(76,175,80,.15)':'rgba(76,175,80,.10)';});
+  const dot=row.querySelector('td:first-child span');if(dot)dot.style.background='#43a047';
+  const fi=document.getElementById('bm-fluid-'+rid);if(fi){fi.style.borderColor='var(--bdr)';fi.style.background='var(--bg)';}
+  _flashSaved(row);
+}
+function bexAutoSave(rid){
+  const dateEl=document.getElementById('bex-date');if(!dateEl||!dateEl.value)return;
+  const urine=document.getElementById('bex-urine-'+rid)?.value||'';
+  const stool=document.getElementById('bex-stool-'+rid)?.value||'';
+  const incon=document.getElementById('bex-incon-'+rid)?.checked||false;
+  const note=(document.getElementById('bex-note-'+rid)?.value||'').trim();
+  const timeVal=document.getElementById('bex-time-'+rid)?.value||new Date().toTimeString().slice(0,5);
+  const hasUrine=urine&&urine!=='';const hasStool=stool&&stool!=='';
+  if(!hasUrine&&!hasStool&&!incon)return;
+  const etype=hasUrine&&hasStool?'both':hasStool?'stool':'urine';
+  const today=dateEl.value;
+  const ts=today+'T'+timeVal+':00';
+  const recs=getRecords();
+  const sorted=recs.filter(rc=>rc.rid===rid&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
+  const ex=sorted[0];
+  const data={etype,urine,stool,incon,lax:false,portable:false,note};
+  if(ex){ex.data=data;ex.ts=ts;}else{recs.unshift({id:'r'+Date.now(),rid,type:'excretion',ts,by:S.user||'──',data});}
+  saveRecords(recs);
+  const row=document.getElementById('bex-row-'+rid);if(!row)return;
+  row.dataset.done='1';row.style.borderLeft='4px solid #43a047';
+  row.querySelectorAll('td').forEach((td,i)=>{td.style.background=i===0?'rgba(76,175,80,.15)':'rgba(76,175,80,.10)';});
+  const dot=row.querySelector('td:first-child span');if(dot)dot.style.background='#43a047';
+  _flashSaved(row);
+}
 function saveBulkVital(rid){
   const dateEl=document.getElementById('bv-date');
   const sys=_getVal('bv-sys-'+rid);
@@ -12341,7 +12425,6 @@ function renderBulkMeal(){
     +'<th onclick="showBmBulk(\'fluid\')" style="'+th+';cursor:pointer;min-width:68px">水分ml<br><span style="font-size:9px;opacity:.8">▼一括</span></th>'
     +'<th onclick="showBmBulk(\'jelly\')" style="'+th+';cursor:pointer;min-width:68px">ゼリーml<br><span style="font-size:9px;opacity:.8">▼一括</span></th>'
     +'<th style="'+th+';min-width:76px;opacity:.8">特記</th>'
-    +'<th style="'+th+';min-width:44px"></th>'
     +'</tr></thead><tbody>';
   res.forEach((r,ri)=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
@@ -12357,6 +12440,7 @@ function renderBulkMeal(){
     const curSide=d.side!=null?String(d.side):'';
     const curFluid=d.fluid||'';
     const curJelly=d.jelly||'';
+    const as="bmAutoSave('"+r.id+"')";
     const mtOpts=MEAL_TYPES.map(t=>'<option value="'+t+'"'+(curMtype===t?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('');
     const stOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curStaple===String(i)?' selected':'')+'>'+l+'</option>').join('');
     const sdOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curSide===String(i)?' selected':'')+'>'+l+'</option>').join('');
@@ -12368,12 +12452,11 @@ function renderBulkMeal(){
       +'<td style="padding:8px 6px 8px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;min-width:82px;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--bdr)">'
       +'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+dot+';margin-right:5px;vertical-align:middle"></span>'+r.name+'</td>'
       +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bm-mtype-'+r.id+'" onchange="bmMtypeChg(\''+r.id+'\',this.value)" style="'+ss+';min-width:64px">'+mtOpts+'</select></td>'
-      +(isSnack?dashCell+''+dashCell:'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bm-staple-'+r.id+'" style="'+ss+'">'+stOpts+'</select></td>'
-        +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bm-side-'+r.id+'" style="'+ss+'">'+sdOpts+'</select></td>')
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-fluid-'+r.id+'" value="'+curFluid+'" placeholder="200" style="width:58px;padding:6px 2px;border:1.5px solid '+fluidBdr+';border-radius:7px;font-size:14px;text-align:center;background:'+fluidBg+';box-sizing:border-box"></td>'
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-jelly-'+r.id+'" value="'+curJelly+'" placeholder="100" style="width:58px;padding:6px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:14px;text-align:center;background:var(--bg);box-sizing:border-box"></td>'
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="text" id="bm-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" style="width:72px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
-      +'<td style="padding:6px 6px;text-align:center;background:'+rowBg+'"><button onclick="saveBulkMeal(\''+r.id+'\')" style="padding:6px 12px;background:var(--ok);color:#fff;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button></td>'
+      +(isSnack?dashCell+''+dashCell:'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bm-staple-'+r.id+'" onchange="'+as+'" style="'+ss+'">'+stOpts+'</select></td>'
+        +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bm-side-'+r.id+'" onchange="'+as+'" style="'+ss+'">'+sdOpts+'</select></td>')
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-fluid-'+r.id+'" value="'+curFluid+'" placeholder="200" onblur="'+as+'" style="width:58px;padding:6px 2px;border:1.5px solid '+fluidBdr+';border-radius:7px;font-size:14px;text-align:center;background:'+fluidBg+';box-sizing:border-box"></td>'
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="number" inputmode="numeric" id="bm-jelly-'+r.id+'" value="'+curJelly+'" placeholder="100" onblur="'+as+'" style="width:58px;padding:6px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:14px;text-align:center;background:var(--bg);box-sizing:border-box"></td>'
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="text" id="bm-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" onblur="'+as+'" style="width:76px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
       +'</tr>';
   });
   html+='</tbody></table></div></div>';
@@ -12424,10 +12507,11 @@ function bmMtypeChg(rid,mtype){
         const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
         const opts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('');
         cell.style.textAlign='';
-        cell.innerHTML='<select id="'+prefix+rid+'" style="width:72px;padding:6px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--bg);box-sizing:border-box">'+opts+'</select>';
+        cell.innerHTML='<select id="'+prefix+rid+'" onchange="bmAutoSave(\''+rid+'\')" style="width:72px;padding:6px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--bg);box-sizing:border-box">'+opts+'</select>';
       } else {el.disabled=false;el.style.opacity='1';}
     }
   });
+  bmAutoSave(rid);
 }
 function applyBmBulk(overwrite){
   if(!_bmBulkField){toast('項目を選択してください');return;}
@@ -12511,7 +12595,6 @@ function renderBulkExcretion(){
     +'<th style="'+th+';min-width:48px;opacity:.8">失禁</th>'
     +'<th style="'+th+';min-width:72px;opacity:.8">時刻</th>'
     +'<th style="'+th+';min-width:80px;opacity:.8">特記</th>'
-    +'<th style="'+th+';min-width:44px"></th>'
     +'</tr></thead><tbody>';
   res.forEach((r,ri)=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
@@ -12525,18 +12608,18 @@ function renderBulkExcretion(){
     const dot=done?'#43a047':'#ef6c00';
     const curUrine=d.urine||'';
     const curStool=d.stool||'';
+    const as="bexAutoSave('"+r.id+"')";
     const urOpts='<option value="">-</option><option value="none"'+(curUrine==='none'?' selected':'')+'>なし</option><option value="small"'+(curUrine==='small'?' selected':'')+'>少量</option><option value="normal"'+(curUrine==='normal'?' selected':'')+'>普通</option><option value="large"'+(curUrine==='large'?' selected':'')+'>多量</option>';
     const stOpts='<option value="">-</option><option value="none"'+(curStool==='none'?' selected':'')+'>なし</option><option value="small"'+(curStool==='small'?' selected':'')+'>少量</option><option value="normal"'+(curStool==='normal'?' selected':'')+'>普通</option><option value="large"'+(curStool==='large'?' selected':'')+'>多量</option>';
     const ss='width:76px;padding:6px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--bg);box-sizing:border-box';
     html+='<tr id="bex-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-bottom:1.5px solid var(--bdr);border-left:'+lbdr+'">'
       +'<td style="padding:8px 6px 8px 10px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+stickyBg+';z-index:1;min-width:82px;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--bdr)">'
       +'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+dot+';margin-right:5px;vertical-align:middle"></span>'+r.name+'</td>'
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bex-urine-'+r.id+'" style="'+ss+'">'+urOpts+'</select></td>'
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bex-stool-'+r.id+'" style="'+ss+'">'+stOpts+'</select></td>'
-      +'<td style="padding:6px 4px;text-align:center;background:'+rowBg+'"><input type="checkbox" id="bex-incon-'+r.id+'"'+(d.incon?' checked':'')+' style="width:20px;height:20px;cursor:pointer"></td>'
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="time" id="bex-time-'+r.id+'" value="'+curTime+'" style="width:76px;padding:5px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--bg);box-sizing:border-box"></td>'
-      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="text" id="bex-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" style="width:74px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
-      +'<td style="padding:6px 6px;text-align:center;background:'+rowBg+'"><button onclick="saveBulkExcretion(\''+r.id+'\')" style="padding:6px 12px;background:var(--p);color:#fff;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✓</button></td>'
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bex-urine-'+r.id+'" onchange="'+as+'" style="'+ss+'">'+urOpts+'</select></td>'
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><select id="bex-stool-'+r.id+'" onchange="'+as+'" style="'+ss+'">'+stOpts+'</select></td>'
+      +'<td style="padding:6px 4px;text-align:center;background:'+rowBg+'"><input type="checkbox" id="bex-incon-'+r.id+'"'+(d.incon?' checked':'')+' onchange="'+as+'" style="width:20px;height:20px;cursor:pointer"></td>'
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="time" id="bex-time-'+r.id+'" value="'+curTime+'" onchange="'+as+'" style="width:76px;padding:5px 2px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;background:var(--bg);box-sizing:border-box"></td>'
+      +'<td style="padding:6px 4px;background:'+rowBg+'"><input type="text" id="bex-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" onblur="'+as+'" style="width:74px;padding:6px 4px;border:1.5px solid var(--bdr);border-radius:7px;font-size:12px;background:var(--bg);box-sizing:border-box"></td>'
       +'</tr>';
   });
   html+='</tbody></table></div></div>';
