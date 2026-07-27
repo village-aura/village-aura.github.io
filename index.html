@@ -1019,14 +1019,7 @@ a{color:var(--p);text-decoration:none}
       <div id="service-selector" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
       <div class="inp-grid" id="inp-grid"></div>
     </div>
-    <div class="summary-row" id="summary-row"></div>
     <div id="allergy-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#fff3e0;border-left:4px solid #e65100;border-radius:8px;font-size:12px;font-weight:700;color:#bf360c;cursor:pointer" onclick="openFacesheet()"></div>
-    <div id="weight-graph-card" style="margin:0 12px 4px;background:var(--card);border-radius:10px;padding:10px 12px;box-shadow:var(--sh)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:11px;font-weight:800;color:var(--sub)">⚖️ 体重推移（kg）</span>
-      </div>
-      <div id="weight-graph"></div>
-    </div>
     </div><!-- /detail-col-left -->
     <div class="detail-col-right">
     <div class="timeline-sec">
@@ -4896,9 +4889,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.2.4';
+const APP_VERSION='1.2.5';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.2.5',date:'2026-07-27',items:['利用者詳細からバイタル数値カード・体重グラフカードも削除し利用者詳細をタイムライン中心に簡略化']},
   {ver:'1.2.4',date:'2026-07-27',items:['利用者詳細から排便チップ・水分チップ・バイタルグラフカードを削除してUI簡略化']},
   {ver:'1.2.3',date:'2026-07-27',items:['利用者詳細にサービス選択の階層化：大カードで選択→入力ボタン展開・変更ボタンでリセット','利用者詳細ヘッダーに前後ナビ（◀前 / 次▶）を追加']},
   {ver:'1.2.2',date:'2026-07-27',items:['ダークモード対応：一括入力グリッドのヘッダー・テンプレート行をCSSカスタムプロパティ化','select/input要素にcolor:var(--txt)を付与して文字色を保証']},
@@ -8775,30 +8769,6 @@ function renderDetail(){
   const pulseClass=latestVital?(vAbnormal('pulse',latestVital.data.pulse,r.id)?'warn':'ok'):'warn';
   const tempClass=latestVital?(vAbnormal('temp',latestVital.data.temp,r.id)?'warn':'ok'):'warn';
   const spo2Class=latestVital?(vAbnormal('spo2',latestVital.data.spo2,r.id)?'warn':'ok'):'warn';
-  const vitalTime=latestVital?new Date(latestVital.ts).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
-  const _sc='cursor:pointer;touch-action:manipulation;user-select:none';
-  document.getElementById('summary-row').innerHTML=`
-    <div class="sum-card" onclick="openVitalFocused('v-sys')" style="${_sc}">
-      <div style="font-size:10px;color:#3D7AB5;font-weight:700;margin-bottom:2px">💉 血圧</div>
-      <div class="sum-val ${bpClass}" style="font-size:15px">${latestVital?latestVital.data.sys+'/'+latestVital.data.dia:'──'}</div>
-      <div class="sum-lbl">mmHg${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
-    </div>
-    <div class="sum-card" onclick="openVitalFocused('v-pulse')" style="${_sc}">
-      <div style="font-size:10px;color:#43a047;font-weight:700;margin-bottom:2px">💓 脈拍</div>
-      <div class="sum-val ${pulseClass}" style="font-size:15px">${latestVital&&latestVital.data.pulse?latestVital.data.pulse:'──'}</div>
-      <div class="sum-lbl">回/分${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
-    </div>
-    <div class="sum-card" onclick="openVitalFocused('v-temp')" style="${_sc}">
-      <div style="font-size:10px;color:#e53935;font-weight:700;margin-bottom:2px">🌡️ 体温</div>
-      <div class="sum-val ${tempClass}" style="font-size:15px">${latestVital&&latestVital.data.temp?latestVital.data.temp:'──'}</div>
-      <div class="sum-lbl">℃${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
-    </div>
-    <div class="sum-card" onclick="openVitalFocused('v-spo2')" style="${_sc}">
-      <div style="font-size:10px;color:#9c27b0;font-weight:700;margin-bottom:2px">🫁 SpO2</div>
-      <div class="sum-val ${spo2Class}" style="font-size:15px">${latestVital&&latestVital.data.spo2?latestVital.data.spo2:'──'}</div>
-      <div class="sum-lbl">%${vitalTime?'<br><span style="font-size:9px">'+vitalTime+'測定</span>':''}<br><span style="font-size:9px;color:var(--p)">✏️ タップで入力</span></div>
-    </div>
-  `;
   const allergyChip=document.getElementById('allergy-alert-chip');
   if(allergyChip){
     const fs=getFacesheet(r.id);
@@ -8809,7 +8779,6 @@ function renderDetail(){
     if(parts.length){allergyChip.style.display='block';allergyChip.textContent='⚠️ '+parts.join(' ／ ');}
     else{allergyChip.style.display='none';}
   }
-  renderWeightGraph(S.currentRes);
   // Handovers
   const hos=getHandovers()[S.currentRes]||[];
   document.getElementById('handover-area').innerHTML=hos.length?hos.map(h=>{
