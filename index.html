@@ -4911,9 +4911,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.2.2';
+const APP_VERSION='1.2.3';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.2.3',date:'2026-07-27',items:['利用者詳細にサービス選択の階層化：大カードで選択→入力ボタン展開・変更ボタンでリセット','利用者詳細ヘッダーに前後ナビ（◀前 / 次▶）を追加']},
   {ver:'1.2.2',date:'2026-07-27',items:['ダークモード対応：一括入力グリッドのヘッダー・テンプレート行をCSSカスタムプロパティ化','select/input要素にcolor:var(--txt)を付与して文字色を保証']},
   {ver:'1.2.1',date:'2026-07-27',items:['一括食事に10時・おやつ区分を復活','select背景をvar(--bg)に変更して入力可能と分かるよう修正','テンプレート行で10時/おやつ選択時に主食/副食を無効化']},
   {ver:'1.2.0',date:'2026-07-27',items:['一括入力マトリクスをExcelグリッドに刷新：全セル枠線・フォーカス時インセットボーダー・テンプレート行（▶空欄へ／▶全上書き）','食事タイムラインに副食を追加表示']},
@@ -8739,7 +8740,12 @@ function renderDetail(){
   const tagLabel={resident:'サ高住',commute:'デイ',stay:'小多機',visit:'訪問介護'};
   document.getElementById('hd-title').textContent=r.name+' 様';
   // Hero
+  const allRes=filterSortRes(()=>true,'');
+  const resIdx=allRes.findIndex(x=>x.id===S.currentRes);
+  const hasPrev=resIdx>0,hasNext=resIdx<allRes.length-1;
+  const navBar=allRes.length>1?`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><button onclick="navigateResident(-1)"${!hasPrev?' disabled':''} style="padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,${hasPrev?'0.4':'0.15'});background:rgba(255,255,255,${hasPrev?'0.15':'0.05'});color:rgba(255,255,255,${hasPrev?'1':'0.35'});cursor:${hasPrev?'pointer':'default'};touch-action:manipulation">◀ 前</button><span style="font-size:11px;opacity:0.65">${resIdx+1} / ${allRes.length}名</span><button onclick="navigateResident(1)"${!hasNext?' disabled':''} style="padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,${hasNext?'0.4':'0.15'});background:rgba(255,255,255,${hasNext?'0.15':'0.05'});color:rgba(255,255,255,${hasNext?'1':'0.35'});cursor:${hasNext?'pointer':'default'};touch-action:manipulation">次 ▶</button></div>`:'';
   document.getElementById('detail-hero').innerHTML=`
+    ${navBar}
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
       <div onclick="openFacesheet()" style="position:relative;width:60px;height:60px;flex-shrink:0;cursor:pointer;touch-action:manipulation" title="フェイスシートで写真を登録">
         ${r.photo
@@ -8901,22 +8907,25 @@ function renderDetail(){
   // 今日の日付チップ
   const chip=document.getElementById('record-date-chip');
   if(chip){const now=new Date();const WD=['日','月','火','水','木','金','土'];chip.textContent=`${now.getMonth()+1}月${now.getDate()}日（${WD[now.getDay()]}）`;}
-  // サービスセレクタ + 動的inp-grid（全サービス常時表示）
+  // サービスセレクタ（階層化）+ 動的inp-grid
   const svcSel=document.getElementById('service-selector');
-  if(svcSel){
+  const grid=document.getElementById('inp-grid');
+  if(svcSel&&grid){
     const registeredSvcs=r.services||[];
     const activeSvcs=Object.entries(SVC_META).filter(([svc])=>registeredSvcs.includes(svc));
-    if(activeSvcs.length===1&&!S.currentService)selectService(activeSvcs[0][0]);
-    svcSel.innerHTML=activeSvcs.map(([svc,m])=>{
-      const on=S.currentService===svc;
-      return `<button onclick="selectService('${svc}')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${on?m.color:'#fff'};color:${on?'#fff':m.color};transition:all .15s">${m.label}</button>`;
-    }).join('');
-  }
-  const grid=document.getElementById('inp-grid');
-  if(grid){
+    if(activeSvcs.length===1&&!S.currentService)S.currentService=activeSvcs[0][0];
     if(!S.currentService){
-      grid.innerHTML='<div style="color:var(--sub);font-size:13px;padding:10px 2px;grid-column:1/-1">↑ 今日のサービスを選択してください</div>';
+      svcSel.innerHTML='<div style="width:100%">'
+        +'<div style="font-size:10px;font-weight:700;color:var(--sub);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase">今日のサービスを選択</div>'
+        +activeSvcs.map(([svc,m])=>`<button onclick="selectService('${svc}')" style="display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;border:2px solid ${m.color};background:${m.color}18;color:${m.color};margin-bottom:8px;text-align:left"><span style="font-size:22px;line-height:1">${m.label.split(' ')[0]}</span><span>${m.label.split(' ').slice(1).join(' ')}</span><span style="margin-left:auto;font-size:18px;opacity:0.5">›</span></button>`).join('')
+        +'</div>';
+      grid.innerHTML='';
     } else {
+      const m=SVC_META[S.currentService];
+      svcSel.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'
+        +`<span style="padding:5px 14px;border-radius:20px;font-size:13px;font-weight:800;background:${m.color};color:#fff">${m.label}</span>`
+        +(activeSvcs.length>1?`<button onclick="selectService(null)" style="padding:4px 10px;border-radius:16px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--bg);color:var(--sub);cursor:pointer;touch-action:manipulation">変更</button>`:'')
+        +'</div>';
       const btns=SVC_BTNS[S.currentService]||[];
       const rem=btns.length%3;
       grid.innerHTML=btns.map((key,idx)=>{const b=BTN_DEF[key];const isLast=idx===btns.length-1;const span=(rem===1&&isLast)?'grid-column:span 3':'';return`<button class="inp-btn" onclick="${b.fn}" style="${span}"><span class="ib-ico">${b.ico}</span><span class="ib-lbl">${b.lbl}</span></button>`;}).join('');
@@ -9374,6 +9383,13 @@ function openVitalFocused(focusField){
 }
 function openVitalFull(){openVitalFocused(null);}
 function selectService(svc){S.currentService=svc;renderDetail();}
+function navigateResident(delta){
+  const res=filterSortRes(()=>true,'');
+  const idx=res.findIndex(x=>x.id===S.currentRes);
+  const next=res[idx+delta];
+  if(!next){toast(delta<0?'最初の利用者です':'最後の利用者です');return;}
+  S.currentRes=next.id;S.currentService=null;renderDetail();
+}
 function openSvcSetting(){
   const r=getResidents().find(x=>x.id===S.currentRes);
   if(!r)return;
