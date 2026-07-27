@@ -3107,15 +3107,13 @@ a{color:var(--p);text-decoration:none}
     <div id="vital-prev-copy" style="display:none;margin-bottom:8px">
       <button onclick="copyPrevVital()" style="width:100%;padding:8px 12px;background:var(--ps);color:var(--p);border:1.5px solid var(--p);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;text-align:left" id="vital-prev-btn"></button>
     </div>
-    <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：血圧130の80 脈72 体温36.5 SpO2 98</span></button>
+    <button id="vs-btn-vital" class="btn-voice-smart" onclick="startVoiceSmart('vital')">🎤 音声で一括入力<span class="vs-ex">例：体温36.5 血圧130の80 脈72 酸素98</span></button>
+    <div class="field" id="vrow-temp"><label>体温 ℃</label><input type="number" inputmode="decimal" step="0.1" id="v-temp" placeholder="36.5"></div>
     <div class="field-row" id="vrow-bp">
       <div class="field"><label>収縮期血圧 mmHg<span class="req">*</span></label><input type="number" inputmode="numeric" id="v-sys" placeholder="130"></div>
       <div class="field"><label>拡張期血圧 mmHg</label><input type="number" inputmode="numeric" id="v-dia" placeholder="80"></div>
     </div>
-    <div id="vrow-pulse-temp" style="display:flex;gap:8px">
-      <div class="field" id="vrow-pulse" style="flex:1"><label>脈拍 回/分</label><input type="number" inputmode="numeric" id="v-pulse" placeholder="72"></div>
-      <div class="field" id="vrow-temp" style="flex:1"><label>体温 ℃</label><input type="number" inputmode="decimal" step="0.1" id="v-temp" placeholder="36.5"></div>
-    </div>
+    <div class="field" id="vrow-pulse"><label>脈拍 回/分</label><input type="number" inputmode="numeric" id="v-pulse" placeholder="72"></div>
     <div class="field" id="vrow-spo2"><label>SpO2 %</label><input type="number" inputmode="numeric" id="v-spo2" placeholder="97"></div>
     <div class="field" id="vrow-conscious"><label>意識レベル</label>
       <div class="radio-group">
@@ -4907,9 +4905,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.1.2';
+const APP_VERSION='1.1.3';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.1.3',date:'2026-07-27',items:['バイタルモーダルの入力順を 体温→血圧→脈→SpO2 に変更','タイムラインにバイタル修正（✏️）アイコンを追加','音声認識で「酸素」「サチュレーション」「最高血圧」等の表現に対応']},
   {ver:'1.1.2',date:'2026-07-27',items:['一括バイタル・食事・排泄をマトリクス（表）形式に刷新','列ヘッダータップで全員一括セット機能を追加','未記録行をオレンジ・記録済みをグリーンで色分け表示','特記事項列を追加','排泄入力に時刻フィールドを追加（簡略化）']},
   {ver:'1.1.1',date:'2026-07-25',items:['デスクトップサイドバーから一括バイタル・食事・排泄ボタンが消えていた問題を修正','利用者詳細の当日バイタルグラフを時刻軸（0〜24時）で表示・6時間グリッド追加']},
   {ver:'1.0.21',date:'2026-07-25',items:['モバイル・タブレットのメニューもカテゴリ分け対応','モバイルメニューに皮膚写真・感染管理・職員掲示板・シフト表・マニュアルを追加']},
@@ -9337,10 +9336,9 @@ function openVitalFocused(focusField){
   // フォーカスモード：対象項目のみ表示
   const showAll=!focusField;
   const rowVis={
-    'vrow-bp':       showAll||focusField==='v-sys',
-    'vrow-pulse-temp':showAll||focusField==='v-pulse'||focusField==='v-temp',
-    'vrow-pulse':    showAll||focusField==='v-pulse',
     'vrow-temp':     showAll||focusField==='v-temp',
+    'vrow-bp':       showAll||focusField==='v-sys',
+    'vrow-pulse':    showAll||focusField==='v-pulse',
     'vrow-spo2':     showAll||focusField==='v-spo2',
     'vrow-conscious':showAll
   };
@@ -9441,7 +9439,7 @@ function renderTimeline(){
     const roleKey=r.staffRole||(si?si.role:null);
     const rc=roleKey?getRoleInfo(roleKey):null;
     const badge=rc?`<span class="staff-badge" style="background:${rc.bg}">${rc.label}</span>`:'';
-    const canEdit=(r.type==='meal'||r.type==='excretion');
+    const canEdit=(r.type==='meal'||r.type==='excretion'||r.type==='vital');
     html+=`<div class="tl-item" data-type="${r.type}">
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
@@ -9619,6 +9617,18 @@ function openEditRecord(id,type){
     const et2=document.getElementById('excretion-modal-title');if(et2)et2.textContent='✏️ 排泄記録（修正中）';
     const esb=document.querySelector('#modal-excretion .btn-primary');if(esb)esb.textContent='修正を保存';
     openModal('modal-excretion');
+  } else if(type==='vital'){
+    const d=rec.data;
+    ['sys','dia','pulse','temp','spo2'].forEach(k=>{const el=document.getElementById('v-'+k);if(el)el.value=d[k]||'';});
+    const consEl=document.querySelector('[name=consciousness][value="'+(d.cons||'alert')+'"]');
+    if(consEl)consEl.checked=true;
+    document.getElementById('v-note').value=d.note||'';
+    _vitalFocusedField=null;
+    ['vrow-temp','vrow-bp','vrow-pulse','vrow-spo2','vrow-conscious'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+    const vsBtn=document.getElementById('vs-btn-vital');if(vsBtn)vsBtn.style.display='none';
+    const titleEl=document.querySelector('#modal-vital .sheet-title');if(titleEl)titleEl.textContent='✏️ バイタル（修正中）';
+    const savBtn=document.querySelector('#modal-vital .btn-primary');if(savBtn)savBtn.textContent='修正を保存';
+    openModal('modal-vital');
   }
 }
 function onExTypeChange(el){
@@ -9789,12 +9799,12 @@ function saveRecord(type){
     return;
   }
   const recs=getRecords();
-  if(S.editRecId&&(type==='meal'||type==='excretion')){
+  if(S.editRecId&&(type==='meal'||type==='excretion'||type==='vital')){
     const idx=recs.findIndex(r=>r.id===S.editRecId);
     if(idx>=0){recs[idx].data=data;recs[idx].editedBy=S.user||'──';recs[idx].editedAt=new Date().toISOString();}
     S.editRecId=null;
     saveRecords(recs);
-    const typeLabel={meal:'食事',excretion:'排泄'}[type]||type;
+    const typeLabel={meal:'食事',excretion:'排泄',vital:'バイタル'}[type]||type;
     addAuditLog('記録修正',typeLabel+' / 利用者ID: '+S.currentRes);
     toast('修正しました ✓');
   } else {
@@ -11006,15 +11016,16 @@ function startVoiceSmart(type){
 }
 function parseVitalFromText(t){
   const r={};
-  const bp=t.match(/(?:血圧|BP)\s*(\d+)\s*[\/のと]\s*(\d+)/)||t.match(/上\s*(?:が|は)?\s*(\d+)[^\d]{0,6}下\s*(?:が|は)?\s*(\d+)/);
+  const bp=t.match(/(?:血圧|BP)\s*(\d+)\s*[\/のとover]\s*(\d+)/i)||t.match(/上\s*(?:が|は)?\s*(\d+)[^\d]{0,6}下\s*(?:が|は)?\s*(\d+)/)||t.match(/(?:最高|収縮期?)\s*(?:血圧)?\s*(\d+)[^\d]{0,8}(?:最低|拡張期?)\s*(?:血圧)?\s*(\d+)/);
   if(bp){r.sys=bp[1];r.dia=bp[2];}
   else{
-    const s=t.match(/(?:収縮|上)\s*(?:が|は)?\s*(\d+)/);const d=t.match(/(?:拡張|下)\s*(?:が|は)?\s*(\d+)/);
+    const s=t.match(/(?:収縮期?血圧|最高血圧|収縮|上)\s*(?:が|は)?\s*(\d+)/);
+    const d=t.match(/(?:拡張期?血圧|最低血圧|拡張|下)\s*(?:が|は)?\s*(\d+)/);
     if(s)r.sys=s[1];if(d)r.dia=d[1];
   }
-  const pm=t.match(/(?:脈拍|脈|HR)\s*(?:が|は)?\s*(\d+)/);if(pm)r.pulse=pm[1];
+  const pm=t.match(/(?:脈拍|脈|HR|心拍)\s*(?:が|は)?\s*(\d+)/);if(pm)r.pulse=pm[1];
   const tm=t.match(/(?:体温|BT)\s*(?:が|は)?\s*(\d+\.?\d*)/);if(tm)r.temp=tm[1];
-  const sm=t.match(/(?:SpO2|spo2|酸素|サチ)\s*(?:が|は)?\s*(\d+)/i);if(sm)r.spo2=sm[1];
+  const sm=t.match(/(?:SpO2|SPO2|spo2|酸素飽和度|酸素飽和|飽和度|酸素|サチュレーション|サチュ|サチ)\s*(?:が|は)?\s*(\d+)/i);if(sm)r.spo2=sm[1];
   if(t.includes('清明'))r.cons='alert';else if(t.includes('傾眠'))r.cons='drowsy';else if(t.includes('昏迷'))r.cons='stupor';
   return r;
 }
