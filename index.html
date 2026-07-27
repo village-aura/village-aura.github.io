@@ -4905,9 +4905,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.2.0';
+const APP_VERSION='1.2.1';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.2.1',date:'2026-07-27',items:['一括食事に10時・おやつ区分を復活','select背景をvar(--bg)に変更して入力可能と分かるよう修正','テンプレート行で10時/おやつ選択時に主食/副食を無効化']},
   {ver:'1.2.0',date:'2026-07-27',items:['一括入力マトリクスをExcelグリッドに刷新：全セル枠線・フォーカス時インセットボーダー・テンプレート行（▶空欄へ／▶全上書き）','食事タイムラインに副食を追加表示']},
   {ver:'1.1.9',date:'2026-07-27',items:['一括食事マトリクスの区分ドロップダウンから10時・15時を削除（朝食・昼食・夕食のみ）']},
   {ver:'1.1.8',date:'2026-07-27',items:['一括入力マトリクスをExcel方式に刷新：入力欄を離れた瞬間に自動保存・✓ボタン廃止','食事/排泄はドロップダウン変更で即時保存','保存時に行の左ボーダーが緑に変わりフラッシュで確認']},
@@ -12386,14 +12387,14 @@ function renderBulkMeal(){
   _bmResIds=res.map(r=>r.id);
   const hr=new Date().getHours();
   const autoMtype=hr<11?'breakfast':hr<16?'lunch':'dinner';
-  const MEAL_TYPES=['breakfast','lunch','dinner'];
-  const mtypeLbl={breakfast:'朝食',lunch:'昼食',dinner:'夕食'};
+  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
+  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食'};
   const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
   const CELL='border:1px solid #d1fae5;padding:0';
   const TH='padding:7px 6px;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;font-size:11px;font-weight:700;text-align:center;white-space:nowrap;line-height:1.4';
   const NI='width:100%;border:none;background:transparent;padding:5px 4px;font-size:13px;text-align:center;outline:none;box-sizing:border-box';
   const TI='width:100%;border:none;background:transparent;padding:5px 6px;font-size:12px;outline:none;box-sizing:border-box';
-  const SL='width:100%;border:none;background:transparent;padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box';
+  const SL='width:100%;border:none;background:var(--bg);padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box';
   let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid #6ee7b7">'
     +'<table style="width:100%;border-collapse:collapse;min-width:520px">'
     +'<thead><tr>'
@@ -12413,7 +12414,7 @@ function renderBulkMeal(){
     +'<button onclick="applyBmTemplate(true)" style="padding:3px 4px;background:#059669;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 全上書き</button>'
     +'</div></td>'
     +'<td style="'+CELL+';background:#f0fdf4" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
-    +'<select id="bm-tpl-mtype" style="'+SL+'">'+MEAL_TYPES.map(t=>'<option value="'+t+'"'+(t===autoMtype?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('')+'</select></td>'
+    +'<select id="bm-tpl-mtype" onchange="bmTplMtypeChg(this.value)" style="'+SL+'">'+MEAL_TYPES.map(t=>'<option value="'+t+'"'+(t===autoMtype?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('')+'</select></td>'
     +'<td style="'+CELL+';background:#f0fdf4" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bm-tpl-staple" style="'+SL+'"><option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('')+'</select></td>'
     +'<td style="'+CELL+';background:#f0fdf4" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
@@ -12468,16 +12469,32 @@ function applyBmTemplate(overwrite){
   const fluid=document.getElementById('bm-tpl-fluid')?.value;
   const jelly=document.getElementById('bm-tpl-jelly')?.value;
   if(!mtype&&!staple&&!side&&!fluid&&!jelly){toast('テンプレート行に値を設定してください');return;}
+  const isSnack=mtype==='morning_snack'||mtype==='snack';
   let cnt=0;
   _bmResIds.forEach(rid=>{
-    if(mtype){const el=document.getElementById('bm-mtype-'+rid);if(el&&(overwrite||!el.value))el.value=mtype;}
-    if(staple){const el=document.getElementById('bm-staple-'+rid);if(el&&(overwrite||!el.value))el.value=staple;}
-    if(side){const el=document.getElementById('bm-side-'+rid);if(el&&(overwrite||!el.value))el.value=side;}
-    if(fluid){const el=document.getElementById('bm-fluid-'+rid);if(el&&(overwrite||!el.value))el.value=fluid;}
-    if(jelly){const el=document.getElementById('bm-jelly-'+rid);if(el&&(overwrite||!el.value))el.value=jelly;}
-    bmAutoSave(rid);cnt++;
+    let changed=false;
+    if(mtype){
+      const el=document.getElementById('bm-mtype-'+rid);
+      if(el&&(overwrite||!el.value)){
+        const prevIsSnack=el.value==='morning_snack'||el.value==='snack';
+        el.value=mtype;changed=true;
+        if(prevIsSnack!==isSnack)bmMtypeChg(rid,mtype);
+      }
+    }
+    if(!isSnack&&staple){const el=document.getElementById('bm-staple-'+rid);if(el&&(overwrite||!el.value)){el.value=staple;changed=true;}}
+    if(!isSnack&&side){const el=document.getElementById('bm-side-'+rid);if(el&&(overwrite||!el.value)){el.value=side;changed=true;}}
+    if(fluid){const el=document.getElementById('bm-fluid-'+rid);if(el&&(overwrite||!el.value)){el.value=fluid;changed=true;}}
+    if(jelly){const el=document.getElementById('bm-jelly-'+rid);if(el&&(overwrite||!el.value)){el.value=jelly;changed=true;}}
+    if(changed){bmAutoSave(rid);cnt++;}
   });
-  toast(cnt+'人に反映・保存 ✓');
+  toast(cnt?cnt+'人に反映・保存 ✓':'テンプレートに値を設定してください');
+}
+function bmTplMtypeChg(mtype){
+  const isSnack=mtype==='morning_snack'||mtype==='snack';
+  ['bm-tpl-staple','bm-tpl-side'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.disabled=isSnack;el.style.opacity=isSnack?'0.3':'1';
+  });
 }
 function showBmBulk(){}
 function hideBmBulk(){}
@@ -12500,7 +12517,7 @@ function bmMtypeChg(rid,mtype){
         cell.style.textAlign='';cell.style.padding='0';
         cell.setAttribute('onfocusin',"this.style.boxShadow='inset 0 0 0 2px #22c55e'");
         cell.setAttribute('onfocusout',"this.style.boxShadow=''");
-        cell.innerHTML='<select id="'+prefix+rid+'" onchange="bmAutoSave(\''+rid+'\')" style="width:100%;border:none;background:transparent;padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box">'+opts+'</select>';
+        cell.innerHTML='<select id="'+prefix+rid+'" onchange="bmAutoSave(\''+rid+'\')" style="width:100%;border:none;background:var(--bg);padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box">'+opts+'</select>';
       } else {el.disabled=false;el.style.opacity='1';}
     }
   });
