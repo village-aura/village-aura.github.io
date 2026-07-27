@@ -36,14 +36,10 @@ window._loginFallback=function(){
   --bg:#F0F2F5;--card:#fff;--txt:#1c2340;--sub:#6b7280;--bdr:#e2e5ea;
   --tx:#1c2340;
   --r:12px;--sh:0 2px 8px rgba(0,0,0,.08);
-  --gv-bdr:#cbd5e1;--gv-th-bdr:#94a3b8;--gv-th-bg:#e2e8f0;--gv-th-txt:#1e293b;--gv-hdr-bg:#cbd5e1;--gv-tpl-bg:#fffbeb;--gv-tpl-cell:#fef3c7;--gv-tpl-inp:#fffde7;--gv-tpl-txt:#92400e;
-  --gm-bdr:#d1fae5;--gm-th-bdr:#6ee7b7;--gm-th-bg:#d1fae5;--gm-th-txt:#065f46;--gm-hdr-bg:#a7f3d0;--gm-tpl-bg:#f0fdf4;--gm-tpl-cell:#d1fae5;--gm-tpl-txt:#065f46;
-  --ge-bdr:#bfdbfe;--ge-th-bdr:#93c5fd;--ge-th-bg:#dbeafe;--ge-th-txt:#1e3a8a;--ge-hdr-bg:#93c5fd;--ge-tpl-bg:#eff6ff;--ge-tpl-cell:#dbeafe;--ge-tpl-txt:#1e3a8a;
+  --gb-bdr:#d1d5db;--gb-th-bdr:#9ca3af;--gb-th-bg:var(--p);--gb-th-txt:#fff;--gb-hdr-bg:var(--pd);--gb-tpl-bg:#fffbeb;--gb-tpl-cell:#fef3c7;--gb-tpl-inp:#fffde7;--gb-tpl-txt:#92400e;
 }
 body.dark-mode{--bg:#1a1a2e;--card:#16213e;--txt:#e8eaf6;--sub:#9e9e9e;--bdr:#2d3748;--p:#7bafd4;--pd:#3a6a94;--ps:#1e3a5f;--tx:#e8eaf6;
-  --gv-bdr:#334155;--gv-th-bdr:#475569;--gv-th-bg:#1e293b;--gv-th-txt:#94a3b8;--gv-hdr-bg:#0f172a;--gv-tpl-bg:#1c1500;--gv-tpl-cell:#2a1f00;--gv-tpl-inp:#211b00;--gv-tpl-txt:#fbbf24;
-  --gm-bdr:#14532d;--gm-th-bdr:#166534;--gm-th-bg:#14532d;--gm-th-txt:#86efac;--gm-hdr-bg:#0d3b20;--gm-tpl-bg:#0a2015;--gm-tpl-cell:#14532d;--gm-tpl-txt:#86efac;
-  --ge-bdr:#1e3a5f;--ge-th-bdr:#1d4ed8;--ge-th-bg:#1e3a8a;--ge-th-txt:#93c5fd;--ge-hdr-bg:#172554;--ge-tpl-bg:#0c1b3f;--ge-tpl-cell:#1e3a8a;--ge-tpl-txt:#93c5fd}
+  --gb-bdr:#4b5563;--gb-th-bdr:#6b7280;--gb-th-bg:var(--pd);--gb-th-txt:#f3f4f6;--gb-hdr-bg:#111827;--gb-tpl-bg:#1c1500;--gb-tpl-cell:#2a1f00;--gb-tpl-inp:#211b00;--gb-tpl-txt:#fbbf24}
 body.font-xs{zoom:0.82}
 body.font-sm{zoom:0.91}
 body.font-lg{zoom:1.18}
@@ -1010,8 +1006,6 @@ a{color:var(--p);text-decoration:none}
     </div>
     <div class="detail-content-grid">
     <div class="detail-col-left">
-    <div id="handover-area"></div>
-    <div id="board-handover-area"></div>
     <div class="input-section">
       <h3 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px">記録入力
         <span id="record-date-chip" style="font-size:11px;font-weight:700;color:#fff;background:var(--p);border-radius:20px;padding:3px 10px;white-space:nowrap"></span>
@@ -1020,6 +1014,8 @@ a{color:var(--p);text-decoration:none}
       <div class="inp-grid" id="inp-grid"></div>
     </div>
     <div id="allergy-alert-chip" style="display:none;margin:4px 12px 0;padding:7px 12px;background:#fff3e0;border-left:4px solid #e65100;border-radius:8px;font-size:12px;font-weight:700;color:#bf360c;cursor:pointer" onclick="openFacesheet()"></div>
+    <div id="handover-area"></div>
+    <div id="board-handover-area"></div>
     </div><!-- /detail-col-left -->
     <div class="detail-col-right">
     <div class="timeline-sec">
@@ -4889,9 +4885,10 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.2.5';
+const APP_VERSION='1.2.6';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.2.6',date:'2026-07-27',items:['一括入力グリッド（バイタル/食事/排泄）のデザイン統一：CSS変数を--gb-*に統合・セル大型化・テンプレートボタン色統一（アンバー）・ダークモード対応','利用者詳細ページの申し送りを記録入力の下に移動（記録ボタンが最初に見えるよう改善）']},
   {ver:'1.2.5',date:'2026-07-27',items:['利用者詳細からバイタル数値カード・体重グラフカードも削除し利用者詳細をタイムライン中心に簡略化']},
   {ver:'1.2.4',date:'2026-07-27',items:['利用者詳細から排便チップ・水分チップ・バイタルグラフカードを削除してUI簡略化']},
   {ver:'1.2.3',date:'2026-07-27',items:['利用者詳細にサービス選択の階層化：大カードで選択→入力ボタン展開・変更ボタンでリセット','利用者詳細ヘッダーに前後ナビ（◀前 / 次▶）を追加']},
@@ -12078,30 +12075,30 @@ function renderBulkVital(){
   const BV_FIELDS=['sys','dia','pulse','temp','spo2'];
   const BV_LBL={sys:'収縮期<br><small>mmHg</small>',dia:'拡張期<br><small>mmHg</small>',pulse:'脈拍<br><small>/分</small>',temp:'体温<br><small>℃</small>',spo2:'SpO2<br><small>%</small>'};
   const BV_PH={sys:'120',dia:'80',pulse:'72',temp:'36.5',spo2:'98'};
-  const CELL='border:1px solid var(--gv-bdr);padding:0';
-  const TH='padding:7px 6px;background:var(--gv-th-bg);border:1px solid var(--gv-th-bdr);color:var(--gv-th-txt);font-size:11px;font-weight:700;text-align:center;line-height:1.4';
-  const NI='width:100%;border:none;background:transparent;padding:5px 4px;font-size:13px;text-align:center;outline:none;box-sizing:border-box;color:var(--txt)';
-  const TI='width:100%;border:none;background:transparent;padding:5px 6px;font-size:12px;outline:none;box-sizing:border-box;color:var(--txt)';
-  let h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid var(--gv-th-bdr)">'
-    +'<table style="width:100%;border-collapse:collapse;min-width:500px">'
+  const CELL='border:1px solid var(--gb-bdr);padding:0';
+  const TH='padding:9px 8px;background:var(--gb-th-bg);border:1px solid var(--gb-th-bdr);color:var(--gb-th-txt);font-size:11px;font-weight:700;text-align:center;line-height:1.4';
+  const NI='width:100%;border:none;background:transparent;padding:6px 4px;font-size:15px;text-align:center;outline:none;box-sizing:border-box;color:var(--txt)';
+  const TI='width:100%;border:none;background:transparent;padding:6px 6px;font-size:13px;outline:none;box-sizing:border-box;color:var(--txt)';
+  let h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid var(--gb-th-bdr)">'
+    +'<table style="width:100%;border-collapse:collapse;min-width:540px">'
     +'<thead><tr>'
-    +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:88px;padding-left:10px;background:var(--gv-hdr-bg);border-right:2px solid var(--gv-th-bdr)">利用者</th>';
-  BV_FIELDS.forEach(f=>{h+='<th style="'+TH+';min-width:70px">'+BV_LBL[f]+'</th>';});
-  h+='<th style="'+TH+';min-width:80px">特記</th></tr></thead><tbody>'
-    +'<tr style="background:var(--gv-tpl-bg)">'
-    +'<td style="'+CELL+';background:var(--gv-tpl-cell);position:sticky;left:0;z-index:1;padding:5px 6px;border-right:2px solid var(--gv-th-bdr);vertical-align:middle">'
-    +'<div style="font-size:9px;font-weight:700;color:var(--gv-tpl-txt);margin-bottom:3px;white-space:nowrap">テンプレート行</div>'
+    +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:100px;padding-left:10px;background:var(--gb-hdr-bg);border-right:2px solid var(--gb-th-bdr)">利用者</th>';
+  BV_FIELDS.forEach(f=>{h+='<th style="'+TH+';min-width:80px">'+BV_LBL[f]+'</th>';});
+  h+='<th style="'+TH+';min-width:90px">特記</th></tr></thead><tbody>'
+    +'<tr style="background:var(--gb-tpl-bg)">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-cell);position:sticky;left:0;z-index:1;padding:5px 6px;border-right:2px solid var(--gb-th-bdr);vertical-align:middle">'
+    +'<div style="font-size:9px;font-weight:700;color:var(--gb-tpl-txt);margin-bottom:3px;white-space:nowrap">テンプレート行</div>'
     +'<div style="display:flex;flex-direction:column;gap:2px">'
     +'<button onclick="applyBvTemplate(false)" style="padding:3px 4px;background:#f59e0b;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 空欄へ</button>'
     +'<button onclick="applyBvTemplate(true)" style="padding:3px 4px;background:#d97706;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 全上書き</button>'
     +'</div></td>';
   BV_FIELDS.forEach(f=>{
     const extra=f==='temp'?' step="0.1"':'';const mode=f==='temp'?'decimal':'numeric';
-    h+='<td style="'+CELL+';background:var(--gv-tpl-inp)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
+    h+='<td style="'+CELL+';background:var(--gb-tpl-inp)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="number" inputmode="'+mode+'"'+extra+' id="bv-tpl-'+f+'" placeholder="'+BV_PH[f]+'" style="'+NI+'"></td>';
   });
-  h+='<td style="'+CELL+';background:var(--gv-tpl-inp)"></td></tr>'
-    +'<tr><td colspan="7" style="padding:0;height:2px;background:var(--gv-th-bdr)"></td></tr>';
+  h+='<td style="'+CELL+';background:var(--gb-tpl-inp)"></td></tr>'
+    +'<tr><td colspan="7" style="padding:0;height:2px;background:var(--gb-th-bdr)"></td></tr>';
   res.forEach((r,ri)=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
     const latest=todayRecs[0];const v=latest?.data||{};const done=!!latest;
@@ -12111,14 +12108,14 @@ function renderBulkVital(){
     const lbdr=done?'3px solid #22c55e':'3px solid #f97316';
     const as="bvAutoSave('"+r.id+"')";
     h+='<tr id="bv-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-left:'+lbdr+'">'
-      +'<td style="'+CELL+';padding:7px 6px 7px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--gv-bdr)">'
+      +'<td style="'+CELL+';padding:7px 6px 7px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--gb-bdr)">'
       +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle;flex-shrink:0"></span>'+r.name+'</td>';
     BV_FIELDS.forEach(f=>{
       const fv=v[f]!=null?v[f]:'';const extra=f==='temp'?' step="0.1"':'';const mode=f==='temp'?'decimal':'numeric';
-      h+='<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+      h+='<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
         +'<input type="number" inputmode="'+mode+'"'+extra+' id="bv-'+f+'-'+r.id+'" value="'+fv+'" onblur="'+as+'" style="'+NI+'"></td>';
     });
-    h+='<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+    h+='<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="text" id="bv-note-'+r.id+'" value="'+(v.note||'')+'" placeholder="メモ" onblur="'+as+'" style="'+TI+'"></td></tr>';
   });
   h+='</tbody></table></div>';
@@ -12341,41 +12338,41 @@ function renderBulkMeal(){
   const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
   const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食'};
   const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
-  const CELL='border:1px solid var(--gm-bdr);padding:0';
-  const TH='padding:7px 6px;background:var(--gm-th-bg);border:1px solid var(--gm-th-bdr);color:var(--gm-th-txt);font-size:11px;font-weight:700;text-align:center;white-space:nowrap;line-height:1.4';
-  const NI='width:100%;border:none;background:transparent;padding:5px 4px;font-size:13px;text-align:center;outline:none;box-sizing:border-box;color:var(--txt)';
-  const TI='width:100%;border:none;background:transparent;padding:5px 6px;font-size:12px;outline:none;box-sizing:border-box;color:var(--txt)';
-  const SL='width:100%;border:none;background:var(--bg);padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box;color:var(--txt)';
-  let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid var(--gm-th-bdr)">'
-    +'<table style="width:100%;border-collapse:collapse;min-width:520px">'
+  const CELL='border:1px solid var(--gb-bdr);padding:0';
+  const TH='padding:9px 8px;background:var(--gb-th-bg);border:1px solid var(--gb-th-bdr);color:var(--gb-th-txt);font-size:11px;font-weight:700;text-align:center;white-space:nowrap;line-height:1.4';
+  const NI='width:100%;border:none;background:transparent;padding:6px 4px;font-size:15px;text-align:center;outline:none;box-sizing:border-box;color:var(--txt)';
+  const TI='width:100%;border:none;background:transparent;padding:6px 6px;font-size:13px;outline:none;box-sizing:border-box;color:var(--txt)';
+  const SL='width:100%;border:none;background:var(--bg);padding:6px 4px;font-size:14px;outline:none;box-sizing:border-box;color:var(--txt)';
+  let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid var(--gb-th-bdr)">'
+    +'<table style="width:100%;border-collapse:collapse;min-width:540px">'
     +'<thead><tr>'
-    +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:88px;padding-left:10px;background:var(--gm-hdr-bg);border-right:2px solid var(--gm-th-bdr)">利用者</th>'
-    +'<th style="'+TH+';min-width:68px">区分</th>'
-    +'<th style="'+TH+';min-width:76px">主食</th>'
-    +'<th style="'+TH+';min-width:76px">副食</th>'
-    +'<th style="'+TH+';min-width:68px">水分<br><small>ml</small></th>'
-    +'<th style="'+TH+';min-width:68px">ゼリー<br><small>ml</small></th>'
-    +'<th style="'+TH+';min-width:80px">特記</th>'
+    +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:100px;padding-left:10px;background:var(--gb-hdr-bg);border-right:2px solid var(--gb-th-bdr)">利用者</th>'
+    +'<th style="'+TH+';min-width:82px">区分</th>'
+    +'<th style="'+TH+';min-width:82px">主食</th>'
+    +'<th style="'+TH+';min-width:82px">副食</th>'
+    +'<th style="'+TH+';min-width:72px">水分<br><small>ml</small></th>'
+    +'<th style="'+TH+';min-width:72px">ゼリー<br><small>ml</small></th>'
+    +'<th style="'+TH+';min-width:90px">特記</th>'
     +'</tr></thead><tbody>'
-    +'<tr style="background:var(--gm-tpl-bg)">'
-    +'<td style="'+CELL+';background:var(--gm-tpl-cell);position:sticky;left:0;z-index:1;padding:5px 6px;border-right:2px solid var(--gm-th-bdr);vertical-align:middle">'
-    +'<div style="font-size:9px;font-weight:700;color:var(--gm-tpl-txt);margin-bottom:3px;white-space:nowrap">テンプレート行</div>'
+    +'<tr style="background:var(--gb-tpl-bg)">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-cell);position:sticky;left:0;z-index:1;padding:5px 6px;border-right:2px solid var(--gb-th-bdr);vertical-align:middle">'
+    +'<div style="font-size:9px;font-weight:700;color:var(--gb-tpl-txt);margin-bottom:3px;white-space:nowrap">テンプレート行</div>'
     +'<div style="display:flex;flex-direction:column;gap:2px">'
-    +'<button onclick="applyBmTemplate(false)" style="padding:3px 4px;background:#10b981;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 空欄へ</button>'
-    +'<button onclick="applyBmTemplate(true)" style="padding:3px 4px;background:#059669;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 全上書き</button>'
+    +'<button onclick="applyBmTemplate(false)" style="padding:3px 4px;background:#f59e0b;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 空欄へ</button>'
+    +'<button onclick="applyBmTemplate(true)" style="padding:3px 4px;background:#d97706;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 全上書き</button>'
     +'</div></td>'
-    +'<td style="'+CELL+';background:var(--gm-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bm-tpl-mtype" onchange="bmTplMtypeChg(this.value)" style="'+SL+'">'+MEAL_TYPES.map(t=>'<option value="'+t+'"'+(t===autoMtype?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('')+'</select></td>'
-    +'<td style="'+CELL+';background:var(--gm-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bm-tpl-staple" style="'+SL+'"><option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('')+'</select></td>'
-    +'<td style="'+CELL+';background:var(--gm-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bm-tpl-side" style="'+SL+'"><option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('')+'</select></td>'
-    +'<td style="'+CELL+';background:var(--gm-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<input type="number" inputmode="numeric" id="bm-tpl-fluid" placeholder="200" style="'+NI+'"></td>'
-    +'<td style="'+CELL+';background:var(--gm-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #10b981\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<input type="number" inputmode="numeric" id="bm-tpl-jelly" placeholder="100" style="'+NI+'"></td>'
-    +'<td style="'+CELL+';background:var(--gm-tpl-bg)"></td></tr>'
-    +'<tr><td colspan="7" style="padding:0;height:2px;background:var(--gm-th-bdr)"></td></tr>';
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)"></td></tr>'
+    +'<tr><td colspan="7" style="padding:0;height:2px;background:var(--gb-th-bdr)"></td></tr>';
   res.forEach((r,ri)=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
     const done=todayRecs.length>0;
@@ -12394,20 +12391,20 @@ function renderBulkMeal(){
     const sdOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curSide===String(i)?' selected':'')+'>'+l+'</option>').join('');
     const dashCell='<td style="'+CELL+';background:'+rowBg+';text-align:center;color:var(--sub)">—</td>';
     html+='<tr id="bm-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-left:'+lbdr+'">'
-      +'<td style="'+CELL+';padding:7px 6px 7px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--gm-bdr)">'
+      +'<td style="'+CELL+';padding:7px 6px 7px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--gb-bdr)">'
       +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle"></span>'+r.name+'</td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #22c55e\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<select id="bm-mtype-'+r.id+'" onchange="bmMtypeChg(\''+r.id+'\',this.value)" style="'+SL+'">'+mtOpts+'</select></td>'
       +(isSnack?dashCell+dashCell
-        :'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #22c55e\'" onfocusout="this.style.boxShadow=\'\'">'
+        :'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
         +'<select id="bm-staple-'+r.id+'" onchange="'+as+'" style="'+SL+'">'+stOpts+'</select></td>'
-        +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #22c55e\'" onfocusout="this.style.boxShadow=\'\'">'
+        +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
         +'<select id="bm-side-'+r.id+'" onchange="'+as+'" style="'+SL+'">'+sdOpts+'</select></td>')
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #22c55e\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="number" inputmode="numeric" id="bm-fluid-'+r.id+'" value="'+(d.fluid||'')+'" placeholder="200" onblur="'+as+'" style="'+NI+'"></td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #22c55e\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="number" inputmode="numeric" id="bm-jelly-'+r.id+'" value="'+(d.jelly||'')+'" placeholder="100" onblur="'+as+'" style="'+NI+'"></td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #22c55e\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="text" id="bm-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" onblur="'+as+'" style="'+TI+'"></td></tr>';
   });
   html+='</tbody></table></div>';
@@ -12466,9 +12463,9 @@ function bmMtypeChg(rid,mtype){
         const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
         const opts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('');
         cell.style.textAlign='';cell.style.padding='0';
-        cell.setAttribute('onfocusin',"this.style.boxShadow='inset 0 0 0 2px #22c55e'");
+        cell.setAttribute('onfocusin',"this.style.boxShadow='inset 0 0 0 2px var(--p)'");
         cell.setAttribute('onfocusout',"this.style.boxShadow=''");
-        cell.innerHTML='<select id="'+prefix+rid+'" onchange="bmAutoSave(\''+rid+'\')" style="width:100%;border:none;background:var(--bg);padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box">'+opts+'</select>';
+        cell.innerHTML='<select id="'+prefix+rid+'" onchange="bmAutoSave(\''+rid+'\')" style="width:100%;border:none;background:var(--bg);padding:6px 4px;font-size:14px;outline:none;box-sizing:border-box;color:var(--txt)">'+opts+'</select>';
       } else {el.disabled=false;el.style.opacity='1';}
     }
   });
@@ -12521,37 +12518,37 @@ function renderBulkExcretion(){
   const list=document.getElementById('bulk-excretion-list');if(!list)return;
   if(!res.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub)">利用者がいません</div>';return;}
   _bexResIds=res.map(r=>r.id);
-  const CELL='border:1px solid var(--ge-bdr);padding:0';
-  const TH='padding:7px 6px;background:var(--ge-th-bg);border:1px solid var(--ge-th-bdr);color:var(--ge-th-txt);font-size:11px;font-weight:700;text-align:center;white-space:nowrap;line-height:1.4';
-  const SL='width:100%;border:none;background:var(--bg);padding:5px 4px;font-size:12px;outline:none;box-sizing:border-box;color:var(--txt)';
-  const TI='width:100%;border:none;background:transparent;padding:5px 6px;font-size:12px;outline:none;box-sizing:border-box;color:var(--txt)';
+  const CELL='border:1px solid var(--gb-bdr);padding:0';
+  const TH='padding:9px 8px;background:var(--gb-th-bg);border:1px solid var(--gb-th-bdr);color:var(--gb-th-txt);font-size:11px;font-weight:700;text-align:center;white-space:nowrap;line-height:1.4';
+  const SL='width:100%;border:none;background:var(--bg);padding:6px 4px;font-size:14px;outline:none;box-sizing:border-box;color:var(--txt)';
+  const TI='width:100%;border:none;background:transparent;padding:6px 6px;font-size:13px;outline:none;box-sizing:border-box;color:var(--txt)';
   const urOpts='<option value="">-</option><option value="none">なし</option><option value="small">少量</option><option value="normal">普通</option><option value="large">多量</option>';
   const stOpts='<option value="">-</option><option value="none">なし</option><option value="small">少量</option><option value="normal">普通</option><option value="large">多量</option>';
-  let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid var(--ge-th-bdr)">'
-    +'<table style="width:100%;border-collapse:collapse;min-width:480px">'
+  let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.12);border:2px solid var(--gb-th-bdr)">'
+    +'<table style="width:100%;border-collapse:collapse;min-width:520px">'
     +'<thead><tr>'
-    +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:88px;padding-left:10px;background:var(--ge-hdr-bg);border-right:2px solid var(--ge-th-bdr)">利用者</th>'
-    +'<th style="'+TH+';min-width:76px">排尿</th>'
-    +'<th style="'+TH+';min-width:76px">排便</th>'
-    +'<th style="'+TH+';min-width:44px">失禁</th>'
-    +'<th style="'+TH+';min-width:72px">時刻</th>'
-    +'<th style="'+TH+';min-width:80px">特記</th>'
+    +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:100px;padding-left:10px;background:var(--gb-hdr-bg);border-right:2px solid var(--gb-th-bdr)">利用者</th>'
+    +'<th style="'+TH+';min-width:82px">排尿</th>'
+    +'<th style="'+TH+';min-width:82px">排便</th>'
+    +'<th style="'+TH+';min-width:48px">失禁</th>'
+    +'<th style="'+TH+';min-width:80px">時刻</th>'
+    +'<th style="'+TH+';min-width:88px">特記</th>'
     +'</tr></thead><tbody>'
-    +'<tr style="background:var(--ge-tpl-bg)">'
-    +'<td style="'+CELL+';background:var(--ge-tpl-cell);position:sticky;left:0;z-index:1;padding:5px 6px;border-right:2px solid var(--ge-th-bdr);vertical-align:middle">'
-    +'<div style="font-size:9px;font-weight:700;color:var(--ge-tpl-txt);margin-bottom:3px;white-space:nowrap">テンプレート行</div>'
+    +'<tr style="background:var(--gb-tpl-bg)">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-cell);position:sticky;left:0;z-index:1;padding:5px 6px;border-right:2px solid var(--gb-th-bdr);vertical-align:middle">'
+    +'<div style="font-size:9px;font-weight:700;color:var(--gb-tpl-txt);margin-bottom:3px;white-space:nowrap">テンプレート行</div>'
     +'<div style="display:flex;flex-direction:column;gap:2px">'
-    +'<button onclick="applyBexTemplate(false)" style="padding:3px 4px;background:#3b82f6;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 空欄へ</button>'
-    +'<button onclick="applyBexTemplate(true)" style="padding:3px 4px;background:#1d4ed8;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 全上書き</button>'
+    +'<button onclick="applyBexTemplate(false)" style="padding:3px 4px;background:#f59e0b;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 空欄へ</button>'
+    +'<button onclick="applyBexTemplate(true)" style="padding:3px 4px;background:#d97706;color:#fff;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">▶ 全上書き</button>'
     +'</div></td>'
-    +'<td style="'+CELL+';background:var(--ge-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bex-tpl-urine" style="'+SL+'">'+urOpts+'</select></td>'
-    +'<td style="'+CELL+';background:var(--ge-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bex-tpl-stool" style="'+SL+'">'+stOpts+'</select></td>'
-    +'<td style="'+CELL+';background:var(--ge-tpl-bg);text-align:center;color:var(--sub);font-size:14px;padding:4px">—</td>'
-    +'<td style="'+CELL+';background:var(--ge-tpl-bg);text-align:center;color:var(--sub);font-size:14px;padding:4px">—</td>'
-    +'<td style="'+CELL+';background:var(--ge-tpl-bg)"></td></tr>'
-    +'<tr><td colspan="6" style="padding:0;height:2px;background:var(--ge-th-bdr)"></td></tr>';
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg);text-align:center;color:var(--sub);font-size:14px;padding:4px">—</td>'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg);text-align:center;color:var(--sub);font-size:14px;padding:4px">—</td>'
+    +'<td style="'+CELL+';background:var(--gb-tpl-bg)"></td></tr>'
+    +'<tr><td colspan="6" style="padding:0;height:2px;background:var(--gb-th-bdr)"></td></tr>';
   res.forEach((r,ri)=>{
     const todayRecs=recs.filter(rc=>rc.rid===r.id&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
     const done=todayRecs.length>0;
@@ -12567,17 +12564,17 @@ function renderBulkExcretion(){
     const urSelOpts='<option value="">-</option><option value="none"'+(curUrine==='none'?' selected':'')+'>なし</option><option value="small"'+(curUrine==='small'?' selected':'')+'>少量</option><option value="normal"'+(curUrine==='normal'?' selected':'')+'>普通</option><option value="large"'+(curUrine==='large'?' selected':'')+'>多量</option>';
     const stSelOpts='<option value="">-</option><option value="none"'+(curStool==='none'?' selected':'')+'>なし</option><option value="small"'+(curStool==='small'?' selected':'')+'>少量</option><option value="normal"'+(curStool==='normal'?' selected':'')+'>普通</option><option value="large"'+(curStool==='large'?' selected':'')+'>多量</option>';
     html+='<tr id="bex-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-left:'+lbdr+'">'
-      +'<td style="'+CELL+';padding:7px 6px 7px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--ge-bdr)">'
+      +'<td style="'+CELL+';padding:7px 6px 7px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:100px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--gb-bdr)">'
       +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:4px;vertical-align:middle;flex-shrink:0"></span>'+r.name+'</td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<select id="bex-urine-'+r.id+'" onchange="'+as+'" style="'+SL+'">'+urSelOpts+'</select></td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<select id="bex-stool-'+r.id+'" onchange="'+as+'" style="'+SL+'">'+stSelOpts+'</select></td>'
       +'<td style="'+CELL+';background:'+rowBg+';text-align:center">'
       +'<input type="checkbox" id="bex-incon-'+r.id+'"'+(d.incon?' checked':'')+' onchange="'+as+'" style="width:18px;height:18px;cursor:pointer;vertical-align:middle"></td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="time" id="bex-time-'+r.id+'" value="'+curTime+'" onchange="'+as+'" style="'+TI+'"></td>'
-      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #3b82f6\'" onfocusout="this.style.boxShadow=\'\'">'
+      +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<input type="text" id="bex-note-'+r.id+'" value="'+(d.note||'')+'" placeholder="特記" onblur="'+as+'" style="'+TI+'"></td></tr>';
   });
   html+='</tbody></table></div>';
