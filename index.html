@@ -4885,9 +4885,12 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.2.8';
+const APP_VERSION='1.2.9';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
+  {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
+  {ver:'1.2.8',date:'2026-07-28',items:['一括入力グリッド縦罫線廃止・行高さ増・フォント拡大（ヘッダー13px/数値17px/select16px）']},
+  {ver:'1.2.7',date:'2026-07-28',items:['一括入力 日付変更でグリッドが再描画されなかったバグ修正']},
   {ver:'1.2.6',date:'2026-07-27',items:['一括入力グリッド（バイタル/食事/排泄）のデザイン統一：CSS変数を--gb-*に統合・セル大型化・テンプレートボタン色統一（アンバー）・ダークモード対応','利用者詳細ページの申し送りを記録入力の下に移動（記録ボタンが最初に見えるよう改善）']},
   {ver:'1.2.5',date:'2026-07-27',items:['利用者詳細からバイタル数値カード・体重グラフカードも削除し利用者詳細をタイムライン中心に簡略化']},
   {ver:'1.2.4',date:'2026-07-27',items:['利用者詳細から排便チップ・水分チップ・バイタルグラフカードを削除してUI簡略化']},
@@ -12335,8 +12338,8 @@ function renderBulkMeal(){
   _bmResIds=res.map(r=>r.id);
   const hr=new Date().getHours();
   const autoMtype=hr<11?'breakfast':hr<16?'lunch':'dinner';
-  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner'];
-  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食'};
+  const MEAL_TYPES=['breakfast','morning_snack','lunch','snack','dinner','fluid_only'];
+  const mtypeLbl={breakfast:'朝食',morning_snack:'10時',lunch:'昼食',snack:'おやつ',dinner:'夕食',fluid_only:'水分のみ'};
   const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
   const CELL='border-bottom:1px solid var(--gb-bdr);padding:0';
   const TH='padding:12px 10px;background:var(--gb-th-bg);border-bottom:2px solid var(--gb-th-bdr);color:var(--gb-th-txt);font-size:13px;font-weight:700;text-align:center;white-space:nowrap;line-height:1.4';
@@ -12383,19 +12386,28 @@ function renderBulkMeal(){
     const lbdr=done?'3px solid #22c55e':'3px solid #f97316';
     const curMtype=d.mtype||autoMtype;
     const isSnack=curMtype==='morning_snack'||curMtype==='snack';
+    const isFluidOnly=curMtype==='fluid_only';
     const curStaple=d.staple!=null?String(d.staple):'';
     const curSide=d.side!=null?String(d.side):'';
+    const snackAte=d.snack_ate;
+    const snackState=snackAte===true?'yes':snackAte===false?'no':'';
+    const snackIcon=snackAte===true?'●':snackAte===false?'✕':'──';
+    const snackColor=snackAte===true?'#43a047':snackAte===false?'#e53935':'var(--sub)';
     const as="bmAutoSave('"+r.id+"')";
     const mtOpts=MEAL_TYPES.map(t=>'<option value="'+t+'"'+(curMtype===t?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('');
     const stOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curStaple===String(i)?' selected':'')+'>'+l+'</option>').join('');
     const sdOpts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'"'+(curSide===String(i)?' selected':'')+'>'+l+'</option>').join('');
-    const dashCell='<td style="'+CELL+';background:'+rowBg+';text-align:center;color:var(--sub)">—</td>';
+    const dashCell='<td style="'+CELL+';background:'+rowBg+';text-align:center;color:var(--sub);font-size:18px;padding:11px 0">—</td>';
+    const snackToggle='<td style="'+CELL+';background:'+rowBg+';text-align:center;padding:0">'
+      +'<button id="bm-snack-'+r.id+'" data-state="'+snackState+'" onclick="bmToggleSnack(\''+r.id+'\')" '
+      +'style="width:100%;padding:11px 4px;border:none;background:transparent;font-size:24px;cursor:pointer;color:'+snackColor+';touch-action:manipulation">'+snackIcon+'</button></td>';
     html+='<tr id="bm-row-'+r.id+'" data-done="'+(done?1:0)+'" style="border-left:'+lbdr+'">'
       +'<td style="'+CELL+';padding:11px 8px 11px 12px;font-size:14px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:'+nameBg+';z-index:1;max-width:120px;overflow:hidden;text-overflow:ellipsis;border-right:2px solid var(--gb-th-bdr)">'
       +'<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+dot+';margin-right:5px;vertical-align:middle"></span>'+r.name+'</td>'
       +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
       +'<select id="bm-mtype-'+r.id+'" onchange="bmMtypeChg(\''+r.id+'\',this.value)" style="'+SL+'">'+mtOpts+'</select></td>'
-      +(isSnack?dashCell+dashCell
+      +(isSnack?snackToggle+dashCell
+        :isFluidOnly?dashCell+dashCell
         :'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
         +'<select id="bm-staple-'+r.id+'" onchange="'+as+'" style="'+SL+'">'+stOpts+'</select></td>'
         +'<td style="'+CELL+';background:'+rowBg+'" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px var(--p)\'" onfocusout="this.style.boxShadow=\'\'">'
@@ -12424,9 +12436,9 @@ function applyBmTemplate(overwrite){
     if(mtype){
       const el=document.getElementById('bm-mtype-'+rid);
       if(el&&(overwrite||!el.value)){
-        const prevIsSnack=el.value==='morning_snack'||el.value==='snack';
+        const prevMtype=el.value;
         el.value=mtype;changed=true;
-        if(prevIsSnack!==isSnack)bmMtypeChg(rid,mtype);
+        if(prevMtype!==mtype)bmMtypeChg(rid,mtype);
       }
     }
     if(!isSnack&&staple){const el=document.getElementById('bm-staple-'+rid);if(el&&(overwrite||!el.value)){el.value=staple;changed=true;}}
@@ -12438,27 +12450,42 @@ function applyBmTemplate(overwrite){
   toast(cnt?cnt+'人に反映・保存 ✓':'テンプレートに値を設定してください');
 }
 function bmTplMtypeChg(mtype){
-  const isSnack=mtype==='morning_snack'||mtype==='snack';
+  const isSpecial=mtype==='morning_snack'||mtype==='snack'||mtype==='fluid_only';
   ['bm-tpl-staple','bm-tpl-side'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
-    el.disabled=isSnack;el.style.opacity=isSnack?'0.3':'1';
+    el.disabled=isSpecial;el.style.opacity=isSpecial?'0.3':'1';
   });
 }
 function showBmBulk(){}
 function hideBmBulk(){}
 function bmMtypeChg(rid,mtype){
   const isSnack=mtype==='morning_snack'||mtype==='snack';
+  const isFluidOnly=mtype==='fluid_only';
   const row=document.getElementById('bm-row-'+rid);if(!row)return;
   const cells=row.querySelectorAll('td');
-  // staple=cells[2], side=cells[3]
-  ['bm-staple-','bm-side-'].forEach((prefix,ci)=>{
-    const cell=cells[ci+2];if(!cell)return;
-    const el=document.getElementById(prefix+rid);
-    if(isSnack){
-      if(el){el.value='';}
-      cell.innerHTML='<span style="color:var(--sub);font-size:16px;font-weight:400">—</span>';
-      cell.style.textAlign='center';
-    } else {
+  const stapleCell=cells[2];const sideCell=cells[3];
+  if(isSnack){
+    if(stapleCell){
+      stapleCell.removeAttribute('onfocusin');stapleCell.removeAttribute('onfocusout');
+      stapleCell.style.textAlign='center';stapleCell.style.padding='0';
+      stapleCell.innerHTML='<button id="bm-snack-'+rid+'" data-state="" onclick="bmToggleSnack(\''+rid+'\')" style="width:100%;padding:11px 4px;border:none;background:transparent;font-size:24px;cursor:pointer;color:var(--sub);touch-action:manipulation">──</button>';
+    }
+    if(sideCell){
+      sideCell.removeAttribute('onfocusin');sideCell.removeAttribute('onfocusout');
+      sideCell.style.textAlign='center';sideCell.style.padding='11px 0';
+      sideCell.innerHTML='<span style="color:var(--sub);font-size:18px">—</span>';
+    }
+  } else if(isFluidOnly){
+    [stapleCell,sideCell].forEach(cell=>{
+      if(!cell)return;
+      cell.removeAttribute('onfocusin');cell.removeAttribute('onfocusout');
+      cell.style.textAlign='center';cell.style.padding='11px 0';
+      cell.innerHTML='<span style="color:var(--sub);font-size:18px">—</span>';
+    });
+  } else {
+    ['bm-staple-','bm-side-'].forEach((prefix,ci)=>{
+      const cell=cells[ci+2];if(!cell)return;
+      const el=document.getElementById(prefix+rid);
       if(!el){
         const PCT_LBL=['なし','1割','2割','少量','4割','半量','6割','7割','8割','9割','全量'];
         const opts='<option value="">-</option>'+PCT_LBL.map((l,i)=>'<option value="'+i+'">'+l+'</option>').join('');
@@ -12467,24 +12494,36 @@ function bmMtypeChg(rid,mtype){
         cell.setAttribute('onfocusout',"this.style.boxShadow=''");
         cell.innerHTML='<select id="'+prefix+rid+'" onchange="bmAutoSave(\''+rid+'\')" style="width:100%;border:none;background:var(--bg);padding:11px 6px;font-size:16px;outline:none;box-sizing:border-box;color:var(--txt)">'+opts+'</select>';
       } else {el.disabled=false;el.style.opacity='1';}
-    }
-  });
+    });
+  }
+  bmAutoSave(rid);
+}
+function bmToggleSnack(rid){
+  const btn=document.getElementById('bm-snack-'+rid);if(!btn)return;
+  const cur=btn.dataset.state;
+  const next=cur===''?'yes':cur==='yes'?'no':'';
+  btn.dataset.state=next;
+  btn.textContent=next==='yes'?'●':next==='no'?'✕':'──';
+  btn.style.color=next==='yes'?'#43a047':next==='no'?'#e53935':'var(--sub)';
   bmAutoSave(rid);
 }
 function applyBmBulk(){}
 function saveBulkMeal(rid){
   const dateEl=document.getElementById('bm-date');
   const mtype=document.getElementById('bm-mtype-'+rid)?.value||'breakfast';
+  const isSnack=mtype==='morning_snack'||mtype==='snack';
   const stapleVal=document.getElementById('bm-staple-'+rid)?.value;
   const sideVal=document.getElementById('bm-side-'+rid)?.value;
   const fluid=_getVal('bm-fluid-'+rid);
   const jelly=_getVal('bm-jelly-'+rid);
-  if(stapleVal===''&&sideVal===''&&!fluid&&!jelly){toast('値を入力してください');return;}
+  const snackEl=document.getElementById('bm-snack-'+rid);
+  const snack_ate=snackEl?(snackEl.dataset.state==='yes'?true:snackEl.dataset.state==='no'?false:null):null;
+  if(stapleVal===''&&sideVal===''&&!fluid&&!jelly&&!(isSnack&&snack_ate!==null)){toast('値を入力してください');return;}
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
   const note=document.getElementById('bm-note-'+rid)?.value||'';
   const recs=getRecords();
   recs.push({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',
-    data:{mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,side:sideVal!==''&&sideVal!=null?Number(sideVal):null,fluid:fluid?Number(fluid):0,jelly:jelly?Number(jelly):0,note}});
+    data:{mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,side:sideVal!==''&&sideVal!=null?Number(sideVal):null,fluid:fluid?Number(fluid):0,jelly:jelly?Number(jelly):0,snack_ate,note}});
   saveRecords(recs);
   const row=document.getElementById('bm-row-'+rid);
   if(row){
