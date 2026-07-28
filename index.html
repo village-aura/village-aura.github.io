@@ -2335,7 +2335,7 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;color:var(--tx)">🌡️ 一括バイタル入力</div>
         <div style="font-size:11px;color:var(--sub);margin-top:2px">🎤 音声で話すだけで自動記録・手動入力も可</div>
       </div>
-      <input type="date" id="bv-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+      <input type="date" id="bv-date" onchange="renderBulkVital()" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card);color:var(--txt)">
     </div>
     <div style="margin:6px 12px 0;padding:10px 14px;background:#f0f4ff;border-radius:10px;border:1px solid #c7d7f8">
       <div style="font-size:11px;font-weight:800;color:var(--p);margin-bottom:6px;letter-spacing:.04em">🎤 話し方の例</div>
@@ -2364,7 +2364,7 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;color:var(--tx)">🍚 一括食事・水分入力</div>
         <div style="font-size:11px;color:var(--sub);margin-top:2px">全利用者の食事・水分をまとめて記録</div>
       </div>
-      <input type="date" id="bm-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+      <input type="date" id="bm-date" onchange="renderBulkMeal()" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card);color:var(--txt)">
     </div>
     <div style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="chip on" id="bm-f-all" onclick="setBmFilter('all')">全員</button>
@@ -2383,7 +2383,7 @@ a{color:var(--p);text-decoration:none}
         <div style="font-size:18px;font-weight:800;color:var(--tx)">💧 一括排泄入力</div>
         <div style="font-size:11px;color:var(--sub);margin-top:2px">全利用者の排泄をまとめて記録</div>
       </div>
-      <input type="date" id="bex-date" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card)">
+      <input type="date" id="bex-date" onchange="renderBulkExcretion()" style="padding:6px 8px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--card);color:var(--txt)">
     </div>
     <div style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap">
       <button class="chip on" id="bex-f-all" onclick="setBexFilter('all')">全員</button>
@@ -4885,7 +4885,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.2.6';
+const APP_VERSION='1.2.7';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.6',date:'2026-07-27',items:['一括入力グリッド（バイタル/食事/排泄）のデザイン統一：CSS変数を--gb-*に統合・セル大型化・テンプレートボタン色統一（アンバー）・ダークモード対応','利用者詳細ページの申し送りを記録入力の下に移動（記録ボタンが最初に見えるよう改善）']},
