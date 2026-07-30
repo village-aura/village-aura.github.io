@@ -4885,7 +4885,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.3.2';
+const APP_VERSION='1.3.3';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -16582,6 +16582,16 @@ let _incTab='open';
 
 function getIncidents(){return ls('incidents')||[];}
 function saveIncidents(d){lsSet('incidents',d);fsSet('incidents',d);}
+function incConfirmStatus(inc){
+  const confs=inc.confirmations||[];
+  const facConf=confs.find(c=>c.role&&c.role.startsWith('facility_manager_'));
+  const superConf=confs.find(c=>c.role==='super_admin'||c.role==='super_admin_doctor');
+  const allStaff=[...Object.values(STAFF_INFO),...Object.values(getCustomStaff()||{})];
+  const facMgrExists=allStaff.some(s=>s.role&&s.role.startsWith('facility_manager_'));
+  const allDone=!!(superConf&&(facConf||!facMgrExists));
+  const legacyDone=!!(inc.reviewed&&!confs.length);
+  return {facConf,superConf,allDone:allDone||legacyDone,facMgrExists};
+}
 
 function openIncidentModal(editId=''){
   document.getElementById('inc-edit-id').value=editId;
@@ -16668,19 +16678,25 @@ function renderIncidentList(){
     const res=inc.rid?residents.find(r=>r.id===inc.rid):null;
     const d=new Date(inc.ts);
     const dateStr=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    return `<div class="inc-card ${inc.sev}" data-inc-id="${inc.id}" onclick="openIncidentDetail('${inc.id}')">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
-        <span class="inc-sev-badge" style="background:${INC_SEV_COLOR[inc.sev]}">${INC_SEV_LABEL[inc.sev]}</span>
-        <span style="font-size:12px;font-weight:700;color:var(--txt)">${INC_TYPE_LABEL[inc.type]||inc.type}</span>
-        ${res?`<span style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;font-weight:700">${res.name}</span>`:''}
-        <span style="font-size:11px;color:var(--sub);margin-left:auto">${dateStr}</span>
-      </div>
-      <div style="font-size:13px;color:var(--txt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${inc.detail}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
-        <span style="font-size:11px;color:var(--sub)">${inc.by} · ${INC_LOC_LABEL[inc.location]||''}</span>
-        ${!inc.reviewed&&isManagerOrAbove()?`<button onclick="event.stopPropagation();reviewIncident('${inc.id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:3px 10px;font-weight:700;border:none;cursor:pointer">確認済にする</button>`:''}
-      </div>
-    </div>`;
+    const st=incConfirmStatus(inc);
+    const myConf=(inc.confirmations||[]).find(c=>c.by===S.user);
+    const facBadge='<span style="font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;background:'+(st.facConf?'#e8f5e9':'#fff8e1')+';color:'+(st.facConf?'#2e7d32':'#e65100')+'">'+(st.facConf?'✅ 施設管理者: '+st.facConf.by:'🕐 施設管理者: 未確認')+'</span>';
+    const superBadge='<span style="font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;background:'+(st.superConf?'#e8f5e9':'#fff8e1')+';color:'+(st.superConf?'#2e7d32':'#e65100')+'">'+(st.superConf?'✅ 全権管理者: '+st.superConf.by:'🕐 全権管理者: 未確認')+'</span>';
+    const confirmBtn=(!st.allDone&&isManagerOrAbove()&&!myConf)
+      ?'<button onclick="event.stopPropagation();confirmIncident(\''+inc.id+'\')" style="font-size:11px;background:#1565c0;color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✔ 確認する</button>'
+      :(myConf&&!st.allDone?'<span style="font-size:10px;color:var(--ok);font-weight:700">✓ あなたは確認済</span>':'');
+    return '<div class="inc-card '+inc.sev+'" data-inc-id="'+inc.id+'" onclick="openIncidentDetail(\''+inc.id+'\')">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">'
+      +'<span class="inc-sev-badge" style="background:'+INC_SEV_COLOR[inc.sev]+'">'+INC_SEV_LABEL[inc.sev]+'</span>'
+      +'<span style="font-size:12px;font-weight:700;color:var(--txt)">'+( INC_TYPE_LABEL[inc.type]||inc.type)+'</span>'
+      +(res?'<span style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;font-weight:700">'+res.name+'</span>':'')
+      +'<span style="font-size:11px;color:var(--sub);margin-left:auto">'+dateStr+'</span>'
+      +'</div>'
+      +'<div style="font-size:13px;color:var(--txt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+inc.detail+'</div>'
+      +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">'+facBadge+superBadge+'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">'
+      +'<span style="font-size:11px;color:var(--sub)">'+inc.by+' · '+(INC_LOC_LABEL[inc.location]||'')+'</span>'
+      +confirmBtn+'</div></div>';
   }).join('');
 }
 
@@ -16700,25 +16716,38 @@ function openIncidentDetail(id){
     (inc.response?`<div style="margin-top:6px"><b>✅ 即時対応：</b>${escHtml(inc.response)}</div>`:'')+
     (inc.prevention?`<div style="margin-top:6px"><b>🔄 再発防止：</b>${escHtml(inc.prevention)}</div>`:'')+
     (inc.witness?`<div style="margin-top:6px"><b>👥 立会：</b>${escHtml(inc.witness)}</div>`:'')+
-    `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">`+
-    (isManagerOrAbove()&&!inc.reviewed?`<button onclick="event.stopPropagation();reviewIncident('${id}')" style="font-size:11px;background:var(--ok);color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;border:none;cursor:pointer">✓ 確認済にする</button>`:'')+
-    `<button onclick="event.stopPropagation();openIncidentModal('${id}')" style="font-size:11px;background:var(--bg);color:var(--p);border:1px solid var(--p);border-radius:6px;padding:4px 12px;font-weight:700;cursor:pointer">✏️ 編集</button></div>`;
+    (()=>{
+      const st2=incConfirmStatus(inc);
+      const myConf2=(inc.confirmations||[]).find(c=>c.by===S.user);
+      const confBtn=(!st2.allDone&&isManagerOrAbove()&&!myConf2)
+        ?'<button onclick="event.stopPropagation();confirmIncident(\''+id+'\')" style="font-size:11px;background:#1565c0;color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;border:none;cursor:pointer;touch-action:manipulation">✔ 確認する</button>'
+        :(myConf2&&!st2.allDone?'<span style="font-size:11px;color:var(--ok);font-weight:700">✓ あなたは確認済み（他の管理者待ち）</span>':'');
+      return '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+confBtn
+        +'<button onclick="event.stopPropagation();openIncidentModal(\''+id+'\')" style="font-size:11px;background:var(--bg);color:var(--p);border:1px solid var(--p);border-radius:6px;padding:4px 12px;font-weight:700;cursor:pointer">✏️ 編集</button></div>';
+    })();
   card.appendChild(panel);
 }
 
-function reviewIncident(id){
+function confirmIncident(id){
   if(!isManagerOrAbove()){toast('管理者以上のみ実行できます');return;}
   const incidents=getIncidents();
   const idx=incidents.findIndex(i=>i.id===id);
   if(idx<0)return;
-  incidents[idx].reviewed=true;
-  incidents[idx].reviewedBy=S.user;
-  incidents[idx].reviewedAt=new Date().toISOString();
+  const inc=incidents[idx];
+  if(!inc.confirmations)inc.confirmations=[];
+  if(inc.confirmations.find(c=>c.by===S.user)){toast('あなたはすでに確認済みです');return;}
+  inc.confirmations.push({by:S.user,role:S.userRole||'',ts:new Date().toISOString()});
+  const st=incConfirmStatus(inc);
+  if(st.allDone){
+    inc.reviewed=true;
+    inc.reviewedAt=new Date().toISOString();
+  }
   saveIncidents(incidents);
   renderIncidentList();
   renderDashboardIncident();
-  toast('確認済みにしました ✓');
+  toast(inc.reviewed?'全員確認が揃いました ✓':'確認しました（他の管理者の確認待ち）');
 }
+function reviewIncident(id){confirmIncident(id);}
 
 function renderDashboardIncident(){
   const row=document.getElementById('incident-alert-row');
