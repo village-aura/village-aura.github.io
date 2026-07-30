@@ -4885,7 +4885,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.3.0';
+const APP_VERSION='1.3.1';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -12363,10 +12363,10 @@ function renderBulkMeal(){
     +'</tr></thead><tbody>'
     +'<tr style="background:var(--gb-tpl-bg)">'
     +'<td style="'+CELL+';background:var(--gb-tpl-cell);position:sticky;left:0;z-index:1;padding:10px 8px;border-right:2px solid var(--gb-th-bdr);vertical-align:middle">'
-    +'<div style="font-size:10px;font-weight:700;color:var(--gb-tpl-txt);margin-bottom:4px;white-space:nowrap">テンプレート行</div>'
-    +'<div style="display:flex;flex-direction:column;gap:2px">'
-    +'<button onclick="applyBmTemplate(false)" style="padding:7px 10px;background:#f59e0b;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation">▶ 空欄へ</button>'
-    +'<button onclick="applyBmTemplate(true)" style="padding:7px 10px;background:#d97706;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation">▶ 全上書き</button>'
+    +'<div style="font-size:9px;font-weight:700;color:var(--gb-tpl-txt);margin-bottom:6px;letter-spacing:.5px;opacity:.75">テンプレ適用</div>'
+    +'<div style="display:flex;flex-direction:column;gap:5px">'
+    +'<button onclick="applyBmTemplate(false)" style="width:100%;padding:8px 4px;background:transparent;color:#d97706;border:2px solid #f59e0b;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">空欄へ</button>'
+    +'<button onclick="applyBmTemplate(true)" style="width:100%;padding:8px 4px;background:#f59e0b;color:#fff;border:2px solid #f59e0b;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 8px rgba(245,158,11,.45)">全上書き</button>'
     +'</div></td>'
     +'<td style="'+CELL+';background:var(--gb-tpl-bg)" onfocusin="this.style.boxShadow=\'inset 0 0 0 2px #f59e0b\'" onfocusout="this.style.boxShadow=\'\'">'
     +'<select id="bm-tpl-mtype" onchange="bmTplMtypeChg(this.value)" style="'+SL+'">'+MEAL_TYPES.map(t=>'<option value="'+t+'"'+(t===autoMtype?' selected':'')+'>'+mtypeLbl[t]+'</option>').join('')+'</select></td>'
