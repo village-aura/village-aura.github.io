@@ -1430,7 +1430,7 @@ a{color:var(--p);text-decoration:none}
       </div>
       <div class="field">
         <label>訓練パターン</label>
-        <select id="ft-pattern">
+        <select id="ft-pattern" onchange="applyFtPatternPreset(this.value)">
           <option value="A">A：転倒予防・歩行改善</option>
           <option value="B">B：片麻痺ADL向上</option>
           <option value="C">C：認知症対応</option>
@@ -4967,7 +4967,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.3.8';
+const APP_VERSION='1.3.9';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -12117,6 +12117,18 @@ function showDelConfirm(msg,cb){
   el.style.display='block';
 }
 // ═══════════ 入浴記録 ═══════════
+const FT_PRESET={
+  A:['rom_lower','strength','standup','balance','walk'],
+  B:['rom_upper','rom_lower','strength','adl'],
+  C:['balance','walk','oral'],
+  D:['rom_upper','rom_lower','breath'],
+  E:['oral','swallow'],
+  other:[]
+};
+function applyFtPatternPreset(pat){
+  const preset=FT_PRESET[pat]||[];
+  document.querySelectorAll('.ft-menu').forEach(cb=>{cb.checked=preset.includes(cb.value);});
+}
 function openFtModal(){
   const r=getResidents().find(x=>x.id===S.currentRes);
   const sub=document.getElementById('ft-sub');
@@ -12126,9 +12138,9 @@ function openFtModal(){
   document.getElementById('ft-date').value=now.toISOString().slice(0,10);
   document.getElementById('ft-from').value=pad(now.getHours())+':'+pad(now.getMinutes());
   document.getElementById('ft-to').value='';
-  document.querySelectorAll('.ft-menu').forEach(cb=>cb.checked=false);
   ['ft-pre-sys','ft-pre-dia','ft-pre-pulse','ft-pre-spo2','ft-post-sys','ft-post-pulse','ft-post-spo2','ft-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('ft-pattern').value='A';
+  applyFtPatternPreset('A');
   document.getElementById('ft-achievement').value='100';
   document.getElementById('ft-stop-row').style.display='none';
   document.getElementById('modal-ft').classList.add('on');
