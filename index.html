@@ -1033,6 +1033,7 @@ a{color:var(--p);text-decoration:none}
         <button id="tlf-meal" class="hb-filter-btn" onclick="setTlFilter('meal')" style="flex-shrink:0">🍚 食事・水分</button>
         <button id="tlf-excretion" class="hb-filter-btn" onclick="setTlFilter('excretion')" style="flex-shrink:0">💧 排泄</button>
         <button id="tlf-weight" class="hb-filter-btn" onclick="setTlFilter('weight')" style="flex-shrink:0">⚖️ 体重</button>
+        <button id="tlf-functional_training" class="hb-filter-btn" onclick="setTlFilter('functional_training')" style="flex-shrink:0">💪 機能訓練</button>
       </div>
       <div id="timeline"></div>
     </div>
@@ -1413,6 +1414,89 @@ a{color:var(--p);text-decoration:none}
       <div class="field"><label>特記事項</label><textarea id="bath-notes" rows="2" placeholder="皮膚状態・注意点など"></textarea></div>
       <button class="btn-primary" onclick="saveBathRecord()">保存</button>
       <button class="btn-cancel" onclick="closeModal('modal-bath')">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ─── 機能訓練記録モーダル ─── -->
+  <div class="overlay" id="modal-ft" onclick="closeModal('modal-ft',event)">
+    <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">💪 機能訓練記録</div>
+      <div id="ft-sub" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px"></div>
+      <div class="field-row">
+        <div class="field"><label>日付</label><input type="date" id="ft-date"></div>
+        <div class="field"><label>開始</label><input type="time" id="ft-from"></div>
+        <div class="field"><label>終了</label><input type="time" id="ft-to"></div>
+      </div>
+      <div class="field">
+        <label>訓練パターン</label>
+        <select id="ft-pattern">
+          <option value="A">A：転倒予防・歩行改善</option>
+          <option value="B">B：片麻痺ADL向上</option>
+          <option value="C">C：認知症対応</option>
+          <option value="D">D：呼吸器・軽負荷</option>
+          <option value="E">E：口腔・嚥下機能</option>
+          <option value="other">個別プログラム</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>実施メニュー（複数選択可）</label>
+        <div id="ft-menu-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="rom_upper" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> ROM（上肢）</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="rom_lower" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> ROM（下肢）</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="strength" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> 筋力強化</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="standup" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> 立ち上がり</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="balance" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> バランス訓練</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="walk" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> 歩行練習</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="oral" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> 口腔体操・パタカラ</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="breath" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> 呼吸訓練</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="adl" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> ADL訓練</label>
+          <label style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;cursor:pointer"><input type="checkbox" value="swallow" class="ft-menu" style="width:16px;height:16px;accent-color:var(--p)"> 嚥下訓練</label>
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:10px 12px;margin:8px 0">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">訓練前バイタル</div>
+        <div class="field-row">
+          <div class="field"><label>収縮期BP</label><input type="number" inputmode="numeric" id="ft-pre-sys" placeholder="130" style="width:100%"></div>
+          <div class="field"><label>拡張期BP</label><input type="number" inputmode="numeric" id="ft-pre-dia" placeholder="80" style="width:100%"></div>
+          <div class="field"><label>脈拍</label><input type="number" inputmode="numeric" id="ft-pre-pulse" placeholder="72" style="width:100%"></div>
+          <div class="field"><label>SpO2 %</label><input type="number" inputmode="numeric" id="ft-pre-spo2" placeholder="97" style="width:100%"></div>
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:10px 12px;margin:8px 0">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">訓練後バイタル</div>
+        <div class="field-row">
+          <div class="field"><label>収縮期BP</label><input type="number" inputmode="numeric" id="ft-post-sys" placeholder="128" style="width:100%"></div>
+          <div class="field"><label>脈拍</label><input type="number" inputmode="numeric" id="ft-post-pulse" placeholder="70" style="width:100%"></div>
+          <div class="field"><label>SpO2 %</label><input type="number" inputmode="numeric" id="ft-post-spo2" placeholder="97" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>達成度</label>
+        <select id="ft-achievement" onchange="document.getElementById('ft-stop-row').style.display=this.value==='0'?'block':'none'">
+          <option value="100">100%　全て実施</option>
+          <option value="75">75%　概ね実施</option>
+          <option value="50">50%　半分実施</option>
+          <option value="25">25%　一部実施</option>
+          <option value="0">中止</option>
+        </select>
+      </div>
+      <div class="field" id="ft-stop-row" style="display:none">
+        <label>中止理由</label>
+        <select id="ft-stop-reason">
+          <option value="bp_high">血圧高値（収縮期180以上）</option>
+          <option value="bp_low">血圧低値（収縮期90未満）</option>
+          <option value="spo2_low">SpO2低下（91%以下）</option>
+          <option value="pulse_high">頻脈（120以上）</option>
+          <option value="pain">疼痛・不快感</option>
+          <option value="fatigue">強い疲労・息切れ</option>
+          <option value="refuse">本人拒否</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+      <div class="field"><label>特記・SOAP</label><textarea id="ft-note" rows="3" placeholder="S（本人の訴え）&#10;O（実施内容・観察）&#10;A（評価）&#10;P（次回計画）"></textarea></div>
+      <button class="btn-primary" onclick="saveFtRecord()">保存</button>
+      <button class="btn-cancel" onclick="closeModal('modal-ft')">キャンセル</button>
     </div>
   </div>
 
@@ -4838,7 +4922,7 @@ const SVC_META = {
 };
 const SVC_BTNS = {
   resident:['vital','bath','meal','excretion','chrono','weight','skin','handover'],
-  commute: ['attendance','vital','bath','meal','excretion','chrono','weight','skin','handover'],
+  commute: ['attendance','vital','bath','meal','excretion','functional_training','chrono','weight','skin','handover'],
   stay:    ['attendance','vital','bath','meal','excretion','chrono','weight','skin','handover'],
   visit:   ['visit_report','chrono','handover'],
   nursing: ['skin','chrono','handover'],
@@ -4853,6 +4937,7 @@ const BTN_DEF = {
   skin:        {ico:'🔬', lbl:'皮膚・褥瘡',  fn:"openModal('modal-skin')"},
   handover:    {ico:'📣', lbl:'申し送り',    fn:'openHandoverFromDetail()'},
   attendance:  {ico:'🕐', lbl:'来所/退所',   fn:'openAttendance()'},
+  functional_training:{ico:'💪', lbl:'機能訓練',   fn:"openFtModal()"},
   visit_report:{ico:'🚗', lbl:'訪問介護記録',fn:'openVisitReportFromDetail()'},
 };
 const ROLE_COLORS = {
@@ -4882,7 +4967,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.3.7';
+const APP_VERSION='1.3.8';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -8291,6 +8376,12 @@ function summarizeRecord(r){
   if(r.type==='weight')return `${r.data.val}kg`;
   if(r.type==='handover')return (r.data.content||'').substring(0,30);
   if(r.type==='attendance'){const d=r.data;return `来所${d.timeFrom||'──'}${d.timeTo?'・退所'+d.timeTo:''}`;}
+  if(r.type==='functional_training'){
+    const d=r.data;
+    const PAT={A:'転倒予防・歩行',B:'片麻痺ADL',C:'認知症対応',D:'呼吸器・軽負荷',E:'口腔・嚥下',other:'個別'};
+    const ach={100:'達成',75:'概ね達成',50:'半分達成',25:'一部実施',0:'中止'}[d.achievement]||d.achievement||'';
+    return `パターン${d.pattern}(${PAT[d.pattern]||''}) ${d.timeFrom||''}〜${d.timeTo||''} ${ach}`;
+  }
   if(r.type==='skin'){
     const d=r.data;
     if(d.category==='jokuso'){
@@ -9384,8 +9475,8 @@ function renderTimeline(){
   const recs=allRecs.filter(rc=>new Date(rc.ts).toDateString()===targetStr)
     .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   const filtered=_tlFilter==='all'?recs:recs.filter(r=>r.type===_tlFilter);
-  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐',skin:'🔬'};
-  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所',skin:'皮膚・褥瘡'};
+  const icos={vital:'🌡️',meal:'🍚',excretion:'💧',chrono:'📝',weight:'⚖️',handover:'📣',attendance:'🕐',skin:'🔬',functional_training:'💪'};
+  const typeNames={vital:'バイタル',meal:'食事・飲水',excretion:'排泄記録',chrono:'経時記録',weight:'体重測定',handover:'申し送り',attendance:'来所・退所',skin:'皮膚・褥瘡',functional_training:'機能訓練'};
   if(!filtered.length){
     const msg=_tlFilter==='chrono'?`${dateLabel}の経時記録はありません`:`${dateLabel}の記録はありません`;
     document.getElementById('timeline').innerHTML=`<div class="tl-empty">${msg}</div>`;
@@ -9406,7 +9497,7 @@ function renderTimeline(){
       <div class="tl-left"><div class="tl-ico">${icos[r.type]||'📄'}</div><div class="tl-time">${timeStr}</div></div>
       <div class="tl-body">
         <div class="tl-type">${typeNames[r.type]||r.type}</div>
-        ${r.type==='vital'?vitalChips(r):r.type==='skin'?`<div class="tl-val">${summarizeRecord(r)}</div>${r.data.design_r?(()=>{const dr=r.data.design_r;const chip=(key,val)=>{const isUpper=val&&val[0]===val[0].toUpperCase()&&val[0]!==val[0].toLowerCase();const isD=key==='d';const bg=isD?'#e3f2fd':isUpper?'#ffebee':'#e8f5e9';const cl=isD?'#1565c0':isUpper?'#c62828':'#2e7d32';return `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${bg};color:${cl};font-weight:700;border:1px solid ${cl}40">${val||key+'0'}</span>`;};return `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${chip('d',dr.d)}${chip('e',dr.e)}${chip('s',dr.s)}${chip('i',dr.i)}${chip('g',dr.g)}${chip('n',dr.n)}${chip('p',dr.p)}<span style="font-size:10px;padding:1px 8px;border-radius:10px;background:var(--p);color:#fff;font-weight:800">${dr.total}点</span></div>`;})():''}${(r.data.appearance||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${(r.data.appearance||[]).map(a=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fce7f3;color:#9c27b0;font-weight:700;border:1px solid #f48fb1">${a}</span>`).join('')}</div>`:''}`:`<div class="tl-val">${summarizeRecord(r)}</div>`}
+        ${r.type==='vital'?vitalChips(r):r.type==='functional_training'?(()=>{const d=r.data;const MENU_LBL={rom_upper:'ROM上肢',rom_lower:'ROM下肢',strength:'筋力強化',standup:'立ち上がり',balance:'バランス',walk:'歩行',oral:'口腔体操',breath:'呼吸訓練',adl:'ADL',swallow:'嚥下訓練'};const PAT={A:'転倒予防・歩行',B:'片麻痺ADL',C:'認知症対応',D:'呼吸器・軽負荷',E:'口腔・嚥下',other:'個別'};const achLbl={100:'100%達成',75:'75%達成',50:'50%達成',25:'25%実施',0:'中止'}[d.achievement]||d.achievement+'%';const achBg=d.achievement==='0'?'#fee2e2':d.achievement==='100'?'#dcfce7':'#fff7ed';const achCl=d.achievement==='0'?'#dc2626':d.achievement==='100'?'#15803d':'#d97706';return `<div class="tl-val">パターン${d.pattern}（${PAT[d.pattern]||''}）　${d.timeFrom||''}〜${d.timeTo||''}<span style="margin-left:8px;font-size:11px;padding:1px 8px;border-radius:10px;background:${achBg};color:${achCl};font-weight:700">${achLbl}</span></div>${(d.menus||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${(d.menus||[]).map(m=>`<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#e8f4fd;color:#1565c0;font-weight:700">${MENU_LBL[m]||m}</span>`).join('')}</div>`:''}<div style="display:flex;gap:12px;margin-top:5px;font-size:11px;color:var(--sub)">${d.vitalBefore&&d.vitalBefore.sys?`<span>前：BP${d.vitalBefore.sys}/${d.vitalBefore.dia||'—'} P${d.vitalBefore.pulse||'—'} SpO2${d.vitalBefore.spo2||'—'}%</span>`:''}${d.vitalAfter&&d.vitalAfter.sys?`<span>後：BP${d.vitalAfter.sys} P${d.vitalAfter.pulse||'—'} SpO2${d.vitalAfter.spo2||'—'}%</span>`:''}</div>`;})():r.type==='skin'?`<div class="tl-val">${summarizeRecord(r)}</div>${r.data.design_r?(()=>{const dr=r.data.design_r;const chip=(key,val)=>{const isUpper=val&&val[0]===val[0].toUpperCase()&&val[0]!==val[0].toLowerCase();const isD=key==='d';const bg=isD?'#e3f2fd':isUpper?'#ffebee':'#e8f5e9';const cl=isD?'#1565c0':isUpper?'#c62828':'#2e7d32';return `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${bg};color:${cl};font-weight:700;border:1px solid ${cl}40">${val||key+'0'}</span>`;};return `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${chip('d',dr.d)}${chip('e',dr.e)}${chip('s',dr.s)}${chip('i',dr.i)}${chip('g',dr.g)}${chip('n',dr.n)}${chip('p',dr.p)}<span style="font-size:10px;padding:1px 8px;border-radius:10px;background:var(--p);color:#fff;font-weight:800">${dr.total}点</span></div>`;})():''}${(r.data.appearance||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${(r.data.appearance||[]).map(a=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fce7f3;color:#9c27b0;font-weight:700;border:1px solid #f48fb1">${a}</span>`).join('')}</div>`:''}`:`<div class="tl-val">${summarizeRecord(r)}</div>`}
         ${r.type==='skin'&&r.data.photo?`<div style="margin-top:6px"><img src="data:image/jpeg;base64,${r.data.photo}" onclick="openSkinPhotoFull('${r.id}')" style="max-width:140px;max-height:100px;border-radius:8px;border:1.5px solid var(--bdr);object-fit:cover;cursor:pointer" loading="lazy"></div>`:''}
         ${r.data.note||r.data.content?(()=>{const txt=r.data.note||r.data.content||'';const isChrono=r.type==='chrono';const short=!isChrono&&!isChronoMode&&txt.length>60;return `<div class="tl-note" id="tln-${r.id}">${short?escHtml(txt.substring(0,60))+'…':escHtml(txt)}${short?`<button onclick="expandTlNote('${r.id}',this)" style="margin-left:4px;background:none;border:none;color:var(--p);font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation">続きを見る</button>`:''}</div>`;})():''}
         ${r.type==='chrono'&&r.data.triage&&r.data.triage.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${renderTriageBadges(r.data.triage)}</div>`:''}
@@ -12026,6 +12117,63 @@ function showDelConfirm(msg,cb){
   el.style.display='block';
 }
 // ═══════════ 入浴記録 ═══════════
+function openFtModal(){
+  const r=getResidents().find(x=>x.id===S.currentRes);
+  const sub=document.getElementById('ft-sub');
+  if(sub)sub.textContent=r?r.name+' 様':'';
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  document.getElementById('ft-date').value=now.toISOString().slice(0,10);
+  document.getElementById('ft-from').value=pad(now.getHours())+':'+pad(now.getMinutes());
+  document.getElementById('ft-to').value='';
+  document.querySelectorAll('.ft-menu').forEach(cb=>cb.checked=false);
+  ['ft-pre-sys','ft-pre-dia','ft-pre-pulse','ft-pre-spo2','ft-post-sys','ft-post-pulse','ft-post-spo2','ft-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ft-pattern').value='A';
+  document.getElementById('ft-achievement').value='100';
+  document.getElementById('ft-stop-row').style.display='none';
+  document.getElementById('modal-ft').classList.add('on');
+}
+function saveFtRecord(){
+  const date=document.getElementById('ft-date').value;
+  if(!date){toast('日付を入力してください');return;}
+  const menus=[...document.querySelectorAll('.ft-menu:checked')].map(cb=>cb.value);
+  const achievement=document.getElementById('ft-achievement').value;
+  const stopReason=achievement==='0'?document.getElementById('ft-stop-reason').value:'';
+  const rec={
+    id:'ft_'+Date.now(),
+    rid:S.currentRes,
+    type:'functional_training',
+    ts:date+'T'+(document.getElementById('ft-from').value||'00:00')+':00',
+    staffId:S.user,staffName:S.user,staffRole:S.userRole||'',
+    service:S.currentService||'commute',
+    data:{
+      date,
+      timeFrom:document.getElementById('ft-from').value,
+      timeTo:document.getElementById('ft-to').value,
+      pattern:document.getElementById('ft-pattern').value,
+      menus,
+      vitalBefore:{
+        sys:document.getElementById('ft-pre-sys').value,
+        dia:document.getElementById('ft-pre-dia').value,
+        pulse:document.getElementById('ft-pre-pulse').value,
+        spo2:document.getElementById('ft-pre-spo2').value
+      },
+      vitalAfter:{
+        sys:document.getElementById('ft-post-sys').value,
+        pulse:document.getElementById('ft-post-pulse').value,
+        spo2:document.getElementById('ft-post-spo2').value
+      },
+      achievement,stopReason,
+      note:document.getElementById('ft-note').value
+    }
+  };
+  const recs=getRecords();
+  recs.push(rec);
+  saveRecords(recs);
+  closeModal('modal-ft');
+  renderTimeline();
+  toast('機能訓練記録を保存しました');
+}
 function getBathRecords(){return ls('bath_records')||[];}
 function saveBathRecordsData(d){lsSet('bath_records',d);fsSet('bath_records',d);}
 function openBathModal(){
