@@ -2069,23 +2069,20 @@ a{color:var(--p);text-decoration:none}
   <!-- 事業所入力シート -->
   <div id="svc-backdrop" onclick="closeSvcSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299;cursor:pointer;-webkit-tap-highlight-color:transparent"></div>
   <div id="svc-sheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:300">
-    <div style="background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.15)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.07em">🖊 事業所を選んで入力</div>
+    <div style="background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,.15)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:800;color:var(--txt);letter-spacing:.03em">一括入力</div>
         <button onclick="closeSvcSheet()" style="background:var(--bg);border:none;border-radius:50%;width:28px;height:28px;font-size:16px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <button onclick="openSvcEntry('resident');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #3D7AB5;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
-          <div style="font-size:20px;margin-bottom:4px">🏠</div>サ高住
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="showScr('scr-bulk-vital');closeSvcSheet()" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1.5px solid var(--bdr);border-left:4px solid #1565c0;border-radius:14px;padding:16px 18px;text-align:left;font-size:16px;font-weight:700;color:var(--txt);cursor:pointer;touch-action:manipulation;width:100%">
+          <span style="font-size:28px;line-height:1">🌡️</span>バイタル
         </button>
-        <button onclick="openSvcEntry('stay');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #2e7d32;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
-          <div style="font-size:20px;margin-bottom:4px">🏡</div>小多機
+        <button onclick="showScr('scr-bulk-meal');closeSvcSheet()" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1.5px solid var(--bdr);border-left:4px solid #f59e0b;border-radius:14px;padding:16px 18px;text-align:left;font-size:16px;font-weight:700;color:var(--txt);cursor:pointer;touch-action:manipulation;width:100%">
+          <span style="font-size:28px;line-height:1">🍚</span>食事・水分
         </button>
-        <button onclick="openSvcEntry('commute');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #e65100;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
-          <div style="font-size:20px;margin-bottom:4px">☀️</div>デイ
-        </button>
-        <button onclick="openSvcEntry('visit');closeSvcSheet()" style="background:var(--card);border:1.5px solid var(--bdr);border-top:4px solid #6a1b9a;border-radius:12px;padding:12px 4px;text-align:center;font-size:11px;font-weight:800">
-          <div style="font-size:20px;margin-bottom:4px">🚗</div>訪問介護
+        <button onclick="showScr('scr-bulk-excretion');closeSvcSheet()" style="display:flex;align-items:center;gap:16px;background:var(--card);border:1.5px solid var(--bdr);border-left:4px solid #10b981;border-radius:14px;padding:16px 18px;text-align:left;font-size:16px;font-weight:700;color:var(--txt);cursor:pointer;touch-action:manipulation;width:100%">
+          <span style="font-size:28px;line-height:1">💧</span>排泄
         </button>
       </div>
     </div>
@@ -2100,7 +2097,7 @@ a{color:var(--p);text-decoration:none}
       <div class="bn-ico">👥</div><div class="bn-lbl">利用者</div>
     </button>
     <button class="bn" onclick="toggleSvcSheet()" id="bn-entry">
-      <div class="bn-ico">📝</div><div class="bn-lbl">記録入力</div>
+      <div class="bn-ico">📋</div><div class="bn-lbl">一括入力</div>
     </button>
     <button class="bn" onclick="showScr('scr-handover-board')" id="bn-hb">
       <div class="bn-ico" style="position:relative;display:inline-block">📣<span id="hb-unread-badge" style="display:none;position:absolute;top:-4px;right:-6px;background:var(--ng);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;line-height:14px;text-align:center"></span></div><div class="bn-lbl">申し送り</div>
@@ -4885,7 +4882,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.3.6';
+const APP_VERSION='1.3.7';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
