@@ -1423,7 +1423,7 @@ a{color:var(--p);text-decoration:none}
       <div class="sheet-handle"></div>
       <div class="sheet-title">💪 機能訓練記録</div>
       <div id="ft-sub" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px"></div>
-      <div class="field-row">
+      <div class="field-row" style="grid-template-columns:2fr 1fr 1fr">
         <div class="field"><label>日付</label><input type="date" id="ft-date"></div>
         <div class="field"><label>開始</label><input type="time" id="ft-from"></div>
         <div class="field"><label>終了</label><input type="time" id="ft-to"></div>
@@ -1465,7 +1465,7 @@ a{color:var(--p);text-decoration:none}
       </div>
       <div style="background:var(--bg);border-radius:10px;padding:10px 12px;margin:8px 0">
         <div style="font-size:11px;font-weight:800;color:var(--sub);margin-bottom:8px;letter-spacing:.04em">訓練後バイタル</div>
-        <div class="field-row">
+        <div class="field-row" style="grid-template-columns:1fr 1fr 1fr">
           <div class="field"><label>収縮期BP</label><input type="number" inputmode="numeric" id="ft-post-sys" placeholder="128" style="width:100%"></div>
           <div class="field"><label>脈拍</label><input type="number" inputmode="numeric" id="ft-post-pulse" placeholder="70" style="width:100%"></div>
           <div class="field"><label>SpO2 %</label><input type="number" inputmode="numeric" id="ft-post-spo2" placeholder="97" style="width:100%"></div>
@@ -4967,7 +4967,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.0';
+const APP_VERSION='1.4.1';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
