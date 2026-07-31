@@ -4885,7 +4885,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.3.3';
+const APP_VERSION='1.3.4';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -12087,7 +12087,7 @@ function renderBulkVital(){
   const TI='width:100%;border:none;background:transparent;padding:11px 8px;font-size:14px;outline:none;box-sizing:border-box;color:var(--txt)';
   let h='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);border:2px solid var(--gb-th-bdr)">'
     +'<table style="width:100%;border-collapse:collapse;min-width:560px">'
-    +'<thead><tr>'
+    +'<thead style="position:sticky;top:56px;z-index:4"><tr>'
     +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:110px;padding-left:12px;background:var(--gb-hdr-bg);border-right:2px solid var(--gb-th-bdr)">利用者</th>';
   BV_FIELDS.forEach(f=>{h+='<th style="'+TH+';min-width:82px">'+BV_LBL[f]+'</th>';});
   h+='<th style="'+TH+';min-width:100px">特記</th></tr></thead><tbody>'
@@ -12352,7 +12352,7 @@ function renderBulkMeal(){
   const SL='width:100%;border:none;background:var(--bg);padding:11px 6px;font-size:16px;outline:none;box-sizing:border-box;color:var(--txt)';
   let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);border:2px solid var(--gb-th-bdr)">'
     +'<table style="width:100%;border-collapse:collapse;min-width:580px">'
-    +'<thead><tr>'
+    +'<thead style="position:sticky;top:56px;z-index:4"><tr>'
     +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:110px;padding-left:12px;background:var(--gb-hdr-bg);border-right:2px solid var(--gb-th-bdr)">利用者</th>'
     +'<th style="'+TH+';min-width:90px">区分</th>'
     +'<th style="'+TH+';min-width:90px">主食</th>'
@@ -12569,7 +12569,7 @@ function renderBulkExcretion(){
   const stOpts='<option value="">-</option><option value="none">なし</option><option value="small">少量</option><option value="normal">普通</option><option value="large">多量</option>';
   let html='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);border:2px solid var(--gb-th-bdr)">'
     +'<table style="width:100%;border-collapse:collapse;min-width:560px">'
-    +'<thead><tr>'
+    +'<thead style="position:sticky;top:56px;z-index:4"><tr>'
     +'<th style="'+TH+';text-align:left;position:sticky;left:0;z-index:2;min-width:110px;padding-left:12px;background:var(--gb-hdr-bg);border-right:2px solid var(--gb-th-bdr)">利用者</th>'
     +'<th style="'+TH+';min-width:90px">排尿</th>'
     +'<th style="'+TH+';min-width:90px">排便</th>'
@@ -17246,11 +17246,19 @@ function renderTasksList(){
 }
 function scrollToTaskSection(row){
   const sec=document.getElementById('task-section-'+row);
-  if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
+  if(sec){
+    const hdH=(document.querySelector('.hd')||{offsetHeight:56}).offsetHeight;
+    const top=sec.getBoundingClientRect().top+window.scrollY-hdH-8;
+    window.scrollTo({top,behavior:'smooth'});
+  }
 }
 function scrollToResKana(row){
   const anchor=document.getElementById('res-kana-anchor-'+row);
-  if(anchor)anchor.scrollIntoView({behavior:'smooth',block:'start'});
+  if(anchor){
+    const hdH=(document.querySelector('.hd')||{offsetHeight:56}).offsetHeight;
+    const top=anchor.getBoundingClientRect().top+window.scrollY-hdH-8;
+    window.scrollTo({top,behavior:'smooth'});
+  }
 }
 
 function openTaskModal(editId){
