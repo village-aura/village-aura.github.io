@@ -1419,14 +1419,15 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── 機能訓練記録モーダル ─── -->
   <div class="overlay" id="modal-ft" onclick="closeModal('modal-ft',event)">
-    <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;padding-right:22px">
+    <div class="sheet" onclick="event.stopPropagation()" style="max-height:none;overflow:visible;padding:0">
+      <div style="padding:20px 22px 32px 20px;overflow-y:auto;max-height:90vh">
       <div class="sheet-handle"></div>
       <div class="sheet-title">💪 機能訓練記録</div>
       <div id="ft-sub" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px"></div>
       <div class="field"><label>日付</label><input type="date" id="ft-date"></div>
-      <div style="display:flex;margin-bottom:14px">
-        <div class="field" style="flex:1;min-width:0"><label>開始</label><input type="time" id="ft-from"></div>
-        <div class="field" style="flex:1;min-width:0;margin-left:10px"><label>終了</label><input type="time" id="ft-to"></div>
+      <div class="field-row">
+        <div class="field"><label>開始</label><input type="time" id="ft-from"></div>
+        <div class="field"><label>終了</label><input type="time" id="ft-to"></div>
       </div>
       <div class="field">
         <label>訓練パターン</label>
@@ -1497,6 +1498,7 @@ a{color:var(--p);text-decoration:none}
       <div class="field"><label>特記・SOAP</label><textarea id="ft-note" rows="3" placeholder="S（本人の訴え）&#10;O（実施内容・観察）&#10;A（評価）&#10;P（次回計画）"></textarea></div>
       <button class="btn-primary" onclick="saveFtRecord()">保存</button>
       <button class="btn-cancel" onclick="closeModal('modal-ft')">キャンセル</button>
+      </div>
     </div>
   </div>
 
@@ -4968,7 +4970,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.3';
+const APP_VERSION='1.4.4';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
