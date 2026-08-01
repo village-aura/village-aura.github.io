@@ -1,5 +1,5 @@
-/* Village Aura Service Worker - 202608012358 */
-const CACHE_VER='202608012358';
+/* Village Aura Service Worker - 202608020014 */
+const CACHE_VER='202608020014';
 self.addEventListener('install',function(){self.skipWaiting();});
 self.addEventListener('activate',function(e){
   e.waitUntil(caches.keys().then(function(keys){
