@@ -5004,7 +5004,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.7';
+const APP_VERSION='1.4.8';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -18370,18 +18370,43 @@ function renderTimelineSummary(records){
 }
 
 // iOS Safari の position:fixed 包含ブロック問題の修正
-// overflow が設定された祖先要素が position:fixed の基準点になるバグを回避するため
-// すべての .overlay を body 直下に移動する（DOMContentLoaded で script後の要素も含める）
+// ① すべての .overlay を body 直下に移動
+// ② .on が付いたタイミングで getBoundingClientRect() でズレを検出→強制補正
+// （getBoundingClientRect はビューポート基準のため、CBがズレていても正確な値が取れる）
 (function(){
-  function moveOverlays(){
+  function _fixPos(el){
+    requestAnimationFrame(function(){
+      var rect=el.getBoundingClientRect();
+      var vw=window.innerWidth;
+      var vh=window.innerHeight;
+      if(Math.abs(rect.left)>2||Math.abs(rect.top)>2||rect.width<vw-2){
+        el.style.setProperty('position','fixed','important');
+        el.style.setProperty('left',(-rect.left)+'px','important');
+        el.style.setProperty('top',(-rect.top)+'px','important');
+        el.style.setProperty('right','auto','important');
+        el.style.setProperty('bottom','auto','important');
+        el.style.setProperty('width',vw+'px','important');
+        el.style.setProperty('height',vh+'px','important');
+      }
+    });
+  }
+  var _obs=new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      if(m.type==='attributes'&&m.target.classList&&m.target.classList.contains('on')){
+        _fixPos(m.target);
+      }
+    });
+  });
+  function _setup(){
     document.querySelectorAll('.overlay').forEach(function(el){
       if(el.parentElement!==document.body) document.body.appendChild(el);
+      _obs.observe(el,{attributes:true,attributeFilter:['class']});
     });
   }
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',moveOverlays);
+    document.addEventListener('DOMContentLoaded',_setup);
   } else {
-    moveOverlays();
+    _setup();
   }
 })();
 </script>
