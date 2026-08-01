@@ -46,7 +46,7 @@ body.font-lg{zoom:1.18}
 body.font-xl{zoom:1.35}
 body.font-xxl{zoom:1.52}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden;font-size:15px}
+body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:clip;font-size:15px}
 @media(min-width:600px){body{max-width:none}}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
 input,select,textarea{font-family:inherit;font-size:16px}
@@ -277,18 +277,35 @@ a{color:var(--p);text-decoration:none}
 .detail-tab-btn.on{color:var(--p);border-bottom-color:var(--p)}
 .detail-col-right.dtab-hidden{display:none}
 .tl-date{font-size:12px;font-weight:700;color:var(--sub);padding:4px 0 6px;border-bottom:1px solid var(--bdr);margin-bottom:8px}
-.tl-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start}
-.tl-item[data-type="chrono"]{background:#f8f6ff;border-radius:10px;padding:10px;margin:4px 0;border-bottom:none;border-left:3px solid var(--p)}
-.tl-left{width:38px;flex-shrink:0;text-align:center}
-.tl-time{font-size:11px;color:var(--sub);white-space:nowrap}
-.tl-ico{font-size:18px;margin-bottom:2px}
+.tl-item{display:flex;gap:12px;padding:11px 13px;margin:5px 0;background:var(--card);border-radius:12px;align-items:flex-start;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid var(--bdr);transition:box-shadow .15s}
+.tl-item:active{box-shadow:0 2px 10px rgba(0,0,0,.13)}
+.tl-item[data-type="vital"]{border-left-color:#e53935}
+.tl-item[data-type="meal"]{border-left-color:#43a047}
+.tl-item[data-type="excretion"]{border-left-color:#FF8F00}
+.tl-item[data-type="chrono"]{border-left-color:var(--p);background:var(--ps)}
+.tl-item[data-type="weight"]{border-left-color:#7B1FA2}
+.tl-item[data-type="functional_training"]{border-left-color:#0288D1}
+.tl-item[data-type="skin"]{border-left-color:#E91E63}
+.tl-item[data-type="handover"]{border-left-color:#FB8C00}
+.tl-item[data-type="attendance"]{border-left-color:#546E7A}
+.tl-left{width:40px;flex-shrink:0;text-align:center}
+.tl-time{font-size:11px;color:var(--sub);white-space:nowrap;font-weight:600}
+.tl-ico{font-size:20px;margin-bottom:2px}
 .tl-body{flex:1;min-width:0}
-.tl-type{font-size:12px;font-weight:700;color:var(--sub)}
-.tl-val{font-size:14px;font-weight:600;margin-top:1px}
-.tl-note{font-size:13px;color:var(--txt);margin-top:4px;line-height:1.6}
-.tl-item[data-type="chrono"] .tl-note{font-size:14px;color:var(--txt);white-space:pre-wrap;word-break:break-all}
-.tl-staff{font-size:11px;color:var(--sub);margin-top:4px}
-.tl-empty{text-align:center;padding:24px;color:var(--sub);font-size:14px}
+.tl-type{font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;text-transform:none;margin-bottom:3px}
+.tl-val{font-size:14px;font-weight:600;margin-top:0;color:var(--txt);line-height:1.5}
+.tl-note{font-size:13px;color:var(--sub);margin-top:5px;line-height:1.6;padding-top:5px;border-top:1px dashed var(--bdr)}
+.tl-item[data-type="chrono"] .tl-note{font-size:14px;color:var(--txt);white-space:pre-wrap;word-break:break-all;border-top:none;padding-top:0}
+.tl-staff{font-size:11px;color:var(--sub);margin-top:6px;display:flex;align-items:center;gap:4px}
+.tl-empty{text-align:center;padding:32px;color:var(--sub);font-size:14px}
+/* タイムラインサマリーバー */
+.tl-summary-bar{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;gap:10px;flex-wrap:wrap}
+.tl-summary-chip{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:20px;background:var(--bg);color:var(--txt)}
+/* AI補助ボタン共通 */
+.ai-assist-btn{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:4px 11px;background:linear-gradient(135deg,#5C6BC0,#3D7AB5);color:#fff;border-radius:20px;border:none;cursor:pointer;touch-action:manipulation;letter-spacing:.02em;box-shadow:0 1px 4px rgba(61,122,181,.3)}
+.ai-assist-btn:active{opacity:.8}
+/* AI生成テキストのハイライト */
+.ai-generated{background:linear-gradient(to bottom,var(--ps),transparent);border-radius:8px;animation:aiPulse .6s ease}
 
 /* ── MODALS ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;touch-action:none}
@@ -302,7 +319,7 @@ a{color:var(--p);text-decoration:none}
 .sheet-sub{font-size:13px;color:var(--sub);margin-bottom:18px}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;min-width:0;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:#fff;color:var(--txt)}
+.field input,.field select,.field textarea{width:100%;min-width:0;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:16px;background:#fff;color:#111}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--p)}
 .field textarea{resize:vertical;min-height:80px;line-height:1.6}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -340,7 +357,7 @@ a{color:var(--p);text-decoration:none}
 .ts-tabs{display:flex;background:#f0f2f5;border-radius:8px;padding:2px;gap:1px}
 .ts-tab{padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;color:var(--sub);transition:all .15s;background:none;border:none;cursor:pointer}
 .ts-tab.on{background:#fff;color:var(--p);box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.ts-custom-input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;background:#fff;color:var(--txt);margin-top:4px;width:100%}
+.ts-custom-input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;background:#fff;color:#111;margin-top:4px;width:100%}
 .btn-primary{width:100%;padding:15px;background:var(--p);color:#fff;border-radius:12px;font-size:16px;font-weight:700;margin-top:8px;transition:background .15s}
 .btn-primary:hover{background:var(--pd)}
 .btn-cancel{width:100%;padding:13px;background:#f3f4f6;color:var(--sub);border-radius:12px;font-size:15px;font-weight:600;margin-top:8px}
@@ -1419,8 +1436,8 @@ a{color:var(--p);text-decoration:none}
 
   <!-- ─── 機能訓練記録モーダル ─── -->
   <div class="overlay" id="modal-ft" onclick="closeModal('modal-ft',event)">
-    <div class="sheet" onclick="event.stopPropagation()" style="max-height:none;overflow:visible;padding:0">
-      <div style="padding:20px 22px 32px 20px;overflow-y:auto;max-height:90vh">
+    <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow:hidden;padding:0;transform:translateZ(0);-webkit-transform:translateZ(0)">
+      <div style="padding:20px 20px 32px 20px;overflow-y:auto;max-height:90vh;overflow-x:hidden;width:100%;box-sizing:border-box">
       <div class="sheet-handle"></div>
       <div class="sheet-title">💪 機能訓練記録</div>
       <div id="ft-sub" style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px"></div>
@@ -1495,7 +1512,13 @@ a{color:var(--p);text-decoration:none}
           <option value="other">その他</option>
         </select>
       </div>
-      <div class="field"><label>特記・SOAP</label><textarea id="ft-note" rows="3" placeholder="S（本人の訴え）&#10;O（実施内容・観察）&#10;A（評価）&#10;P（次回計画）"></textarea></div>
+      <div class="field">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label style="margin-bottom:0">特記・SOAP</label>
+          <button class="ai-assist-btn" onclick="generateFtSoap()">✨ AI補助</button>
+        </div>
+        <textarea id="ft-note" rows="5" placeholder="S（本人の訴え）&#10;O（実施内容・観察）&#10;A（評価）&#10;P（次回計画）"></textarea>
+      </div>
       <button class="btn-primary" onclick="saveFtRecord()">保存</button>
       <button class="btn-cancel" onclick="closeModal('modal-ft')">キャンセル</button>
       </div>
@@ -2546,7 +2569,9 @@ a{color:var(--p);text-decoration:none}
     <div style="display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden">
       <div style="padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;flex-shrink:0">
         <div style="font-size:16px;font-weight:800;color:var(--txt)">📆 シフト表</div>
+        <button onclick="changeShiftMonth(-1)" style="padding:3px 10px;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--sub);font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation">‹</button>
         <span id="shift-month-badge" style="font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:2px 8px"></span>
+        <button onclick="changeShiftMonth(1)" style="padding:3px 10px;border:1.5px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--sub);font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation">›</button>
       </div>
       <div id="shift-tabs" style="display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
       <div id="shift-table-wrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch">
@@ -3185,7 +3210,12 @@ a{color:var(--p);text-decoration:none}
         <label><input type="radio" name="consciousness" value="stupor"> 昏迷</label>
       </div>
     </div>
-    <div class="field"><label>備考</label><textarea id="v-note" placeholder="特記事項..."></textarea>
+    <div class="field">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="margin-bottom:0">備考</label>
+        <button class="ai-assist-btn" onclick="generateVitalComment()">✨ AI補助</button>
+      </div>
+      <textarea id="v-note" placeholder="特記事項..."></textarea>
       <button class="btn-voice" onclick="startVoice('v-note',this)">🎤 音声入力</button>
     </div>
     <button class="btn-primary" onclick="saveRecord('vital')">保存</button>
@@ -4254,7 +4284,11 @@ a{color:var(--p);text-decoration:none}
         <option value="permanent">無期限</option>
       </select>
     </div>
-    <div class="field"><label>内容</label>
+    <div class="field">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="margin-bottom:0">内容</label>
+        <button class="ai-assist-btn" onclick="generateHandoverTemplate()">✨ AI補助</button>
+      </div>
       <textarea id="bho-content" rows="4" placeholder="申し送り内容..."></textarea>
       <button class="btn-voice" onclick="startVoice('bho-content',this)">🎤 音声入力</button>
     </div>
@@ -4970,7 +5004,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.6';
+const APP_VERSION='1.4.7';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -5013,6 +5047,7 @@ const FB_CONFIG={
   appId:'1:559931440710:web:c8f37e31163ba229501447'
 };
 const FB_SYNC_KEYS=['residents','handovers','schedules','board_data2','proposals','visit_reports','device_settings','wifi_settings','custom_staff','staff_settings','record_templates','doctor_confirmed','vital_confirmed','monthly_goals','board_trash','board_del_log','face_sheets','visit_schedules','incidents','handover_reads','rounds_data','reposition_times','tasks_data','infection_data','medication_data','medication_checks','bath_records','transport_records','hb_replies','bulletin_board'];
+function _uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 let db=null, fbReady=false, fbListeners=[];
 let _aiKey='', _aiKeyUnsub=null;
 let _knownHwIds=new Set(), _hwNotiReady=false;
@@ -5710,7 +5745,7 @@ function saveCurrentAsTemplate(){
   if(!content){toast('先に内容を入力してください');return;}
   const shared=document.getElementById('tpl-shared')?.checked&&isAdmin();
   const tpls=getTemplates();
-  tpls.push({id:'tpl'+Date.now(),type:_tplTarget,name,content,shared,owner:S.user});
+  tpls.push({id:'tpl'+_uid(),type:_tplTarget,name,content,shared,owner:S.user});
   saveTemplates(tpls);
   toast('テンプレートを保存しました ✓');
   openTemplatePicker(_tplTarget);
@@ -5965,7 +6000,7 @@ function submitProposal(){
   if(!title){toast('タイトルを入力してください');return;}
   const proposals=getProposals();
   proposals.unshift({
-    id:'prop_'+Date.now(),
+    id:'prop_'+_uid(),
     title,detail,
     category:document.getElementById('prop-cat').value,
     priority:document.querySelector('input[name="prop-pri"]:checked').value,
@@ -8066,7 +8101,7 @@ function printFamilySummary(){
 
 // ═══════════ 申し送り返信（コメントスレッド） ═══════════
 function getHbReplies(){return ls('hb_replies')||{};}
-function saveHbReplies(data){lsSet('hb_replies',data);}
+function saveHbReplies(data){lsSet('hb_replies',data);fsSet('hb_replies',data);}
 function openHbReply(itemId){
   const replies=getHbReplies()[itemId]||[];
   const el=document.getElementById('hb-reply-thread');
@@ -9486,7 +9521,8 @@ function renderTimeline(){
     return;
   }
   const isChronoMode=_tlFilter==='chrono';
-  let html='';
+  const summary=(_tlFilter==='all')?renderTimelineSummary(recs):'';
+  let html=summary;
   filtered.forEach(r=>{
     const d=new Date(r.ts);
     const timeStr=d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
@@ -9872,7 +9908,7 @@ function saveRecord(type){
     S.editRecId=null;
     let _ts=getRecordTs();if(_ts===null)return;
     if(type==='excretion'){const exTEl=document.getElementById('ex-time');if(exTEl&&exTEl.value){const d2=new Date(_ts);const[h2,m2]=exTEl.value.split(':');d2.setHours(parseInt(h2),parseInt(m2),0,0);_ts=d2.toISOString();}}
-    recs.unshift({id:'rc'+Date.now(),type,rid:S.currentRes,staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,ts:_ts,data});
+    recs.unshift({id:'rc'+_uid(),type,rid:S.currentRes,staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,ts:_ts,data});
     saveRecords(recs);
     const typeLabel={vital:'バイタル',meal:'食事',excretion:'排泄',chrono:'経時記録',weight:'体重',skin:'皮膚・褥瘡'}[type]||type;
     addAuditLog('記録保存',typeLabel+' / 利用者ID: '+S.currentRes);
@@ -9883,7 +9919,7 @@ function saveRecord(type){
 function addHandover(rid,content,cat='other',pri='normal'){
   const h=getHandovers();
   if(!h[rid]) h[rid]=[];
-  h[rid].unshift({id:'h'+Date.now(),cat,pri,content,by:S.user||'──',date:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'})});
+  h[rid].unshift({id:'h'+_uid(),cat,pri,content,by:S.user||'──',date:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'})});
   saveHandovers(h);
 }
 function openEditHandover(id){
@@ -10887,7 +10923,7 @@ function saveAttendance(){
   const note=document.getElementById('att-note').value.trim();
   const data={timeFrom,timeTo,service:S.currentService,note};
   const recs=getRecords();
-  recs.unshift({id:'rc'+Date.now(),type:'attendance',rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:new Date().toISOString(),data});
+  recs.unshift({id:'rc'+_uid(),type:'attendance',rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:new Date().toISOString(),data});
   saveRecords(recs);
   closeModal('modal-attendance');
   renderDetail();
@@ -10979,7 +11015,7 @@ function openAddVisitPattern(){
   if(!content){toast('先に業務内容を入力してからパターンとして保存してください');return;}
   const service=document.getElementById('vr-service').value;
   const custom=ls('visit_care_patterns')||[];
-  custom.push({id:'vp_c'+Date.now(),name,service,content});
+  custom.push({id:'vp_c'+_uid(),name,service,content});
   saveVisitCarePatterns(custom);
   renderVisitPatternList();
   toast('パターンを保存しました ✓');
@@ -10998,7 +11034,7 @@ function saveVisitReport(){
   const content=document.getElementById('vr-content').value.trim();
   if(!content){toast('業務内容を入力してください');return;}
   const entry={
-    id:'vr'+Date.now(),rid,resName:res.name,
+    id:'vr'+_uid(),rid,resName:res.name,
     service:document.getElementById('vr-service').value,
     timeFrom:document.getElementById('vr-time-from').value,
     timeTo:document.getElementById('vr-time-to').value,
@@ -11366,7 +11402,7 @@ function importCSV(){
     const svcs=sRaw?sRaw.split(/[,、]/).map(s=>SVC_DISP[s.trim()]||s.trim()).filter(Boolean):['resident'];
     const jRaw=(i('facility')>=0?String(r[i('facility')]||''):'').trim();
     added.push({
-      id:'r'+Date.now()+Math.random(),
+      id:'r'+_uid()+Math.random(),
       name,kana:(i('name_kana')>=0?String(r[i('name_kana')]||''):'').trim(),
       gender:GENDER_DISP[gRaw]||'female',birthDate:birthStr,age,
       care:CARE_DISP[cRaw]||cRaw||'care1',
@@ -11493,7 +11529,7 @@ function importStaffCSV(headers,rows,overwrite=false){
         return lid===loginId.toLowerCase()||(cs[k]?.name||'').replace(/\s/g,'')==nameNorm;
       })||null;
     }
-    if(!key)key='cs'+Date.now()+Math.random();
+    if(!key)key='cs'+_uid()+Math.random();
     const existPass=ss[key]?.pass||cs[key]?.pass;
     const pass=existPass||generatePassword();
     cs[key]={name,kana,role,loginId,pass,jigyousho,addedBy:S.user,addedAt:new Date().toISOString()};
@@ -11626,7 +11662,7 @@ function initDemoStaff(){
   saveCustomStaff({});saveStaffSettings({});
   const cs={};const ss={};
   INIT_STAFF_DATA.forEach(s=>{
-    const key='cs'+Date.now()+Math.random();
+    const key='cs'+_uid()+Math.random();
     cs[key]={name:s.name,kana:s.kana,role:s.role,loginId:s.loginId,
              pass:s.pass,jigyousho:s.jigyousho,addedBy:'初期化',addedAt:new Date().toISOString()};
     ss[key]={pass:s.pass,loginId:s.loginId};
@@ -11699,7 +11735,7 @@ function addManualResident(){
   const birth=document.getElementById('m-birth').value;
   const age=birth?Math.floor((new Date()-new Date(birth))/(365.25*24*60*60*1000)):0;
   res.push({
-    id:'r'+Date.now(),name,sei,mei,kana,
+    id:'r'+_uid(),name,sei,mei,kana,
     gender:document.getElementById('m-gender').value,age,birthDate:birth||null,
     care:document.getElementById('m-care').value,
     room:document.getElementById('m-room').value,
@@ -11765,7 +11801,7 @@ function addManualStaff(){
   const kanaSei=document.getElementById('ms-kana-sei').value.trim();
   const kanaMei=document.getElementById('ms-kana-mei').value.trim();
   const cs=getCustomStaff();
-  const key='cs'+Date.now();
+  const key='cs'+_uid();
   cs[key]={name,sei,mei,kana:kanaSei&&kanaMei?kanaSei+' '+kanaMei:'',
     role,loginId,pass,
     jigyousho:document.getElementById('ms-jigyousho').value,
@@ -12017,7 +12053,7 @@ function saveEditResident(){
   const photoData=document.getElementById('er-photo-preview').dataset.photo||'';
   const res=getResidents();
   if(mode==='add'){
-    const newId='r'+Date.now();
+    const newId='r'+_uid();
     res.push({
       id:newId,
       name,kana:document.getElementById('er-kana').value,
@@ -12068,7 +12104,7 @@ function getDelLog(){return ls('board_del_log')||[];}
 function saveDelLog(l){lsSet('board_del_log',l);fsSet('board_del_log',l);}
 function moveToTrash(section,shift,entry){
   const trash=getBoardTrash();
-  trash.unshift({id:'tr_'+Date.now(),section,shift,data:{...entry},
+  trash.unshift({id:'tr_'+_uid(),section,shift,data:{...entry},
     deletedBy:S.user,deletedByRole:S.userRole||'',deletedAt:new Date().toISOString()});
   saveBoardTrash(trash.slice(0,50));
   const log=getDelLog();
@@ -12190,7 +12226,7 @@ function saveFtRecord(){
   const achievement=document.getElementById('ft-achievement').value;
   const stopReason=achievement==='0'?document.getElementById('ft-stop-reason').value:'';
   const rec={
-    id:'ft_'+Date.now(),
+    id:'ft_'+_uid(),
     rid:S.currentRes,
     type:'functional_training',
     ts:date+'T'+(document.getElementById('ft-from').value||'00:00')+':00',
@@ -12236,7 +12272,7 @@ function openBathModal(){
 function saveBathRecord(){
   const rid=S.currentRes;if(!rid)return;
   const d=getBathRecords();
-  d.push({id:'b'+Date.now(),rid,date:document.getElementById('bath-date').value,
+  d.push({id:'b'+_uid(),rid,date:document.getElementById('bath-date').value,
     type:document.getElementById('bath-type').value,
     notes:document.getElementById('bath-notes').value.trim(),
     by:S.user||'──',createdAt:new Date().toISOString()});
@@ -12430,7 +12466,7 @@ function bvAutoSave(rid){
   if(new Date(ts)>new Date())return;
   const recs=getRecords();
   const ex=recs.find(rc=>rc.rid===rid&&rc.type==='vital'&&rc.ts&&rc.ts.startsWith(today));
-  if(ex){ex.data=bvData;ex.ts=ts;}else{recs.unshift({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',data:bvData});}
+  if(ex){ex.data=bvData;ex.ts=ts;}else{recs.unshift({id:'r'+_uid(),rid,type:'vital',ts,by:S.user||'──',data:bvData});}
   saveRecords(recs);_bvApplyDone(rid);
 }
 function bmAutoSave(rid){
@@ -12452,7 +12488,7 @@ function bmAutoSave(rid){
               fluid:fluid?Number(fluid):0,jelly:jelly?Number(jelly):0,note};
   const recs=getRecords();
   const ex=recs.find(rc=>rc.rid===rid&&rc.type==='meal'&&rc.ts&&rc.ts.startsWith(today)&&rc.data?.mtype===mtype);
-  if(ex){ex.data=data;ex.ts=ts;}else{recs.unshift({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',data});}
+  if(ex){ex.data=data;ex.ts=ts;}else{recs.unshift({id:'r'+_uid(),rid,type:'meal',ts,by:S.user||'──',data});}
   saveRecords(recs);
   const row=document.getElementById('bm-row-'+rid);if(!row)return;
   row.dataset.done='1';row.style.borderLeft='3px solid #22c55e';
@@ -12476,7 +12512,7 @@ function bexAutoSave(rid){
   const sorted=recs.filter(rc=>rc.rid===rid&&rc.type==='excretion'&&rc.ts&&rc.ts.startsWith(today)).sort((a,b)=>b.ts.localeCompare(a.ts));
   const ex=sorted[0];
   const data={etype,urine,stool,incon,lax:false,portable:false,note};
-  if(ex){ex.data=data;ex.ts=ts;}else{recs.unshift({id:'r'+Date.now(),rid,type:'excretion',ts,by:S.user||'──',data});}
+  if(ex){ex.data=data;ex.ts=ts;}else{recs.unshift({id:'r'+_uid(),rid,type:'excretion',ts,by:S.user||'──',data});}
   saveRecords(recs);
   const row=document.getElementById('bex-row-'+rid);if(!row)return;
   row.dataset.done='1';row.style.borderLeft='3px solid #3b82f6';
@@ -12500,7 +12536,7 @@ function saveBulkVital(rid){
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
   if(new Date(ts)>new Date()){toast('未来の日付は入力できません');return;}
   const recs=getRecords();
-  recs.push({id:'r'+Date.now(),rid,type:'vital',ts,by:S.user||'──',data:bvData});
+  recs.push({id:'r'+_uid(),rid,type:'vital',ts,by:S.user||'──',data:bvData});
   saveRecords(recs);
   const row=document.getElementById('bv-row-'+rid);
   if(row){
@@ -12723,7 +12759,7 @@ function saveBulkMeal(rid){
   const ts=dateEl.value+'T'+new Date().toTimeString().slice(0,5)+':00';
   const note=document.getElementById('bm-note-'+rid)?.value||'';
   const recs=getRecords();
-  recs.push({id:'r'+Date.now(),rid,type:'meal',ts,by:S.user||'──',
+  recs.push({id:'r'+_uid(),rid,type:'meal',ts,by:S.user||'──',
     data:{mtype,staple:stapleVal!==''&&stapleVal!=null?Number(stapleVal):null,side:sideVal!==''&&sideVal!=null?Number(sideVal):null,fluid:fluid?Number(fluid):0,jelly:jelly?Number(jelly):0,snack_ate,note}});
   saveRecords(recs);
   const row=document.getElementById('bm-row-'+rid);
@@ -12850,7 +12886,7 @@ function saveBulkExcretion(rid){
   const ts=dateEl.value+'T'+timeVal+':00';
   if(new Date(ts)>new Date()){toast('未来の日付・時刻は入力できません');return;}
   const recs=getRecords();
-  recs.push({id:'r'+Date.now(),rid,type:'excretion',ts,by:S.user||'──',
+  recs.push({id:'r'+_uid(),rid,type:'excretion',ts,by:S.user||'──',
     data:{etype,urine:hasUrine?urine:'',stool:hasStool?stool:'',portable:false,incon,lax:false,note}});
   saveRecords(recs);
   const row=document.getElementById('bex-row-'+rid);
@@ -12957,7 +12993,7 @@ function saveMedDetail(){
   const medData=getMedicationData();
   if(!medData[_medRegRid])medData[_medRegRid]=[];
   const dose=(_mdtData.qty||'')+(_mdtData.unit||'');
-  const item={id:_mdtIdx!==null?(medData[_medRegRid][_mdtIdx]?.id||'m'+Date.now()):'m'+Date.now(),
+  const item={id:_mdtIdx!==null?(medData[_medRegRid][_mdtIdx]?.id||'m'+_uid()):'m'+_uid(),
     name:_mdtData.name,qty:_mdtData.qty,unit:_mdtData.unit,dose,slots:_mdtData.slots||['morning']};
   if(_mdtIdx!==null)medData[_medRegRid][_mdtIdx]=item;else medData[_medRegRid].push(item);
   saveMedicationData(medData);closeModal('modal-med-detail');renderMedRegList();toast('保存しました ✓');
@@ -13402,7 +13438,7 @@ function saveBulletinPost(){
     const idx=posts.findIndex(x=>x.id===editId);
     if(idx>=0){posts[idx]={...posts[idx],title,content,category:document.getElementById('bul-cat').value,pinned:document.getElementById('bul-pin').checked};}
   } else {
-    posts.push({id:'bb'+Date.now(),title,content,category:document.getElementById('bul-cat').value,pinned:document.getElementById('bul-pin').checked,by:S.user||'─',date:_localDs(now),reads:[]});
+    posts.push({id:'bb'+_uid(),title,content,category:document.getElementById('bul-cat').value,pinned:document.getElementById('bul-pin').checked,by:S.user||'─',date:_localDs(now),reads:[]});
   }
   saveBulletin(posts);
   closeModal('modal-bulletin-post');
@@ -13599,7 +13635,7 @@ async function processMedPhoto(input){
     const medData=getMedicationData();
     if(!medData[_medRegRid])medData[_medRegRid]=[];
     parsed.forEach(item=>{
-      medData[_medRegRid].push({id:'m'+Date.now()+Math.floor(Math.random()*9999),name:item.name||'',dose:item.dose||'',slots:Array.isArray(item.slots)?item.slots:['morning']});
+      medData[_medRegRid].push({id:'m'+_uid()+Math.floor(Math.random()*9999),name:item.name||'',dose:item.dose||'',slots:Array.isArray(item.slots)?item.slots:['morning']});
     });
     saveMedicationData(medData);
     renderMedRegList();
@@ -14308,7 +14344,7 @@ function saveBoardHandover(){
     if(section==='sak')d.sak[sakShift]=items; else d[section]=items;
     toast('申し送りを更新しました ✓');
   } else {
-    const entry={id:Date.now().toString(),content,pri,rid,expiryType,expiresAt,staffRole:S.userRole,by:S.user||'──',date:new Date().toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}),time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),editedBy:null};
+    const entry={id:_uid(),content,pri,rid,expiryType,expiresAt,staffRole:S.userRole,by:S.user||'──',date:new Date().toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}),time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),editedBy:null};
     if(section==='sak')d.sak[sakShift].unshift(entry); else d[section].unshift(entry);
     toast('申し送りを保存しました ✓');
   }
@@ -14365,7 +14401,7 @@ function saveDoctorOrder(){
     toast('医師指示を更新しました ✓');
   } else {
     d.doctor.unshift({
-      id:Date.now().toString(),content,
+      id:_uid(),content,
       doctor:document.getElementById('do-doctor').value||'医師',
       pri:doPri,rid:document.getElementById('do-resident').value,
       staffRole:'doctor',by:S.user||'──',
@@ -15138,7 +15174,7 @@ function saveRecurDaySchedule(){
   while(d<=endD){
     if(_drDays.has(d.getDay())){
       const ds=_localDs(d);
-      if(!existKeys.has(ds))newEvs.push({id:'ev'+Date.now()+'-'+ds,rid,title:'デイサービス',type:'commute',date:ds,start,end,note:''});
+      if(!existKeys.has(ds))newEvs.push({id:'ev'+_uid()+'-'+ds,rid,title:'デイサービス',type:'commute',date:ds,start,end,note:''});
     }
     d.setDate(d.getDate()+1);
   }
@@ -15167,7 +15203,7 @@ function saveScheduleEvent(){
     closeModal('modal-sch-add');
     toast('予定を更新しました ✓');
   } else {
-    scheds.push({id:'ev'+Date.now(),...fields});
+    scheds.push({id:'ev'+_uid(),...fields});
     saveSchedules(scheds);
     closeModal('modal-sch-add');
     toast('予定を追加しました ✓');
@@ -16842,7 +16878,7 @@ function saveIncident(){
     const idx=incidents.findIndex(i=>i.id===editId);
     if(idx>=0){incidents[idx]={...incidents[idx],type,sev,rid,location,detail,response,prevention,witness,updatedAt:new Date().toISOString()};}
   } else {
-    incidents.unshift({id:'inc_'+Date.now(),type,sev,rid,location,detail,response,prevention,witness,by:S.user,ts:new Date().toISOString(),reviewed:false});
+    incidents.unshift({id:'inc_'+_uid(),type,sev,rid,location,detail,response,prevention,witness,by:S.user,ts:new Date().toISOString(),reviewed:false});
   }
   saveIncidents(incidents);
   closeModal('modal-incident');
@@ -17167,7 +17203,7 @@ function saveInfection(){
     d[editIdx]={...d[editIdx],rid,facility,disease,isolationType,startDate,endDate,notes,status,serviceResponse,updatedBy:S.user||'──',updatedAt:new Date().toISOString()};
     toast('感染記録を更新しました ✓');
   } else {
-    d.unshift({id:Date.now().toString(),rid,facility,disease,isolationType,startDate,endDate,notes,status:'active',serviceResponse,createdBy:S.user||'──',createdAt:new Date().toISOString(),updatedBy:null,updatedAt:null});
+    d.unshift({id:_uid(),rid,facility,disease,isolationType,startDate,endDate,notes,status:'active',serviceResponse,createdBy:S.user||'──',createdAt:new Date().toISOString(),updatedBy:null,updatedAt:null});
     toast('感染記録を登録しました ✓');
   }
   saveInfectionData(d);
@@ -17505,7 +17541,7 @@ function saveTask(){
     const idx=tasks.findIndex(t=>t.id===editId);
     if(idx>=0){tasks[idx].title=title;tasks[idx].pri=pri;tasks[idx].dueDate=dueDate;tasks[idx].fac=document.getElementById('task-inp-fac').value;tasks[idx].assignedTo=document.getElementById('task-inp-staff').value;tasks[idx].detail=document.getElementById('task-inp-detail').value.trim();}
   } else {
-    tasks.unshift({id:'task_'+Date.now(),title,pri,dueDate,fac:document.getElementById('task-inp-fac').value,assignedTo:document.getElementById('task-inp-staff').value,detail:document.getElementById('task-inp-detail').value.trim(),done:false,createdBy:S.user,createdAt:new Date().toISOString()});
+    tasks.unshift({id:'task_'+_uid(),title,pri,dueDate,fac:document.getElementById('task-inp-fac').value,assignedTo:document.getElementById('task-inp-staff').value,detail:document.getElementById('task-inp-detail').value.trim(),done:false,createdBy:S.user,createdAt:new Date().toISOString()});
   }
   saveTasks(tasks);
   closeModal('modal-task');
@@ -18096,7 +18132,7 @@ function openManual(name, icon, title){
     loading.style.display='none';
     return;
   }
-  fetch('/manuals/'+name+'.html')
+  fetch('manuals/'+name+'.html')
     .then(r=>r.text())
     .then(html=>{
       _manualCache[name]=html;
@@ -18119,12 +18155,27 @@ function closeManualDetail(){
   if(backBtn)backBtn.style.display='none';
 }
 
+function changeShiftMonth(delta){
+  const [y,m]=_shiftMonth.split('-').map(Number);
+  const nd=new Date(y,m-1+delta,1);
+  _shiftMonth=nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0');
+  renderShift();
+}
 function renderShift(){
   const data=SHIFT_DATA[_shiftMonth];
-  if(!data)return;
   const badge=document.getElementById('shift-month-badge');
-  if(badge)badge.textContent=data.label;
   const tabsEl=document.getElementById('shift-tabs');
+  const area=document.getElementById('shift-table-area');
+  const noData=document.getElementById('shift-no-data');
+  if(!data){
+    const [y,m]=_shiftMonth.split('-').map(Number);
+    if(badge)badge.textContent=y+'年'+m+'月';
+    if(tabsEl)tabsEl.innerHTML='';
+    if(area){area.innerHTML='';area.style.display='none';}
+    if(noData){noData.style.display='flex';noData.innerHTML='<div style="font-size:44px">📅</div><div style="font-size:14px;font-weight:700;color:var(--txt)">このデータはまだ準備されていません</div>';}
+    return;
+  }
+  if(badge)badge.textContent=data.label;
   if(tabsEl)tabsEl.innerHTML=data.tabs.map(t=>`<button onclick="switchShiftTab('${t.key}')" data-stab="${t.key}" style="flex-shrink:0;padding:10px 14px;font-size:12px;font-weight:700;color:${_shiftTabKey===t.key?'var(--p)':'var(--sub)'};background:transparent;border:none;border-bottom:2px solid ${_shiftTabKey===t.key?'var(--p)':'transparent'};cursor:pointer;touch-action:manipulation;white-space:nowrap">${t.label}</button>`).join('');
   const first=data.tabs.find(t=>t.type==='data')||data.tabs[0];
   if(!_shiftTabKey||!data.tabs.find(t=>t.key===_shiftTabKey))switchShiftTab(first.key);
@@ -18159,6 +18210,180 @@ document.querySelectorAll('.overlay:not([data-no-close-btn])').forEach(overlay=>
   sheet.classList.add('has-close-btn');
   sheet.insertBefore(btn,sheet.firstChild);
 });
+
+// ── AI補助関数 ──
+
+// 機能訓練記録 SOAP 自動生成
+function generateFtSoap(){
+  const patternVal=document.getElementById('ft-pattern').value;
+  const menus=[...document.querySelectorAll('.ft-menu:checked')].map(cb=>cb.value);
+  const achievement=document.getElementById('ft-achievement').value;
+  const stopReason=document.getElementById('ft-stop-reason').value;
+  const preSys=document.getElementById('ft-pre-sys').value;
+  const preDia=document.getElementById('ft-pre-dia').value;
+  const prePulse=document.getElementById('ft-pre-pulse').value;
+  const preSpo2=document.getElementById('ft-pre-spo2').value;
+  const postSys=document.getElementById('ft-post-sys').value;
+  const postPulse=document.getElementById('ft-post-pulse').value;
+  const postSpo2=document.getElementById('ft-post-spo2').value;
+
+  const patternLabels={A:'転倒予防・歩行改善',B:'片麻痺ADL向上',C:'認知症対応',D:'呼吸器・軽負荷',E:'口腔・嚥下機能',other:'個別プログラム'};
+  const menuLabels={rom_upper:'ROM訓練（上肢）',rom_lower:'ROM訓練（下肢）',strength:'筋力強化訓練',standup:'立ち上がり訓練',balance:'バランス訓練',walk:'歩行練習',oral:'口腔体操・パタカラ',breath:'呼吸訓練',adl:'ADL訓練',swallow:'嚥下訓練'};
+  const sTemplates={A:'「少し疲れましたが、足が動かしやすかったです」',B:'「麻痺側が動かしにくい」「少しずつ動くようになってきた気がする」',C:'「何をするの？」「楽しかったよ」',D:'「息が上がりにくい程度でよかった」',E:'「口が動きにくいが、パタカラは声が出せた」',other:'（本人の訴えを記入）'};
+  const aTemplates={'100':'全プログラムを安全に実施。バイタルの著変なく良好に終了した。','75':'概ねプログラムを実施。一部を軽減したが意欲的に取り組めた。','50':'体調を考慮しプログラムを半分程度実施。次回も様子を見ながら対応する。','25':'本日は体調・意欲を優先し最小限のメニューに留めた。','0':stopReason==='refuse'?'本人の意向により本日は中止とした。':stopReason==='bp_high'?'訓練前血圧高値のため安全を優先し中止した。':stopReason==='spo2_low'?'SpO2低下がみられたため中止し安静を確保した。':'体調不良のため本日は中止とした。次回再アセスメントを行う。'};
+
+  const menuText=menus.length?menus.map(m=>menuLabels[m]||m).join('・'):'（訓練メニューを選択してください）';
+
+  let vitalPre='',vitalPost='';
+  if(preSys)vitalPre=`BP ${preSys}${preDia?'/'+preDia:''} mmHg・HR ${prePulse||'−'}回/分・SpO2 ${preSpo2||'−'}%`;
+  if(postSys)vitalPost=`BP ${postSys} mmHg・HR ${postPulse||'−'}回/分・SpO2 ${postSpo2||'−'}%`;
+
+  const oText=`${patternLabels[patternVal]||patternVal}プログラムを実施。\n  実施内容：${menuText}。${vitalPre?'\n  訓練前バイタル：'+vitalPre+'。':''}${vitalPost?'\n  訓練後バイタル：'+vitalPost+'。':''}`;
+
+  const soap=`S: ${sTemplates[patternVal]||'（本人の訴えを記入）'}
+O: ${oText}
+A: ${aTemplates[achievement]||'（評価を記入）'}
+P: 次回も同プログラムを継続。${achievement<='50'&&achievement!=='0'?'実施量を段階的に増やすことを検討する。':''}`;
+
+  const ta=document.getElementById('ft-note');
+  ta.value=soap;
+  ta.classList.add('ai-generated');
+  setTimeout(()=>ta.classList.remove('ai-generated'),700);
+  ta.focus();
+  toast('✨ SOAP文章を生成しました。内容を確認・修正してください');
+}
+
+// バイタル備考 AI補助
+function generateVitalComment(){
+  const temp=parseFloat(document.getElementById('v-temp').value);
+  const sys=parseFloat(document.getElementById('v-sys').value);
+  const dia=parseFloat(document.getElementById('v-dia').value);
+  const pulse=parseFloat(document.getElementById('v-pulse').value);
+  const spo2=parseFloat(document.getElementById('v-spo2').value);
+  const conscious=document.querySelector('input[name="consciousness"]:checked')?.value||'alert';
+
+  const alerts=[],normal=[];
+
+  if(!isNaN(temp)){
+    if(temp>=38.5)alerts.push(`発熱（${temp}℃）。クーリング・水分補給を実施し、医師へ報告した`);
+    else if(temp>=37.5)alerts.push(`微熱（${temp}℃）。引き続き経過観察を要する`);
+    else if(temp<35.5)alerts.push(`低体温（${temp}℃）。保温対応を実施した`);
+    else normal.push(`体温${temp}℃`);
+  }
+  if(!isNaN(sys)){
+    if(sys>=180)alerts.push(`収縮期血圧高値（${sys}/${isNaN(dia)?'−':dia} mmHg）。安静を確保し担当医へ報告した`);
+    else if(sys>=160)alerts.push(`血圧やや高め（${sys}/${isNaN(dia)?'−':dia} mmHg）。安静を促し経過観察を行う`);
+    else if(sys<90)alerts.push(`血圧低値（${sys} mmHg）。転倒リスクあり。安静確保・水分補給を実施した`);
+    else normal.push(`BP ${sys}/${isNaN(dia)?'−':dia} mmHg`);
+  }
+  if(!isNaN(pulse)){
+    if(pulse>=120)alerts.push(`頻脈（${pulse}回/分）。安静を確保し医師への報告を検討した`);
+    else if(pulse<50)alerts.push(`徐脈（${pulse}回/分）。自覚症状を確認し経過観察を行う`);
+    else normal.push(`HR ${pulse}回/分`);
+  }
+  if(!isNaN(spo2)){
+    if(spo2<=90)alerts.push(`SpO2低下（${spo2}%）。体位変換・深呼吸を促し、酸素投与を検討した`);
+    else if(spo2<=94)alerts.push(`SpO2やや低値（${spo2}%）。呼吸状態を継続的に観察する`);
+    else normal.push(`SpO2 ${spo2}%`);
+  }
+  if(conscious==='drowsy')alerts.push('意識レベル低下（傾眠）。刺激への反応を確認し、医師へ報告した');
+  else if(conscious==='stupor')alerts.push('意識障害（昏迷）。緊急対応を行い医師へ報告した');
+
+  let comment='';
+  if(alerts.length){
+    comment=alerts.join('。\n')+'。';
+  } else {
+    comment=`バイタル安定。${normal.join('、')}。変化なく経過良好。`;
+  }
+
+  const ta=document.getElementById('v-note');
+  ta.value=comment;
+  ta.classList.add('ai-generated');
+  setTimeout(()=>ta.classList.remove('ai-generated'),700);
+  ta.focus();
+  toast(alerts.length?'⚠️ 異常値を検出しました。内容を確認・修正してください':'✨ コメントを生成しました');
+}
+
+// 申し送り AI補助テンプレート
+function generateHandoverTemplate(){
+  const section=document.getElementById('board-ho-section').value||document.getElementById('bho-section-sel').value;
+  const priority=document.querySelector('input[name="bho-pri"]:checked')?.value||'normal';
+  const resId=document.getElementById('bho-resident').value;
+  const resName=resId?document.querySelector(`#bho-resident option[value="${resId}"]`)?.textContent||'利用者名':'';
+
+  const templates={
+    doctor_to:{normal:`${resName?resName+'様について：':''}【報告事項】\nバイタル：BP　/　mmHg、HR　回/分、SpO2　%、体温　℃\n状態：\n【依頼事項】\n□ 処方変更の検討\n□ 診察の要否\n□ その他（　　　）`,urgent:`【緊急報告】${resName?resName+'様':'利用者'}\nバイタル：BP　/　mmHg、HR　回/分、SpO2　%\n症状・状態：\n実施した対応：\n→ 指示内容を記録してください`},
+    facility_nurse:{normal:`${resName?resName+'様の状態について記録します。':''}\n・バイタル：問題なし / 要注意（　　　）\n・服薬：実施済み / 未実施（理由：　　）\n・特記事項：`,important:`【要注意】${resName||'利用者'}の状態変化\n・変化の内容：\n・バイタル：\n・実施した対応：\n・次の担当者へのお願い：`},
+    day:{normal:`【デイ申し送り】\n本日の様子：活動・食事・水分・排泄状況を記録\n・食事摂取量：　割\n・水分量：　ml\n・排泄：問題なし / 要注意\n・活動参加：積極的 / 普通 / 消極的\n・特記：`,important:`【要注意】本日のデイにて気になる点がありました。\n・内容：\n・バイタル変化：\n・ご本人の様子：\n・明日以降の注意点：`},
+    visit:{normal:`【訪問介護記録】${resName?resName+'様':''}\n・訪問時間：　：　〜　：\n・実施サービス：身体介助 / 生活援助\n・ご本人の状態：良好 / 普通 / 要注意\n・特記事項：`,important:`【要確認】訪問時に気になる点がありました。\n・発見した状況：\n・ご本人の訴え：\n・実施した対応：\n・次回訪問への申し送り：`},
+  };
+
+  const sectionTpl=templates[section];
+  let tpl='';
+  if(sectionTpl){
+    tpl=priority==='urgent'?(sectionTpl.urgent||sectionTpl.normal):priority==='important'?(sectionTpl.important||sectionTpl.normal):sectionTpl.normal;
+  } else {
+    tpl=`${resName?resName+'様について：':''}\n・状況：\n・実施した対応：\n・次の担当者へのお願い：`;
+  }
+
+  const ta=document.getElementById('bho-content');
+  ta.value=tpl;
+  ta.classList.add('ai-generated');
+  setTimeout(()=>ta.classList.remove('ai-generated'),700);
+  ta.focus();
+  toast('✨ テンプレートを挿入しました。内容を入力・修正してください');
+}
+
+// タイムラインサマリーバー生成
+function renderTimelineSummary(records){
+  const vital=records.filter(r=>r.type==='vital');
+  const meal=records.filter(r=>r.type==='meal');
+  const excr=records.filter(r=>r.type==='excretion');
+  const ft=records.filter(r=>r.type==='functional_training');
+  const chrono=records.filter(r=>r.type==='chrono');
+
+  const chips=[];
+  if(vital.length){
+    const last=vital[0];
+    const sys=last.data?.sys||last.data?.vitalBefore?.sys;
+    const spo2=last.data?.spo2||last.data?.vitalBefore?.spo2;
+    const abnormal=(sys&&(sys>=160||sys<90))||(spo2&&spo2<95);
+    chips.push(`<div class="tl-summary-chip" style="${abnormal?'background:#ffebee;color:#e53935;':''}">🌡️ バイタル×${vital.length}${abnormal?' ⚠️':' ✓'}</div>`);
+  }
+  if(meal.length){
+    const avgIntake=meal.reduce((s,r)=>s+(parseInt(r.data?.intake_pct||r.data?.amount||0)),0)/meal.length;
+    const low=avgIntake>0&&avgIntake<50;
+    chips.push(`<div class="tl-summary-chip" style="${low?'background:#fff3e0;color:#e65100;':''}">🍚 食事×${meal.length}${low?' 摂取少':' ✓'}</div>`);
+  }
+  if(excr.length)chips.push(`<div class="tl-summary-chip">🚽 排泄×${excr.length}</div>`);
+  if(ft.length){
+    const done=ft.filter(r=>r.data?.achievement==='100'||r.data?.achievement==='75').length;
+    chips.push(`<div class="tl-summary-chip" style="background:#e3f2fd;color:#0277bd;">💪 機能訓練×${ft.length}${done?` (${done}件実施)`:''}</div>`);
+  }
+  if(chrono.length){
+    const imp=chrono.filter(r=>r.priority==='important'||r.priority==='urgent').length;
+    chips.push(`<div class="tl-summary-chip" style="${imp?'background:#fff3e0;color:#e65100;':''}">📝 経時記録×${chrono.length}${imp?` (要注意${imp}件)`:''}</div>`);
+  }
+
+  if(!chips.length)return '';
+  return `<div class="tl-summary-bar">${chips.join('')}</div>`;
+}
+
+// iOS Safari の position:fixed 包含ブロック問題の修正
+// overflow が設定された祖先要素が position:fixed の基準点になるバグを回避するため
+// すべての .overlay を body 直下に移動する（DOMContentLoaded で script後の要素も含める）
+(function(){
+  function moveOverlays(){
+    document.querySelectorAll('.overlay').forEach(function(el){
+      if(el.parentElement!==document.body) document.body.appendChild(el);
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',moveOverlays);
+  } else {
+    moveOverlays();
+  }
+})();
 </script>
 <!-- 利用者ピッカー（記録種別選択後） -->
 <div class="overlay" id="modal-res-picker" data-no-close-btn onclick="closeModal('modal-res-picker',event)">
