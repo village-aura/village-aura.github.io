@@ -5006,7 +5006,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.5.1';
+const APP_VERSION='1.5.2';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -5065,9 +5065,9 @@ function _showHandoverPush(items){
   const el=document.createElement('div');
   el.id='_hw-push-noti';
   const preview=items.slice(0,2).map(h=>(h.content||'').substring(0,22)+(((h.content||'').length>22)?'…':'')).join(' / ');
-  el.innerHTML=`<span style="font-size:22px;flex-shrink:0">🔔</span><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;margin-bottom:1px">新しい申し送り ${items.length}件</div><div style="font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${preview}</div></div><button onclick="event.stopPropagation();document.getElementById('_hw-push-noti').remove()" style="flex-shrink:0;background:rgba(255,255,255,.15);border:none;color:#fff;width:24px;height:24px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`;
+  el.innerHTML=`<span style="font-size:22px;flex-shrink:0">🔔</span><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:800;margin-bottom:2px">新しい申し送り ${items.length}件</div><div style="font-size:13px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${preview}</div></div><button onclick="event.stopPropagation();document.getElementById('_hw-push-noti').remove()" style="flex-shrink:0;background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`;
   el.onclick=()=>{showScr('scr-handover-board');el.remove();};
-  el.style.cssText='position:fixed;top:12px;left:50%;z-index:99999;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);cursor:pointer;max-width:340px;width:calc(100% - 32px);animation:hwPushIn .35s cubic-bezier(.34,1.56,.64,1) forwards';
+  el.style.cssText='position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;z-index:99999;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);cursor:pointer;max-width:340px;width:calc(100% - 32px);animation:hwPushIn .35s cubic-bezier(.34,1.56,.64,1) forwards';
   document.body.appendChild(el);
   setTimeout(()=>{if(el.parentNode){el.style.animation='hwPushOut .3s ease forwards';setTimeout(()=>el.remove(),300);}},6000);
 }
@@ -8184,6 +8184,7 @@ function renderDashboard(){
   recs.filter(r=>r.type==='vital').forEach(r=>{if(!lastVitalTs[r.rid]||new Date(r.ts)>new Date(lastVitalTs[r.rid]))lastVitalTs[r.rid]=r.ts;});
   const noVital=res.filter(r=>!vitalToday.has(r.id));
   const _dismissed=getDismissedAlerts();
+  const _dk=document.body.classList.contains('dark-mode');
   const vurRow=document.getElementById('vital-unrecorded-row');
   if(vurRow){
     if(noVital.length&&!_dismissed.has('vital')){
@@ -8193,7 +8194,8 @@ function renderDashboard(){
         const lts=lastVitalTs[r.id];
         const hrsAgo=lts?Math.floor((now-new Date(lts))/3600000):null;
         const lbl=r.name+(hrsAgo!=null?`(${hrsAgo}h前)`:'(初回)');
-        return `<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#fff3e0;color:#c62828;border:1px solid #ffcc80;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${lbl}</button>`;
+        const _vBg=_dk?'#431407':'#fff3e0';const _vCl=_dk?'#fca5a5':'#c62828';const _vBdr=_dk?'#7f1d1d':'#ffcc80';
+        return `<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:${_vBg};color:${_vCl};border:1px solid ${_vBdr};border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${lbl}</button>`;
       }).join('')+(noVital.length>3?`<span style="font-size:11px;color:var(--sub)">…他${noVital.length-3}名</span>`:'');
       document.getElementById('alert-names').innerHTML=nameChips;
     } else {
@@ -8240,7 +8242,8 @@ function renderDashboard(){
     if(stoolAlerts.length&&!_dismissed.has('stool')){
       stoolRow.style.display='flex';
       document.getElementById('stool-alert-count').textContent='排便3日以上なし：'+stoolAlerts.length+'名';
-      const stoolChips=stoolAlerts.slice(0,3).map(r=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#f3e5f5;color:#7b1fa2;border:1px solid #ce93d8;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}</button>`).join('')+(stoolAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${stoolAlerts.length-3}名</span>`:'');
+      const _sBg=_dk?'#2d1b69':'#f3e5f5';const _sCl=_dk?'#d8b4fe':'#7b1fa2';const _sBdr=_dk?'#6d28d9':'#ce93d8';
+      const stoolChips=stoolAlerts.slice(0,3).map(r=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:${_sBg};color:${_sCl};border:1px solid ${_sBdr};border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}</button>`).join('')+(stoolAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${stoolAlerts.length-3}名</span>`:'');
       document.getElementById('stool-alert-names').innerHTML=stoolChips;
       stoolRow.onclick=(e)=>{if(!e.target.closest('button'))gotoAlertResidents('stool');};
     } else {
@@ -8255,7 +8258,8 @@ function renderDashboard(){
     if(bathAlerts.length&&!_dismissed.has('bath')){
       bathRow.style.display='flex';
       document.getElementById('bath-alert-count').textContent='入浴4日以上なし：'+bathAlerts.length+'名';
-      const bathChips=bathAlerts.slice(0,3).map(({r,days})=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:#e1f5fe;color:#0277bd;border:1px solid #81d4fa;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}(${days===null?'記録なし':days+'日'})</button>`).join('')+(bathAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${bathAlerts.length-3}名</span>`:'');
+      const _bBg=_dk?'#082f49':'#e1f5fe';const _bCl=_dk?'#7dd3fc':'#0277bd';const _bBdr=_dk?'#0369a1':'#81d4fa';
+      const bathChips=bathAlerts.slice(0,3).map(({r,days})=>`<button onclick="event.stopPropagation();openResident('${r.id}')" style="margin:1px 2px;padding:1px 7px;background:${_bBg};color:${_bCl};border:1px solid ${_bBdr};border-radius:10px;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation">${r.name}(${days===null?'記録なし':days+'日'})</button>`).join('')+(bathAlerts.length>3?`<span style="font-size:11px;color:var(--sub)">…他${bathAlerts.length-3}名</span>`:'');
       document.getElementById('bath-alert-names').innerHTML=bathChips;
     }else{
       bathRow.style.display='none';
@@ -14221,7 +14225,7 @@ function renderHbList(){
       :h.pri==='important'?'<span style="background:#fff7ed;color:#c2410c;font-size:9px;font-weight:700;border-radius:4px;padding:1px 6px;border:1px solid #fdba74;flex-shrink:0">⚠️ 重要</span>':'';
     const shiftLbl=h._shift?({am:'朝',pm:'夕'}[h._shift]):'';
     const secTag=`<span style="background:${si.bg};color:${si.tc};font-size:10px;font-weight:700;border-radius:10px;padding:2px 8px;flex-shrink:0">${si.emoji} ${si.label}${shiftLbl?'('+shiftLbl+')':''}</span>`;
-    const _res=h.rid?getResidents().find(r=>r.id===h.rid):null;
+    const _res=h.rid?(getResidents().find(r=>r.id===h.rid)||getResidents().find(r=>r.name===h.rid)):null;
     const resChip=_res?`<button onclick="event.stopPropagation();openResident('${_res.id}')" style="background:#e8f0fb;color:var(--p);border:1px solid var(--p);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation">👤 ${_res.name}</button>`:'';
     const canDelete=h.by===S.user||isAdmin();
     const expiryTxt=formatExpiry(h.expiresAt);
@@ -14266,8 +14270,6 @@ function renderHbList(){
       <div style="font-size:13px;color:var(--txt);line-height:1.55;white-space:pre-wrap">${linkifyResidents(escHtml(h.content||''))}</div>
       ${_replyPreview}
       <div style="font-size:11px;color:var(--sub);margin-top:7px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bdr);padding-top:6px">
-        <span style="font-weight:700;color:var(--tx)">✍ ${h.by||'──'}</span>
-        <span style="color:var(--bdr)">|</span>
         <span>🕐 ${h.date||''}${h.time?' '+h.time:''}</span>
         <span>·</span><span style="color:${expiryColor}">${expiryTxt}</span>
         ${editedMark?`<span style="color:var(--sub)">${editedMark}</span>`:''}
