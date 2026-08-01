@@ -5006,7 +5006,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.5.2';
+const APP_VERSION='1.5.3';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -14381,8 +14381,13 @@ function openDoctorOrderFor(resName){
   // 申し送りボードの利用者選択肢を先に作る
   const sel=document.getElementById('do-resident');
   if(sel){
-    sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>'<option value="'+r.name+'">'+r.name+'</option>').join('');
-    sel.value=resName||'';
+    sel.innerHTML='<option value="">全体指示</option>'+getResidents().map(r=>'<option value="'+r.id+'">'+r.name+'</option>').join('');
+    if(resName){
+      const matched=getResidents().find(r=>r.name===resName||r.id===resName);
+      sel.value=matched?matched.id:'';
+    } else {
+      sel.value='';
+    }
   }
   const editIdx=document.getElementById('do-edit-idx');
   if(editIdx) editIdx.value='-1';
@@ -14427,7 +14432,11 @@ function editDoctorOrder(idx){
   if(!o)return;
   document.getElementById('do-content').value=o.content||'';
   document.getElementById('do-doctor').value=o.doctor||'稲田俊雄';
-  document.getElementById('do-resident').value=o.rid||'';
+  const _doSel=document.getElementById('do-resident');
+  if(_doSel){
+    const _ridMatch=getResidents().find(r=>r.id===o.rid)||getResidents().find(r=>r.name===o.rid);
+    _doSel.value=_ridMatch?_ridMatch.id:(o.rid||'');
+  }
   const priEl=document.querySelector(`input[name="do-pri"][value="${o.pri||'normal'}"]`);
   if(priEl)priEl.checked=true;
   let idxEl=document.getElementById('do-edit-idx');
@@ -18374,10 +18383,20 @@ function renderTimelineSummary(records){
 }
 
 // iOS Safari の position:fixed 包含ブロック問題の修正
-// rAF や getBoundingClientRect を使わず、.on 付与と同期的に !important inline style で
-// ビューポートピクセルを強制することで iOS の後追い再配置を防ぐ
+// body に overflow-x:clip や zoom が当たっていると iOS Safari は fixed の包含ブロックを
+// ビューポートではなく body にする。overlay 表示中だけ body の overflow/zoom を !important で
+// 中立値に上書きし、全モーダルが閉じたら inline style を削除して CSS クラスに戻す。
 (function(){
+  function _neutralizeBody(){
+    document.body.style.setProperty('overflow','visible','important');
+    document.body.style.setProperty('zoom','1','important');
+  }
+  function _restoreBody(){
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('zoom');
+  }
   function _applyPos(el){
+    _neutralizeBody();
     var vw=window.innerWidth;
     var vh=window.innerHeight;
     el.style.setProperty('position','fixed','important');
@@ -18392,6 +18411,9 @@ function renderTimelineSummary(records){
     ['position','left','top','right','bottom','width','height'].forEach(function(p){
       el.style.removeProperty(p);
     });
+    if(!document.querySelector('.overlay.on')){
+      _restoreBody();
+    }
   }
   var _obs=new MutationObserver(function(muts){
     muts.forEach(function(m){
