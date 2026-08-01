@@ -3368,9 +3368,9 @@ a{color:var(--p);text-decoration:none}
     <div class="sheet-title">🔬 皮膚・褥瘡記録</div>
     <div id="skin-sub" style="font-size:12px;color:var(--sub);margin:-8px 0 12px;text-align:center"></div>
     <div class="field"><label>区分</label>
-      <div style="display:flex;gap:16px;margin-top:4px">
-        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;white-space:nowrap"><input type="radio" name="sk-cat" value="jokuso" checked onchange="toggleSkinCategory()"> 褥瘡</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;white-space:nowrap"><input type="radio" name="sk-cat" value="skin_finding" onchange="toggleSkinCategory()"> 皮膚所見（非褥瘡）</label>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="jokuso" checked onchange="toggleSkinCategory()"> 褥瘡</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="radio" name="sk-cat" value="skin_finding" onchange="toggleSkinCategory()"> 皮膚所見（非褥瘡）</label>
       </div>
     </div>
     <div class="field"><label>部位</label>
@@ -4970,7 +4970,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.5';
+const APP_VERSION='1.4.6';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
