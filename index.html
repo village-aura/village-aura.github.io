@@ -57,6 +57,8 @@ a{color:var(--p);text-decoration:none}
 .scr.on{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes slideInRight{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes alertPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.blink-alert{animation:alertPulse 1.2s ease-in-out infinite}
 @keyframes slideInLeft{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes hwPushIn{from{opacity:0;transform:translateX(-50%) translateY(-80px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes hwPushOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(-80px)}}
@@ -5004,7 +5006,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.5.0';
+const APP_VERSION='1.5.1';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -8356,13 +8358,13 @@ function _updateDashAlertsHeader(){
   if(activeCount>0){
     if(hd){hd.style.borderColor='#ffcdd2';hd.style.background='#fff8f8';}
     if(hIco)hIco.textContent='🔴';
-    if(hTxt){hTxt.textContent='確認事項あり';hTxt.style.color='var(--ng)';hTxt.style.fontWeight='700';}
+    if(hTxt){hTxt.textContent='確認事項あり';hTxt.style.color='var(--ng)';hTxt.style.fontWeight='700';hTxt.classList.add('blink-alert');}
     if(badge){badge.style.display='inline-block';badge.textContent=activeCount+'件';}
     if(okRow)okRow.style.display='none';
   } else {
     if(hd){hd.style.borderColor='var(--bdr)';hd.style.background='var(--card)';}
     if(hIco)hIco.textContent='✅';
-    if(hTxt){hTxt.textContent='本日 異常なし';hTxt.style.color='var(--sub)';hTxt.style.fontWeight='600';}
+    if(hTxt){hTxt.textContent='本日 異常なし';hTxt.style.color='var(--sub)';hTxt.style.fontWeight='600';hTxt.classList.remove('blink-alert');}
     if(badge)badge.style.display='none';
     if(okRow)okRow.style.display='block';
   }
@@ -9526,7 +9528,7 @@ function renderTimeline(){
   filtered.forEach(r=>{
     const d=new Date(r.ts);
     const timeStr=d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
-    const si=STAFF_INFO[r.staffId];
+    const si=STAFF_INFO[r.staffId]||(r.staffName?Object.values({...STAFF_INFO,...getCustomStaff()}).find(s=>s.name===r.staffName):null);
     const staffName=r.staffName||r.by||(si?si.name:'──');
     const roleKey=r.staffRole||(si?si.role:null);
     const rc=roleKey?getRoleInfo(roleKey):null;
@@ -10923,7 +10925,7 @@ function saveAttendance(){
   const note=document.getElementById('att-note').value.trim();
   const data={timeFrom,timeTo,service:S.currentService,note};
   const recs=getRecords();
-  recs.unshift({id:'rc'+_uid(),type:'attendance',rid:S.currentRes,staffId:'s_cur',staffRole:S.userRole,ts:new Date().toISOString(),data});
+  recs.unshift({id:'rc'+_uid(),type:'attendance',rid:S.currentRes,staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,ts:new Date().toISOString(),data});
   saveRecords(recs);
   closeModal('modal-attendance');
   renderDetail();
@@ -12230,7 +12232,7 @@ function saveFtRecord(){
     rid:S.currentRes,
     type:'functional_training',
     ts:date+'T'+(document.getElementById('ft-from').value||'00:00')+':00',
-    staffId:S.user,staffName:S.user,staffRole:S.userRole||'',
+    staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole||'',
     service:S.currentService||'commute',
     data:{
       date,
@@ -13848,7 +13850,7 @@ function dayMatrixBulk(type,value){
     const mealToday=new Set(recs.filter(r=>r.type==='meal'&&new Date(r.ts).toDateString()===todayStr).map(r=>r.rid));
     const targets=res.filter(r=>!mealToday.has(r.id));
     targets.forEach(r=>{
-      const rec={id:'rec'+Date.now()+Math.random().toString(36).slice(2),rid:r.id,type:'meal',ts:new Date().toISOString(),staffName:S.user,staffRole:S.userRole,by:S.user,data:{staple:10,side:10,fluid:0,note:'一括入力（完食）'}};
+      const rec={id:'rec'+Date.now()+Math.random().toString(36).slice(2),rid:r.id,type:'meal',ts:new Date().toISOString(),staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,by:S.user,data:{staple:10,side:10,fluid:0,note:'一括入力（完食）'}};
       recs.push(rec);count++;
     });
   } else if(type==='fluid'){
@@ -13856,7 +13858,7 @@ function dayMatrixBulk(type,value){
     const mealMap={};mealToday.forEach(r=>{mealMap[r.rid]=r;});
     const targets=res.filter(r=>!mealMap[r.id]);
     targets.forEach(r=>{
-      const rec={id:'rec'+Date.now()+Math.random().toString(36).slice(2),rid:r.id,type:'meal',ts:new Date().toISOString(),staffName:S.user,staffRole:S.userRole,by:S.user,data:{staple:null,side:null,fluid:200,note:'一括入力（水分200ml）'}};
+      const rec={id:'rec'+Date.now()+Math.random().toString(36).slice(2),rid:r.id,type:'meal',ts:new Date().toISOString(),staffId:S.staffKey||'s_cur',staffName:S.user||'──',staffRole:S.userRole,by:S.user,data:{staple:null,side:null,fluid:200,note:'一括入力（水分200ml）'}};
       recs.push(rec);count++;
     });
   }
