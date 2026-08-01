@@ -46,7 +46,7 @@ body.font-lg{zoom:1.18}
 body.font-xl{zoom:1.35}
 body.font-xxl{zoom:1.52}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:clip;font-size:15px}
+body{font-family:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;min-height:100vh;overflow-x:clip;font-size:15px}
 @media(min-width:600px){body{max-width:none}}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
 input,select,textarea{font-family:inherit;font-size:16px}
@@ -5004,7 +5004,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.8';
+const APP_VERSION='1.4.9';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -18370,30 +18370,36 @@ function renderTimelineSummary(records){
 }
 
 // iOS Safari の position:fixed 包含ブロック問題の修正
-// ① すべての .overlay を body 直下に移動
-// ② .on が付いたタイミングで getBoundingClientRect() でズレを検出→強制補正
-// （getBoundingClientRect はビューポート基準のため、CBがズレていても正確な値が取れる）
+// body{position:relative;max-width:480px;margin:0 auto} の組み合わせで
+// iOS Safari が body を fixed の包含ブロックとして扱うバグへの対処
+// ① body から position:relative を除去（CSS側で根本修正）
+// ② body直下移動 + .on 付与時に常に viewport ピクセルで強制位置補正（安全網）
 (function(){
   function _fixPos(el){
     requestAnimationFrame(function(){
       var rect=el.getBoundingClientRect();
       var vw=window.innerWidth;
       var vh=window.innerHeight;
-      if(Math.abs(rect.left)>2||Math.abs(rect.top)>2||rect.width<vw-2){
-        el.style.setProperty('position','fixed','important');
-        el.style.setProperty('left',(-rect.left)+'px','important');
-        el.style.setProperty('top',(-rect.top)+'px','important');
-        el.style.setProperty('right','auto','important');
-        el.style.setProperty('bottom','auto','important');
-        el.style.setProperty('width',vw+'px','important');
-        el.style.setProperty('height',vh+'px','important');
-      }
+      // 常に適用：位置が正しくても !important inline で固定し iOS の後追い再計算を防ぐ
+      el.style.setProperty('position','fixed','important');
+      el.style.setProperty('left',(-rect.left)+'px','important');
+      el.style.setProperty('top',(-rect.top)+'px','important');
+      el.style.setProperty('right','auto','important');
+      el.style.setProperty('bottom','auto','important');
+      el.style.setProperty('width',vw+'px','important');
+      el.style.setProperty('height',vh+'px','important');
+    });
+  }
+  function _resetPos(el){
+    ['position','left','top','right','bottom','width','height'].forEach(function(p){
+      el.style.removeProperty(p);
     });
   }
   var _obs=new MutationObserver(function(muts){
     muts.forEach(function(m){
-      if(m.type==='attributes'&&m.target.classList&&m.target.classList.contains('on')){
-        _fixPos(m.target);
+      if(m.type==='attributes'&&m.target.classList){
+        if(m.target.classList.contains('on')) _fixPos(m.target);
+        else _resetPos(m.target);
       }
     });
   });
@@ -18403,6 +18409,10 @@ function renderTimelineSummary(records){
       _obs.observe(el,{attributes:true,attributeFilter:['class']});
     });
   }
+  // 画面回転・リサイズ時に開いているモーダルを再補正
+  window.addEventListener('resize',function(){
+    document.querySelectorAll('.overlay.on').forEach(_fixPos);
+  });
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',_setup);
   } else {
