@@ -5004,7 +5004,7 @@ const EVENT_COLORS = {
 };
 const RES_PALETTE=['#3D7AB5','#43a047','#e53935','#9c27b0','#e65100','#00796b','#c62828','#1565c0','#827717','#ad1457'];
 
-const APP_VERSION='1.4.9';
+const APP_VERSION='1.5.0';
 (function(){const el=document.getElementById('login-ver-lbl');if(el)el.textContent='v'+APP_VERSION;})();
 const CHANGELOG=[
   {ver:'1.2.9',date:'2026-07-28',items:['一括食事に「水分のみ」区分追加（主食/副食は—、水分・ゼリーのみ入力）','おやつ/10時の主食セルを●/✕トグルに変更（食べた/食べなかったをタップで記録）']},
@@ -18370,27 +18370,21 @@ function renderTimelineSummary(records){
 }
 
 // iOS Safari の position:fixed 包含ブロック問題の修正
-// body{position:relative;max-width:480px;margin:0 auto} の組み合わせで
-// iOS Safari が body を fixed の包含ブロックとして扱うバグへの対処
-// ① body から position:relative を除去（CSS側で根本修正）
-// ② body直下移動 + .on 付与時に常に viewport ピクセルで強制位置補正（安全網）
+// rAF や getBoundingClientRect を使わず、.on 付与と同期的に !important inline style で
+// ビューポートピクセルを強制することで iOS の後追い再配置を防ぐ
 (function(){
-  function _fixPos(el){
-    requestAnimationFrame(function(){
-      var rect=el.getBoundingClientRect();
-      var vw=window.innerWidth;
-      var vh=window.innerHeight;
-      // 常に適用：位置が正しくても !important inline で固定し iOS の後追い再計算を防ぐ
-      el.style.setProperty('position','fixed','important');
-      el.style.setProperty('left',(-rect.left)+'px','important');
-      el.style.setProperty('top',(-rect.top)+'px','important');
-      el.style.setProperty('right','auto','important');
-      el.style.setProperty('bottom','auto','important');
-      el.style.setProperty('width',vw+'px','important');
-      el.style.setProperty('height',vh+'px','important');
-    });
+  function _applyPos(el){
+    var vw=window.innerWidth;
+    var vh=window.innerHeight;
+    el.style.setProperty('position','fixed','important');
+    el.style.setProperty('left','0','important');
+    el.style.setProperty('top','0','important');
+    el.style.setProperty('right','auto','important');
+    el.style.setProperty('bottom','auto','important');
+    el.style.setProperty('width',vw+'px','important');
+    el.style.setProperty('height',vh+'px','important');
   }
-  function _resetPos(el){
+  function _clearPos(el){
     ['position','left','top','right','bottom','width','height'].forEach(function(p){
       el.style.removeProperty(p);
     });
@@ -18398,8 +18392,8 @@ function renderTimelineSummary(records){
   var _obs=new MutationObserver(function(muts){
     muts.forEach(function(m){
       if(m.type==='attributes'&&m.target.classList){
-        if(m.target.classList.contains('on')) _fixPos(m.target);
-        else _resetPos(m.target);
+        if(m.target.classList.contains('on')) _applyPos(m.target);
+        else _clearPos(m.target);
       }
     });
   });
@@ -18409,9 +18403,8 @@ function renderTimelineSummary(records){
       _obs.observe(el,{attributes:true,attributeFilter:['class']});
     });
   }
-  // 画面回転・リサイズ時に開いているモーダルを再補正
   window.addEventListener('resize',function(){
-    document.querySelectorAll('.overlay.on').forEach(_fixPos);
+    document.querySelectorAll('.overlay.on').forEach(_applyPos);
   });
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',_setup);
