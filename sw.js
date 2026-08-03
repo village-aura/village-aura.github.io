@@ -1,13 +1,11 @@
-/* Village Aura Service Worker - 202608020014 */
-const CACHE_VER='202608020014';
+/* 旧サービスワーカーの無効化スタブ */
 self.addEventListener('install',function(){self.skipWaiting();});
 self.addEventListener('activate',function(e){
-  e.waitUntil(caches.keys().then(function(keys){
-    return Promise.all(keys.map(function(k){return caches.delete(k);}));
-  }).then(function(){return self.clients.claim();}));
-});
-self.addEventListener('fetch',function(e){
-  if(e.request.mode==='navigate'){
-    e.respondWith(fetch(e.request,{cache:'no-store'}).catch(function(){return caches.match(e.request);}));
-  }
+  e.waitUntil((async function(){
+    const keys=await caches.keys();
+    await Promise.all(keys.map(function(k){return caches.delete(k);}));
+    await self.registration.unregister();
+    const cs=await self.clients.matchAll();
+    cs.forEach(function(c){c.navigate(c.url);});
+  })());
 });
